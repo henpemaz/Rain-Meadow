@@ -19,6 +19,7 @@
 - Synced Gourmand exhaustion and player lung exhaustion
 - Synced Vulture demasking
 - Synced Fire Sprites powering on Box Worms
+- Big Moth sync improvements
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
 - Fixed chat filters not applying to messages above player heads.

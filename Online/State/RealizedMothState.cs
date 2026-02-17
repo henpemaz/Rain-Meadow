@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Watcher;
 
 namespace RainMeadow
@@ -11,16 +9,25 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedMothState : RealizedCreatureState
     {
-        //[OnlineFieldHalf]
-        //public Vector2 moveDirection;
+        [OnlineFieldHalf]
+        Vector2 moveDirection;
+        [OnlineFieldHalf]
+        float flipness;
+        [OnlineFieldHalf]
+        float stance;
+
         [OnlineField]
         bool drinkingChunk;
-        [OnlineField(group = "counters")]
-        int wantToFlyCounter;
         [OnlineField(nullable = true)]
         BodyChunkRef? drinkChunk;
+
+        [OnlineField(group = "counters")]
+        int wantToFlyCounter;
+
         [OnlineField]
         MothLegState[] legState;
+        [OnlineField]
+        MothWingState[] wingState;
 
         public RealizedMothState() { }
 
@@ -28,32 +35,45 @@ namespace RainMeadow
         {
             BigMoth bigMoth = (BigMoth)onlineEntity.realizedCreature;
 
-            //moveDirection = bigMoth.moveDirection;
+            moveDirection = bigMoth.moveDirection;
+            flipness = bigMoth.flipness;
+            stance = bigMoth.stance;
+
             wantToFlyCounter = bigMoth.wantToFlyCounter;
             drinkingChunk = bigMoth.drinkingChunk;
             drinkChunk = BodyChunkRef.FromBodyChunk(bigMoth.drinkChunk) ?? null;
+
+            if (bigMoth.dead)
+            {
+                legState = [];
+                wingState = [];
+                return;
+            }
 
             // We won't track legs for small moths as they hardly do anything other than
             // mildly annoy the player which we'll just let the clients handle
             // and a bunch of them at once consume a ton of bandwidth.
 
-            if (bigMoth.Small || bigMoth.dead)
+            if (!bigMoth.Small)
+            {
+
+                var legs = new List<BigMoth.MothLeg>();
+
+                for (int i = 0; i < bigMoth.legs.GetLength(0); i++)
+                {
+                    for (int j = 0; j < bigMoth.legs.GetLength(1); j++)
+                    {
+                        legs.Add(bigMoth.legs[i, j]);
+                    }
+                }
+
+                legState = legs.Select(l => new MothLegState(l)).ToArray();
+            }
+            else
             {
                 legState = [];
-                return;
             }
-
-            var legs = new List<BigMoth.MothLeg>();
-
-            for (int i = 0; i < bigMoth.legs.GetLength(0); i++)
-            {
-                for (int j = 0; j < bigMoth.legs.GetLength(1); j++)
-                {
-                    legs.Add(bigMoth.legs[i, j]);
-                }
-            }
-
-            legState = legs.Select(l => new MothLegState(l)).ToArray();
+            wingState = bigMoth.wingPairs.Select(w => new MothWingState(w)).ToArray();
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -62,20 +82,28 @@ namespace RainMeadow
 
             if ((onlineEntity as OnlinePhysicalObject).apo.realizedObject is not BigMoth bigMoth) return;
 
-            //bigMoth.moveDirection = moveDirection;
+            bigMoth.moveDirection = moveDirection;
+            bigMoth.flipness = flipness;
+            bigMoth.stance = stance;
+
             bigMoth.drinkingChunk = drinkingChunk;
             bigMoth.wantToFlyCounter = wantToFlyCounter;
 
-            if (drinkingChunk)
+            bigMoth.drinkChunk = drinkChunk?.ToBodyChunk();
+
+            if (legState.Length > 0 && legState.Length == 4)
             {
-                bigMoth.drinkChunk = drinkChunk?.ToBodyChunk();
+                for (int i = 0; i < legState.Length; i++)
+                {
+                    legState[i].ReadTo(bigMoth.legs[i / 2, i % 2]);
+                }
             }
-
-            if (legState.Length != 4) return; // SmallMoth legs aren't tracked
-
-            for (int i = 0; i < legState.Length; i++)
+            if (wingState.Length > 0 && wingState.Length == 2)
             {
-                legState[i].ReadTo(bigMoth.legs[i / 2, i % 2]);
+                for (int i = 0; i < wingState.Length; i++)
+                {
+                    wingState[i].ReadTo(bigMoth.wingPairs[i]);
+                }
             }
         }
     }
@@ -85,24 +113,71 @@ namespace RainMeadow
     {
         [OnlineField(nullable = true)]
         BodyChunkRef? grabbedChunk;
-        [OnlineFieldHalf]
-        Vector2 footPos;
-        [OnlineFieldHalf(nullable = true)]
+
+        [OnlineFieldHalf (nullable = true)]
         Vector2? stepPos;
+        [OnlineField]
+        bool securedFoot;
+
         public MothLegState() { }
 
         public MothLegState(BigMoth.MothLeg mothLeg)
         {
-            this.grabbedChunk = BodyChunkRef.FromBodyChunk(mothLeg.grabbedChunk) ?? null;
-            this.footPos = mothLeg.footPos;
-            this.stepPos = mothLeg.stepPos;
+            grabbedChunk = BodyChunkRef.FromBodyChunk(mothLeg.grabbedChunk) ?? null;
+
+            stepPos = mothLeg.stepPos;
+            securedFoot = mothLeg.securedFoot;
         }
 
         public void ReadTo(BigMoth.MothLeg mothLeg)
         {
-            mothLeg.grabbedChunk = grabbedChunk?.ToBodyChunk() ?? null;
-            mothLeg.footPos = footPos;
+            mothLeg.grabbedChunk = grabbedChunk?.ToBodyChunk();
+
             mothLeg.stepPos = stepPos;
+            mothLeg.securedFoot = securedFoot;
+        }
+    }
+
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    public class MothWingState : OnlineState
+    {
+        [OnlineField]
+        byte mode;
+        [OnlineFieldHalf]
+        float flapness;
+
+
+        public MothWingState() { }
+
+        public MothWingState(BigMoth.MothWingPair mothWing)
+        {
+            mode = Mode(mothWing.mode);
+            flapness = mothWing.flapness;
+        }
+
+        public void ReadTo(BigMoth.MothWingPair mothWing)
+        {
+            mothWing.mode = Mode(mode);
+            mothWing.flapness = flapness;
+        }
+
+        private byte Mode(BigMoth.MothWingPair.Mode mode)
+        {
+            if (mode == BigMoth.MothWingPair.Mode.Glide) return 1;
+            if (mode == BigMoth.MothWingPair.Mode.ReadyFlap) return 2;
+            if (mode == BigMoth.MothWingPair.Mode.Flap) return 3;
+            return 0;
+        }
+
+        private BigMoth.MothWingPair.Mode Mode(byte mode)
+        {
+            switch(mode)
+            {
+                default: return null;
+                case 1: return BigMoth.MothWingPair.Mode.Glide;
+                case 2: return BigMoth.MothWingPair.Mode.ReadyFlap;
+                case 3: return BigMoth.MothWingPair.Mode.Flap;
+            }
         }
     }
 }

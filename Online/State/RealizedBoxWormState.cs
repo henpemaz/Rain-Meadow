@@ -49,13 +49,7 @@ namespace RainMeadow
         [OnlineField]
         bool retracted;
         [OnlineField]
-        bool larvaEdible;
-        [OnlineField]
         int timeToDislodge;
-        [OnlineField (nullable = true)]
-        BodyChunkRef? bodyChunk;
-        [OnlineField (nullable = true)]
-        OnlinePhysicalObject? larva;
 
         public LarvaHolderState() { }
         public LarvaHolderState(BoxWorm.LarvaHolder holder)
@@ -63,15 +57,6 @@ namespace RainMeadow
             forceRelease = holder.forceRelease;
             retracted = holder.retracted;
             timeToDislodge = holder.timeToDislodge;
-            bodyChunk = BodyChunkRef.FromBodyChunk(holder.bodyChunk) ?? null;
-            if (holder.abstractLarva != null)
-            {
-                larva = holder.abstractLarva.GetOnlineObject();
-                if (holder.abstractLarva.realizedObject != null)
-                {
-                    larvaEdible = ((BoxWorm.Larva)holder.abstractLarva.realizedObject).edible;
-                }
-            }
         }
 
         public void ReadTo(BoxWorm.LarvaHolder holder)
@@ -79,19 +64,6 @@ namespace RainMeadow
             holder.forceRelease = forceRelease;
             holder.retracted = retracted;
             holder.timeToDislodge.SetClamped(timeToDislodge);
-
-            if (bodyChunk != null && bodyChunk.ToBodyChunk() != null) 
-            {
-                holder.bodyChunk = bodyChunk.ToBodyChunk();
-            }
-            if (larva != null && larva.apo != null)
-            {
-                holder.abstractLarva = larva.apo as BoxWorm.Larva.AbstractLarva;
-                if (holder.abstractLarva.realizedObject != null)
-                {
-                    ((BoxWorm.Larva)holder.abstractLarva.realizedObject).edible = larvaEdible;
-                }
-            }
         }
     }
 }
