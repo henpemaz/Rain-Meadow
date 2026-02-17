@@ -120,15 +120,7 @@ namespace RainMeadow
                 string selectedMessage = self.Translate(aprilMessages[result]);
                 DialogNotify someCoolDialog = new DialogNotify(selectedMessage, self.manager, null);
                 someCoolDialog.okButton.menuLabel.text = okMessage[result];
-
-                // 1. Make the button the full width of the dialog
                 someCoolDialog.okButton.size = new Vector2(100f, 30f);
-
-                // 2. Set the button's X-position to 0 (This makes it perfectly flush/centered
-                // because it starts at the left edge and ends at the right edge)
-
-                // 3. CENTER THE DIALOG ON THE SCREEN
-                // This takes the total screen size, subtracts the dialog size, and divides by 2
                 someCoolDialog.pos = new Vector2(
                     (someCoolDialog.size.x) * 0.5f,
                     (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f
