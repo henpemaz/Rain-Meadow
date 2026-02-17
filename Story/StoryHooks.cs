@@ -952,7 +952,7 @@ namespace RainMeadow
                         // If we aren't in an online lobby, stick to the vanilla result
                         if (OnlineManager.lobby == null) return vanillaValue;
                         
-                        // oracle is null && we're the lobby owner on this one
+                        // realized is too fast, make it apo to link to the room session
                         return self.oracle.abstractPhysicalObject == null;
                         
                     });
