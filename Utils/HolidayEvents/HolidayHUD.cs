@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Menu;
 using MoreSlugcats;
 using RainMeadow;
@@ -125,22 +126,32 @@ namespace RainMeadow
         public HolidayStoreOverlay(ProcessManager manager, RainWorldGame game)
             : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
+            HolidayEvents.LoadElement("meadowcoin");
             this.game = game;
             this.pages.Add(new Page(this, null, "store", 0));
             this.selectedObject = null;
             this.storeItemList = new();
             this.pos = new Vector2(180, 553);
+            this.container.AddChild(
+                new FSprite("meadowcoin")
+                {
+                    x = pos.x + 30,
+                    y = pos.y + 20,
+                    scale = 0.10f,
+                }
+            );
             this.pages[0]
                 .subObjects.Add(
                     new Menu.MenuLabel(
                         this,
                         this.pages[0],
-                        this.Translate("STORE"),
-                        new Vector2(pos.x, 553),
+                        this.Translate($"{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"),
+                        new Vector2(pos.x + 15, pos.y),
                         new Vector2(110, 30),
                         true
                     )
                 );
+
             var storeItems = new Dictionary<string, int>
             {
                 { Rock, 1 },

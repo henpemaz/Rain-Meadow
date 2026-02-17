@@ -6,11 +6,9 @@ namespace RainMeadow
     public static class HolidayRPCs
     {
         [RPCMethod]
-        public static void MeadowCoinGiveth(bool holiday, int coinGift)
+        public static void MeadowCoinGiveth(int coinGift)
         {
-           HolidayEvents.GainedMeadowCoin(holiday, coinGift);
+            HolidayEvents.GainedMeadowCoin(coinGift);
         }
-
     }
-
 }

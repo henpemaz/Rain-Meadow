@@ -50,7 +50,7 @@ namespace RainMeadow
             MeadowProgression.ItemCollected(this);
             if (HolidayEvents.isHoliday())
             {
-                HolidayEvents.GainedMeadowCoin(true, 1);
+                HolidayEvents.GainedMeadowCoin(1);
             }
 
             if (collected) { return; }
