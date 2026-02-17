@@ -79,6 +79,7 @@ namespace RainMeadow
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
+            IL.Menu.ArenaOverlay.Update += IL_Arena_Overlay_Update;
 
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
@@ -172,6 +173,44 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
+        }
+
+        private void IL_Arena_Overlay_Update(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new ILCursor(il);
+
+                if (
+                    c.TryGotoNext(
+                        MoveType.Before,
+                        i => i.MatchLdarg(0),
+                        i => i.MatchLdfld<Menu.ArenaOverlay>("playersContinueButtons")
+                    )
+                )
+                {
+                    ILLabel continueAsNormal = c.DefineLabel();
+
+                    c.EmitDelegate<Func<bool>>(() =>
+                    {
+                        return OnlineManager.lobby != null
+                            && OnlineManager.lobby.isOwner
+                            && OnlineManager.lobby.clientSettings.TryGetValue(
+                                OnlineManager.lobby.owner,
+                                out var cs
+                            )
+                            && cs.isInteracting;
+                    });
+
+                    c.Emit(Mono.Cecil.Cil.OpCodes.Brfalse, continueAsNormal);
+                    c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
+                    c.MarkLabel(continueAsNormal);
+                }
+            }
+            catch (Exception e)
+            {
+                Error(e);
+            }
         }
 
         private void Player_ctor2(
