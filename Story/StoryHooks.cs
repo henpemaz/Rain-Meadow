@@ -1,13 +1,13 @@
 using HUD;
-using IL.Watcher;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using On.Watcher;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -133,6 +133,7 @@ namespace RainMeadow
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
             IL.Watcher.SpinningTop.SpawnBackupWarpPoint += SpinningTop_SpawnBackupWarpPoint;
+            IL.SLOracleSwarmer.Update += SLOracleSwarmer_Update;
             //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
@@ -926,6 +927,36 @@ namespace RainMeadow
                     i => i.MatchCallvirt("System.Collections.Generic.List`1<OracleSwarmer>", "Add")
                 );
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleSwarmer_Update(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                if (c.TryGotoNext(MoveType.After,
+                    i => i.MatchLdfld<SLOracleSwarmer>("oracle"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchCgtUn()
+                    ))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+
+                    c.EmitDelegate<Func<bool, SLOracleSwarmer, bool>>((vanillaValue, self) =>
+                    {
+                        // If we aren't in an online lobby, stick to the vanilla result
+                        if (OnlineManager.lobby == null) return vanillaValue;
+                        
+                        // realized is too fast, make it apo to link to the room session
+                        return self.oracle.abstractPhysicalObject == null;
+                        
+                    });
+                }
             }
             catch (Exception e)
             {

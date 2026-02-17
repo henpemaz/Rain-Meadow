@@ -5,6 +5,8 @@
 - Restored custom Team Names
 
 ## Story
+- Fixed Moon dying if the room transferred owners 
+
 ### Watcher
 - Fixed end-game ability not working
 - Fixed mind control happening post-warp
