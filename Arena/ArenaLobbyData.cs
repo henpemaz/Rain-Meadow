@@ -81,6 +81,18 @@ namespace RainMeadow
             public int amoebaDuration;
             [OnlineField(group = "aremaSetup")]
             public bool amoebaControl;
+            [OnlineField(group = "arenaSetup")]
+            public bool weaponCollisionFix;
+            [OnlineField(group = "arenaSetup")]
+            public bool enableBombs;
+            [OnlineField(group = "arenaSetup")]
+            public bool enableBees;
+            [OnlineField(group = "arenaSetup")]
+            public bool enableCorpseGrab;
+            [OnlineField(group = "arenaSetup")]
+            public bool piggyBack;
+            [OnlineField(group = "arenaSetup")]
+            public bool friendlyFire;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -103,21 +115,12 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
-            public int playerEnteredGame;
-            [OnlineField(group = "arenaGameplay")]
             public bool leaveForNextLevel;
             [OnlineField]
-            public bool weaponCollisionFix;
-            [OnlineField]
-            public bool enableBombs;
-            [OnlineField]
-            public bool enableBees;
-            [OnlineField]
-            public bool enableCorpseGrab;
+            public int playerEnteredGame;
             [OnlineField]
             public bool playersEqualToOnlineSitting;
-            [OnlineField]
-            public bool piggyBack;
+
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -172,6 +175,8 @@ namespace RainMeadow
                 voidMasterEnabled = arena.voidMasterEnabled;
                 amoebaDuration = arena.amoebaDuration;
                 amoebaControl = arena.amoebaControl;
+                friendlyFire = arena.friendlyFire;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -235,6 +240,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled= voidMasterEnabled;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration= amoebaDuration;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
+                (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
 
 
             }

@@ -3,6 +3,7 @@
 - Added `arena.session` to access the current ArenaGameSession
 - Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
+- Team Battle: Added friendly fire togggle
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
