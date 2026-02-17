@@ -47,6 +47,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Deer) return new RealizedDeerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DropBug) return new RealizedDropBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Scavenger) return new RealizedScavengerState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Vulture) return new RealizedVultureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
             // Do not put anything below Creature or you'll be stuck debugging for hours.
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
