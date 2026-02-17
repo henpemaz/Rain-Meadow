@@ -22,7 +22,7 @@ namespace RainMeadow
                 this.lifeTime = Mathf.Lerp(20f, 40f, Random.value);
                 this.life = 1f;
                 this.dir = Custom.VecToDeg(vel.normalized);
-                this.LoadElement("meadowcoin");
+                HolidayEvents.LoadElement("meadowcoin");
             }
 
             public override void Update(bool eu)
@@ -53,23 +53,6 @@ namespace RainMeadow
                     sLeaser.sprites[0].alpha = 0.5f;
                 }
                 this.AddToContainer(sLeaser, rCam, rCam.ReturnFContainer("Foreground"));
-            }
-
-            private void LoadElement(string elementName)
-            {
-                if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
-                {
-                    return;
-                }
-                string text = AssetManager.ResolveFilePath(
-                    "Illustrations"
-                        + System.IO.Path.DirectorySeparatorChar.ToString()
-                        + elementName
-                        + ".png"
-                );
-                Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                AssetManager.SafeWWWLoadTexture(ref texture2D, "file:///" + text, false, true);
-                Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
             }
 
             public override void DrawSprites(

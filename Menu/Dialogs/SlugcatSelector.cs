@@ -115,7 +115,7 @@ namespace RainMeadow.UI
             {
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 rolling = true;
-                HolidayEvents.SpentMeadowCoin(HolidayEvents.isAprilFools, 1);
+                HolidayEvents.SpentMeadowCoin(1);
             }
             if (message == "STOP")
             {

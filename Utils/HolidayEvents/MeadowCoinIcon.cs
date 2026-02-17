@@ -28,7 +28,7 @@ namespace RainMeadow
         {
             this.TokenColor = color;
             this.sprites = new FSprite[1];
-            this.LoadElement("meadowcoin");
+            HolidayEvents.LoadElement("meadowcoin");
             this.sprites[0] = new FSprite("meadowcoin", true);
             float goldIntensity = 0.2f;
             Color goldColor = this.GoldCol(goldIntensity);
@@ -66,23 +66,6 @@ namespace RainMeadow
                 new Color(1f, 1f, 1f),
                 0.4f + 0.4f * Mathf.Max(0, Mathf.Pow(g, 0.5f))
             );
-        }
-
-        private void LoadElement(string elementName)
-        {
-            if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
-            {
-                return;
-            }
-            string text = AssetManager.ResolveFilePath(
-                "Illustrations"
-                    + System.IO.Path.DirectorySeparatorChar.ToString()
-                    + elementName
-                    + ".png"
-            );
-            Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-            AssetManager.SafeWWWLoadTexture(ref texture2D, "file:///" + text, false, true);
-            Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
         }
 
         public void Draw(float timeStacker)

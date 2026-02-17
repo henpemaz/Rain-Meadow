@@ -1,19 +1,12 @@
-using BepInEx;
-using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using RainMeadow.UI.Components;
-using RWCustom;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Menu;
 using UnityEngine;
-using Menu.Remix.MixedUI.ValueTypes;
-using RainMeadow.UI;
+
 namespace RainMeadow
 {
-    public static class HolidayEvents {
-        
+    public static class HolidayEvents
+    {
         public static bool isHoliday()
         {
             if (isAprilFools || isAnniversary || isNewYears)
@@ -22,45 +15,63 @@ namespace RainMeadow
             }
             return false;
         }
+
         public static bool isAprilFools => DateTime.Now.Month != 4;
         public static bool isAnniversary => DateTime.Now.Month != 12;
 
         public static bool isNewYears => DateTime.Now.Month != 1;
 
-        public static void GainedMeadowCoin(bool holiday, int coinsEarned)
+        public static void LoadElement(string elementName)
         {
-            if (!holiday)
+            if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;
             }
+            string text = AssetManager.ResolveFilePath(
+                "Illustrations"
+                    + System.IO.Path.DirectorySeparatorChar.ToString()
+                    + elementName
+                    + ".png"
+            );
+            Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            AssetManager.SafeWWWLoadTexture(ref texture2D, "file:///" + text, false, true);
+            Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
+        }
+
+        public static void GainedMeadowCoin(int coinsEarned)
+        {
             RainMeadow.rainMeadowOptions.MeadowCoins.Value += coinsEarned;
             RainMeadow.rainMeadowOptions.config.Save();
         }
-        public static void SpentMeadowCoin(bool holiday, int coinsSpent)
+
+        public static void SpentMeadowCoin(int coinsSpent)
         {
-            if (!holiday)
-            {
-                return;
-            }
             RainMeadow.rainMeadowOptions.MeadowCoins.Value -= coinsSpent;
             RainMeadow.rainMeadowOptions.config.Save();
         }
+
         public class AprilFools
         {
-
             public static void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
             {
                 if (!isAprilFools)
                 {
                     return;
                 }
-                AbstractCreature bringTheSnails = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Snail), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID());
+                AbstractCreature bringTheSnails = new AbstractCreature(
+                    room.world,
+                    StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Snail),
+                    null,
+                    room.GetWorldCoordinate(shortCutVessel.pos),
+                    shortCutVessel.room.world.game.GetNewID()
+                );
                 room.abstractRoom.AddEntity(bringTheSnails);
                 bringTheSnails.Realize();
                 bringTheSnails.realizedCreature.PlaceInRoom(room);
 
                 room.world.GetResource().ApoEnteringWorld(bringTheSnails);
-                room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheSnails, bringTheSnails.pos);
+                room.abstractRoom.GetResource()
+                    ?.ApoEnteringRoom(bringTheSnails, bringTheSnails.pos);
             }
 
             public static void UpdateLoginMessage(Menu.Menu self)
@@ -71,20 +82,30 @@ namespace RainMeadow
                 }
                 Dictionary<int, string> aprilMessages = new Dictionary<int, string>
                 {
-                    { 0, RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0 ? "You need more Meadow Coins to play this game" : "Game Over! Try again?" },
+                    {
+                        0,
+                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
+                            ? "You need more Meadow Coins to play this game"
+                            : "Game Over! Try again?"
+                    },
                     { 1, "You again?" },
                     { 2, "I heard they were removing capes" },
                     { 3, "That crash was probably your fault" },
-                    { 4, "Rain Meadow definitely failed to start" }
+                    { 4, "Rain Meadow definitely failed to start" },
                 };
 
-                  Dictionary<int, string> okMessage = new Dictionary<int, string>
+                Dictionary<int, string> okMessage = new Dictionary<int, string>
                 {
-                    { 0, RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0 ? "I'm a sellout, please give me coins" : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}" },
+                    {
+                        0,
+                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
+                            ? "I'm a sellout, please give me coins"
+                            : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
+                    },
                     { 1, ";__;" },
                     { 2, "I don't deserve a cape" },
                     { 3, "I acknowledge that crash was my fault" },
-                    { 4, "Please work" }
+                    { 4, "Please work" },
                 };
                 int result = UnityEngine.Random.Range(0, aprilMessages.Count);
                 if (result == 0)
@@ -94,7 +115,7 @@ namespace RainMeadow
                 if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
                 {
                     result = 0;
-                    GainedMeadowCoin(isAprilFools, 10);
+                    GainedMeadowCoin(10);
                 }
                 string selectedMessage = self.Translate(aprilMessages[result]);
                 DialogNotify someCoolDialog = new DialogNotify(selectedMessage, self.manager, null);
@@ -103,29 +124,39 @@ namespace RainMeadow
                 // 1. Make the button the full width of the dialog
                 someCoolDialog.okButton.size = new Vector2(100f, 30f);
 
-                // 2. Set the button's X-position to 0 (This makes it perfectly flush/centered 
+                // 2. Set the button's X-position to 0 (This makes it perfectly flush/centered
                 // because it starts at the left edge and ends at the right edge)
 
                 // 3. CENTER THE DIALOG ON THE SCREEN
                 // This takes the total screen size, subtracts the dialog size, and divides by 2
-                someCoolDialog.pos = new Vector2((someCoolDialog.size.x) * 0.5f, (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f);
+                someCoolDialog.pos = new Vector2(
+                    (someCoolDialog.size.x) * 0.5f,
+                    (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f
+                );
 
                 self.manager.ShowDialog(someCoolDialog);
             }
 
-            public static void UpdateSlotsButton(ButtonScroller.ScrollerButton continueButton, ProcessManager manager)
+            public static void UpdateSlotsButton(
+                ButtonScroller.ScrollerButton continueButton,
+                ProcessManager manager
+            )
             {
                 if (!isAprilFools)
                 {
                     return;
                 }
-                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0) {
-                continueButton.buttonBehav.greyedOut = true;
+                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
+                {
+                    continueButton.buttonBehav.greyedOut = true;
                 }
-                continueButton.menuLabel.text = RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0 ? continueButton.menu.Translate($"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}") : continueButton.menu.Translate("YOU ARE POOR");
+                continueButton.menuLabel.text =
+                    RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0
+                        ? continueButton.menu.Translate(
+                            $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
+                        )
+                        : continueButton.menu.Translate("YOU ARE POOR");
             }
         }
-        
     }
-
 }
