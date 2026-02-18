@@ -72,6 +72,8 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+            On.DataPearl.InitiateSprites += HolidayEvents.DataPearl_InitiateSprites;
+
         }
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)

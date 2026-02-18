@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Menu;
 using UnityEngine;
 
@@ -36,6 +37,28 @@ namespace RainMeadow
             Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             AssetManager.SafeWWWLoadTexture(ref texture2D, "file:///" + text, false, true);
             Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
+        }
+
+        public static void DataPearl_InitiateSprites(
+            On.DataPearl.orig_InitiateSprites orig,
+            DataPearl self,
+            RoomCamera.SpriteLeaser sLeaser,
+            RoomCamera rCam
+        )
+        {
+            if (!isHoliday())
+            {
+                orig(self, sLeaser, rCam);
+                return;
+            }
+            HolidayEvents.LoadElement("meadowcoin");
+            sLeaser.sprites = new FSprite[3];
+            sLeaser.sprites[0] = new FSprite("meadowcoin");
+            sLeaser.sprites[0].scale = 0.05f;
+            sLeaser.sprites[1] = new FSprite("tinyStar");
+            sLeaser.sprites[2] = new FSprite("Futile_White");
+            sLeaser.sprites[2].shader = rCam.game.rainWorld.Shaders["FlatLightBehindTerrain"];
+            self.AddToContainer(sLeaser, rCam, null);
         }
 
         public static void GainedMeadowCoin(int coinsEarned)
