@@ -9,7 +9,7 @@ namespace RainMeadow
         [OnlineField]
         bool edible;
         public RealizedFireSpriteLarva() { }
-        public RealizedFireSpriteLarva(OnlinePhysicalObject onlineEntity)
+        public RealizedFireSpriteLarva(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var larva = (BoxWorm.Larva)onlineEntity.apo.realizedObject;
 

@@ -73,6 +73,13 @@ namespace RainMeadow
                 var boxWorm = self.bodyChunk.owner as BoxWorm;
                 if (!boxWorm.IsLocal())
                 {
+                    self.abstractLarva = new(self.room.world, null, self.room.GetWorldCoordinate(self.position), self.room.game.GetNewID());
+                    self.room.abstractRoom.AddEntity(self.abstractLarva);
+
+                    self.abstractLarva.RealizeInRoom();
+
+                    self.room.world.GetResource().ApoEnteringWorld(self.abstractLarva);
+                    self.room.abstractRoom.GetResource()?.ApoEnteringRoom(self.abstractLarva, self.abstractLarva.pos);
                     return false; // Don't spawn larva for remotes
                 }
                 return true;
