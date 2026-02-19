@@ -1,29 +1,57 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using Menu;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public static class HolidayEvents
+    public static partial class SpecialEvents
     {
-        public static bool isHoliday()
+        public class Event
         {
-            if (isAprilFools || isAnniversary || isNewYears)
+            public string Name;
+            public int StartMonth;
+            public int StartDay;
+            public int EndDay;
+
+            public bool IsActive =>
+                DateTime.UtcNow.Month == StartMonth
+                && DateTime.UtcNow.Day >= StartDay
+                && DateTime.UtcNow.Day <= EndDay;
+
+            public virtual void UpdateLoginMessage(Menu.Menu self)
             {
-                return true;
+                int daysLeft = EndDay - DateTime.UtcNow.Day;
+                string message = self.Translate(
+                    $"Special event: {Name}. Days remaining: {daysLeft}"
+                );
+
+                self.manager.ShowDialog(CreateDialogNotify(self, message));
             }
-            return false;
+
+            public DialogNotify CreateDialogNotify(Menu.Menu self, string message)
+            {
+                DialogNotify dialog = new DialogNotify(message, self.manager, null);
+                dialog.okButton.size = new Vector2(100f, 30f);
+                dialog.pos = new Vector2(dialog.size.x * 0.5f, 0);
+                return dialog;
+            }
         }
 
-        public static bool isAprilFools => DateTime.Now.Month != 4;
-        public static bool isAnniversary => DateTime.Now.Month != 12;
+        private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
+        public static bool IsSpecialEvent => AllEvents.Any(e => e.IsActive);
 
-        public static bool isNewYears => DateTime.Now.Month != 1;
+        public static Event? GetActiveEvent()
+        {
+            return AllEvents.FirstOrDefault(e => e.IsActive);
+        }
 
         public static void LoadElement(string elementName)
         {
+            if (!SpecialEvents.IsSpecialEvent)
+            {
+                return;
+            }
             if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;
@@ -39,6 +67,9 @@ namespace RainMeadow
             Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
         }
 
+        /// <summary>
+        /// Override DataPearls with Meadow Coins!
+        /// </summary>
         public static void DataPearl_InitiateSprites(
             On.DataPearl.orig_InitiateSprites orig,
             DataPearl self,
@@ -46,12 +77,12 @@ namespace RainMeadow
             RoomCamera rCam
         )
         {
-            if (!isHoliday())
+            if (!IsSpecialEvent)
             {
                 orig(self, sLeaser, rCam);
                 return;
             }
-            HolidayEvents.LoadElement("meadowcoin");
+            SpecialEvents.LoadElement("meadowcoin");
             sLeaser.sprites = new FSprite[3];
             sLeaser.sprites[0] = new FSprite("meadowcoin");
             sLeaser.sprites[0].scale = 0.05f;
@@ -71,107 +102,6 @@ namespace RainMeadow
         {
             RainMeadow.rainMeadowOptions.MeadowCoins.Value -= coinsSpent;
             RainMeadow.rainMeadowOptions.config.Save();
-        }
-
-        public class AprilFools
-        {
-            public static void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
-            {
-                if (!isAprilFools)
-                {
-                    return;
-                }
-                AbstractCreature bringTheSnails = new AbstractCreature(
-                    room.world,
-                    StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Snail),
-                    null,
-                    room.GetWorldCoordinate(shortCutVessel.pos),
-                    shortCutVessel.room.world.game.GetNewID()
-                );
-                room.abstractRoom.AddEntity(bringTheSnails);
-                bringTheSnails.Realize();
-                bringTheSnails.realizedCreature.PlaceInRoom(room);
-
-                room.world.GetResource().ApoEnteringWorld(bringTheSnails);
-                room.abstractRoom.GetResource()
-                    ?.ApoEnteringRoom(bringTheSnails, bringTheSnails.pos);
-            }
-
-            public static void UpdateLoginMessage(Menu.Menu self)
-            {
-                if (!isAprilFools)
-                {
-                    return;
-                }
-                Dictionary<int, string> aprilMessages = new Dictionary<int, string>
-                {
-                    {
-                        0,
-                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
-                            ? "You need more Meadow Coins to play this game"
-                            : "Game Over! Try again?"
-                    },
-                    { 1, "You again?" },
-                    { 2, "I heard they were removing capes" },
-                    { 3, "That crash was probably your fault" },
-                    { 4, "Rain Meadow definitely failed to start" },
-                };
-
-                Dictionary<int, string> okMessage = new Dictionary<int, string>
-                {
-                    {
-                        0,
-                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
-                            ? "I'm a sellout, please give me coins"
-                            : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
-                    },
-                    { 1, ";__;" },
-                    { 2, "I don't deserve a cape" },
-                    { 3, "I acknowledge that crash was my fault" },
-                    { 4, "Please work" },
-                };
-                int result = UnityEngine.Random.Range(0, aprilMessages.Count);
-                if (result == 0)
-                {
-                    RainMeadow.rainMeadowOptions.MeadowCoins.Value--;
-                }
-                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
-                {
-                    result = 0;
-                    GainedMeadowCoin(10);
-                }
-                string selectedMessage = self.Translate(aprilMessages[result]);
-                DialogNotify someCoolDialog = new DialogNotify(selectedMessage, self.manager, null);
-                someCoolDialog.okButton.menuLabel.text = okMessage[result];
-                someCoolDialog.okButton.size = new Vector2(100f, 30f);
-                someCoolDialog.pos = new Vector2(
-                    (someCoolDialog.size.x) * 0.5f,
-                    (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f
-                );
-
-                self.manager.ShowDialog(someCoolDialog);
-            }
-
-            public static void UpdateSlotsButton(
-                ButtonScroller.ScrollerButton continueButton,
-                ProcessManager manager
-            )
-            {
-                if (!isAprilFools)
-                {
-                    return;
-                }
-                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
-                {
-                    continueButton.buttonBehav.greyedOut = true;
-                }
-                continueButton.menuLabel.text =
-                    RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0
-                        ? continueButton.menu.Translate(
-                            $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
-                        )
-                        : continueButton.menu.Translate("YOU ARE POOR");
-            }
         }
     }
 }

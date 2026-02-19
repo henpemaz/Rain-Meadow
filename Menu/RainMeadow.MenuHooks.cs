@@ -573,7 +573,11 @@ namespace RainMeadow
                 return;
             }
 
-            HolidayEvents.AprilFools.UpdateLoginMessage(self);
+            
+            if (SpecialEvents.IsSpecialEvent)
+            {
+                SpecialEvents.GetActiveEvent().UpdateLoginMessage(self);
+            }
             
 
             // we might get here from quitting out of game

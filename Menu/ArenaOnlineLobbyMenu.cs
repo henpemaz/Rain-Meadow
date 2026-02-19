@@ -251,9 +251,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
                     if (selector.IsMatching)
                     {
-                        if (HolidayEvents.isHoliday())
+                        if (SpecialEvents.IsSpecialEvent)
                         {
-                            HolidayEvents.GainedMeadowCoin(1000);
+                            SpecialEvents.GainedMeadowCoin(1000);
                         }
                     }
                 }

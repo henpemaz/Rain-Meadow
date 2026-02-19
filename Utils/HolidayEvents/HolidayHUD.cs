@@ -99,7 +99,7 @@ namespace RainMeadow
                     {
                         (game.cameras[0].room.abstractRoom).AddEntity(desiredObject);
                         desiredObject.RealizeInRoom();
-                        HolidayEvents.SpentMeadowCoin(itemEntry.Value);
+                        SpecialEvents.SpentMeadowCoin(itemEntry.Value);
                     }
                     didRespawn = false;
                 };
@@ -130,7 +130,7 @@ namespace RainMeadow
         public HolidayStoreOverlay(ProcessManager manager, RainWorldGame game)
             : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
-            HolidayEvents.LoadElement("meadowcoin");
+            SpecialEvents.LoadElement("meadowcoin");
             this.game = game;
             this.pages.Add(new Page(this, null, "store", 0));
             this.selectedObject = null;

@@ -28,12 +28,11 @@ namespace RainMeadow
         {
             this.TokenColor = color;
             this.sprites = new FSprite[1];
-            HolidayEvents.LoadElement("meadowcoin");
+            SpecialEvents.LoadElement("meadowcoin");
             this.sprites[0] = new FSprite("meadowcoin", true);
             float goldIntensity = 0.2f;
-            Color goldColor = this.GoldCol(goldIntensity);
 
-            this.sprites[0].color = Color.Lerp(this.TokenColor, goldColor, 0.6f);
+            this.sprites[0].color = Color.Lerp(this.TokenColor, color, 0.6f);
             this.sprites[0].alpha = alpha;
 
             this.pos = pos;
@@ -57,15 +56,6 @@ namespace RainMeadow
             this.lastPos = pos;
             this.lastScale = scale;
             this.lastAlpha = alpha;
-        }
-
-        public Color GoldCol(float g)
-        {
-            return Color.Lerp(
-                this.TokenColor,
-                new Color(1f, 1f, 1f),
-                0.4f + 0.4f * Mathf.Max(0, Mathf.Pow(g, 0.5f))
-            );
         }
 
         public void Draw(float timeStacker)

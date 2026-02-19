@@ -8,7 +8,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void MeadowCoinGiveth(int coinGift)
         {
-            HolidayEvents.GainedMeadowCoin(coinGift);
+            SpecialEvents.GainedMeadowCoin(coinGift);
         }
     }
 }

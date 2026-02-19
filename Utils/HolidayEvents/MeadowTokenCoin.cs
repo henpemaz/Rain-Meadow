@@ -22,7 +22,7 @@ namespace RainMeadow
                 this.lifeTime = Mathf.Lerp(20f, 40f, Random.value);
                 this.life = 1f;
                 this.dir = Custom.VecToDeg(vel.normalized);
-                HolidayEvents.LoadElement("meadowcoin");
+                SpecialEvents.LoadElement("meadowcoin");
             }
 
             public override void Update(bool eu)
@@ -43,8 +43,6 @@ namespace RainMeadow
             {
                 sLeaser.sprites = new FSprite[1];
                 sLeaser.sprites[0] = new FSprite("meadowcoin", true);
-                sLeaser.sprites[0].color = Color.yellow;
-
                 sLeaser.sprites[0].anchorX = 0.5f;
                 sLeaser.sprites[0].anchorY = 0.5f;
 
