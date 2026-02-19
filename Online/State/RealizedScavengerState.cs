@@ -112,6 +112,9 @@ namespace RainMeadow
 
         public class ThrowChargeAnimationState : AnimationState
         {
+            [OnlineField(group = "throwcharge")]
+            public bool discontinue;
+
             [OnlineField(group = "throwcharge", nullable = true)]
             public BodyChunkRef? aimTargetChunk;
             [OnlineFieldHalf(group = "throwcharge")]
@@ -120,6 +123,7 @@ namespace RainMeadow
             public ThrowChargeAnimationState() { }
             public ThrowChargeAnimationState(Scavenger.ThrowChargeAnimation animation) : base(animation)
             {
+                discontinue = !animation.Active;
                 if (animation.target is BodyChunk && animation.target.owner.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
                 {
                     aimTargetChunk = new BodyChunkRef(opo, animation.target.index);
@@ -136,7 +140,21 @@ namespace RainMeadow
                 return new Scavenger.ThrowChargeAnimation(scavenger, aimTargetChunk?.ToBodyChunk()); // Fill in as needed
             }
 
-            public override void ReadTo(Scavenger scavenger, Scavenger.ScavengerAnimation animation) => base.ReadTo(scavenger, animation);
+            public override void ReadTo(Scavenger scavenger, Scavenger.ScavengerAnimation animation)
+            {
+                if (animation is Scavenger.ThrowChargeAnimation throw_charge)
+                {
+                    if (discontinue)
+                    {
+                        throw_charge.discontinue = Mathf.Max(throw_charge.discontinue, 20);
+                    }
+                    else
+                    {
+                        throw_charge.discontinue = 0;
+                    }
+
+                }
+            }
         }
 
         public abstract class AttentiveAnimationState : AnimationState
