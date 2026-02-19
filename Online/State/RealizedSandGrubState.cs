@@ -9,39 +9,36 @@ namespace RainMeadow
     {
         // TODO reduce this to only whats needed.
         [OnlineField]
-        short burrowIndex;
+        byte bites;
+        [OnlineField(nullable = true)]
+        SandGrubBurrowState? burrow;
+
         [OnlineFieldHalf]
-        public float tailLength;
+        Vector2 head;
         [OnlineFieldHalf]
-        public float lastTetherLength;
-        [OnlineFieldHalf]
-        public float tetherLength;
-        [OnlineFieldHalf]
-        public float lastMouthOpen;
-        [OnlineField]
-        int bites;
-        [OnlineField]
-        public int buryCounter;
-        [OnlineField]
-        public int tentacleHuntCounter;
+        float tetherLength;
+
+        [OnlineField(group = "counters")]
+        int returnToBurrowCounter;
+
         public RealizedSandGrubState() { }
         public RealizedSandGrubState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             SandGrub grub = (SandGrub)onlineEntity.realizedCreature;
 
-            var burrow = grub.burrow;
-            burrowIndex = -1;
-            if (burrow != null)
+            bites = (byte)grub.BitesLeft;
+            if (grub.burrow != null)
             {
-                burrowIndex = GetBurrowIndex(grub.burrow);
+                burrow = new(grub.burrow);
             }
 
-            tailLength = grub.tailLength;
+            returnToBurrowCounter = grub.returnToBurrowCounter;
             tetherLength = grub.tetherLength;
-            lastTetherLength = grub.lastTetherLength;
-            lastMouthOpen = grub.lastMouthOpen;
-            bites = grub.BitesLeft;
-            buryCounter = grub.buryCounter;
+
+            if (grub.Big)
+            {
+                head = grub.tentacle.Tip.pos;
+            }
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -49,51 +46,64 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).apo.realizedObject is not SandGrub grub) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
-            if (burrowIndex < 0)
+            grub.BitesLeft = bites;
+            if (burrow == null)
             {
-                RainMeadow.Error($"target {onlineEntity} is without a burrow. {burrowIndex}");
+                if (grub.burrow != null)
+                {
+                    grub.SwitchBurrow(null);
+                }
             }
             else
             {
-                var newBurrow = GetBurrow(grub, burrowIndex);
-                if (newBurrow != null)
+                burrow?.ReadTo(grub.burrow);
+            }
+
+            grub.returnToBurrowCounter = returnToBurrowCounter;
+            grub.tetherLength = tetherLength;
+
+            if (grub.Big)
+            {
+                grub.tentacle.Tip.pos = head;
+            }
+        }
+    }
+
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    public class SandGrubBurrowState : OnlineState
+    {
+        [OnlineField(nullable = true)]
+        OnlinePhysicalObject? grub;
+        [OnlineFieldHalf]
+        Vector2 pos;
+        [OnlineFieldHalf]
+        Vector2 dir;
+        public SandGrubBurrowState() { }
+
+        public SandGrubBurrowState(SandGrubBurrow burrow)
+        {
+            grub = burrow.grub?.abstractCreature?.GetOnlineObject();
+            pos = burrow.pos;
+            dir = burrow.dir;
+        }
+
+        public void ReadTo(SandGrubBurrow burrow)
+        {
+            burrow.pos = pos;
+            burrow.dir = dir;
+
+            var po = grub?.apo?.realizedObject;
+            if (po != burrow.grub)
+            {
+                if (po is null)
                 {
-                    grub.burrow = newBurrow;
+                    burrow.grub = null;
                 }
                 else
                 {
-                    RainMeadow.Error($"target {onlineEntity} burrow index was out of range or grub {grub} null: expected {burrowIndex} but got {grub.room.updateList.OfType<SandGrubBurrow>().Count()}");
+                    (po as SandGrub).SwitchBurrow(burrow);
                 }
             }
-
-            grub.tailLength = tailLength;
-            grub.tetherLength = tetherLength;
-            grub.lastTetherLength = lastTetherLength;
-            grub.lastMouthOpen = lastMouthOpen;
-            grub.BitesLeft = bites;
-            grub.tentacleHuntCounter = tentacleHuntCounter;
-            grub.buryCounter = buryCounter;
-        }
-
-        public static short GetBurrowIndex(SandGrubBurrow burrow)
-        {
-            var burrows = burrow.room.updateList.OfType<SandGrubBurrow>().ToList();
-            for (int i = 0; i < burrows.Count; i++)
-            {
-                if (burrows[i] == burrow) return (short)i;
-            }
-            return -1;
-        }
-
-        public static SandGrubBurrow GetBurrow(SandGrub grub, int index)
-        {
-            if (grub == null || grub.room == null) return null;
-            var burrows = grub.room.updateList.OfType<SandGrubBurrow>().ToList();
-            if (index >= 0 && index < burrows.Count)
-            {
-                return burrows[index];
-            }
-            return null;
         }
     }
 }
