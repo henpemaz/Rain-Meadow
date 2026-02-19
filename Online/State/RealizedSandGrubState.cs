@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Watcher;
@@ -7,7 +8,6 @@ namespace RainMeadow
 {
     public class RealizedSandGrubState : RealizedCreatureState
     {
-        // TODO reduce this to only whats needed.
         [OnlineField]
         byte bites;
         [OnlineField(nullable = true)]
@@ -106,4 +106,29 @@ namespace RainMeadow
             }
         }
     }
+
+    //[DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    //public class SandGrubNetworkState : OnlineState
+    //{
+    //    [OnlineField]
+    //    Generics.DynamicOrderedStates<SandGrubBurrowState> burrows;
+    //    public SandGrubNetworkState() { }
+
+    //    public SandGrubNetworkState(SandGrubNetwork network)
+    //    {
+    //        List<SandGrubBurrowState> list = new();
+    //        for(int i = 0; i < network.burrows.Count; i++)
+    //        {
+    //            list.Add(new(network.burrows[i], i));
+    //        }
+    //    }
+
+    //    public void ReadTo(SandGrubNetwork network)
+    //    {
+    //        for(int i = 0; i < burrows.list.Count; i++)
+    //        {
+    //            burrows.list[i].ReadTo(network.burrows[i], i);
+    //        }
+    //    }
+    //}
 }

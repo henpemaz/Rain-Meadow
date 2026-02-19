@@ -42,11 +42,19 @@ namespace RainMeadow
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
+            On.Watcher.SandGrubAI.PickNewBurrow += SandGrubAI_PickNewBurrow;
+
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private Watcher.SandGrubBurrow SandGrubAI_PickNewBurrow(On.Watcher.SandGrubAI.orig_PickNewBurrow orig, Watcher.SandGrubAI self)
+        {
+            if (!self.Grub.IsLocal()) return null; // Don't try switching burrows if we are a remote, only my owner is allowed to do that.
+            return orig(self);
         }
 
         private void Hazer_HasSprayed(ILContext il)
