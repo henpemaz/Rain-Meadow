@@ -6,14 +6,21 @@
 - Disabled Watcher glow from ripple level in online arena sessions
 
 ## Story
+- Fixed Moon dying if the room transferred owners 
 ### Watcher
 - Fixed end-game ability not working
+- Fixed end-game ability not working
+- Fixed mind control happening post-warp
 
 ## Meadow
 - Disabled Outer Expanse, Spearmaster and Artificer endings in Meadow mode
+- Blocked next level call until chatbar is closed
+- Blocked exiting to lobby if host already initiated next level loading to prevent crash
+- Team Battle: Added friendly fire togggle
 
 ## General
 - Fixed Dev Tools trying to teleport remote players when holding V
+- 
 ### Engine
 - Synced Waterflux
 - Synced Gourmand exhaustion and player lung exhaustion

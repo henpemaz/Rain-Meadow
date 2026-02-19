@@ -1,10 +1,10 @@
-using Menu;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
-using UnityEngine;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Menu;
+using UnityEngine;
+using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 
 namespace RainMeadow
 {
@@ -16,7 +16,13 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> otherSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name?>();
-        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowRandom" };
+
+        public static readonly List<string> nonArenaSlugs = new List<string>
+        {
+            "MeadowOnline",
+            "MeadowRandom",
+            RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value,
+        };
 
         public static void RecreateSlugcatCache()
         {
@@ -58,6 +64,7 @@ namespace RainMeadow
 
             allSlugcats.AddRange(baseGameSlugcats);
             selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
+            selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator);
 
             // all slugcats
             for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
@@ -71,7 +78,14 @@ namespace RainMeadow
                 {
                     continue;
                 }
-                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
+                if (
+                    ExtEnumBase.TryParse(
+                        typeof(SlugcatStats.Name),
+                        slugcatName,
+                        false,
+                        out var enumBase
+                    )
+                )
                 {
                     RainMeadow.Debug("Filtered list:" + slugcatName);
                     SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
@@ -105,7 +119,6 @@ namespace RainMeadow
             selectableSlugcats.AddRange(otherSlugcats);
         }
 
-
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
         public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
         {
@@ -132,7 +145,11 @@ namespace RainMeadow
 
             return OnlineManager.mePlayer;
         }
-        public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
+
+        public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
+            ArenaOnlineGameMode arena,
+            int playerNumber
+        )
         {
             try
             {
@@ -140,28 +157,26 @@ namespace RainMeadow
                 {
                     if (playerNumber == i)
                     {
-                        return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        return ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            arena.arenaSittingOnlineOrder[i]
+                        );
                     }
                 }
             }
             catch
             {
                 RainMeadow.Error("Error finding player");
-
             }
             return null;
-
         }
+
         public static int FindOnlinePlayerNumber(ArenaOnlineGameMode arena, OnlinePlayer player)
         {
-
             return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
-
-
         }
+
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
-
             manager.arenaSitting.players = [];
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
@@ -170,35 +185,45 @@ namespace RainMeadow
                 {
                     playerNumber = i,
                     playerClass = GetArenaClientSettings(currentPlayer)!.playingAs, // Set the playerClass to the OnlinePlayer. This is for the PlayerResult profile pics
-                    hasEnteredGameArea = true
+                    hasEnteredGameArea = true,
                 };
                 manager.arenaSitting.players.Add(newPlayer);
-
             }
         }
+
         public static void SetHandler(SimplerButton[] classButtons, int localIndex)
         {
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
+
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
             {
-                if (typeof(T) == typeof(bool) && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
+                if (
+                    typeof(T) == typeof(bool)
+                    && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID)
+                )
                 {
                     return (T)(object)arena.onlineArenaSettingsInterfaceeBool[ID];
                 }
-                if (typeof(T) == typeof(int) && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
+                if (
+                    typeof(T) == typeof(int)
+                    && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID)
+                )
                 {
                     return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
                 }
             }
             return defaultIfNonExistant;
         }
+
         public static void SaveOptionToArena(string ID, object obj)
         {
-            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
-            if (!OnlineManager.lobby.isOwner) return;
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+                return;
+            if (!OnlineManager.lobby.isOwner)
+                return;
             if (obj is bool c)
             {
                 arena.onlineArenaSettingsInterfaceeBool[ID] = c;
@@ -208,49 +233,80 @@ namespace RainMeadow
                 arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
             }
         }
-        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) => GetDataSettings<ArenaClientSettings>(player);
-        public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
+
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) =>
+            GetDataSettings<ArenaClientSettings>(player);
+
+        public static T? GetDataSettings<T>(OnlinePlayer? player)
+            where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)
             {
                 RainMeadow.Error("Lobby is null!");
                 return null;
             }
-            if (player == null) return null;
-            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<T>() : null;
+            if (player == null)
+                return null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(
+                player,
+                out ClientSettings settings
+            )
+                ? settings.GetData<T>()
+                : null;
         }
+
         public static void ParseArenaSetupSaveString(string text, Action<string[]> action)
         {
-            if (text == null) return;
+            if (text == null)
+                return;
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
         }
 
-        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B, Creature creature, Creature friend)
+        public static bool CheckSameTeam(
+            ArenaOnlineGameMode arena,
+            OnlinePlayer? A,
+            OnlinePlayer? B,
+            Creature creature,
+            Creature friend
+        )
         {
             if (A is not null && B is not null)
             {
-                if (OnlineManager.lobby.clientSettings[A].TryGetData<ArenaTeamClientSettings>(out var tb1))
+                if (
+                    OnlineManager
+                        .lobby.clientSettings[A]
+                        .TryGetData<ArenaTeamClientSettings>(out var tb1)
+                )
                 {
-                    if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    if (
+                        OnlineManager
+                            .lobby.clientSettings[B]
+                            .TryGetData<ArenaTeamClientSettings>(out var tb2)
+                    )
                     {
-                        if (tb1.team == tb2.team)
+                        if (tb1.team == tb2.team && !arena.friendlyFire)
                         {
                             RainMeadow.Debug("Same team! No hits");
                         }
-                        return tb1.team == tb2.team && creature.State.alive && friend.State.alive;
+                        return tb1.team == tb2.team
+                            && !arena.friendlyFire
+                            && creature.State.alive
+                            && friend.State.alive;
                     }
                 }
             }
-
-            RainMeadow.Debug("Different teams or Player is null");
             return false;
         }
 
-        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) => players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
+        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) =>
+            players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
 
-        public static List<IconSymbol.IconSymbolData> GetOnlinePlayerTrophies(ArenaOnlineGameMode arena, int playerNumber)
+        public static List<IconSymbol.IconSymbolData> GetOnlinePlayerTrophies(
+            ArenaOnlineGameMode arena,
+            int playerNumber
+        )
         {
             List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
@@ -267,17 +323,25 @@ namespace RainMeadow
             }
             for (int i = 0; i < arena.playerNumberWithTrophies[onlinePlayer.inLobbyId].Count; i++)
             {
-                IconSymbol.IconSymbolData iconSymbolData = IconSymbol.IconSymbolData.IconSymbolDataFromString(arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]);
+                IconSymbol.IconSymbolData iconSymbolData =
+                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
+                        arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]
+                    );
                 trophies.Add(iconSymbolData);
             }
             return trophies;
-
         }
 
-        public static List<string> GetPlayerTrophies(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer sittingPlayer)
+        public static List<string> GetPlayerTrophies(
+            ArenaOnlineGameMode arena,
+            ArenaSitting.ArenaPlayer sittingPlayer
+        )
         {
             List<string> trophies = new List<string>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
+                arena,
+                sittingPlayer.playerNumber
+            );
             if (onlinePlayer == null)
             {
                 RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
@@ -290,15 +354,12 @@ namespace RainMeadow
                 return trophies;
             }
 
-                for (int i = 0; i < sittingPlayer.allKills.Count; i++)
-                {
-                    trophies.Add(sittingPlayer.allKills[i].ToString());
-                }
-            
+            for (int i = 0; i < sittingPlayer.allKills.Count; i++)
+            {
+                trophies.Add(sittingPlayer.allKills[i].ToString());
+            }
+
             return trophies;
-
         }
-
     }
-
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 namespace RainMeadow
 {
     public partial class WorldSession : OnlineResource
@@ -10,6 +9,55 @@ namespace RainMeadow
         public World world;
         public WorldLoader worldLoader;
         public static ConditionalWeakTable<World, WorldSession> map = new();
+
+        
+        
+        /// <summary>
+        /// A centralized coroutine helper that waits for a WorldSession's participants to clear before proceeding.
+        /// It enforces a 5-second safety timeout to prevent softlocks (deadlocks) if entities fail to remove.
+        /// </summary>
+        /// <param name="session">The WorldSession currently transitioning.</param>
+        /// <param name="extraWaitCondition">Optional: An additional condition that must remain true to keep waiting (e.g., !newWorldSession.isAvailable). Pass null if not needed.</param>
+        /// <param name="onComplete">The action/method to execute once the wait finishes or times out (e.g., orig(self, ...)).</param>
+        public static System.Collections.IEnumerator WaitAndExecuteSession(
+            WorldSession session, 
+            System.Func<bool> extraWaitCondition, 
+            System.Action onComplete)
+        {
+            float startTime = UnityEngine.Time.time;
+            float timeoutSeconds = 5f;
+            session.transitionInProgress = true;
+
+            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
+                while (session.participants.Count > 0 && 
+                    (extraWaitCondition == null || extraWaitCondition()) && 
+                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
+                    yield return null;
+                }
+            } else
+            {
+                 while ((extraWaitCondition == null || extraWaitCondition()) && 
+                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
+                    yield return null;
+                }
+            }
+
+            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
+            {
+                RainMeadow.Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
+            }
+            else
+            {
+                RainMeadow.Debug("Entities removed. Proceeding...");
+            }
+
+            session.transitionInProgress = false;
+            onComplete?.Invoke();
+        }
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
         public OverworldSession overworldSession => (OverworldSession)super;
