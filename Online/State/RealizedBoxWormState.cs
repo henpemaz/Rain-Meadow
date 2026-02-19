@@ -7,8 +7,8 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedBoxWormState : RealizedCreatureState
     {
-        [OnlineField]
-        Generics.DynamicOrderedStates<LarvaHolderState> larvaHolders;
+        //[OnlineField]
+        //Generics.DynamicOrderedStates<LarvaHolderState> larvaHolders;
         [OnlineField (group = "counters")]
         int attackTimer;
         [OnlineField(group = "counters")]
@@ -22,7 +22,7 @@ namespace RainMeadow
         {
             var boxWorm = onlineCreature.realizedCreature as BoxWorm;
 
-            larvaHolders = new(boxWorm.larvaHolders.Select(x => new LarvaHolderState(x)).ToList());
+            //larvaHolders = new(boxWorm.larvaHolders.Select(x => new LarvaHolderState(x)).ToList());
 
             attackTimer = boxWorm.attackTimer;
             releaseSteamTimer = boxWorm.releaseSteamTimer;
@@ -34,10 +34,10 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlinePhysicalObject).apo.realizedObject is not BoxWorm boxWorm) return;
 
-            for (int i = 0; i < larvaHolders.list.Count; i++)
-            {
-                larvaHolders.list[i].ReadTo(boxWorm.larvaHolders[i]);
-            }
+            //for (int i = 0; i < larvaHolders.list.Count; i++)
+            //{
+            //    larvaHolders.list[i].ReadTo(boxWorm.larvaHolders[i]);
+            //}
 
             boxWorm.attackTimer.SetClamped(attackTimer);
             boxWorm.releaseSteamTimer.SetClamped(releaseSteamTimer);
@@ -45,46 +45,46 @@ namespace RainMeadow
         }
     }
 
-    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-    public class LarvaHolderState : OnlineState
-    {
-        [OnlineField(nullable = true)]
-        OnlinePhysicalObject? onlineLarva;
-        [OnlineField]
-        bool forceRelease;
-        [OnlineField]
-        bool retracted;
-        [OnlineField]
-        int timeToDislodge;
+    //[DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    //public class LarvaHolderState : OnlineState
+    //{
+    //    [OnlineField(nullable = true)]
+    //    OnlinePhysicalObject? onlineLarva;
+    //    [OnlineField]
+    //    bool forceRelease;
+    //    [OnlineField]
+    //    bool retracted;
+    //    [OnlineField]
+    //    int timeToDislodge;
 
-        public LarvaHolderState() { }
-        public LarvaHolderState(BoxWorm.LarvaHolder holder)
-        {
-            forceRelease = holder.forceRelease;
-            retracted = holder.retracted;
-            timeToDislodge = holder.timeToDislodge;
+    //    public LarvaHolderState() { }
+    //    public LarvaHolderState(BoxWorm.LarvaHolder holder)
+    //    {
+    //        forceRelease = holder.forceRelease;
+    //        retracted = holder.retracted;
+    //        timeToDislodge = holder.timeToDislodge;
 
-            onlineLarva = holder.abstractLarva?.GetOnlineObject();
-        }
+    //        onlineLarva = holder.abstractLarva?.GetOnlineObject();
+    //    }
 
-        public void ReadTo(BoxWorm.LarvaHolder holder)
-        {
-            holder.forceRelease = forceRelease;
-            holder.retracted = retracted;
-            holder.timeToDislodge.SetClamped(timeToDislodge);
+    //    public void ReadTo(BoxWorm.LarvaHolder holder)
+    //    {
+    //        holder.forceRelease = forceRelease;
+    //        holder.retracted = retracted;
+    //        holder.timeToDislodge.SetClamped(timeToDislodge);
 
-            var larva = onlineLarva?.apo?.realizedObject;
-            if (larva?.abstractPhysicalObject != holder.abstractLarva)
-            {
-                if (larva?.abstractPhysicalObject is BoxWorm.Larva.AbstractLarva abstractLarva)
-                {
-                    holder.abstractLarva = abstractLarva;
-                }
-                else
-                {
-                    larva = null;
-                }
-            }
-        }
-    }
+    //        var larva = onlineLarva?.apo?.realizedObject;
+    //        if (larva?.abstractPhysicalObject != holder.abstractLarva)
+    //        {
+    //            if (larva?.abstractPhysicalObject is BoxWorm.Larva.AbstractLarva abstractLarva)
+    //            {
+    //                holder.abstractLarva = abstractLarva;
+    //            }
+    //            else
+    //            {
+    //                larva = null;
+    //            }
+    //        }
+    //    }
+    //}
 }
