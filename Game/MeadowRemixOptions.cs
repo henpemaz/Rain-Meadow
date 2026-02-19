@@ -74,8 +74,6 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
     public readonly Configurable<bool> DevNightskySkin;
-    public readonly Configurable<bool> SunshineSkin;
-
     public readonly Configurable<bool> EnableAchievementsOnline;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
@@ -191,9 +189,6 @@ public class RainMeadowOptions : OptionInterface
         StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
-
-        SunshineSkin = config.Bind("SunShineSkin", false);
-
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
         MeadowCoins = config.Bind("MeadowCoins", 0);
@@ -324,10 +319,6 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editBannedModsButton;
 
             OpLabel devOptions;
-            OpLabel skinOptions;
-
-            OpCheckBox sunShineSkinCheckbox;
-
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -351,8 +342,6 @@ public class RainMeadowOptions : OptionInterface
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                 watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
-
-                skinOptions = new OpLabel(10f, 310, Translate("Skins")),
 
                 new OpLabel(10, 250, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },

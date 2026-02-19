@@ -21,6 +21,19 @@ namespace RainMeadow
 
         public class AprilFools : Event
         {
+            public override DialogNotify CreateDialogNotify(
+                Menu.Menu self,
+                string message,
+                string okText
+            )
+            {
+                DialogNotify dialog = new DialogNotify(message, self.manager, null);
+                dialog.okButton.size = new Vector2(100f, 30f);
+                dialog.okButton.menuLabel.text = okText;
+                dialog.pos = new Vector2(dialog.size.x * 0.5f, 0);
+                return dialog;
+            }
+
             public override void UpdateLoginMessage(Menu.Menu self)
             {
                 Dictionary<int, string> aprilMessages = new Dictionary<int, string>
@@ -68,7 +81,9 @@ namespace RainMeadow
                 //     (someCoolDialog.size.x) * 0.5f,
                 //     (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f
                 // );
-                self.manager.ShowDialog(CreateDialogNotify(self, selectedMessage));
+                self.manager.ShowDialog(
+                    CreateDialogNotify(self, selectedMessage, okMessage[result])
+                );
             }
 
             public static void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)

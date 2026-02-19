@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using JetBrains.Annotations;
 using Menu;
 using UnityEngine;
 
@@ -29,7 +30,11 @@ namespace RainMeadow
                 self.manager.ShowDialog(CreateDialogNotify(self, message));
             }
 
-            public DialogNotify CreateDialogNotify(Menu.Menu self, string message)
+            public virtual DialogNotify CreateDialogNotify(
+                Menu.Menu self,
+                string message,
+                string okText = null
+            )
             {
                 DialogNotify dialog = new DialogNotify(message, self.manager, null);
                 dialog.okButton.size = new Vector2(100f, 30f);
@@ -85,6 +90,7 @@ namespace RainMeadow
             SpecialEvents.LoadElement("meadowcoin");
             sLeaser.sprites = new FSprite[3];
             sLeaser.sprites[0] = new FSprite("meadowcoin");
+            sLeaser.sprites[0].color = Color.yellow;
             sLeaser.sprites[0].scale = 0.05f;
             sLeaser.sprites[1] = new FSprite("tinyStar");
             sLeaser.sprites[2] = new FSprite("Futile_White");

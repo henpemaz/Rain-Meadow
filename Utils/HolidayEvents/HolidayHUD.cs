@@ -142,6 +142,7 @@ namespace RainMeadow
                     x = pos.x + 30,
                     y = pos.y + 15,
                     scale = 0.10f,
+                    color = Color.yellow,
                 }
             );
             meadowCoinValue = new Menu.MenuLabel(

@@ -30,7 +30,6 @@ namespace RainMeadow
             this.sprites = new FSprite[1];
             SpecialEvents.LoadElement("meadowcoin");
             this.sprites[0] = new FSprite("meadowcoin", true);
-            float goldIntensity = 0.2f;
 
             this.sprites[0].color = Color.Lerp(this.TokenColor, color, 0.6f);
             this.sprites[0].alpha = alpha;
