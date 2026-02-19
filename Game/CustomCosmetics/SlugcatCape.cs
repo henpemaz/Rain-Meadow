@@ -1,24 +1,22 @@
+using System.Runtime.CompilerServices;
+using RWCustom;
+using UnityEngine;
+using System.Net;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
+using Newtonsoft.Json.Linq;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
-using RWCustom;
-using UnityEngine;
 
 namespace RainMeadow
 {
     static class CapeManager
     {
-        const string capes_latest_commit =
-            "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
-
-        static string getRemoteLatestCommit()
+        const string capes_latest_commit = "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
+        static string getRemoteLatestCommit() 
         {
             using (WebClient client = new WebClient())
             {
@@ -47,24 +45,17 @@ namespace RainMeadow
                 throw new Exception("We couldn't find the remote hash");
             }
         }
+        
 
-        const string capes_remote_txt =
-            "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics16/refs/heads/master/capes.txt";
-
-        public static void FetchCapes()
+        const string capes_remote_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics16/refs/heads/master/capes.txt";
+        static public void FetchCapes()
         {
             try
             {
                 using (WebClient client = new WebClient())
                 {
-                    var cape_hash_file = Path.Combine(
-                        ModManager.GetModById("henpemaz_rainmeadow").path,
-                        "capes_hash.txt"
-                    );
-                    var capes_txt = Path.Combine(
-                        ModManager.GetModById("henpemaz_rainmeadow").path,
-                        "capes.txt"
-                    );
+                    var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
+                    var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
 
                     // Download remote commit hash.
                     string commithash = getRemoteLatestCommit();
@@ -79,6 +70,7 @@ namespace RainMeadow
                             commithashlocal = reader.ReadLine();
                         }
                     }
+
 
                     // Only download the new capes when we hashes don't match.
                     if (commithash != commithashlocal)
@@ -105,49 +97,43 @@ namespace RainMeadow
                         while (true)
                         {
                             var line = capestream.ReadLine();
-                            if (line == null)
-                                break;
+                            if (line == null) break;
 
                             // Skip the header or empty lines
                             if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
                                 continue;
 
                             // Split the line into parts
-                            string[] parts = line.Split(
-                                new[] { ',' },
-                                2,
-                                StringSplitOptions.RemoveEmptyEntries
-                            );
-                            if (parts.Length < 2)
-                                continue;
+                            string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length < 2) continue;
 
                             string HashedsteamId64 = parts[0].Trim();
                             string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
                             string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
 
                             // Check if the color is a list of floats (RGB)
-                            Color rgbColor = Color.red;
+                           Color rgbColor = Color.red;
                             if (color.Contains(","))
                             {
                                 string[] rgbParts = color.Split(',');
-                                if (
-                                    rgbParts.Length == 3
-                                    && float.TryParse(rgbParts[0].Trim(), out float r)
-                                    && float.TryParse(rgbParts[1].Trim(), out float g)
-                                    && float.TryParse(rgbParts[2].Trim(), out float b)
-                                )
+                                if (rgbParts.Length == 3 &&
+                                    float.TryParse(rgbParts[0].Trim(), out float r) &&
+                                    float.TryParse(rgbParts[1].Trim(), out float g) &&
+                                    float.TryParse(rgbParts[2].Trim(), out float b))
                                 {
                                     rgbColor = new Color(r, g, b);
                                 }
                             }
-                            else if (color == "sgold")
-                            {
-                                rgbColor = RainWorld.SaturatedGold;
-                            }
+                            else                         
+                                if (color == "sgold")
+                                {
+                                    rgbColor = RainWorld.SaturatedGold;
+                                }
+                            
+
 
                             // Add the parsed entry to the list
-                            if (!entries.ContainsKey(HashedsteamId64))
-                                entries.Add(HashedsteamId64, rgbColor);
+                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, rgbColor);
                         }
                     }
                 }
@@ -156,22 +142,21 @@ namespace RainMeadow
             {
                 RainMeadow.Error(except);
             }
+
         }
+
 
         private static Dictionary<string, Color> entries = new();
         private static ConditionalWeakTable<MeadowPlayerId, object> cape_cache = new();
 
-        public static Color? HasCape(MeadowPlayerId player)
+        static public Color? HasCape(MeadowPlayerId player)
         {
-            if (cape_cache.TryGetValue(player, out var entry) && entry is not null)
-                return (Color)entry;
+            if (cape_cache.TryGetValue(player, out var entry) && entry is not null) return (Color)entry;
             if (player is SteamMatchmakingManager.SteamPlayerId steamid)
             {
                 ulong steamID = steamid.oid.GetSteamID64();
                 SHA256 Sha = SHA256.Create();
-                var hashed_cape_str = System.Convert.ToBase64String(
-                    Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString()))
-                );
+                var hashed_cape_str = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
 
                 if (entries.TryGetValue(hashed_cape_str, out Color found_entry))
                 {
@@ -182,16 +167,15 @@ namespace RainMeadow
 
             if (player is LANMatchmakingManager.LANPlayerId lanPlayer)
             {
-                if (lanPlayer.name == "goldcape")
-                    return RainWorld.SaturatedGold;
-                if (lanPlayer.name == "redcape")
-                    return Color.red;
-                if (lanPlayer.name == "bluecape")
-                    return Color.blue;
+                if (lanPlayer.name == "goldcape") return RainWorld.SaturatedGold;
+                if (lanPlayer.name == "redcape") return Color.red;
+                if (lanPlayer.name == "bluecape") return Color.blue;
             }
+
 
             return null;
         }
+
     }
 
     class SlugcatCape
@@ -227,30 +211,15 @@ namespace RainMeadow
 
         public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            sLeaser.sprites[this.firstSpriteIndex] = TriangleMesh.MakeGridMesh(
-                "Futile_White",
-                SlugcatCape.size
-            );
-            sLeaser.sprites[this.firstSpriteIndex].shader = rCam.game.rainWorld.Shaders[
-                "TemplarCloak"
-            ];
+            sLeaser.sprites[this.firstSpriteIndex] = TriangleMesh.MakeGridMesh("Futile_White", SlugcatCape.size);
+            sLeaser.sprites[this.firstSpriteIndex].shader = rCam.game.rainWorld.Shaders["TemplarCloak"];
         }
 
-        public void DrawSprites(
-            RoomCamera.SpriteLeaser sLeaser,
-            RoomCamera rCam,
-            float timeStacker,
-            Vector2 camPos
-        )
+        public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            if (
-                playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter
-                && critter.TryGetData<SlugcatCustomization>(out var customization)
-                && customization.wearingAnniversaryCape
-            )
-            {
-                float hue = (Time.time * 0.1f) % 1f;
-                cloakColor = Color.HSVToRGB(hue, 1f, 1f);
+            if (playerGFX.player.abstractCreature.GetOnlineCreature()  is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingAnniversaryCape) {
+            float hue = (Time.time * 0.1f) % 1f; 
+            cloakColor = Color.HSVToRGB(hue, 1f, 1f);
             }
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
             int num = 0;
@@ -258,10 +227,7 @@ namespace RainMeadow
             {
                 for (int j = 0; j <= SlugcatCape.size; j++)
                 {
-                    triangleMesh.MoveVertice(
-                        num++,
-                        this.segments[j, i].DrawPos(timeStacker) - camPos
-                    );
+                    triangleMesh.MoveVertice(num++, this.segments[j, i].DrawPos(timeStacker) - camPos);
                 }
             }
             num = 0;
@@ -270,12 +236,8 @@ namespace RainMeadow
                 for (int l = 0; l <= SlugcatCape.size; l++)
                 {
                     Color color = this.cloakColor;
-                    Vector2 p = triangleMesh.vertices[
-                        l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)
-                    ];
-                    Vector2 p2 = triangleMesh.vertices[
-                        l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)
-                    ];
+                    Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
+                    Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
                     Vector2 vector = Custom.DirVec(p, p2) * 5f;
                     color.a = 1.0f;
                     triangleMesh.verticeColors[num++] = this.cloakColor;
@@ -283,11 +245,8 @@ namespace RainMeadow
             }
         }
 
-        public void AddToContainer(
-            RoomCamera.SpriteLeaser sLeaser,
-            RoomCamera rCam,
-            FContainer newContatiner
-        )
+
+        public void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
         {
             sLeaser.sprites[this.firstSpriteIndex].RemoveFromContainer();
             var background = rCam.ReturnFContainer("Background");
@@ -297,15 +256,13 @@ namespace RainMeadow
                 background = rCam.ReturnFContainer("BackgroundShortcuts");
             }
             background.AddChild(sLeaser.sprites[this.firstSpriteIndex]);
+
         }
 
         // Token: 0x060022B4 RID: 8884 RVA: 0x002B2484 File Offset: 0x002B0684
         private void ConnectEnd()
         {
-            if (
-                (ModManager.Watcher && playerGFX.player.isCamo)
-                || SpecialEvents.AprilFoolsEvent.IsActive
-            )
+            if ((ModManager.Watcher && playerGFX.player.isCamo) || SpecialEvents.IsSpecialEvent && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools)
             {
                 return;
             }
@@ -317,31 +274,17 @@ namespace RainMeadow
             {
                 float d = (float)i / (float)SlugcatCape.size * 2f - 1f;
                 ref SimpleSegment ptr = ref this.segments[i, 0];
-                ptr.pos =
-                    mainBodyChunk.pos
-                    + (a * d * 3f)
-                    + Vector2.right * -playerGFX.player.flipDirection * 0.5f;
+                ptr.pos = mainBodyChunk.pos + (a * d * 3f) + Vector2.right * -playerGFX.player.flipDirection * 0.5f;
                 ptr.vel = mainBodyChunk.vel;
 
                 ref SimpleSegment ptr2 = ref this.segments[i, 1];
-                ptr2.pos =
-                    mainBodyChunk.pos
-                    + normalized * 3f
-                    + a * d * 5f
-                    + Vector2.right * -playerGFX.player.flipDirection * 1.0f;
+                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d * 5f + Vector2.right*-playerGFX.player.flipDirection*1.0f;
                 ptr2.vel = mainBodyChunk.vel;
             }
         }
 
         // Token: 0x060022B5 RID: 8885 RVA: 0x002B25C8 File Offset: 0x002B07C8
-        private void ConnectSegments(
-            int x,
-            int y,
-            int otherX,
-            int otherY,
-            float targetDist,
-            float massRatio
-        )
+        private void ConnectSegments(int x, int y, int otherX, int otherY, float targetDist, float massRatio)
         {
             ref SimpleSegment ptr = ref this.segments[x, y];
             ref SimpleSegment ptr2 = ref this.segments[otherX, otherY];
@@ -361,21 +304,17 @@ namespace RainMeadow
         public Vector2 GetBodyNormalized()
         {
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
-            Vector2 normalized = (
-                playerGFX.player.bodyChunks[1].pos - mainBodyChunk.pos
-            ).normalized;
+            Vector2 normalized = (playerGFX.player.bodyChunks[1].pos - mainBodyChunk.pos).normalized;
             if (normalized.x < 0.05f && (playerGFX.player.input[0].x == 0))
             {
                 normalized.x = (float)playerGFX.player.flipDirection * 0.05f;
 
-                // simplification of sin(acos(x))
-                normalized.y =
-                    Mathf.Sqrt(1 - (normalized.x * normalized.x)) * Math.Sign(normalized.y);
+                // simplification of sin(acos(x)) 
+                normalized.y = Mathf.Sqrt(1 - (normalized.x*normalized.x))*Math.Sign(normalized.y); 
             }
 
             return normalized;
         }
-
         public void Update()
         {
             float num = SlugcatCape.targetLength / (float)SlugcatCape.size;
@@ -388,10 +327,7 @@ namespace RainMeadow
                 for (int j = 0; j <= SlugcatCape.size; j++)
                 {
                     this.segments[j, i].lastPos = this.segments[j, i].pos;
-                    this.segments[j, i].vel = Vector2.ClampMagnitude(
-                        this.segments[j, i].vel * 0.95f,
-                        10f
-                    );
+                    this.segments[j, i].vel = Vector2.ClampMagnitude(this.segments[j, i].vel * 0.95f, 10f);
                     if (i > 0)
                     {
                         this.ConnectSegments(j, i, j, i - 1, num, 0.7f);
@@ -432,12 +368,7 @@ namespace RainMeadow
                     }
                     if (num4 > 0f)
                     {
-                        ptr.vel +=
-                            Custom.PerpendicularVector(normalized)
-                            * num4
-                            * num3
-                            * 2.0f
-                            * (1f - 0.7f * Mathf.Abs(normalized.x));
+                        ptr.vel += Custom.PerpendicularVector(normalized) * num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
                     }
                 }
             }
@@ -448,36 +379,18 @@ namespace RainMeadow
                 {
                     ref SimpleSegment ptr5 = ref this.segments[n, m];
                     ptr5.pos += ptr5.vel;
-                    if (
-                        m > 2
-                        && room.GetTile(ptr5.lastPos).Solid
-                        && Custom.DistLess(ptr5.lastPos, ptr5.pos, num * 4f)
-                    )
+                    if (m > 2 && room.GetTile(ptr5.lastPos).Solid && Custom.DistLess(ptr5.lastPos, ptr5.pos, num * 4f))
                     {
                         float rad = Mathf.Lerp(3f, 1f, t);
-                        SharedPhysics.TerrainCollisionData terrainCollisionData =
-                            new SharedPhysics.TerrainCollisionData(
-                                ptr5.pos,
-                                ptr5.lastPos,
-                                ptr5.vel,
-                                rad,
-                                default(IntVector2),
-                                true
-                            );
-                        terrainCollisionData = SharedPhysics.HorizontalCollision(
-                            room,
-                            terrainCollisionData
-                        );
-                        terrainCollisionData = SharedPhysics.VerticalCollision(
-                            room,
-                            terrainCollisionData
-                        );
+                        SharedPhysics.TerrainCollisionData terrainCollisionData = new SharedPhysics.TerrainCollisionData(ptr5.pos, ptr5.lastPos, ptr5.vel, rad, default(IntVector2), true);
+                        terrainCollisionData = SharedPhysics.HorizontalCollision(room, terrainCollisionData);
+                        terrainCollisionData = SharedPhysics.VerticalCollision(room, terrainCollisionData);
                         ptr5.pos = terrainCollisionData.pos;
                         ptr5.vel = terrainCollisionData.vel;
                     }
                 }
             }
-
+            
             this.ConnectEnd();
         }
     }
