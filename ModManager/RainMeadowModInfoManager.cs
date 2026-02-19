@@ -9,6 +9,10 @@ namespace RainMeadow;
 public static class RainMeadowModInfoManager
 {
     private static string ModInfoFileName => "rainmeadow.json";
+    
+    public static List<string> ForcedHighImpactModsID { get; private set; } = new(){
+        "jollycoop"
+    };
 
     /// <summary>
     /// All the loaded Rain Meadow modinfos merged together, so that all information can be accessed at once.
@@ -104,7 +108,7 @@ public static class RainMeadowModInfoManager
         var modInfo = new RainMeadowModInfo();
 
         // TODO: consider mod.modifiesRegions
-        if (Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+        if (Directory.Exists(Path.Combine(mod.path, "modify", "world")) || ForcedHighImpactModsID.Contains(mod.id))
         {
             modInfo.SyncRequiredMods.Add(mod.id);
         }
