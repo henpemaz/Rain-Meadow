@@ -238,88 +238,25 @@ namespace RainMeadow
             return null;
         }
 
-        public virtual void SpawnPlayer(
+        /// <summary>
+        /// Spawns a creature in an online space
+        /// </summary>
+        /// <param name="arena"></param>
+        /// <param name="self"></param>
+        /// <param name="room"></param>
+        /// <param name="randomExitIndex"></param>
+        /// <param name="templateType"></param>
+        public void SpawnTransferableCreature(
             ArenaOnlineGameMode arena,
             ArenaGameSession self,
             Room room,
-            List<int> suggestedDens
+            int randomExitIndex,
+            CreatureTemplate.Type templateType
         )
         {
-            List<OnlinePlayer> list = new List<OnlinePlayer>();
-
-            List<OnlinePlayer> list2 = new List<OnlinePlayer>();
-
-            for (int j = 0; j < OnlineManager.players.Count; j++)
-            {
-                if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
-                {
-                    list2.Add(OnlineManager.players[j]);
-                }
-            }
-
-            while (list2.Count > 0)
-            {
-                int index = UnityEngine.Random.Range(0, list2.Count);
-                list.Add(list2[index]);
-                list2.RemoveAt(index);
-            }
-
-            int totalExits = self.game.world.GetAbstractRoom(0).exits;
-            int[] exitScores = new int[totalExits];
-            if (suggestedDens != null)
-            {
-                for (int k = 0; k < suggestedDens.Count; k++)
-                {
-                    if (suggestedDens[k] >= 0 && suggestedDens[k] < exitScores.Length)
-                    {
-                        exitScores[suggestedDens[k]] -= 1000;
-                    }
-                }
-            }
-
-            int randomExitIndex = UnityEngine.Random.Range(0, totalExits);
-            float highestScore = float.MinValue;
-
-            for (int currentExitIndex = 0; currentExitIndex < totalExits; currentExitIndex++)
-            {
-                float score =
-                    UnityEngine.Random.value - (float)exitScores[currentExitIndex] * 1000f;
-                RWCustom.IntVector2 startTilePosition = room.ShortcutLeadingToNode(
-                    currentExitIndex
-                ).StartTile;
-
-                for (int otherExitIndex = 0; otherExitIndex < totalExits; otherExitIndex++)
-                {
-                    if (otherExitIndex != currentExitIndex && exitScores[otherExitIndex] > 0)
-                    {
-                        float distanceAdjustment =
-                            Mathf.Clamp(
-                                startTilePosition.FloatDist(
-                                    room.ShortcutLeadingToNode(otherExitIndex).StartTile
-                                ),
-                                8f,
-                                17f
-                            ) * UnityEngine.Random.value;
-                        score += distanceAdjustment;
-                    }
-                }
-
-                if (score > highestScore)
-                {
-                    randomExitIndex = currentExitIndex;
-                    highestScore = score;
-                }
-            }
-
-            RainMeadow.Debug("Trying to create an abstract creature");
-            RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
-            RainMeadow.Debug(
-                $"RANDOM START TILE INDEX: {room.ShortcutLeadingToNode(randomExitIndex).StartTile}"
-            );
-            RainMeadow.sSpawningAvatar = true;
             AbstractCreature abstractCreature = new AbstractCreature(
                 self.game.world,
-                StaticWorld.GetCreatureTemplate("Slugcat"),
+                StaticWorld.GetCreatureTemplate(templateType),
                 null,
                 new WorldCoordinate(0, -1, -1, -1),
                 new EntityID(-1, 0)
@@ -329,12 +266,47 @@ namespace RainMeadow
                 randomExitIndex
             ).destNode;
             abstractCreature.Room.AddEntity(abstractCreature);
+            abstractCreature.RealizeInRoom();
+            self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
+        }
 
+        /// <summary>
+        /// Spawns a player-controlled avatar in an online space
+        /// </summary>
+        /// <param name="arena"></param>
+        /// <param name="self"></param>
+        /// <param name="room"></param>
+        /// <param name="randomExitIndex"></param>
+        /// <param name="templateType"></param>
+        public void SpawnNonTransferableCreature(
+            ArenaOnlineGameMode arena,
+            ArenaGameSession self,
+            Room room,
+            int randomExitIndex,
+            CreatureTemplate.Type templateType
+        )
+        {
+            RainMeadow.Debug("Trying to create an abstract creature");
+            RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
+            RainMeadow.Debug(
+                $"RANDOM START TILE INDEX: {room.ShortcutLeadingToNode(randomExitIndex).StartTile}"
+            );
+            RainMeadow.sSpawningAvatar = true;
+            AbstractCreature abstractCreature = new AbstractCreature(
+                self.game.world,
+                StaticWorld.GetCreatureTemplate(templateType),
+                null,
+                new WorldCoordinate(0, -1, -1, -1),
+                new EntityID(-1, 0)
+            );
+            abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
+            abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(
+                randomExitIndex
+            ).destNode;
+            abstractCreature.Room.AddEntity(abstractCreature);
             RainMeadow.Debug("assigned ac, registering");
-
             self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
             RainMeadow.sSpawningAvatar = false;
-
             self.game.cameras[0].followAbstractCreature = abstractCreature;
 
             if (
@@ -376,6 +348,10 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+            if (abstractCreature.realizedCreature is not Player)
+            {
+                return;
+            }
             if (
                 (abstractCreature.realizedCreature as Player).SlugCatClass
                 == SlugcatStats.Name.Night
@@ -535,6 +511,100 @@ namespace RainMeadow
             {
                 (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
             }
+        }
+
+        public virtual void SpawnPlayer(
+            ArenaOnlineGameMode arena,
+            ArenaGameSession self,
+            Room room,
+            List<int> suggestedDens
+        )
+        {
+            List<OnlinePlayer> list = new List<OnlinePlayer>();
+
+            List<OnlinePlayer> list2 = new List<OnlinePlayer>();
+
+            for (int j = 0; j < OnlineManager.players.Count; j++)
+            {
+                if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
+                {
+                    list2.Add(OnlineManager.players[j]);
+                }
+            }
+
+            while (list2.Count > 0)
+            {
+                int index = UnityEngine.Random.Range(0, list2.Count);
+                list.Add(list2[index]);
+                list2.RemoveAt(index);
+            }
+
+            int totalExits = self.game.world.GetAbstractRoom(0).exits;
+            int[] exitScores = new int[totalExits];
+            if (suggestedDens != null)
+            {
+                for (int k = 0; k < suggestedDens.Count; k++)
+                {
+                    if (suggestedDens[k] >= 0 && suggestedDens[k] < exitScores.Length)
+                    {
+                        exitScores[suggestedDens[k]] -= 1000;
+                    }
+                }
+            }
+
+            int randomExitIndex = UnityEngine.Random.Range(0, totalExits);
+            float highestScore = float.MinValue;
+
+            for (int currentExitIndex = 0; currentExitIndex < totalExits; currentExitIndex++)
+            {
+                float score =
+                    UnityEngine.Random.value - (float)exitScores[currentExitIndex] * 1000f;
+                RWCustom.IntVector2 startTilePosition = room.ShortcutLeadingToNode(
+                    currentExitIndex
+                ).StartTile;
+
+                for (int otherExitIndex = 0; otherExitIndex < totalExits; otherExitIndex++)
+                {
+                    if (otherExitIndex != currentExitIndex && exitScores[otherExitIndex] > 0)
+                    {
+                        float distanceAdjustment =
+                            Mathf.Clamp(
+                                startTilePosition.FloatDist(
+                                    room.ShortcutLeadingToNode(otherExitIndex).StartTile
+                                ),
+                                8f,
+                                17f
+                            ) * UnityEngine.Random.value;
+                        score += distanceAdjustment;
+                    }
+                }
+
+                if (score > highestScore)
+                {
+                    randomExitIndex = currentExitIndex;
+                    highestScore = score;
+                }
+            }
+
+            if (
+                ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs
+                == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+            )
+            {
+                RainMeadow.Debug("Player spawned as overseer");
+                // maybr add toggle later
+                // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+            }
+            else
+            {
+                SpawnNonTransferableCreature(
+                    arena,
+                    self,
+                    room,
+                    randomExitIndex,
+                    CreatureTemplate.Type.Slugcat
+                );
+            }
 
             self.playersSpawned = true;
             if (OnlineManager.lobby.isOwner)
@@ -562,6 +632,13 @@ namespace RainMeadow
             ArenaOnlineGameMode arena
         )
         {
+            bool isOwnerOverseer =
+                ArenaHelpers.GetArenaClientSettings(OnlineManager.lobby.owner)?.playingAs
+                == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator;
+            if (arena.countdownInitiatedHoldFire && isOwnerOverseer)
+            {
+                self.endSessionCounter = 30;
+            }
             orig(self);
 
             if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
@@ -571,8 +648,18 @@ namespace RainMeadow
                 );
                 arena.currentLobbyOwner = OnlineManager.lobby.owner;
             }
-
-            if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
+            int activePlayerCountWithOverseers = arena
+                .arenaSittingOnlineOrder.Select(id => ArenaHelpers.FindOnlinePlayerByLobbyId(id)) // Get the player
+                .Where(player => player != null) // Ensure player exists
+                .Select(player => ArenaHelpers.GetArenaClientSettings(player)) // Get settings
+                .Where(settings => settings != null) // Ensure settings exist
+                .Count(settings =>
+                    settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+                );
+            if (
+                self.Players.Count + activePlayerCountWithOverseers
+                != arena.arenaSittingOnlineOrder.Count
+            )
             {
                 RainMeadow.Error(
                     $"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}"
@@ -601,7 +688,8 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.playersEqualToOnlineSitting =
-                    self.Players.Count == arena.arenaSittingOnlineOrder.Count;
+                    self.Players.Count + activePlayerCountWithOverseers
+                    == arena.arenaSittingOnlineOrder.Count;
             }
 
             if (!self.sessionEnded)

@@ -173,6 +173,20 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
+            new Hook(
+                typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
+                this.OverseerBodyColor
+            );
+        }
+
+        private Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
+        {
+            if (isArenaMode(out var arena) && self.overseer.IsLocal())
+            {
+                return RainMeadow.rainMeadowOptions.BodyColor.Value;
+            }
+
+            return orig(self);
         }
 
         private void IL_Arena_Overlay_Update(ILContext il)
@@ -968,6 +982,11 @@ namespace RainMeadow
             if (id == Ext_SlugcatStatsName.OnlineRandomSlugcat)
             {
                 return "Unknown";
+            }
+
+            if (id == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+            {
+                return "Overseer";
             }
 
             return orig(id);
