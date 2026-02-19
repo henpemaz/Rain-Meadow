@@ -661,7 +661,7 @@ namespace RainMeadow
                 != arena.arenaSittingOnlineOrder.Count
             )
             {
-                RainMeadow.Error(
+                RainMeadow.Trace(
                     $"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}"
                 );
 
