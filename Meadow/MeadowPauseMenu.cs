@@ -114,7 +114,25 @@ namespace RainMeadow
             timelineLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
             pages[0].subObjects.Add(timelineLabel);
 
+            if (SpecialEvents.IsSpecialEvent)
+            {
+                pos.y -= 40f;
+                SpecialEvents.LoadElement("meadowcoin");
+                var meadowCoinSprite = new MenuSprite(this, pages[0], new FSprite("meadowcoin") { scale = 0.10f, color=  Color.yellow }, new Vector2(pos.x + 10f, pos.y + 10f));
+                pages[0].subObjects.Add(meadowCoinSprite);
+
+                string meadowCoinValue = Translate($"¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}");
+                var meadowCoinlabel = new MenuLabel(this, pages[0], meadowCoinValue, new Vector2(pos.x + 20f, pos.y), new Vector2(50f, 20f), bigText: false);
+                meadowCoinlabel.label.alignment = FLabelAlignment.Left;
+                meadowCoinlabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
+                pages[0].subObjects.Add(meadowCoinlabel);
+                pages[0].subObjects.Add(new Floater(this, meadowCoinSprite, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
+                pages[0].subObjects.Add(new Floater(this, meadowCoinlabel, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
+
+            }
+
             pages[0].subObjects.Add(new Floater(this, timelineSprite, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
+            pages[0].subObjects.Add(new Floater(this, timelineLabel, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
             pages[0].subObjects.Add(new Floater(this, timelineLabel, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
 
             // Removes the tutorial sprites 
