@@ -70,30 +70,6 @@ namespace RainMeadow
 
             var ret = c.MarkLabel();
 
-            //c.GotoPrev(MoveType.After,
-            //    i => i.MatchLdarg(0),
-            //    i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
-            //    i => i.MatchBrtrue(out _));
-
-            //c.Emit(OpCodes.Ldarg_0);
-            //c.EmitDelegate((BoxWorm.LarvaHolder self) =>
-            //{
-            //    var boxWorm = self.bodyChunk.owner as BoxWorm;
-            //    if (!boxWorm.IsLocal())
-            //    {
-            //        //self.abstractLarva = new(self.room.world, null, self.room.GetWorldCoordinate(self.position), self.room.game.GetNewID());
-            //        //self.room.abstractRoom.AddEntity(self.abstractLarva);
-
-            //        //self.abstractLarva.RealizeInRoom();
-
-            //        //self.room.world.GetResource().ApoEnteringWorld(self.abstractLarva);
-            //        //self.room.abstractRoom.GetResource()?.ApoEnteringRoom(self.abstractLarva, self.abstractLarva.pos);
-            //        return false; // Don't spawn larva for remotes
-            //    }
-            //    return true;
-            //});
-            //c.Emit(OpCodes.Brfalse, ret); // Return if our abstractLarva doesn't yet exist for a remote BoxWorm
-
             c.GotoPrev(MoveType.Before,
                 i => i.MatchLdarg(0),
                 i => i.MatchCallOrCallvirt<BoxWorm.LarvaHolder>(nameof(BoxWorm.LarvaHolder.ManageLarvaDetachment)));
