@@ -9,7 +9,6 @@
 - A new character approaches: The Overseer! Select to spectate games
 ### Team Battle 
 - Added friendly fire togggle
-- Team Battle: Added friendly fire togggle
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
