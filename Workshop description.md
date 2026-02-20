@@ -1,4 +1,4 @@
-# Rain Meadow Multiplayer
+# Rain Meadow
 
 ## Table of Contents
 * [What is it?](#what-is-it)
