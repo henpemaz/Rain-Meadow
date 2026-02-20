@@ -6,7 +6,7 @@
 - Blocked next level call until chatbar is closed
 - Blocked exiting to lobby if host already initiated next level loading to prevent crash
 - Team Battle: Added friendly fire togggle
-- 
+- A new character approaches: The Overseer! Select to spectate games
 ## Story
 - Fixed Moon dying if the room transferred owners 
 
