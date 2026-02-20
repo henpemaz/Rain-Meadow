@@ -14,6 +14,7 @@
 
 ## General
 - Fixed Dev Tools trying to teleport remote players when holding V
+- Added support for 4:3 resolution for Spectate overlay
 ### Engine
 - Synced Waterflux
 - Synced Gourmand exhaustion and player lung exhaustion
