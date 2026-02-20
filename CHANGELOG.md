@@ -25,6 +25,7 @@
 - Fixed Dev Tools trying to teleport remote players when holding V
 - Updated documentation in codebase.
 - Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
+- Added support for 4:3 resolution for Spectate overlay
 
 ## Engine
 Synced the following

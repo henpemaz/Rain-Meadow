@@ -10,14 +10,17 @@ namespace RainMeadow
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
+        private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x;
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game, RoomCamera camera) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
             this.game = game;
             this.camera = camera;
+
             pages.Add(new(this, null, "spectator", 0));
             selectedObject = null;
-            Vector2 pos = new(1180, 553);
+            float xPos = ScreenWidth - 186f; 
+            Vector2 pos = new(xPos, 553f);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
             playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
             pages[0].subObjects.Add(playerScroller);
