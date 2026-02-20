@@ -402,7 +402,8 @@ namespace RainMeadow
                 int index = 0;
                 foreach (var entry in entries)
                 {
-                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / total)}%";
+                    double percentage = (double)entry.ticksSpent / (double)total;
+                    labels[index].text = $"[{index}] {entry.type.Name} - {String.Format("{0:P2}", (float)percentage)}%";
                     labels[index].color = entry.color;
 
                     labels[index].x = pos.x - 80;

@@ -121,7 +121,7 @@ public static class DeathMessage
                 // WATCHER
 
                 case DeathType.Sandstorm:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was obliterated by the sandstorm."));
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("asphyxiated."));
                     break;
                 case DeathType.Poison:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died from poison."));
@@ -328,7 +328,14 @@ public static class DeathMessage
                 }
                 if (player.rainDeath > 1f)
                 {
-                    EnvironmentalRPC(player, DeathType.Rain);
+                    if (player.room.roomRain == null && player.room.sandstorm != null)
+                    {
+                        EnvironmentalRPC(player, DeathType.Sandstorm);
+                    }
+                    else
+                    {
+                        EnvironmentalRPC(player, DeathType.Rain);
+                    }
                     return;
                 }
                 if (player.injectedPoison / player.Template.instantDeathDamageLimit >= 1f)

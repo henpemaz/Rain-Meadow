@@ -196,6 +196,8 @@ namespace RainMeadow
                     cycle.waterCycle.stageDuration = rainCycleData.stageDuration;
                     cycle.waterCycle.stage = (WaterLevelCycle.Stage)rainCycleData.stage;
 
+                    ws.world.game.globalRain.waterFluxTicker = rainCycleData.waterFluxTicker;
+
                     if (realizedRooms != null)
                     {
                         foreach (var index in realizedRooms.list)

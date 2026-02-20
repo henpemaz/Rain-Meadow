@@ -144,7 +144,11 @@ namespace RainMeadow
                 throw;
             }
         }
-
+        /// <summary>
+        /// Denotes that this field will be sent to all peers subscribed to my resource.
+        /// <para>For floating points including vectors use the better optimized <see cref="OnlineFieldHalf"/> unless you need high percission.</para>
+        /// <para>For <see cref="Color"/> use <see cref="OnlineFieldColorRgbAttribute"/></para>
+        /// </summary>
         public class OnlineFieldAttribute : Attribute
         {
             public string group; // things on the same group are gruped in deltas, saving bytes
@@ -195,6 +199,9 @@ namespace RainMeadow
             }
         }
 
+        /// <summary>
+        /// Optimizes sending floating point values by halving their percission which saves bandwidth.
+        /// </summary>
         public class OnlineFieldHalf : OnlineFieldAttribute
         {
             public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
@@ -205,6 +212,9 @@ namespace RainMeadow
                 && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
         }
+        /// <summary>
+        /// Optimizes sending <see cref="Color"/> data.
+        /// </summary>
         public class OnlineFieldColorRgbAttribute : OnlineFieldAttribute
         {
             public OnlineFieldColorRgbAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
@@ -214,6 +224,9 @@ namespace RainMeadow
             }
         }
 
+        /// <summary>
+        /// Denotes that certain inherrited OnlineFields should be ignored.
+        /// </summary>
         public class OmitFieldsAttribute : Attribute
         {
             public string[] fields;
@@ -237,11 +250,19 @@ namespace RainMeadow
             public Func<OnlineState, OnlineState, OnlineState> applydelta;
             public int ngroups;
 
+            /// <summary>
+            /// DeltaSupport allows for only sending out variables when they've updated. This can help reduce bandwidth usage
+            /// but will add CPU overhead.
+            /// </summary>
             public enum DeltaSupport
             {
+                /// <summary> Sync everything as-is everytime. No delta overhead. Most efficient for small independent fields. </summary>
                 None,
+                /// <summary> Copy the Delta Support level of my parent class. </summary>
                 FollowsContainer,
+                /// <summary> Send in full on change. If null, send boolean null bit. </summary>
                 NullableDelta,
+                /// <summary> Deep comparison, will reduce bandwidth the most but uses the most CPU. </summary>
                 Full
             }
 

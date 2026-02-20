@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -694,6 +695,20 @@ namespace RainMeadow
             hazer.spraying = spraying;
             if (spraying) hazer.hasSprayed = true;
             hazer.inkLeft = Mathf.Clamp01(inkLeft);
+        }
+
+        [RPCMethod (security = RPCSecurity.Owner)]
+        public void RecieveHelp()
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not ICallForHelp realized) return;
+            realized.RecieveHelp();
+        }
+
+        [RPCMethod (security = RPCSecurity.InResource)]
+        public void Demask(Vector2 violenceDir)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not Vulture vulture || vulture.IsMiros) return;
+            vulture.DropMask(violenceDir);
         }
     }
 }
