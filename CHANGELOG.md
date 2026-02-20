@@ -9,7 +9,6 @@
 - A new character approaches: The Overseer! Select to spectate games
 ### Team Battle 
 - Added friendly fire togggle
-- Team Battle: Added friendly fire togggle
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
@@ -39,6 +38,7 @@
 	- Vultures
 	  - Vultures should be noticably less jittery and sync more accurately. King Vultures should also work a lot better.
 - Fixed Sand Grubs causing crashes and graphical glitches.
+- Added coroutine for world loading; blocked entity states during world transitions
 
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
