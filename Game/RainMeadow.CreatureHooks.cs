@@ -40,6 +40,8 @@ namespace RainMeadow
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
+            On.Watcher.SandGrubAI.PickNewBurrow += SandGrubAI_PickNewBurrow;
+
             On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
             IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
 
@@ -48,6 +50,12 @@ namespace RainMeadow
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private Watcher.SandGrubBurrow SandGrubAI_PickNewBurrow(On.Watcher.SandGrubAI.orig_PickNewBurrow orig, Watcher.SandGrubAI self)
+        {
+            if (!self.Grub.IsLocal()) return null; // Don't try switching burrows if we are a remote, only my owner is allowed to do that.
+            return orig(self);
         }
 
         private void LarvaHolder_Update(ILContext il)
