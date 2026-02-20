@@ -2,6 +2,8 @@
     "sync_required_mods": [
         "rwremix",
         "moreslugcats",
+        "watcher",
+        "jollycoop",
         "henpemaz_rainmeadow"
     ],
     "banned_online_mods": [
