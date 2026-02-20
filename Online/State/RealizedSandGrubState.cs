@@ -6,6 +6,7 @@ using Watcher;
 
 namespace RainMeadow
 {
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedSandGrubState : RealizedCreatureState
     {
         [OnlineField]
@@ -56,7 +57,7 @@ namespace RainMeadow
             }
             else
             {
-                burrow?.ReadTo(grub.burrow);
+                burrow.ReadTo(grub.burrow.network);
             }
 
             grub.returnToBurrowCounter = returnToBurrowCounter;
@@ -85,6 +86,19 @@ namespace RainMeadow
             grub = burrow.grub?.abstractCreature?.GetOnlineObject();
             pos = burrow.pos;
             dir = burrow.dir;
+        }
+
+
+        public void ReadTo(SandGrubNetwork network)
+        {
+            foreach(var networkedBurrow in network.burrows)
+            {
+                if (networkedBurrow.pos.CloseEnough(pos, 1/4f))
+                {
+                    ReadTo(networkedBurrow);
+                    break;
+                }
+            }
         }
 
         public void ReadTo(SandGrubBurrow burrow)
