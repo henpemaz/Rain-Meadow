@@ -14,6 +14,7 @@
 
 ## General
 - Fixed Dev Tools trying to teleport remote players when holding V
+- Released Overworld on return to Story/Arena menus to prevent ongoing requests
 ### Engine
 - Synced Waterflux
 - Synced Gourmand exhaustion and player lung exhaustion
