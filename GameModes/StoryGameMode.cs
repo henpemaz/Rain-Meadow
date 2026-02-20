@@ -70,6 +70,11 @@ namespace RainMeadow
             pups = new();
             storyClientData?.Sanitize();
             rippleLevel = 0.0f;
+            if (OnlineManager.lobby.overworld.isAvailable)
+            {
+                OnlineManager.lobby.overworld.Deactivate();
+                OnlineManager.lobby.overworld.NotNeeded();
+            }
         }
 
         public bool canJoinGame => isInGame && !changedRegions && readyForTransition == ReadyForTransition.Closed && !readyForWin;
