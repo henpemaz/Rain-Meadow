@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 
 namespace RainMeadow
 {
@@ -23,6 +23,12 @@ namespace RainMeadow
             public static SlugcatStats.Name OnlineRandomSlugcat = new("MeadowRandom", true);
             public static SlugcatStats.Name OnlineOverseerSpectator = new("OnlineOverseerSpectator", true);
 
+        public static readonly List<SlugcatStats.Name> AllMeadowExtSlugcats = new()
+          {
+           OnlineSessionPlayer,
+           OnlineRandomSlugcat,
+           OnlineOverseerSpectator
+          };
             //public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
         }
 
