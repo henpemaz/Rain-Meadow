@@ -30,7 +30,7 @@ namespace RainMeadow
 
         private void StoryHooks()
         {
-            IL.Menu.SlugcatSelectMenu.Update += SS_Update;
+            IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
@@ -170,7 +170,7 @@ namespace RainMeadow
             };
         }
 
-        public void SS_Update(ILContext il)
+        public void SlugcatSelectMenu_Update(ILContext il)
         {
             ILCursor c = new ILCursor(il);
 
