@@ -170,6 +170,7 @@ namespace RainMeadow
             };
         }
 
+        // Always show "Sync Save" to clients
         public void SlugcatSelectMenu_Update(ILContext il)
         {
             ILCursor c = new ILCursor(il);
@@ -185,7 +186,7 @@ namespace RainMeadow
                 c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
                 {
                     if (OnlineManager.lobby != null) {
-                        return saveData != null || !OnlineManager.lobby.isOwner;;
+                        return saveData != null || !OnlineManager.lobby.isOwner;
                     }
                     return saveData != null;
                 });
