@@ -821,7 +821,7 @@ public partial class RainMeadow
     // Hide the Meadow mode slugcat so it doesn't appear in menus (e.g. arena)
     private bool SlugcatStatsOnHiddenOrUnplayableSlugcat(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
     {
-        if (Ext_SlugcatStatsName.AllMeadowNames.Contains(i))
+        if (Ext_SlugcatStatsName.AllMeadowExtSlugcats.Contains(i))
           {
             return true;
           }
