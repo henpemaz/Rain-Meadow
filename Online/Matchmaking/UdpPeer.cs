@@ -566,28 +566,29 @@ namespace RainMeadow
         public const int DEFAULT_PORT = 8720;
         public const int FIND_PORT_ATTEMPTS = 8; // 8 players somehow hosting from the same machine is ridiculous.
         public UDPPeerManager() {
-            try {
+            try 
+            {
                 this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 this.socket.EnableBroadcast = true;
                 port = DEFAULT_PORT;
                 // Proton 8.0/Wine for FreeBSD bug: GetActiveUdpListeners is unavailable and not correctly emulated
-                try {
-                    var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
-                    bool alreadyinuse = false;
-                    for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
-                        port = DEFAULT_PORT + i;
-                        alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
-                        if (!alreadyinuse)
-                            break;
+
+                for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
+                    port = DEFAULT_PORT + i;
+                    try 
+                    {
+                        socket.Bind(new IPEndPoint(IPAddress.Any, port));
                     }
-    
-                    if (alreadyinuse) {
-                        throw new Exception("Failed to claim a socket port");
+                    catch (SocketException socketexcept)
+                    {
+                        if (socketexcept.SocketErrorCode != SocketError.AddressAlreadyInUse) throw;
+                        continue;
                     }
-                }  catch (Exception e) {
-                    RainMeadow.Error($"{e}");
+                    
+                    break;
                 }
-                socket.Bind(new IPEndPoint(IPAddress.Any, port));
+
+                if (!socket.IsBound) throw new Exception("Could not find port for UDP connection");
             } catch (SocketException except) {
                 RainMeadow.Error(except.SocketErrorCode);
                 throw except;
