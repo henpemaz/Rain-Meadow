@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
 using UnityEngine;
-
+using System.Reflection;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -30,6 +30,7 @@ namespace RainMeadow
 
         private void StoryHooks()
         {
+            IL.Menu.SlugcatSelectMenu.Update += SS_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
@@ -167,6 +168,32 @@ namespace RainMeadow
                     //throw; nonfatal
                 }
             };
+        }
+
+        public void SS_Update(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+
+            MethodInfo colorMethod = typeof(Menu.SlugcatSelectMenu).GetMethod("colorFromIndex", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            MethodInfo dictGetter = typeof(Dictionary<SlugcatStats.Name, Menu.SlugcatSelectMenu.SaveGameData>).GetMethod("get_Item");
+
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchCallOrCallvirt(colorMethod), 
+                x => x.MatchCallvirt(dictGetter)      
+            ))
+            {
+                c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
+                {
+                    if (OnlineManager.lobby != null) {
+                        return saveData != null || !OnlineManager.lobby.isOwner;;
+                    }
+                    return saveData != null;
+                });
+            }
+            else
+            {
+                RainMeadow.Error("Failed to hook restartAvailable in SlugcatSelectMenu!");
+            }
         }
 
 
