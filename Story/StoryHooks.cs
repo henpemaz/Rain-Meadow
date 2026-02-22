@@ -6,11 +6,8 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using System.Reflection;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -175,12 +172,10 @@ namespace RainMeadow
         {
             ILCursor c = new ILCursor(il);
 
-            MethodInfo colorMethod = typeof(Menu.SlugcatSelectMenu).GetMethod("colorFromIndex", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-            MethodInfo dictGetter = typeof(Dictionary<SlugcatStats.Name, Menu.SlugcatSelectMenu.SaveGameData>).GetMethod("get_Item");
-
             if (c.TryGotoNext(MoveType.After,
-                x => x.MatchCallOrCallvirt(colorMethod), 
-                x => x.MatchCallvirt(dictGetter)      
+                x => x.MatchLdfld<Menu.SlugcatSelectMenu>("slugcatPageIndex"),
+                x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"),
+                x => x.MatchCallvirt(out var m) && m.Name == "get_Item" 
             ))
             {
                 c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
