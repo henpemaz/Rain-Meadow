@@ -26,7 +26,7 @@
 - Updated documentation in codebase.
 - Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
 - Added support for 4:3 resolution for Spectate overlay
-
+- Fixed proto-rot showing up in unexpected campaigns 
 ## Engine
 Synced the following
 - Waterflux
