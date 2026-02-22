@@ -827,6 +827,7 @@ public partial class RainMeadow
           }
 
         return orig(i);
+    }
 
     private void SlugOnBack_Update(On.Player.SlugOnBack.orig_Update orig, Player.SlugOnBack self, bool eu)
     {
