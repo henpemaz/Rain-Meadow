@@ -12,7 +12,7 @@
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
-
+- Enabled Sync Save option for clients regardless of save state status
 ### Watcher
 - Fixed end-game ability not working
 - Fixed mind control happening post-warp
