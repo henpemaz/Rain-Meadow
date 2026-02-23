@@ -829,15 +829,18 @@ namespace RainMeadow
             {
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
-                    ArenaSitting.ArenaPlayer winningPlayer = null;
-                    int winDetermination = 0;
+                    // Initialize to -1 so the first player evaluated always becomes the leader,
+                    // even if they have 0 wins.
+                    int winDetermination = -1;
+
                     foreach (var player in self.players)
                     {
                         OnlinePlayer? winPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                             arena,
                             player.playerNumber
                         );
-                        if (winPlayer != null) // check the online player early so we can be assured whowever we have is actually in-game
+
+                        if (winPlayer != null)
                         {
                             if (player.wins > winDetermination)
                             {
@@ -852,13 +855,24 @@ namespace RainMeadow
                                     tb.winningTeam = winningTeam.team;
                                 }
                             }
+                            else if (player.wins == winDetermination)
+                            {
+                                // We have a tie in wins! Let's check the tied player's team.
+                                if (
+                                    OnlineManager
+                                        .lobby.clientSettings[winPlayer]
+                                        .TryGetData<ArenaTeamClientSettings>(out var tiedTeam)
+                                )
+                                {
+                                    // Only declare a tie if the tied player is on a DIFFERENT team
+                                    if (tb.winningTeam != tiedTeam.team)
+                                    {
+                                        tb.winningTeam = -1;
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-                var list = orig(self);
-                foreach (var e in list)
-                {
-                    RainMeadow.Debug($"{e.playerNumber} - {e.wins} - {e.winner}");
                 }
             }
             return orig(self);
