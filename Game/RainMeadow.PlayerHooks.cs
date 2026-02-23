@@ -1077,16 +1077,16 @@ public partial class RainMeadow
 
             // don't try to pull remote players using dev tools
             c.Index = 0;
-            skipDevTools = il.DefineLabel();
+            ILLabel skipDevTools2 = il.DefineLabel();
             c.GotoNext(MoveType.Before,
                 i => i.MatchLdstr("w"),
                 i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
                 i => i.MatchLdloc(33),
                 i => i.MatchAnd(),
-                i => i.MatchBrfalse(out skipDevTools));
+                i => i.MatchBrfalse(out skipDevTools2));
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
-            c.Emit(OpCodes.Brfalse, skipDevTools);
+            c.Emit(OpCodes.Brfalse, skipDevTools2);
 
             // don't handle shelter for meadow and remote scugs
             c.Index = 0;
