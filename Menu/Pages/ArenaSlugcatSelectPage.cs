@@ -98,7 +98,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.SafeAddSubobjects(backButton, prevButton, nextButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
         if (ArenaMenu != null)
         {
-            if (Arena.watcherRippleLevel > 9)
+            if (Arena != null && Arena.watcherRippleLevel > 9)
             {
                 Arena.watcherRippleLevel = 9; // somehow that happened and broke everything
             }
