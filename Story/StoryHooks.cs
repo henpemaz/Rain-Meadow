@@ -6,11 +6,8 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -30,6 +27,7 @@ namespace RainMeadow
 
         private void StoryHooks()
         {
+            IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
@@ -167,6 +165,31 @@ namespace RainMeadow
                     //throw; nonfatal
                 }
             };
+        }
+
+        // Always show "Sync Save" to clients
+        public void SlugcatSelectMenu_Update(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdfld<Menu.SlugcatSelectMenu>("slugcatPageIndex"),
+                x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"),
+                x => x.MatchCallvirt(out var m) && m.Name == "get_Item" 
+            ))
+            {
+                c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
+                {
+                    if (OnlineManager.lobby != null) {
+                        return saveData != null || !OnlineManager.lobby.isOwner;
+                    }
+                    return saveData != null;
+                });
+            }
+            else
+            {
+                RainMeadow.Error("Failed to hook restartAvailable in SlugcatSelectMenu!");
+            }
         }
 
 

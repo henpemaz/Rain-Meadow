@@ -12,7 +12,7 @@
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
-
+- Enabled Sync Save option for clients regardless of save state status
 ### Watcher
 - Fixed end-game ability not working
 - Fixed mind control happening post-warp
@@ -27,6 +27,7 @@
 - Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
 - Added support for 4:3 resolution for Spectate overlay
 - Fixed proto-rot showing up in unexpected campaigns 
+- Fixed issues with port assignment resulting in meadow failing to start.
 ## Engine
 Synced the following
 - Waterflux
