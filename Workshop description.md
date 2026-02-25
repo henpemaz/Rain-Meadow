@@ -57,34 +57,19 @@ Meadow supports other mods adding custom gamemodes, as well as custom variations
 ---
 
 ## Credits
-
-| Name | Role / Contribution |
-| :--- | :--- |
-| **Henpemaz** | Lead Developer |
-| **Wolfycatt(Ana)** | Lead Artist |
-| **Intikus** | Lead Audio Designer |
-| **Noircatto** | Programming, Engine |
-| **HelloThere** | Programming, Sound |
-| **A1iex** | UI Design |
-| **FranklyGD** | Programming, Engine |
-| **MC41Games** | Programming, Menus |
-| **Silvyger** | Programming, Arena |
-| **Vigaro** | Programming, Menus |
-| **BitiLope** | Programming, Story |
-| **Pudgy Turtle** | Programming, Story |
-| **ddemile** | Programming, Modsync |
-| **UO** | Programming, Story, Arena |
-| **Saddest** | Programming, UI, Chat |
-| **notchoc** | Programming, Story |
-| **phanie_** | Illustration |
-| **Timbits** | Programming, UI, Menus |
-| **Zedreus** | Programming, UI, Story |
-| **Persondotexe** | Programming, Modsync |
-| **invalidunits** | Programming, UI, LAN |
-| **forthfora** | Programming, Modsync |
-| **WillowWisp** | Programming, Story |
-| **@None** | Programming, Gameplay |
-| **DustyLemmy** | Arena, Story, UI |
-| **Elizabeth** | Programming, Story, UI |
-| **niacdoial** | LAN |
-| **Capt. Redstone** | Meadow, Story |
+| Name | Role / Contribution | Name | Role / Contribution |
+| :--- | :--- | :--- | :--- |
+| **Henpemaz** | Lead Developer | **Wolfycatt(Ana)** | Lead Artist |
+| **Intikus** | Lead Audio Designer | **@None** | Programming, Gameplay |
+| **A1iex** | UI Design | **BitiLope** | Programming, Story |
+| **Capt. Redstone** | Meadow, Story | **ddemile** | Programming, Modsync |
+| **DustyLemmy** | Arena, Story, UI | **Elizabeth** | Programming, Story, UI |
+| **forthfora** | Programming, Modsync | **FranklyGD** | Programming, Engine |
+| **HelloThere** | Programming, Sound | **invalidunits** | Programming, UI, LAN |
+| **MC41Games** | Programming, Menus | **niacdoial** | LAN |
+| **Noircatto** | Programming, Engine | **notchoc** | Programming, Story |
+| **Persondotexe** | Programming, Modsync | **phanie_** | Illustration |
+| **Pudgy Turtle** | Programming, Story | **Saddest** | Programming, UI, Chat |
+| **Silvyger** | Programming, Arena | **Timbits** | Programming, UI, Menus |
+| **UO** | Programming, Story, Arena | **Vigaro** | Programming, Menus |
+| **WillowWisp** | Programming, Story | **Zedreus** | Programming, UI, Story |
