@@ -51,6 +51,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableBombs;
     public readonly Configurable<bool> EnableCorpseGrab;
     public readonly Configurable<bool> EnableBees;
+    public readonly Configurable<bool> EnableOverseer;
 
     public readonly Configurable<bool> EnablePiggyBack;
     public readonly Configurable<StreamMode> StreamerMode;
@@ -164,6 +165,7 @@ public class RainMeadowOptions : OptionInterface
         EnableBees = config.Bind("EnableBees", true);
         EnableBombs = config.Bind("EnableBombs", true);
         EnableCorpseGrab = config.Bind("EnableCorpseGrab", true);
+        EnableOverseer = config.Bind("EnableOverseer", false);
 
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);

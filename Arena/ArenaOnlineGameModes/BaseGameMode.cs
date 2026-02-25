@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using HarmonyLib;
@@ -70,14 +70,14 @@ namespace RainMeadow
                 {
                     list[0].winner = true;
                 }
-                else if (list[0].allKills.Count > list[1].allKills.Count)
-                {
-                    list[0].winner = true;
-                }
-                else if (list[0].deaths < list[1].deaths)
-                {
-                    list[0].winner = true;
-                }
+                // else if (list[0].allKills.Count > list[1].allKills.Count)
+                // {
+                //     list[0].winner = true;
+                // }
+                // else if (list[0].deaths < list[1].deaths)
+                // {
+                //     list[0].winner = true;
+                // }
                 else if (list[0].score > list[1].score)
                 {
                     list[0].winner = true;
@@ -593,7 +593,16 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Player spawned as overseer");
                 // maybr add toggle later
-                // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+                if (arena.enableOverseer)
+                {
+                    SpawnTransferableCreature(
+                        arena,
+                        self,
+                        room,
+                        randomExitIndex,
+                        CreatureTemplate.Type.Overseer
+                    );
+                }
             }
             else
             {

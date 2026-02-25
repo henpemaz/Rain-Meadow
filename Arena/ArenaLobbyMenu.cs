@@ -61,6 +61,7 @@ namespace RainMeadow
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
+            this.arena.ResetOverWorld();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             if (arena.currentGameMode == "" || arena.currentGameMode is null)

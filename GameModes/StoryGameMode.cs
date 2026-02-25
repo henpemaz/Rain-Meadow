@@ -70,6 +70,8 @@ namespace RainMeadow
             pups = new();
             storyClientData?.Sanitize();
             rippleLevel = 0.0f;
+            this.ResetOverWorld();
+
         }
 
         public bool canJoinGame => isInGame && !changedRegions && readyForTransition == ReadyForTransition.Closed && !readyForWin;

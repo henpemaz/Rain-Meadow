@@ -8,12 +8,11 @@
 - Blocked exiting to lobby if host already initiated next level loading to prevent crash
 - A new character approaches: The Overseer! Select to spectate games
 ### Team Battle 
-- Added friendly fire togggle
-- Team Battle: Added friendly fire togggle
+- Added friendly fire toggle
 
 ## Story
 - Fixed Moon dying if the room transferred owners 
-
+- Enabled Sync Save option for clients regardless of save state status
 ### Watcher
 - Fixed end-game ability not working
 - Fixed mind control happening post-warp
@@ -25,20 +24,24 @@
 ## General
 - Fixed Dev Tools trying to teleport remote players when holding V
 - Updated documentation in codebase.
+- Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
+- Added support for 4:3 resolution for Spectate overlay
+- Fixed issues with port assignment resulting in meadow failing to start.
 
-### Engine
-- Synced the following
-	- Waterflux
-	- Gourmand exhaustion and player lung exhaustion
-	- Vulture demasking
-	- Box Worms
-	- Sand Grubs
-- Improved sync for the following
-	- Big Moths
-	  - Moths will flap their wings correctly and creature interactions are synced..
-	- Vultures
-	  - Vultures should be noticably less jittery and sync more accurately. King Vultures should also work a lot better.
+## Engine
+Synced the following
+- Waterflux
+- Gourmand exhaustion and player lung exhaustion
+- Vulture demasking
+- Box Worms
+- Sand Grubs
+Improved sync for the following
+- Big Moths
+  - Moths will flap their wings correctly and creature interactions are synced..
+ - Vultures
+   - Vultures should be noticably less jittery and sync more accurately. King Vultures should also work a lot better.
 - Fixed Sand Grubs causing crashes and graphical glitches.
+- Added coroutine for world loading; blocked entity states during world transitions
 
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
