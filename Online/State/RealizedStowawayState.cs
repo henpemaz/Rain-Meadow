@@ -84,35 +84,39 @@ namespace RainMeadow
 
     public class StowawayTentacleState : OnlineState
     {
+        [OnlineFieldHalf]
+        float retractFac;
         [OnlineField]
         bool fired;
         [OnlineFieldHalf(group = "counters")]
         float cooldown;
         [OnlineFieldHalf]
         Vector2 pos;
-        [OnlineFieldHalf(nullable = true)]
-        Vector2? floatGrabDest;
         public StowawayTentacleState() { }
 
         public StowawayTentacleState(Tentacle tentacle, int index)
         {
             StowawayBug owner = (StowawayBug)tentacle.owner;
 
+            retractFac = tentacle.retractFac;
+
             fired = owner.headFired[index];
             cooldown = owner.headCooldown[index];
             pos = tentacle.Tip.pos;
-            floatGrabDest = tentacle.floatGrabDest;
+            //floatGrabDest = tentacle.floatGrabDest;
         }
 
         public void ReadTo(Tentacle tentacle, int index)
         {
             StowawayBug owner = (StowawayBug)tentacle.owner;
 
+            tentacle.retractFac = retractFac;
+
             owner.headFired[index] = fired;
             owner.headCooldown[index] = cooldown;
 
             tentacle.Tip.pos = pos;
-            tentacle.floatGrabDest = floatGrabDest;
+            //tentacle.floatGrabDest = floatGrabDest;
         }
     }
 }

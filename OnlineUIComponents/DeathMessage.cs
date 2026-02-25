@@ -12,9 +12,14 @@ public static class DeathMessage
     {
         var opo = player.abstractPhysicalObject.GetOnlineObject();
         if (opo == null) return;
+        OnlinePhysicalObject? blame = null;
+        if (player.killTag?.GetOnlineObject() != null)
+        {
+            blame = player.killTag?.GetOnlineObject();
+        }
         foreach(var op in OnlineManager.players)
         {
-            op.InvokeRPC(RPCs.KillFeedEnvironment, opo, (int)cause);
+            op.InvokeRPC(RPCs.KillFeedEnvironment, opo, (int)cause, blame);
         }
     }
     public static void PvPRPC(Player killer, Creature target, int context)
@@ -55,7 +60,7 @@ public static class DeathMessage
         }
         return false;
     }
-    public static void EnvironmentalDeathMessage(OnlinePhysicalObject opo, DeathType cause)
+    public static void EnvironmentalDeathMessage(OnlinePhysicalObject opo, DeathType cause, OnlinePhysicalObject? blame = null)
     {
         try
         {
@@ -65,6 +70,9 @@ public static class DeathMessage
                 return;
             }
             var t = opo.owner.id.DisplayName;
+            string k = "";
+            if (blame != null) k = blame.owner.id.DisplayName;
+
             switch (cause)
             {
                 default:
@@ -74,24 +82,49 @@ public static class DeathMessage
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was crushed by the rain."));
                     break;
                 case DeathType.Abyss:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("fell into the abyss."));
+                    if (string.IsNullOrEmpty(k))
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("fell into the abyss."));
+                    }
+                    else
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate($"fell into the abyss thanks to") + " " + k + ".");
+                    }
                     break;
                 case DeathType.Drown:
+                    if (!string.IsNullOrEmpty(k))
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + k + ".");
+                    }
                     if ((opo.apo as AbstractCreature).realizedCreature != null && (opo.apo as AbstractCreature).realizedCreature.grabbedBy.Count > 0)
                     {
-                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by a") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
                         break;
                     }
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("drowned."));
                     break;
                 case DeathType.FallDamage:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("hit the ground too hard."));
+                    if (string.IsNullOrEmpty(k))
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("hit the ground too hard."));
+                    }
+                    else
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("hit the ground too hard thanks to") + " " + k + ".");
+                    }
                     break;
                 case DeathType.Oracle:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was killed through unknown means."));
                     break;
                 case DeathType.Burn:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("tried to swim in burning liquid."));
+                    if (string.IsNullOrEmpty(k))
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("tried to swim in burning liquid."));
+                    }
+                    else
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("tried to swim in burning liquid to escape") + " " + k + ".");
+                    }
                     break;
                 case DeathType.PyroDeath:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("spontaneously combusted."));
@@ -103,7 +136,14 @@ public static class DeathMessage
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the grass."));
                     break;
                 case DeathType.WallRot:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the walls."));
+                    if (string.IsNullOrEmpty(k))
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the walls."));
+                    }
+                    else
+                    {
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the walls thanks to") + " " + k + ".");
+                    }
                     break;
                 case DeathType.Electric:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted."));
@@ -116,6 +156,9 @@ public static class DeathMessage
                     break;
                 case DeathType.UnderwaterShock:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted in the water."));
+                    break;
+                case DeathType.SoloExplosion:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("blew up."));
                     break;
 
                 // WATCHER
@@ -154,7 +197,7 @@ public static class DeathMessage
             RainMeadow.Error("Error displaying death message. " + e);
         }
     }
-    public static void PlayerKillPlayer(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
+    public static void PlayerKillPlayer(OnlinePhysicalObject killer, OnlinePhysicalObject target, PvPContext context)
     {
         try
         {
@@ -170,8 +213,11 @@ public static class DeathMessage
                 default:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by") + $" {k}.");
                     break;
-                case 1:
+                case PvPContext.Saint:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was ascended by") + $" {k}.");
+                    break;
+                case PvPContext.Explosion:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was blown up by") + $" {k}.");
                     break;
             }
             
@@ -218,7 +264,7 @@ public static class DeathMessage
         }
     }
 
-    public static void PlayerKillCreature(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
+    public static void PlayerKillCreature(OnlinePhysicalObject killer, OnlinePhysicalObject target, PvPContext context)
     {
         /* don't think we need this anymore...
         if (target.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
@@ -239,8 +285,11 @@ public static class DeathMessage
                 default:
                     ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
                     break;
-                case 1:
+                case PvPContext.Saint:
                     ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was ascended by") + $" {k}.");
+                    break;
+                case PvPContext.Explosion:
+                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was blown up by") + $" {k}.");
                     break;
             }
 
@@ -302,6 +351,7 @@ public static class DeathMessage
         {
             if (crit.killTag.realizedCreature is Player)
             {
+                // TODO: add method to get context beyond default & saint
                 PvPRPC(crit.killTag.realizedCreature as Player, crit, 0);
             }
             else if (crit is Player)
@@ -384,6 +434,9 @@ public static class DeathMessage
                 // thanks .NET for not supporting using type variables in switch statements
                 switch (violentAction.caller)
                 {
+                    case Explosion:
+                        EnvironmentalRPC(player, DeathType.SoloExplosion);
+                        break;
                     case Pomegranate:
                         EnvironmentalRPC(player, DeathType.Pomegranate);
                         break;
@@ -420,6 +473,7 @@ public static class DeathMessage
         Electric,
         DeadlyLick,
         Coalescipede,
+        SoloExplosion,
         Sandstorm,
         Poison,
         Lightning,
@@ -428,5 +482,12 @@ public static class DeathMessage
         Pomegranate,
         Fire,
         UnderwaterShock,
+    }
+
+    public enum PvPContext
+    {
+        Default,
+        Saint,
+        Explosion,
     }
 }

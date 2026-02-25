@@ -1065,7 +1065,7 @@ public partial class RainMeadow
             // don't try teleporting remote players when using dev tools
             c.Index = 0;
             ILLabel skipDevTools = il.DefineLabel();
-            c.GotoNext(MoveType.Before,
+            c.GotoNext(MoveType.After,
                 i => i.MatchLdstr("v"),
                 i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
                 i => i.MatchLdloc(33),
@@ -1078,7 +1078,7 @@ public partial class RainMeadow
             // don't try to pull remote players using dev tools
             c.Index = 0;
             ILLabel skipDevTools2 = il.DefineLabel();
-            c.GotoNext(MoveType.Before,
+            c.GotoNext(MoveType.After,
                 i => i.MatchLdstr("w"),
                 i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
                 i => i.MatchLdloc(33),
