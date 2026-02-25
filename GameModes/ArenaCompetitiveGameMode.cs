@@ -1060,9 +1060,7 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            if (
-                item.type == PlacedObject.Type.StuckDaddy /* || item.type == DLCSharedEnums.PlacedObjectType.Stowaway*/
-            )
+            if (item.type == PlacedObject.Type.StuckDaddy || item.type == DLCSharedEnums.PlacedObjectType.Stowaway)
             {
                 return OnlineManager.lobby.isOwner;
             }
