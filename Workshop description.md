@@ -1,4 +1,4 @@
-# Rain Meadow
+A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
 ## Table of Contents
 * [What is it?](#what-is-it)
