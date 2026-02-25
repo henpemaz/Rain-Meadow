@@ -26,8 +26,8 @@
 - Updated documentation in codebase.
 - Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
 - Added support for 4:3 resolution for Spectate overlay
+- Fixed proto-rot showing up in unexpected campaigns 
 - Fixed issues with port assignment resulting in meadow failing to start.
-
 ## Engine
 Synced the following
 - Waterflux
