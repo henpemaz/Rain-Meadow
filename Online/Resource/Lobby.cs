@@ -1,6 +1,8 @@
 ﻿using RainMeadow.Generics;
+using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -317,6 +319,61 @@ namespace RainMeadow
         {
             base.ParticipantLeftImpl(player);
             gameMode.PlayerLeftLobby(player);
+        }
+        public void SendValidation()
+        {
+            string data = "";
+            //SlugcatStats.Name selectedSlugcat = ;
+            data = string.Concat(
+            [
+                data,
+                "BEGIN TOURNAMENT VALIDATION",
+                Environment.NewLine,
+                $"Rain Meadow {RainMeadow.MeadowVersionStr} - ({MatchmakingManager.currentDomain.value}) | ",
+                $"Rain World {RainWorld.GAME_VERSION_STRING} ",
+                Environment.NewLine,
+            ]);
+
+            for(int i = 0; i < ModManager.ActiveMods.Count; i++)
+            {
+                ModManager.Mod mod = ModManager.ActiveMods[i];
+                if (mod.id == DevInterface.DevTools.MOD_ID)
+                {
+                    data += DevInterface.DevTools.ValidationString() + Environment.NewLine;
+                }
+                else if (mod.id == JollyCoop.JollyCoop.MOD_ID)
+                {
+                    data += JollyCoop.JollyCoop.ValidationString() + Environment.NewLine;
+                }
+                else
+                {
+                    var registeredIO = MachineConnector.GetRegisteredOI(mod.id);
+                    if (registeredIO != null)
+                    {
+                        data += mod.id + " " + registeredIO.ValidationString() + " ";
+                    }
+                    else
+                    {
+                        data += mod.id + " ";
+                    }
+                    data += mod.version + " ";
+                    data += mod.workshopMod ? mod.workshopId + " " : "LOCAL ";
+                    data += mod.hasDLL ? "CODE MOD " : "NON-CODE MOD ";
+                    data += Utils.CreateModChecksum(mod);
+                    data += Environment.NewLine;
+                }
+            }
+
+            data += Environment.NewLine + "END TOURNAMENT VALIDATION";
+
+            if (!owner.isMe)
+            {
+                owner.InvokeRPC(RPCs.TournamentValidation, data);
+            }
+            else
+            {
+                RainMeadow.Debug($"[Tournament Validation - {owner}] {data}");
+            }
         }
     }
 }
