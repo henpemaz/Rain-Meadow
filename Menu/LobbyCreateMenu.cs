@@ -21,7 +21,7 @@ public class LobbyCreateMenu : SmartMenu
     private OpCheckBox? lobbyPinnedCheckBox;
     private OpCheckBox? lobbyAnniversaryGags;
 
-    private OpComboBox2? meadowTimelineDropdown;
+    private OpComboBox2 meadowTimelineDropdown;
 
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
@@ -45,7 +45,7 @@ public class LobbyCreateMenu : SmartMenu
         mainPage.subObjects.Add(createButton);
 
         // game mode selection in top center
-        var where = new Vector2(500f, 550);
+        var where = new Vector2(523f, 550);
         var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Mode:"), where, new Vector2(200, 20f), false);
         mainPage.subObjects.Add(modeLabel);
         where.x += 80;
@@ -101,40 +101,37 @@ public class LobbyCreateMenu : SmartMenu
         where.y += 5;
         where.x += 80;
 
+        //Timeline selection dropdown
+        where.x -= 160;
+        where.y -= 45;
+        timelineDescription = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Timeline:"), where, new Vector2(200, 20f), false);
+        mainPage.subObjects.Add(timelineDescription);
+        where.x += 80;
+        where.y -= 5;
+        meadowTimeline = SlugcatStats.Name.White.value;
+        string[] excludedSlugcats = { "MeadowOnline", "MeadowRandom", "Slugpup" }; // visual. Timelines default to White if unknown
 
-        if (meadowTimelineDropdown == null)
-        {
-            where.x -= 160;
-            where.y -= 45;
-            timelineDescription = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Timeline:"), where, new Vector2(200, 20f), false);
-            mainPage.subObjects.Add(timelineDescription);
-            where.x += 80;
-            where.y -= 5;
-            meadowTimeline = SlugcatStats.Name.White.value;
-            string[] excludedSlugcats = { "MeadowOnline", "MeadowRandom", "Slugpup" }; // visual. Timelines default to White if unknown
+        var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
+            .Where(li => !excludedSlugcats.Contains(li.name))
+            .Select(li => 
+            { 
+                li.displayName = Translate(li.displayName); 
+                return li; 
+            })
+            .ToList();
 
-            var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
-                .Where(li => !excludedSlugcats.Contains(li.name))
-                .Select(li => 
-                { 
-                    li.displayName = Translate(li.displayName); 
-                    return li; 
-                })
-                .ToList();
-
-            meadowTimelineDropdown = new OpComboBox2(
-                new Configurable<string>(meadowTimeline), 
-                where, 
-                160, 
-                filteredList
-            ) { colorEdge = MenuColorEffect.rgbWhite };            
-            meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
-            new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
-        }
+        meadowTimelineDropdown = new OpComboBox2(
+            new Configurable<string>(meadowTimeline), 
+            where, 
+            160, 
+            filteredList
+        ) { colorEdge = MenuColorEffect.rgbWhite };            
+        meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
+        new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
 
         if (MatchmakingManager.currentInstance.IsTrustedCommunity(OnlineManager.mePlayer.id))
         {
-            where.x -= 160;
+            where.x -= 80;
             where.y -= 45;
             mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Pinned:"), where, new Vector2(400, 20f), false));
             where.x += 80;
@@ -142,11 +139,10 @@ public class LobbyCreateMenu : SmartMenu
             lobbyPinnedCheckBox = new OpCheckBox(new Configurable<bool>(false), where);
             new UIelementWrapper(this.tabWrapper, lobbyPinnedCheckBox);
             where.y += 5;
-            where.x += 80;
         }
         if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
         {
-            where.x -= 200;
+            where.x -= 120;
             where.y -= 45;
             mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Anniversary Gags:"), where, new Vector2(400, 20f), false));
             where.x += 120;
@@ -154,7 +150,6 @@ public class LobbyCreateMenu : SmartMenu
             lobbyAnniversaryGags = new OpCheckBox(new Configurable<bool>(false), where);
             new UIelementWrapper(this.tabWrapper, lobbyAnniversaryGags);
             where.y += 5;
-            where.x += 80;
         }
 
 
@@ -201,38 +196,36 @@ public class LobbyCreateMenu : SmartMenu
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
-        if (meadowTimelineDropdown != null) {
-            if (modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Story.value && modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Arena.value)
-            {
-                 meadowTimelineDropdown.greyedOut = false;
-            } else {
-            
-              meadowTimelineDropdown.greyedOut = true;
-              meadowTimeline = "";
-            }
+        if (modeDropDown.value == OnlineGameMode.OnlineGameModeType.Meadow.value)
+        {
+            meadowTimelineDropdown.greyedOut = false;
+        }
+        else
+        {
+            meadowTimelineDropdown.greyedOut = true;
+            meadowTimeline = "";
         }
         
     }
 
     private void UpdateMeadowTimeline()
     {
-    if (meadowTimelineDropdown != null) {
-      
-      meadowTimeline = SlugcatStats.SlugcatToTimeline(new SlugcatStats.Name(meadowTimelineDropdown.value)).value;
-      RainMeadow.Debug($"Selected Meadow Timeline: {meadowTimeline}");
-    }
+        meadowTimeline = SlugcatStats.SlugcatToTimeline(new SlugcatStats.Name(meadowTimelineDropdown.value)).value;
+        RainMeadow.Debug($"Selected Meadow Timeline: {meadowTimeline}");
     }
     public void CreateElementBindings()
     {
         //Column; enforce element order, and fix/adjust left/right binds.
-        List<MenuObject> VerticalElements = new List<MenuObject>() { modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper };
+        List<MenuObject> VerticalElements = [modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper, meadowTimelineDropdown.wrapper];
+        if (lobbyPinnedCheckBox != null) { VerticalElements.Add(lobbyPinnedCheckBox.wrapper); }
+        if (lobbyAnniversaryGags != null) { VerticalElements.Add(lobbyAnniversaryGags.wrapper); }
         Extensions.TrySequentialMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);
         Extensions.TryMassBind(VerticalElements, backObject, left:true);
         Extensions.TryMassBind(VerticalElements, createButton, right:true);
         //Bottom row; enforce element order and fix/adjust up/down binds.
-        List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, createButton };
-        Extensions.TryMassBind(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
-        Extensions.TryMassBind(BottomRowElements, modeDropDown.wrapper, bottom:true);
+        List<MenuObject> BottomRowElements = [backObject, createButton];
+        Extensions.TryMassBind(BottomRowElements, VerticalElements.Last(), top:true);
+        Extensions.TryMassBind(BottomRowElements, VerticalElements.First(), bottom:true);
         Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
     }
 
