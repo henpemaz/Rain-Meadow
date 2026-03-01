@@ -19,7 +19,7 @@ Delete doorstop_config.ini from the game folder and have steam redownload it.
 
 ## Steam Deck / Linux mods don't load
 
-Proton/Wine will only load dlls built in to its package by default, which breaks BepInEx modloading. To resolve this you must override the load order for `winhttp.dll` so that the game dll takes precedence:
+Proton/Wine will only load dlls built into its package by default, which breaks BepInEx modloading. To resolve this you must override the load order for `winhttp.dll` so that the game dll takes precedence:
 1. In steam, right click Rain World
 2. Navigate to properties
 3. In the launch options window, enter `WINEDLLOVERRIDES="winhttp=n,b" %command%`
@@ -59,6 +59,7 @@ BepInEx/core/MonoMod.dll
 BepInEx/plugins/HOOKS-Assembly-CSharp.dll
 BepInEx/utils/PUBLIC-Assembly-CSharp.dll
 RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
+RainWorld_Data/Managed/com.rlabrecque.steamworks.net.dll
 RainWorld_Data/Managed/Newtonsoft.Json.dll
 RainWorld_Data/Managed/Rewired.Runtime.dll
 RainWorld_Data/Managed/Rewired_Core.dll
@@ -67,10 +68,11 @@ RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
 RainWorld_Data/Managed/UnityEngine.AudioModule.dll
 RainWorld_Data/Managed/UnityEngine.CoreModule.dll
 RainWorld_Data/Managed/UnityEngine.InputLegacyModule.dll
-RainWorld_Data/Managed/UnityEngine.ImageConversion.dll
+RainWorld_Data/Managed/UnityEngine.ImageConversionModule.dll
+RainWorld_Data/Managed/UnityEngine.IMGUIModule.dll
 RainWorld_Data/Managed/UnityEngine.JSONSerializeModule.dll
+RainWorld_Data/Managed/UnityEngine.UnityWebRequestModule.dll
 RainWorld_Data/Managed/UnityEngine.dll
-RainWorld_Data/Managed/com.rlabrecque.steamworks.net.dll
 ```
 
 ## Guidelines
