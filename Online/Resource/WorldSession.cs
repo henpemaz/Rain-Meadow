@@ -27,7 +27,7 @@ namespace RainMeadow
         {
             float startTime = UnityEngine.Time.time;
             float timeoutSeconds = 5f;
-            bool hasTimedOut = false;
+            bool cleanupTriggered = false;
 
             session.transitionInProgress = true;
             bool isMeadow = OnlineManager.lobby.gameMode is MeadowGameMode;
@@ -46,29 +46,24 @@ namespace RainMeadow
                 if (isDoneWaiting)
                     break;
 
-                // Check for timeout
-                if (elapsed > timeoutSeconds)
+                if (!isMeadow && elapsed > timeoutSeconds && !cleanupTriggered)
                 {
-                    RainMeadow.Debug("WaitLoop: Conditions not met. Timeout reached!");
-                    hasTimedOut = true;
-                    break;
-                }
-                yield return null;
-            }
+                    cleanupTriggered = true; // Only do this once
+                    RainMeadow.Debug(
+                        "WaitLoop: Timeout reached. Forcing participant cleanup, but continuing to wait for conditions..."
+                    );
 
-            if (hasTimedOut && !isMeadow)
-            {
-                RainMeadow.Debug(
-                    "WaitLoop: Timeout reached. Cleaning up session to prevent deadlock."
-                );
+                    var participants = session.participants.ToList();
+                    foreach (var player in participants)
+                    {
+                        RainMeadow.Debug($"WaitLoop: Force-removing {player} from session.");
+                        session.ParticipantLeftImpl(player);
+                        OnlineManager.RemoveSubscription(session, player);
+                    }
 
-                // Clean up participants who are still hanging in the old resource
-                var participants = session.participants.ToList();
-                foreach (var player in participants)
-                {
-                    RainMeadow.Debug($"WaitLoop: Force-removing {player} from session.");
-                    OnlineManager.RemoveSubscription(session, player);
+                    // After removing, let the loop check isDoneWaiting again.
                 }
+
                 yield return null;
             }
 
