@@ -949,7 +949,7 @@ namespace RainMeadow
             {
                 if (arena.leaveForNextLevel)
                 {
-                    self.headingLabel.text = "LOADING...";
+                    self.headingLabel.text = self.Translate("LOADING...");
                     if (!OnlineManager.lobby.isOwner)
                     {
                         if (!self.nextLevelCall)
