@@ -40,29 +40,10 @@ namespace RainMeadow
             WorldSession oldWorldSession
         )
         {
-            System.Func<bool> waitCondition = null;
-            if (!OnlineManager.lobby.isOwner)
-            {
-                waitCondition = () =>
-                {
-                    var nextSession =
-                        OnlineManager.lobby.overworld.worldSessions.Values.FirstOrDefault(s =>
-                            s.isAvailable && s.owner == OnlineManager.lobby.owner
-                        );
-                    if (nextSession == null)
-                        return true; // Still null? Wait.
-                    if (nextSession.owner != OnlineManager.lobby.owner)
-                        return true; // Wrong owner? Wait.
-                    if (!nextSession.isAvailable)
-                        return true; // Not synced? Wait.
-
-                    return false;
-                };
-            }
 
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
-                waitCondition,
+                null,
                 () => self.NextLevel(manager)
             );
         }
