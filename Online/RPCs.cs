@@ -232,5 +232,18 @@ namespace RainMeadow
             }
             DeathMessage.CreatureKillPlayer(myKiller, myTarget);
         }
+
+        [RPCMethod]
+        public static void TournamentValidation(RPCEvent rpc, string data)
+        {
+            if (!OnlineManager.lobby.owner.isMe) return;
+            if (data.Length > 32767)
+            {
+                RainMeadow.Debug($"[Tournament Validation - {rpc.from}] Data was larger than 32kb, probably playing with disallowed mods.");
+                return;
+            }
+
+            RainMeadow.Debug($"[Tournament Validation - {rpc.from}] {data}");
+        }
     }
 }
