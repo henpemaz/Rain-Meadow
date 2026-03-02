@@ -20,41 +20,59 @@ namespace RainMeadow
         /// <param name="extraWaitCondition">Optional: An additional condition that must remain true to keep waiting (e.g., !newWorldSession.isAvailable). Pass null if not needed.</param>
         /// <param name="onComplete">The action/method to execute once the wait finishes or times out (e.g., orig(self, ...)).</param>
         public static System.Collections.IEnumerator WaitAndExecuteSession(
-            WorldSession session, 
-            System.Func<bool> extraWaitCondition, 
-            System.Action onComplete)
+            WorldSession session,
+            System.Func<bool> extraWaitCondition,
+            System.Action onComplete
+        )
         {
             float startTime = UnityEngine.Time.time;
             float timeoutSeconds = 5f;
+            bool hasTimedOut = false;
+
             session.transitionInProgress = true;
+            bool isMeadow = OnlineManager.lobby.gameMode is MeadowGameMode;
 
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
-                while (session.participants.Count > 0 && 
-                    (extraWaitCondition == null || extraWaitCondition()) && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+            while (true)
+            {
+                float elapsed = UnityEngine.Time.time - startTime;
+                bool conditionMet = extraWaitCondition == null || !extraWaitCondition();
+
+                // In Meadow, we only care about the extra condition.
+                // In Story/Arena, we wait for participants to be 0 AND the condition to be met.
+                bool isDoneWaiting = isMeadow
+                    ? conditionMet
+                    : (session.participants.Count == 0 && conditionMet);
+
+                if (isDoneWaiting)
+                    break;
+
+                // Check for timeout
+                if (elapsed > timeoutSeconds)
                 {
-                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
+                    RainMeadow.Debug("WaitLoop: Conditions not met. Timeout reached!");
+                    hasTimedOut = true;
+                    break;
                 }
-            } else
+                yield return null;
+            }
+
+            if (hasTimedOut && !isMeadow)
             {
-                 while ((extraWaitCondition == null || extraWaitCondition()) && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+                RainMeadow.Debug(
+                    "WaitLoop: Timeout reached. Cleaning up session to prevent deadlock."
+                );
+
+                // Clean up participants who are still hanging in the old resource
+                var participants = session.participants.ToList();
+                foreach (var player in participants)
                 {
-                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
+                    RainMeadow.Debug($"WaitLoop: Force-removing {player} from session.");
+                    OnlineManager.RemoveSubscription(session, player);
                 }
+                yield return null;
             }
 
-            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
-            {
-                RainMeadow.Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
-            }
-            else
-            {
-                RainMeadow.Debug("Entities removed. Proceeding...");
-            }
-
+            RainMeadow.Debug("WaitLoop: Proceeding to execution.");
             session.transitionInProgress = false;
             onComplete?.Invoke();
         }

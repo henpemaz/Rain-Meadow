@@ -33,16 +33,45 @@ namespace RainMeadow
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldIn(self);
             return orig(self);
         }
-        private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession oldWorldSession)
+                private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(
+            On.ArenaSitting.orig_NextLevel orig,
+            ArenaSitting self,
+            ProcessManager manager,
+            WorldSession oldWorldSession
+        )
         {
+            System.Func<bool> waitCondition = null;
+            if (!OnlineManager.lobby.isOwner)
+            {
+                waitCondition = () =>
+                {
+                    var nextSession =
+                        OnlineManager.lobby.overworld.worldSessions.Values.FirstOrDefault(s =>
+                            s.isAvailable && s.owner == OnlineManager.lobby.owner
+                        );
+                    if (nextSession == null)
+                        return true; // Still null? Wait.
+                    if (nextSession.owner != OnlineManager.lobby.owner)
+                        return true; // Wrong owner? Wait.
+                    if (!nextSession.isAvailable)
+                        return true; // Not synced? Wait.
+
+                    return false;
+                };
+            }
 
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
-                null, 
-                () => self.NextLevel(manager) 
+                waitCondition,
+                () => self.NextLevel(manager)
             );
         }
-        private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
+
+        private void ArenaSitting_NextLevel(
+            On.ArenaSitting.orig_NextLevel orig,
+            ArenaSitting self,
+            ProcessManager manager
+        )
         {
             if (isArenaMode(out var arena))
             {
@@ -51,13 +80,18 @@ namespace RainMeadow
                     arena.leaveForNextLevel = true;
                 }
 
-
                 arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
-                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                ArenaGameSession getArenaGameSession = (
+                    manager.currentMainLoop as RainWorldGame
+                ).GetArenaGameSession;
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 Room room = absRoom.realizedRoom;
-                WorldSession worldSession = WorldSession.map.TryGetValue(absRoom.world, out var ws)  ?  ws :  OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws2) ? ws2 : null;
+                WorldSession worldSession =
+                    WorldSession.map.TryGetValue(absRoom.world, out var ws) ? ws
+                    : OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws2)
+                        ? ws2
+                    : null;
                 if (worldSession.transitionInProgress)
                 {
                     return;
@@ -65,7 +99,9 @@ namespace RainMeadow
 
                 for (int i = arena.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
                 {
-                    OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                        arena.arenaSittingOnlineOrder[i]
+                    );
                     if (missingPlayer == null)
                     {
                         arena.arenaSittingOnlineOrder.RemoveAt(i);
@@ -74,40 +110,48 @@ namespace RainMeadow
 
                 foreach (var player in self.players)
                 {
-                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arena,
+                        player.playerNumber
+                    );
                     if (currentName != null)
                     {
                         arena.ReadFromStats(player, currentName);
                     }
                 }
 
-
                 if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                 {
                     // we go over all APOs in the room
                     Debug("Next level switching");
-                        RainMeadow.Debug("Unsubscribing from old world");
-                        if (worldSession.isActive) {
-                        worldSession.Deactivate();
-                        worldSession.NotNeeded(); 
-                        }
-
-                    if (worldSession.participants.Count > 0)
+                    RainMeadow.Debug("Unsubscribing from old world");
+                    if (roomSession.worldSession.isActive)
                     {
-                        if (OnlineManager.lobby.isOwner) {
-                        Debug($"Waiting for {worldSession.participants.Count} players to leave...");
-                        } else
+                        roomSession.worldSession.Deactivate();
+                        roomSession.worldSession.NotNeeded();
+                    }
+
+                    if (roomSession.worldSession.participants.Count > 0)
+                    {
+                        if (OnlineManager.lobby.isOwner)
                         {
-                         Debug($"Waiting for host  players to join new world...");
+                            Debug(
+                                $"Waiting for {roomSession.worldSession.participants.Count} players to leave..."
+                            );
                         }
-                        manager.rainWorld.StartCoroutine(ArenaNextLevel_WaitLoop(orig, self, manager, worldSession));
-                        worldSession.transitionInProgress = true;
-                        return; 
+                        else
+                        {
+                            Debug($"Waiting for host  players to join new world...");
+                        }
+                        manager.rainWorld.StartCoroutine(
+                            ArenaNextLevel_WaitLoop(orig, self, manager, roomSession.worldSession)
+                        );
+                        roomSession.worldSession.transitionInProgress = true;
+                        return;
                     }
 
                     if (manager.currentMainLoop is RainWorldGame)
                     {
-
                         self.creatures.Clear();
                         self.savCommunities = null;
 
@@ -115,7 +159,9 @@ namespace RainMeadow
 
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
-                            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
+                            manager.RequestMainProcessSwitch(
+                                ProcessManager.ProcessID.MultiplayerMenu
+                            );
                             self.players.Clear();
                             return;
                         }
@@ -128,28 +174,42 @@ namespace RainMeadow
                         arena.currentLevel = self.currentLevel;
                     }
 
-                    if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    if (
+                        self.currentLevel >= arena.playList.Count
+                        && !self.gameTypeSetup.repeatSingleLevelForever
+                    )
                     {
-                        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                        manager.RequestMainProcessSwitch(
+                            ProcessManager.ProcessID.MultiplayerResults
+                        );
                         return;
                     }
 
-                    List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe)];
+                    List<OnlinePlayer> waitingPlayers =
+                    [
+                        .. OnlineManager.players.Where(x =>
+                            ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe
+                        ),
+                    ];
 
                     self.players.Clear();
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            arena.arenaSittingOnlineOrder[i]
+                        );
                         if (pl != null)
                         {
                             ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
                             {
                                 playerNumber = i,
                                 playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
-                                hasEnteredGameArea = true
+                                hasEnteredGameArea = true,
                             };
 
-                            Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                            Debug(
+                                $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
+                            );
                             arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
 
                             self.players.Add(newArenaPlayer);
@@ -163,26 +223,33 @@ namespace RainMeadow
                         {
                             if (player != null) // always gotta check in case something happened to them
                             {
-                                if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
+                                if (
+                                    !arena.arenaSittingOnlineOrder.Contains(player.inLobbyId)
+                                    && OnlineManager.lobby.isOwner
+                                )
                                 {
                                     arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
                                 }
-                                ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
+                                ArenaSitting.ArenaPlayer newArenaPlayer = new(
+                                    arena.arenaSittingOnlineOrder.Count - 1
+                                )
                                 {
                                     playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                                    playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
-                                    hasEnteredGameArea = true
+                                    playerClass = ArenaHelpers
+                                        .GetArenaClientSettings(player)!
+                                        .playingAs,
+                                    hasEnteredGameArea = true,
                                 };
-                                Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                                Debug(
+                                    $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
+                                );
                                 arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
                                 self.players.Add(newArenaPlayer);
                             }
                         }
                     }
 
-
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-
                 }
             }
             else
@@ -190,7 +257,6 @@ namespace RainMeadow
                 orig(self, manager);
             }
         }
-
         // Room unload
         private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
         {
