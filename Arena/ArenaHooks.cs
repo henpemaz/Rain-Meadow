@@ -947,10 +947,17 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                if (!OnlineManager.lobby.isOwner && arena.leaveForNextLevel && !self.nextLevelCall)
+                if (arena.leaveForNextLevel)
                 {
-                    self.ArenaSitting.NextLevel(self.manager);
-                    self.nextLevelCall = true;
+                    self.headingLabel.text = "LOADING...";
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        if (!self.nextLevelCall)
+                        {
+                            self.ArenaSitting.NextLevel(self.manager);
+                            self.nextLevelCall = true;
+                        }
+                    }
                 }
             }
         }
