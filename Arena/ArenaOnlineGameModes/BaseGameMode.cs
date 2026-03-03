@@ -98,12 +98,6 @@ namespace RainMeadow
             self.levelItems = true;
             self.fliesSpawn = true;
             self.saveCreatures = false;
-            if (
-                SpecialEvents.IsSpecialEvent
-                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
-            ) { }
-            self.challengeID = 70;
-            self.gameType = DLCSharedEnums.GameTypeID.Challenge;
         }
 
         public string PlayingAsText()
