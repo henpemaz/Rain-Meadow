@@ -22,13 +22,22 @@ namespace RainMeadow
         public RPCSecurity security = RPCSecurity.InLobby;
         public bool runDeferred = false; // run after state is processed, at end of network-frame
     }
-
+    /// <summary>
+    /// Restricts who is allowed to send an RPC for a given Online object.<para></para>
+    /// Restrictions are enforced by the client which will refuse to process RPCs if they don't meet the security level.<para></para>
+    /// Default security level: <c>InLobby</c>
+    /// </summary>
     public enum RPCSecurity : byte
     {
-        PlaceHolder = 0, // 0 often means an error
+        /// <summary> PlaceHolder value for errors. </summary>
+        PlaceHolder = 0,
+        /// <summary> Can be sent by anyone regardless of if they've successfully joined the lobby. Only used for requesting the lobby. </summary>
         NoSecurity,
-        InLobby,
+        /// <summary> Can be sent by anyone in the lobby. Default security level. </summary>
+        InLobby, // Default
+        /// <summary> Can only be sent by people in the same resource as this object. </summary>
         InResource,
+        /// <summary> Can only be sent by the owner of this object. </summary>
         Owner,
     }
 

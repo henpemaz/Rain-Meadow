@@ -247,16 +247,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
                 if (RainMeadow.isArenaMode(out _))
-                {
                     Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
-                    if (selector.IsMatching)
-                    {
-                        if (SpecialEvents.IsSpecialEvent)
-                        {
-                            SpecialEvents.GainedMeadowCoin(1000);
-                        }
-                    }
-                }
             }
         );
         manager.ShowDialog(selector);
@@ -486,6 +477,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         {
             bool check = checkBox.Checked;
             string idString = checkBox.IDString;
+            if (idString == "OVERSEER")
+                return check ? Translate("Overseer Spectator spawn") : Translate("No overseers");
             if (idString == "SPEARSHIT")
                 return check
                     ? Translate("Player vs player deathmatch")
@@ -701,6 +694,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         List<MenuObject> MatchSettingsRow1Elements = new List<MenuObject>()
         {
             arenaMainLobbyPage.arenaSettingsInterface.spearsHitCheckbox,
+            arenaMainLobbyPage.arenaSettingsInterface.overseerCheckbox,
             arenaMainLobbyPage.arenaSettingsInterface.evilAICheckBox,
         };
         List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage

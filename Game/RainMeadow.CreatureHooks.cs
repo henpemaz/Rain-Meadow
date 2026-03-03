@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using UnityEngine;
-using System.Runtime.CompilerServices;
+using Watcher;
 using System.Linq;
-using HarmonyLib;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {    
@@ -42,11 +40,58 @@ namespace RainMeadow
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
+            On.Watcher.SandGrubAI.PickNewBurrow += SandGrubAI_PickNewBurrow;
+
+            On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
+            IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
+
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private Watcher.SandGrubBurrow SandGrubAI_PickNewBurrow(On.Watcher.SandGrubAI.orig_PickNewBurrow orig, Watcher.SandGrubAI self)
+        {
+            if (!self.Grub.IsLocal()) return null; // Don't try switching burrows if we are a remote, only my owner is allowed to do that.
+            return orig(self);
+        }
+
+        private void LarvaHolder_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
+                i => i.MatchBrtrue(out _));
+
+            c.GotoNext(i => i.MatchRet());
+
+            var ret = c.MarkLabel();
+
+            c.GotoPrev(MoveType.Before,
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<BoxWorm.LarvaHolder>(nameof(BoxWorm.LarvaHolder.ManageLarvaDetachment)));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((BoxWorm.LarvaHolder self) =>
+            {
+                if (!RealizedFireSpriteLarva.themoddershavebeenlefttostarve.TryGetValue((BoxWorm.Larva)self.abstractLarva.realizedObject, out _))
+                {
+                    RealizedFireSpriteLarva.themoddershavebeenlefttostarve.Add((BoxWorm.Larva)self.abstractLarva.realizedObject, self);
+                }
+            });
+        }
+
+        private void BoxWorm_RecieveHelp(On.Watcher.BoxWorm.orig_RecieveHelp orig, Watcher.BoxWorm self)
+        {
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
+            {
+                orig(self);
+                opo.BroadcastRPCInRoomExceptOwners(opo.RecieveHelp);
+                return;
+            }
+            orig(self);
         }
 
         private void Hazer_HasSprayed(ILContext il)
@@ -285,7 +330,10 @@ namespace RainMeadow
         {
             if (!self.IsLocal())
             {
-                (self.State as Vulture.VultureState).mask = false;
+                //orig(self, violenceDir);
+                var opo = self.abstractCreature.GetOnlineObject();
+                if (opo is null) return;
+                opo.RunRPC(opo.Demask, violenceDir);
                 return;
             }
             orig(self, violenceDir);

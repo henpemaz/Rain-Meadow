@@ -5,6 +5,15 @@ namespace RainMeadow
 {
     public partial class OnlineGameMode
     {
+
+        public void ResetOverWorld()
+        {
+            if (OnlineManager.lobby.overworld.isAvailable)
+            {
+                OnlineManager.lobby.overworld.Deactivate();
+                OnlineManager.lobby.overworld.NotNeeded();
+            }
+        }
         public HashSet<PlacedObject.Type> cosmeticItems = new()
         {
             PlacedObject.Type.None,

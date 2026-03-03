@@ -119,6 +119,8 @@ namespace RainMeadow
         [OnlineField]
         private bool glowing;
         [OnlineField]
+        private bool lungsExhausted;
+        [OnlineField]
         private bool afkSleep;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
@@ -131,6 +133,10 @@ namespace RainMeadow
         private float analogInputX;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
+
+        [OnlineField(group = "gourmand")]
+        private bool gourmandExhausted;
+
         [OnlineFieldHalf(group = "saint")]
         private float burstX;
         [OnlineFieldHalf(group = "saint")]
@@ -164,9 +170,12 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
+            lungsExhausted = p.lungsExhausted;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             afkSleep = extras.afkSleep;
+
+            gourmandExhausted = p.gourmandExhausted;
 
             burstX = p.burstX;
             burstY = p.burstY;
@@ -269,6 +278,7 @@ namespace RainMeadow
             //watcher
             p.isCamo = isCamo;
             p.monkAscension = monkAscension;
+            p.gourmandExhausted = gourmandExhausted;
             p.burstY = burstY;
             p.burstX = burstX;
             var wasAnimation = p.animation;
@@ -278,6 +288,7 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
+            p.lungsExhausted = lungsExhausted;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             extras.afkSleep = afkSleep;

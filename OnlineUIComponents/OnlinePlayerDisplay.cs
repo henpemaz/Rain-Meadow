@@ -25,6 +25,7 @@ namespace RainMeadow
 
             public Message(string message, int timer = 200)
             {
+                MatchmakingManager.currentInstance.FilterMessage(ref message);
                 this.timer = timer;
                 this.text = message;
             }

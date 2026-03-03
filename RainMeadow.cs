@@ -18,7 +18,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.11.1";
+        public const string MeadowVersionStr = "0.1.12.0";
         public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
@@ -320,7 +320,7 @@ namespace RainMeadow
                 int nPart = i < nParts.Length ? int.Parse(nParts[i]) : 0;
                 int cPart = i < cParts.Length ? int.Parse(cParts[i]) : 0;
 
-                if (nPart > cPart) return true; // newVersion is greater than currentVersion.
+                if (nPart != cPart) return nPart > cPart; // one version newer than the other.
             }
             return false;
         }

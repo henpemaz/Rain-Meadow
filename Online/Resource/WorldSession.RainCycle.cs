@@ -25,6 +25,10 @@
             [OnlineField]
             public byte stage;
 
+            //GlobalRain
+            [OnlineField(group = "counter")]
+            public int waterFluxTicker;
+
             public RainCycleData()
             {
 
@@ -41,6 +45,9 @@
                 this.stageDuration = rainCycle.waterCycle.stageDuration;
                 this.timeInStage = rainCycle.waterCycle.timeInStage;
                 this.stage = (byte)rainCycle.waterCycle.stage;
+
+                //GlobalRain
+                this.waterFluxTicker = rainCycle.world.game.globalRain.waterFluxTicker;
             }
 
             public override bool Equals(object obj)
@@ -49,14 +56,16 @@
                 {
                     var rainCycle = (RainCycleData)obj;
                     return (
-                        this.cycleLength == rainCycle.cycleLength && 
-                        this.timer == rainCycle.timer && 
-                        this.preTimer == rainCycle.preTimer && 
+                        this.cycleLength == rainCycle.cycleLength &&
+                        this.timer == rainCycle.timer &&
+                        this.preTimer == rainCycle.preTimer &&
                         this.antiGravity == rainCycle.antiGravity &&
 
                         this.stageDuration == rainCycle.stageDuration &&
                         this.timeInStage == rainCycle.timeInStage &&
-                        this.stage == rainCycle.stage
+                        this.stage == rainCycle.stage &&
+
+                        this.waterFluxTicker == rainCycle.waterFluxTicker
                         );
                 }
                 return false;

@@ -1,21 +1,33 @@
-﻿using ArenaMode = RainMeadow.ArenaOnlineGameMode;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using UnityEngine;
-using System.Linq;
 using RainMeadow.UI.Components.Patched;
+using UnityEngine;
+using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
-    public class OnlineArenaSettingsInferface : PositionedMenuObject, CheckBox.IOwnCheckBox, MultipleChoiceArray.IOwnMultipleChoiceArray
+    public class OnlineArenaSettingsInferface
+        : PositionedMenuObject,
+            CheckBox.IOwnCheckBox,
+            MultipleChoiceArray.IOwnMultipleChoiceArray
     {
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
-        public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
+        public ArenaSetup.GameTypeSetup GetGameTypeSetup =>
+            GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
 
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(
+            Menu.Menu menu,
+            MenuObject owner,
+            Vector2 pos,
+            string currentGameMode,
+            List<ListItem> gameModes,
+            float settingsWidth = 300
+        )
+            : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -24,8 +36,36 @@ namespace RainMeadow.UI.Components
             }
             float textWidthOfSpearHit = 95;
 
-            spearsHitCheckbox = new(menu, this, this, new(0, 425), textWidthOfSpearHit, menu.Translate("Spears Hit:"), "SPEARSHIT", false);
-            evilAICheckBox = new(menu, this, this, new(settingsWidth - 24, spearsHitCheckbox.pos.y), InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100, menu.Translate("Aggressive AI:"), "EVILAI", false);
+            spearsHitCheckbox = new(
+                menu,
+                this,
+                this,
+                new(0, 425),
+                textWidthOfSpearHit,
+                menu.Translate("Spears Hit:"),
+                "SPEARSHIT",
+                false
+            );
+            evilAICheckBox = new(
+                menu,
+                this,
+                this,
+                new(settingsWidth - 24, spearsHitCheckbox.pos.y),
+                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
+                menu.Translate("Aggressive AI:"),
+                "EVILAI",
+                false
+            );
+            overseerCheckbox = new(
+                menu,
+                this,
+                this,
+                new(evilAICheckBox.pos.x - 135, spearsHitCheckbox.pos.y),
+                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
+                menu.Translate("Overseer:"),
+                "OVERSEER",
+                false
+            );
             divSprites = [new("pixel"), new("pixel")];
             divSpritePos = new Vector2[divSprites.Length];
             for (int i = 0; i < divSprites.Length; i++)
@@ -37,60 +77,198 @@ namespace RainMeadow.UI.Components
                 Container.AddChild(divSprites[i]);
                 divSpritePos[i] = new(-textWidthOfSpearHit, 402 - (171 * i));
             }
-            roomRepeatArray = new(menu, this, this, new(0, 355), menu.Translate("Repeat Rooms:"), "ROOMREPEAT", InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 115 : 95, settingsWidth, 5, true, false);
+            roomRepeatArray = new(
+                menu,
+                this,
+                this,
+                new(0, 355),
+                menu.Translate("Repeat Rooms:"),
+                "ROOMREPEAT",
+                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 115 : 95,
+                settingsWidth,
+                5,
+                true,
+                false
+            );
             for (int i = 0; i < roomRepeatArray.buttons.Length; i++)
                 roomRepeatArray.buttons[i].label.text = $"{i + 1}x";
-            rainTimerArray = new(menu, this, this, new(0, 305), menu.Translate("Rain Timer:"), "SESSIONLENGTH", InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f, settingsWidth, 6, false, menu.CurrLang == InGameTranslator.LanguageID.French || menu.CurrLang == InGameTranslator.LanguageID.Spanish || menu.CurrLang == InGameTranslator.LanguageID.Portuguese);
-            wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
+            rainTimerArray = new(
+                menu,
+                this,
+                this,
+                new(0, 305),
+                menu.Translate("Rain Timer:"),
+                "SESSIONLENGTH",
+                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f,
+                settingsWidth,
+                6,
+                false,
+                menu.CurrLang == InGameTranslator.LanguageID.French
+                    || menu.CurrLang == InGameTranslator.LanguageID.Spanish
+                    || menu.CurrLang == InGameTranslator.LanguageID.Portuguese
+            );
+            wildlifeArray = new(
+                menu,
+                this,
+                this,
+                new(0, 255),
+                menu.Translate("Wildlife:"),
+                "WILDLIFE",
+                95,
+                settingsWidth,
+                4,
+                false,
+                false
+            );
 
-            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(-95, 180f), new Vector2(0, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, 180f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
+            arenaGameModeLabel = new(
+                menu,
+                this,
+                menu.Translate("Arena Game Mode:"),
+                new Vector2(-95, 180f),
+                new Vector2(0, 20),
+                false
+            );
+            arenaGameModeComboBox = new OpComboBox2(
+                new Configurable<string>(currentGameMode),
+                new Vector2(55, 180f),
+                175,
+                gameModes
+            )
+            {
+                description = menu.Translate("The game mode for this match"),
+            };
             arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (!RainMeadow.isArenaMode(out ArenaMode arena))
+                    return;
                 arena.currentGameMode = value;
             };
 
-            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 45), new Vector2(0, 20), false);
-            countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(55, countdownTimerLabel.pos.y - 6), 50)
+            countdownTimerLabel = new(
+                menu,
+                this,
+                menu.Translate("Countdown Timer:"),
+                new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 45),
+                new Vector2(0, 20),
+                false
+            );
+            countdownTimerTextBox = new(
+                new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value),
+                new(55, countdownTimerLabel.pos.y - 6),
+                50
+            )
             {
                 alignment = FLabelAlignment.Center,
-                description = menu.Translate("How long the grace timer at the beginning of rounds lasts for. Default 5s."),
+                description = menu.Translate(
+                    "How long the grace timer at the beginning of rounds lasts for. Default 5s."
+                ),
             };
             countdownTimerTextBox.OnValueUpdate += (config, value, lastValue) =>
             {
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
-            enableCorpseGrab =  new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.pos.y), 100, menu.Translate("Corpse grab"), "CORPSEGRAB");
+            enableCorpseGrab = new(
+                menu,
+                this,
+                this,
+                new(settingsWidth - 24, countdownTimerTextBox.pos.y),
+                100,
+                menu.Translate("Corpse grab"),
+                "CORPSEGRAB"
+            );
 
-            stealItemCheckBox = new (menu, this, this, new Vector2(55f, countdownTimerTextBox.pos.y - 38), 150f, menu.Translate("Item Stealing"), "ITEMSTEAL");
-            allowMidGameJoinCheckbox = new (menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 100, menu.Translate("Join In Progress"), "MIDGAMEJOIN");
+            stealItemCheckBox = new(
+                menu,
+                this,
+                this,
+                new Vector2(55f, countdownTimerTextBox.pos.y - 38),
+                150f,
+                menu.Translate("Item Stealing"),
+                "ITEMSTEAL"
+            );
+            allowMidGameJoinCheckbox = new(
+                menu,
+                this,
+                this,
+                new(settingsWidth - 24, stealItemCheckBox.pos.y),
+                100,
+                menu.Translate("Join In Progress"),
+                "MIDGAMEJOIN"
+            );
 
-            
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Piggybacking"), "PIGGY");
-            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox"), "WEAPONCOLLISIONFIX");
-            
-            
-            enableBees = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38), 100, menu.Translate("Bees"), "ENABLEBEES");
-            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, enableBees.pos.y), 150f, menu.Translate("Bombs"), "ENABLEBOMBS");
+            piggyBackCheckbox = new(
+                menu,
+                this,
+                this,
+                new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38),
+                150f,
+                menu.Translate("Piggybacking"),
+                "PIGGY"
+            );
+            weaponCollisionCheckBox = new(
+                menu,
+                this,
+                this,
+                new(settingsWidth - 24, piggyBackCheckbox.pos.y),
+                100,
+                menu.Translate("Better Hitbox"),
+                "WEAPONCOLLISIONFIX"
+            );
+
+            enableBees = new(
+                menu,
+                this,
+                this,
+                new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38),
+                100,
+                menu.Translate("Bees"),
+                "ENABLEBEES"
+            );
+            enableBombs = new(
+                menu,
+                this,
+                this,
+                new(stealItemCheckBox.pos.x, enableBees.pos.y),
+                150f,
+                menu.Translate("Bombs"),
+                "ENABLEBOMBS"
+            );
 
             countdownWrapper = new(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox, enableBombs, enableBees, enableCorpseGrab);
-
+            this.SafeAddSubobjects(
+                tabWrapper,
+                overseerCheckbox,
+                spearsHitCheckbox,
+                evilAICheckBox,
+                roomRepeatArray,
+                rainTimerArray,
+                wildlifeArray,
+                countdownTimerLabel,
+                arenaGameModeLabel,
+                stealItemCheckBox,
+                allowMidGameJoinCheckbox,
+                weaponCollisionCheckBox,
+                piggyBackCheckbox,
+                enableBombs,
+                enableBees,
+                enableCorpseGrab
+            );
         }
+
         public override void RemoveSprites()
         {
-
             for (int i = 0; i < divSprites.Length; i++)
             {
                 divSprites[i].RemoveFromContainer();
             }
             base.RemoveSprites();
         }
+
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
@@ -103,6 +281,7 @@ namespace RainMeadow.UI.Components
             countdownTimerLabel.label.color = countdownTimerTextBox.rect.colorEdge;
             arenaGameModeLabel.label.color = arenaGameModeComboBox._rect.colorEdge;
         }
+
         public override void Update()
         {
             base.Update();
@@ -115,39 +294,62 @@ namespace RainMeadow.UI.Components
             }
             countdownTimerTextBox.greyedOut = SettingsDisabled;
             arenaGameModeComboBox.greyedOut = SettingsDisabled;
+            overseerCheckbox.buttonBehav.greyedOut = SettingsDisabled;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
-                if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
-               
+                if (
+                    !countdownTimerTextBox.held
+                    && countdownTimerTextBox.valueInt != arena.setupTime
+                )
+                    countdownTimerTextBox.valueInt = arena.setupTime;
+                if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld)
+                    arenaGameModeComboBox.value = arena.currentGameMode;
             }
-
         }
+
         public bool GetChecked(CheckBox box)
         {
             string id = box.IDString;
-            if (id == "SPEARSHIT") return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.spearsHitPlayers);
-            if (id == "EVILAI") return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.evilAI);
+            if (id == "SPEARSHIT")
+                return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.spearsHitPlayers);
+            if (id == "EVILAI")
+                return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.evilAI);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (id == "ITEMSTEAL") return arena.itemSteal;
-                if (id == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
-                if (id == "WEAPONCOLLISIONFIX") return arena.weaponCollisionFix;
-                if (id == "PIGGY") return arena.piggyBack;
-                if (id == "ENABLEBOMBS") return arena.enableBombs;
-                if (id == "ENABLEBEES") return arena.enableBees;
-                if (id == "CORPSEGRAB") return arena.enableCorpseGrab;
-
+                if (id == "ITEMSTEAL")
+                    return arena.itemSteal;
+                if (id == "MIDGAMEJOIN")
+                    return arena.allowJoiningMidRound;
+                if (id == "WEAPONCOLLISIONFIX")
+                    return arena.weaponCollisionFix;
+                if (id == "PIGGY")
+                    return arena.piggyBack;
+                if (id == "ENABLEBOMBS")
+                    return arena.enableBombs;
+                if (id == "ENABLEBEES")
+                    return arena.enableBees;
+                if (id == "CORPSEGRAB")
+                    return arena.enableCorpseGrab;
+                if (id == "OVERSEER")
+                    return arena.enableOverseer;
             }
             return false;
         }
+
         public void SetChecked(CheckBox box, bool c)
         {
             string id = box.IDString;
-            if (id == "SPEARSHIT") GetGameTypeSetup.spearsHitPlayers = c;
-            if (id == "EVILAI") GetGameTypeSetup.evilAI = c;
+            if (id == "SPEARSHIT")
+                GetGameTypeSetup.spearsHitPlayers = c;
+            if (id == "EVILAI")
+                GetGameTypeSetup.evilAI = c;
             if (RainMeadow.isArenaMode(out var arena))
             {
+                if (id == "OVERSEER")
+                {
+                    arena.enableOverseer = c;
+                    return;
+                }
                 if (id == "ITEMSTEAL")
                 {
                     arena.itemSteal = c;
@@ -187,16 +389,27 @@ namespace RainMeadow.UI.Components
 
             ArenaHelpers.SaveOptionToArena(box.IDString, c);
         }
+
         public int GetSelected(MultipleChoiceArray array)
         {
             if (array.IDString == "ROOMREPEAT")
-                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.levelRepeats - 1);
+                return ArenaHelpers.GetOptionFromArena(
+                    array.IDString,
+                    GetGameTypeSetup.levelRepeats - 1
+                );
             if (array.IDString == "SESSIONLENGTH")
-                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.sessionTimeLengthIndex);
+                return ArenaHelpers.GetOptionFromArena(
+                    array.IDString,
+                    GetGameTypeSetup.sessionTimeLengthIndex
+                );
             if (array.IDString == "WILDLIFE" && GetGameTypeSetup.wildLifeSetting.Index != -1)
-                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.wildLifeSetting.Index);
+                return ArenaHelpers.GetOptionFromArena(
+                    array.IDString,
+                    GetGameTypeSetup.wildLifeSetting.Index
+                );
             return 0;
         }
+
         public void SetSelected(MultipleChoiceArray array, int i)
         {
             if (array.IDString == "ROOMREPEAT")
@@ -204,9 +417,13 @@ namespace RainMeadow.UI.Components
             if (array.IDString == "SESSIONLENGTH")
                 GetGameTypeSetup.sessionTimeLengthIndex = i;
             if (array.IDString == "WILDLIFE")
-                GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i), false);
+                GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(
+                    ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i),
+                    false
+                );
             ArenaHelpers.SaveOptionToArena(array.IDString, i);
         }
+
         public void CallForSync() //call this after ctor if needed for sync at start
         {
             foreach (MenuObject obj in subObjects)
@@ -216,7 +433,8 @@ namespace RainMeadow.UI.Components
                 if (obj is MultipleChoiceArray array)
                     array.CheckedButton = array.CheckedButton;
             }
-            if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+            if (!RainMeadow.isArenaMode(out ArenaMode arena))
+                return;
             arena.setupTime = countdownTimerTextBox.valueInt;
             arena.currentGameMode = arenaGameModeComboBox.value;
         }
@@ -227,11 +445,24 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox, enableBombs, enableBees, enableCorpseGrab;
-        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
+        public CheckBox overseerCheckbox,
+            spearsHitCheckbox,
+            evilAICheckBox,
+            stealItemCheckBox,
+            allowMidGameJoinCheckbox,
+            weaponCollisionCheckBox,
+            piggyBackCheckbox,
+            enableBombs,
+            enableBees,
+            enableCorpseGrab;
+        public ProperlyAlignedMenuLabel countdownTimerLabel,
+            arenaGameModeLabel;
 
-        public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
-        public PatchedUIelementWrapper countdownWrapper, gameModeWrapper;
+        public MultipleChoiceArray roomRepeatArray,
+            rainTimerArray,
+            wildlifeArray;
+        public PatchedUIelementWrapper countdownWrapper,
+            gameModeWrapper;
         public MenuTabWrapper tabWrapper;
     }
 }

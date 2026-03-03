@@ -267,7 +267,7 @@ Back To Lobby|戻る
 Go back to main lobby|アリーナロビーに戻る
 You have been unreadied. Switch back to re-ready yourself automatically|準備解除されました。自動的に再準備するには切り替えてください。
 The match is starting in <COUNTDOWN>! Ready up!!|マッチ開始まで<COUNTDOWN>秒!備えよう!
-CHOOSE YOUR SLUGCAT|ナメクジネコの選択
+CHOOSE YOUR CHARACTER|ナメクジネコの選択
 THE NIGHTCAT|ナイトキャット
 THE FARTIFICER|放屁家
 THE SLUGPUP|ナメクジ幼体

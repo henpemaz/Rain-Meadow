@@ -297,7 +297,7 @@ THE NIGHTCAT|夜猫
 THE FARTIFICER|屁匠
 THE SLUGPUP|蛞蝓猫幼崽
 THE UNKNOWN|未知
-CHOOSE YOUR SLUGCAT|选择你的蛞蝓猫
+CHOOSE YOUR CHARACTER|选择你的蛞蝓猫
 Unknown|未知
 Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|敌人环伺，但这已不再像初见那时。<LINE>握紧你的长矛和石头。
 Remember: they struck first, so you'll need to hit back harder.|记住:他们先手相犯，所以你要加倍奉还。

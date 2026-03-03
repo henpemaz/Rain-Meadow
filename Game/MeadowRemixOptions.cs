@@ -37,6 +37,7 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<int> AmoebaDuration;
     public readonly Configurable<bool> AmoebaControl;
+    public readonly Configurable<bool> FriendlyFire;
 
 
     public readonly Configurable<bool> BlockMaul;
@@ -50,6 +51,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableBombs;
     public readonly Configurable<bool> EnableCorpseGrab;
     public readonly Configurable<bool> EnableBees;
+    public readonly Configurable<bool> EnableOverseer;
 
     public readonly Configurable<bool> EnablePiggyBack;
     public readonly Configurable<StreamMode> StreamerMode;
@@ -140,6 +142,8 @@ public class RainMeadowOptions : OptionInterface
         VoidMaster = config.Bind("VoidMaster", false);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
+        FriendlyFire = config.Bind("FriendlyFire", false);
+
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 
@@ -161,6 +165,7 @@ public class RainMeadowOptions : OptionInterface
         EnableBees = config.Bind("EnableBees", true);
         EnableBombs = config.Bind("EnableBombs", true);
         EnableCorpseGrab = config.Bind("EnableCorpseGrab", true);
+        EnableOverseer = config.Bind("EnableOverseer", false);
 
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);

@@ -1,71 +1,75 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
-The Watcher campaign is PARTIALLY supported. Expect bugs.
+---
 
-## How it works
-- For the best possible experience, **disable all non-essential content mods**. If you're experiencing crashes, try with less mods on.
-- Click the Meadow button to get to the lobby list. Join a lobby or host your own!
-- By default Rain Meadow uses Steam to find and create lobbies. Lan matchmaking is also possible.
+## What is Rain Meadow?
+Rain Meadow is a true online multiplayer engine for Rain World! It includes both Story and Arena gamemodes, as well as a new "Meadow" gamemode based on the titular game "Meadow" by Might and Delight. Simply enable the mod, and click the new "Meadow" button on the game's title screen to get started. Matchmaking is handled through Steam automatically with no additional setup required. Connections through LAN are also possible for those that own Rain World on GOG.
+
+---
+
+## Compatibility
+* Meadow works on Windows, and Linux/MacOS through Wine/Proton, though for Wine/Proton you'll need to use the following launch argument: `WINEDLLOVERRIDES="winhttp=n,b" %command%`
+* For the best possible experience, **disable all non-essential mods.** If you're experiencing crashes, desyncs, or similar issues, try trimming your mod list down to the absolute necessities. Even some theoretically client-side or meadow-compatible mods may cause problems.
+* Anyone connecting to a host using "content" mods (that add regions, campaigns, objects, gameplay mechanics, etc) must use the same list of content mods, in the same order. Meadow has a mod-syncing tool that will prompt you to enable/disable/reorder mismatched mods when joining a lobby, but its detection isn't perfect.
+* Remix, More Slugcats, and Watcher are considered content mods, though their load order in particular doesn't matter. Dev Tools and Jolly Coop both work client-side; Jolly lets you connect multiple scugs to a Meadow lobby from a single instance of Rain World. Expedition doesn't conflict with Meadow, but currently does *not* integrate in any way. All other mods may or may not work depending on how they are implemented; for a baseline you can check [this community-maintained compatibility spreadsheet.](https://docs.google.com/spreadsheets/d/1QG1xYPLECkVSMc2vopO-Rw2rSdnn7_fsdlMajhAUOW0/edit?gid=0#gid=0)
+
+---
 
 ## Game Modes
+
 ### Meadow
-- Explore a peaceful version of Rain World, encounter other players, roam together gathering unlocks to unlock new emotes, skins and creatures.
-- Custom emoting to communicate by @Wolfycat!
-- Sound effects to communicate
-- Hour-long original soundtrack by @Intikus!
-- Hand-built creature navigation
+* Explore a peaceful version of Rain World, free from rain or predators! Encounter other players, roam together gathering tokens to unlock new emotes, skins and even other creatures to play as.
+* Communicate with gestures, vocalizations, and a full set of custom emotes for each creature, designed by @Wolfycat!
+* Features an hour-long original soundtrack by @Intikus!
+* Playable creatures' controls and navigation have been completely rebuilt to offer a smoother experience than Safari mode.
 
 ### Story
-- Vanilla campaigns available by default
-- Access other campaigns through the "Experimental Features" remix option
-- Currently-supported campaigns: Survivor, Monk, Hunter, Artificer, Gourmand
-- Campaigns not listed above are NOT supported and will likely desync or crash on any special events
-- Host can only play as the campaign slugcat, clients can select slugcats other than the current campaign
-- Food requirement is determined by the current campaign. Food nourishment is determined by the player's slugcat regardless of current campaign
-  - e.g. Hunter in Survivor's campaign can eat meat
-- All ingame players, dead or alive, MUST be present at a karma gate to continue
-  - Dead players can exit to lobby to allow others to continue
-- Do not attempt to grab or piggyback players as it WILL break the game
-- You may den in separate shelters within the same region
+* Uses its own set of save slots, so it won't mess with your regular story saves.
+* All vanilla campaigns are available by default, and all DLC campaigns are available with their respective DLCs enabled. Other campaigns can be accessed through the "Experimental Features" option in Meadow's remix settings.
+* The Survivor, Monk, Hunter, and Gourmand campaigns are all fully supported and should be stable. All other Downpour campaigns should mostly work, but you may run into quirks or the occasional desync. Most of Watcher is playable but ***not*** yet very stable; expect bugs. Any other campaigns are not explicitly supported and will likely desync or crash on any "special events".
+* All players can play as any slugcat, though the host has an option to restrict everyone to the current campaign's slugcat. The host can also restart the cycle at any time from the pause menu.
+* Piggybacking is supported; jump next to a player's head and hold exclusively grab to climb onto their back. The piggybacker can press jump to dismount, or the piggybackee can drop them like an item.
+* Food is shared between all players, and stomach size is based on the selected campaign. Diet and food nourishment are determined by each individual player's selected slugcat. For instance, playing on the Gourmand campaign will always use a 7|4 food bar, and playing as Hunter will always let *your* slugcat eat meat, but only get 1/4th pip from danglefruit.
+* All players must either be unmoving in shelter(s), or dead for shelters to close. All players, dead or alive, must be physically present and unmoving at a karma gate for it to activate. In either case, players can exit to the character select to avoid being considered, and let others progress. If the session has gone through a gate, players waiting in the character select cannot rejoin until the next cycle.
 
 ### Arena
-- Currently offers Competitive (PvP) mode
-- Dens open when the rain comes or when there's only one scug left standing
-- Countdown timer ensures all players have a chance to grab weapons before attacking; Prevents some slugcat abilties
-- Saint by default uses ascendance as the mode of attack. Switch to **Sain't** abilities via Remix
-- All levels are unlocked. Some levels are "multi_stage". Some levels do not spawn items due to that levels' pre-baked code.
+* Currently offers both Free-For-All, and Teams PvP formats. Dens open when there's only one scug/team left standing, or when the rain comes.
+* All arenas from installed mods are always available for selection, including those normally exclusive to Downpour's challenge mode.
+* A countdown timer blocks all methods of attack at the start of each round, ensuring all players have a chance to grab weapons and spread out.
+* In addition to "standard" arena configuration, the host can change things like how long the countdown timer should last, or whether Saint should use ascension or spears.
+* The host can ban any number of slugcats from being selected, by selecting their portrait in the character select and pressing grab.
 
-### Communication (Story and Arena only)
-- Press "Enter" to open chat
-- Press "J" to show usernames and player icons
-- Press "Tab" to open the spectator menu
+---
 
-### Moderation (Story and Arena only)
-- Host can kick players via the spectator menu; Clients can mute players
-- Kicking players prevents them from rejoining your current lobby
-  - The ban does NOT carry between lobbies
+## Communication and moderation (Story and Arena only)
+* Press **Enter** to open the chatbar, and **Comma** to toggle the chatlog's visibility.
+* Press **J** to toggle usernames and player icons, and **P** to toggle a ping display next to player names.
+* Press **Tab** to open the spectator menu; you can click on other (live) players' usernames to switch your camera to them. The button next to each player will let non-hosts mute or unmute them, and let hosts permanently kick them from the lobby instance.
+* Lobby hosts can tweak required and disallowed mods by opening Meadow's settings in the remix menu; the "General" tab has buttons that will open the configuration files for each in your default text editor.
 
-## Mod Compatibility
-- Mods that add regions/campaigns/creatures/items need to be synced between all players, including load-order.
-- There's a modsync tool that will prompt you to enable/disable/install missmatched mods, but it's not completely foolproof.
-- You can tweak what mods are subject to modsync as the host by adding them to the `meadow-highimpactmods` textfile in StreamingAssets.
-- The community-maintained mod compatibility spreadsheet can be found [here](https://docs.google.com/spreadsheets/d/1QG1xYPLECkVSMc2vopO-Rw2rSdnn7_fsdlMajhAUOW0/edit?gid=0#gid=0)
+---
 
 ## Modding
-Some examples of custom gamemodes using Rain Meadow's multiplayer engine:
-- [Tag](https://github.com/henpemaz/RemixMods/tree/master/Tag)
-- [Arena custom game modes documentation & examples](https://github.com/6fears7/Arena-Online/tree/main)
+Meadow supports other mods adding custom gamemodes, as well as custom variations for arena mode. Here are some examples of both:
+* [Example of a custom "Tag" gamemode.](https://github.com/henpemaz/RemixMods/tree/master/Tag)
+* [Examples and documentation for custom arena variations.](https://github.com/6fears7/Arena-Online/tree/main)
+
+---
 
 ## Credits
-```
-Henpemaz - Lead Developer		Wolfycatt(Ana) - Lead Artist		Intikus - Lead Audio Designer
-Noircatto - Programming, engine		HelloThere - Programming, sound		A1iex - UI Design
-FranklyGD - Programming, engine		MC41Games - Programming, menus		Silvyger - Programming, arena
-Vigaro - Programming, menus		BitiLope - Programming, story		Pudgy Turtle - Programming, story
-ddemile - Programming, modsync		UO - Programming, story, arena		Saddest - Programming, UI, chat
-notchoc - Programming, story		phanie_ - Illustration			Timbits - Programming, UI, menus
-Zedreus - Programming, UI, story	Persondotexe - Programming, modsync     invalidunits - Programming, UI, LAN
-forthfora - Programming, modsync	WillowWisp - Programming, story		@None - Programming, gameplay
-DustyLemmy - Arena, story, UI           Elizabeth - Programming, story, UI      niacdoial - LAN
-Capt. Redstone - Meadow, story
-```
+| Name | Role / Contribution | Name | Role / Contribution |
+| :--- | :--- | :--- | :--- |
+| **Henpemaz** | Lead Developer | **Wolfycatt(Ana)** | Lead Artist |
+| **Intikus** | Lead Audio Designer | **@None** | Programming, Gameplay |
+| **A1iex** | UI Design | **BitiLope** | Programming, Story |
+| **Capt. Redstone** | Meadow, Story | **ddemile** | Programming, Modsync |
+| **DustyLemmy** | Arena, Story, UI | **Elizabeth** | Programming, Story, UI |
+| **forthfora** | Programming, Modsync | **FranklyGD** | Programming, Engine |
+| **HelloThere** | Programming, Sound | **invalidunits** | Programming, UI, LAN |
+| **MC41Games** | Programming, Menus | **niacdoial** | LAN |
+| **Noircatto** | Programming, Engine | **notchoc** | Programming, Story |
+| **Persondotexe** | Programming, Modsync | **phanie_** | Illustration |
+| **Pudgy Turtle** | Programming, Story | **Saddest** | Programming, UI, Chat |
+| **Silvyger** | Programming, Arena | **Timbits** | Programming, UI, Menus |
+| **UO** | Programming, Story, Arena | **Vigaro** | Programming, Menus |
+| **WillowWisp** | Programming, Story | **Zedreus** | Programming, UI, Story |

@@ -276,6 +276,13 @@ public partial class RainMeadow
             });
             c.Emit(OpCodes.Brtrue, label); //skip sharing ripple layer with Players[0] which is host in arena
 
+            c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(0), x => x.MatchBleUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate(delegate (Player player)
+            {
+                return isArenaMode(out _);
+            });
+            c.Emit(OpCodes.Brtrue, label); // Don't glow in arena mode
 
             c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(5), x => x.MatchBltUn(out label));
             c.Emit(OpCodes.Ldarg_0);
@@ -814,10 +821,10 @@ public partial class RainMeadow
     // Hide the Meadow mode slugcat so it doesn't appear in menus (e.g. arena)
     private bool SlugcatStatsOnHiddenOrUnplayableSlugcat(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
     {
-        if (i == Ext_SlugcatStatsName.OnlineSessionPlayer)
-        {
+        if (Ext_SlugcatStatsName.AllMeadowExtSlugcats.Contains(i))
+          {
             return true;
-        }
+          }
 
         return orig(i);
     }
@@ -1054,6 +1061,32 @@ public partial class RainMeadow
             c.Emit(OpCodes.Brfalse, skip);
             c.Index += 6;
             c.MarkLabel(skip);
+
+            // don't try teleporting remote players when using dev tools
+            c.Index = 0;
+            ILLabel skipDevTools = il.DefineLabel();
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdstr("v"),
+                i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
+                i => i.MatchLdloc(33),
+                i => i.MatchAnd(),
+                i => i.MatchBrfalse(out skipDevTools));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skipDevTools);
+
+            // don't try to pull remote players using dev tools
+            c.Index = 0;
+            ILLabel skipDevTools2 = il.DefineLabel();
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdstr("w"),
+                i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
+                i => i.MatchLdloc(33),
+                i => i.MatchAnd(),
+                i => i.MatchBrfalse(out skipDevTools2));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skipDevTools2);
 
             // don't handle shelter for meadow and remote scugs
             c.Index = 0;

@@ -1,16 +1,13 @@
 using HUD;
-using IL.Watcher;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using On.Watcher;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -30,6 +27,7 @@ namespace RainMeadow
 
         private void StoryHooks()
         {
+            IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
@@ -133,6 +131,7 @@ namespace RainMeadow
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
             IL.Watcher.SpinningTop.SpawnBackupWarpPoint += SpinningTop_SpawnBackupWarpPoint;
+            IL.SLOracleSwarmer.Update += SLOracleSwarmer_Update;
             //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
@@ -166,6 +165,31 @@ namespace RainMeadow
                     //throw; nonfatal
                 }
             };
+        }
+
+        // Always show "Sync Save" to clients
+        public void SlugcatSelectMenu_Update(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdfld<Menu.SlugcatSelectMenu>("slugcatPageIndex"),
+                x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"),
+                x => x.MatchCallvirt(out var m) && m.Name == "get_Item" 
+            ))
+            {
+                c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
+                {
+                    if (OnlineManager.lobby != null) {
+                        return saveData != null || !OnlineManager.lobby.isOwner;
+                    }
+                    return saveData != null;
+                });
+            }
+            else
+            {
+                RainMeadow.Error("Failed to hook restartAvailable in SlugcatSelectMenu!");
+            }
         }
 
 
@@ -926,6 +950,36 @@ namespace RainMeadow
                     i => i.MatchCallvirt("System.Collections.Generic.List`1<OracleSwarmer>", "Add")
                 );
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleSwarmer_Update(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                if (c.TryGotoNext(MoveType.After,
+                    i => i.MatchLdfld<SLOracleSwarmer>("oracle"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchCgtUn()
+                    ))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+
+                    c.EmitDelegate<Func<bool, SLOracleSwarmer, bool>>((vanillaValue, self) =>
+                    {
+                        // If we aren't in an online lobby, stick to the vanilla result
+                        if (OnlineManager.lobby == null) return vanillaValue;
+                        
+                        // realized is too fast, make it apo to link to the room session
+                        return self.oracle.abstractPhysicalObject == null;
+                        
+                    });
+                }
             }
             catch (Exception e)
             {
