@@ -72,6 +72,19 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+            On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
+        }
+
+        private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEvent)
+            {
+                SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
+            } 
+            else
+            {
+                orig(self, sLeaser, rCam);
+            }
         }
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
@@ -728,7 +741,27 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-        }
+            if (isStoryMode(out _) && SpecialEvents.IsSpecialEvent)
+            {
+                var entities = self.room.abstractRoom.entities;
+                int coinCount = 0;
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs))
+                {
+                    return;
+                }
+                for (int i = entities.Count - 1; i >= 0; i--)
+                {
+                    if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                        {
+                            if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                            {
+                                coinCount++;
+                            }
+                        }
+                }
+                SpecialEvents.GainedMeadowCoin(coinCount);
+            }
+    }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
