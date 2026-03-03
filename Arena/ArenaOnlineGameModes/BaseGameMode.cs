@@ -355,7 +355,13 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
-
+            if (
+                SpecialEvents.IsSpecialEvent
+                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
+            )
+            {
+                a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
+            }
             if (abstractCreature.realizedCreature is not Player)
             {
                 return;
@@ -518,16 +524,6 @@ namespace RainMeadow
             )
             {
                 (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
-            }
-            if (
-                SpecialEvents.IsSpecialEvent
-                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
-            )
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    a.SpawnSliver(self, room);
-                }
             }
         }
 
