@@ -1139,6 +1139,7 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
+                lobby.AddData(new ChallengeLobbyData());
             }
         }
 

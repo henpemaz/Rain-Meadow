@@ -63,8 +63,8 @@ namespace RainMeadow.UI.Components
             };
             challengeIDTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                challenge.challengeID = challengeIDTextBox.valueInt;
-                RainMeadow.Debug(challenge.challengeID);
+                int clampedValue = Math.Max(1, Math.Min(challengeIDTextBox.valueInt, 70));
+                challenge.challengeID = clampedValue;
             };
 
             new PatchedUIelementWrapper(tabWrapper, challengeIDTextBox);
@@ -113,22 +113,6 @@ namespace RainMeadow.UI.Components
             if (!(OnlineManager.lobby?.isOwner == true))
                 return;
         }
-
-        // public void CreatePageButtons()
-        // {
-        //     if (prevButton == null)
-        //     {
-        //         prevButton = new(menu, this, new(40, 20), 4, 24);
-        //         prevButton.OnClick += _ => PrevPage();
-        //         this.SafeAddSubobjects(prevButton);
-        //     }
-        //     if (nextButton == null)
-        //     {
-        //         nextButton = new(menu, this, new(size.x - 40, prevButton.pos.y), 1, 24);
-        //         nextButton.OnClick += _ => NextPage();
-        //         this.SafeAddSubobjects(nextButton);
-        //     }
-        // }
 
         public void DeletePageButtons()
         {
