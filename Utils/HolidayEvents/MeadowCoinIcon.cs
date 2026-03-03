@@ -3,8 +3,6 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // If you don't actually need the line-flicker logic,
-    // we can keep the Update simple to save performance.
     public class MeadowCoinIcon : TokenSparkIcon
     {
         private Color TokenColor;
