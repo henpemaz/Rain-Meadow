@@ -82,12 +82,7 @@ namespace RainMeadow
             RoomCamera rCam
         )
         {
-            if (!IsSpecialEvent)
-            {
-                orig(self, sLeaser, rCam);
-                return;
-            }
-            if (self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc || self.AbstractPearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+            if (self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc && self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc2)
             {
                 orig(self, sLeaser, rCam);
                 return;
