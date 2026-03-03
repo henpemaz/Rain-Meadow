@@ -647,6 +647,25 @@ namespace RainMeadow
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
                 arena.hasPermissionToRejoin = false;
             }
+
+            if (
+                ModManager.MSC
+                && room.abstractRoom.name == "Chal_AI"
+                && self.GameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge
+            )
+            {
+                Oracle obj = new Oracle(
+                    new AbstractPhysicalObject(
+                        self.game.world,
+                        AbstractPhysicalObject.AbstractObjectType.Oracle,
+                        null,
+                        new WorldCoordinate(room.abstractRoom.index, 15, 15, -1),
+                        self.game.GetNewID()
+                    ),
+                    room
+                );
+                room.AddObject(obj);
+            }
         }
 
         public virtual void ArenaSessionUpdate(
