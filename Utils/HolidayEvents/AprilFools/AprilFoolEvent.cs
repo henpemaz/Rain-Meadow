@@ -44,7 +44,7 @@ namespace RainMeadow
                             ? "You need more Meadow Coins to play this game"
                             : "Game Over! Try again?"
                     },
-                    { 1, "You again?" },
+                    { 1, "What's the secret password?" },
                     { 2, "I heard they were removing capes" },
                     { 3, "That crash was probably your fault" },
                     { 4, "Rain Meadow definitely failed to start" },
@@ -58,9 +58,9 @@ namespace RainMeadow
                             ? "Take ¤10 Meadow Coins"
                             : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
                     },
-                    { 1, ";__;" },
-                    { 2, "I don't deserve a cape" },
-                    { 3, "I acknowledge that crash was my fault" },
+                    { 1, "wawa" },
+                    { 2, "Good." },
+                    { 3, "It was." },
                     { 4, "Please work" },
                 };
                 int result = UnityEngine.Random.Range(0, aprilMessages.Count);
@@ -74,19 +74,12 @@ namespace RainMeadow
                     GainedMeadowCoin(10);
                 }
                 string selectedMessage = self.Translate(aprilMessages[result]);
-                // DialogNotify someCoolDialog = new DialogNotify(selectedMessage, self.manager, null);
-                // someCoolDialog.okButton.menuLabel.text = okMessage[result];
-                // someCoolDialog.okButton.size = new Vector2(100f, 30f);
-                // someCoolDialog.pos = new Vector2(
-                //     (someCoolDialog.size.x) * 0.5f,
-                //     (someCoolDialog.size.y - someCoolDialog.size.y) * 0.5f
-                // );
                 self.manager.ShowDialog(
                     CreateDialogNotify(self, selectedMessage, okMessage[result])
                 );
             }
 
-            public static void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
+            public void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
             {
                 AbstractCreature bringTheSnails = new AbstractCreature(
                     room.world,
