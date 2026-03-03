@@ -14,8 +14,6 @@ namespace RainMeadow
         public const string Spear = "Spear";
         public const string ExplosiveSpear = "Explosive Spear";
         public const string ScavengerBomb = "Scavenger Bomb";
-        public const string Grub = "Grub";
-
         public const string InvsFrind = "Inv's Friend";
         public Vector2 pos;
 
@@ -93,12 +91,29 @@ namespace RainMeadow
                                 game.GetNewID()
                             );
                             break;
+                        case InvsFrind:
+                            me.Room.world.game.session.creatureCommunities.SetLikeOfPlayer(
+                                CreatureCommunities.CommunityID.Lizards,
+                                -1,
+                                0,
+                                1f
+                            );
+                            desiredObject = new AbstractCreature(
+                                me.Room.world,
+                                StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.RedLizard),
+                                null,
+                                me.pos,
+                                me.Room.world.game.GetNewID()
+                            );
+                            break;
                     }
 
                     if (desiredObject != null && me != null)
                     {
                         (game.cameras[0].room.abstractRoom).AddEntity(desiredObject);
                         desiredObject.RealizeInRoom();
+                        me.Room.world.GetResource().ApoEnteringWorld(desiredObject);
+                        me.Room.GetResource()?.ApoEnteringRoom(desiredObject, desiredObject.pos);
                         SpecialEvents.SpentMeadowCoin(itemEntry.Value);
                     }
                     didRespawn = false;
@@ -161,7 +176,7 @@ namespace RainMeadow
                 { Spear, 5 },
                 { ExplosiveSpear, 10 },
                 { ScavengerBomb, 15 },
-                { InvsFrind, 50 },
+                { InvsFrind, 0 },
             };
             for (int i = 0; i < game.Players.Count; i++)
             {
