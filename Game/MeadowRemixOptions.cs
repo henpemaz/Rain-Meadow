@@ -424,6 +424,7 @@ public class RainMeadowOptions : OptionInterface
 
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
+            OpSimpleButton editBannedUsers;
 
             OpLabel devOptions;
             GeneralUIArrPlayerOptions = new UIelement[]
@@ -450,6 +451,30 @@ public class RainMeadowOptions : OptionInterface
                     new Vector2(185f, 450f),
                     new Vector2(150f, 30f),
                     Translate("Edit Banned Mods")
+                ),
+                new OpLabel(
+                    10f,
+                    490f,
+                    RWCustom.Custom.ReplaceLineDelimeters(
+                        Translate(
+                            "Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."
+                        )
+                    )
+                ),
+                editSyncRequiredModsButton = new OpSimpleButton(
+                    new Vector2(10f, 450f),
+                    new Vector2(150f, 30f),
+                    Translate("Edit High-Impact Mods")
+                ),
+                editBannedModsButton = new OpSimpleButton(
+                    new Vector2(185f, 450f),
+                    new Vector2(150f, 30f),
+                    Translate("Edit Banned Mods")
+                ),
+                editBannedUsers = new OpSimpleButton(
+                    new Vector2(360f, 450f),
+                    new Vector2(150f, 30f),
+                    Translate("Edit Banned Users")
                 ),
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
@@ -557,6 +582,36 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadowModManager.GetBannedMods();
                     System.Diagnostics.Process.Start(
                         AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName)
+                    );
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            };
+
+            editBannedUsers.OnClick += _ =>
+            {
+                try
+                {
+                    BanHammer.GetBannedUsers();
+                    System.Diagnostics.Process.Start(
+                        AssetManager.ResolveFilePath(BanHammer.BannedUsers)
+                    );
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            };
+
+            editBannedUsers.OnClick += _ =>
+            {
+                try
+                {
+                    BanHammer.GetBannedUsers();
+                    System.Diagnostics.Process.Start(
+                        AssetManager.ResolveFilePath(BanHammer.BannedUsers)
                     );
                 }
                 catch (Exception e)
