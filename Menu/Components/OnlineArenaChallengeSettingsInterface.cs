@@ -63,8 +63,7 @@ namespace RainMeadow.UI.Components
             };
             challengeIDTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                int clampedValue = Math.Max(1, Math.Min(challengeIDTextBox.valueInt, 70));
-                challenge.challengeID = clampedValue;
+                challenge.challengeID = challengeIDTextBox.valueInt;
             };
 
             new PatchedUIelementWrapper(tabWrapper, challengeIDTextBox);
@@ -146,6 +145,15 @@ namespace RainMeadow.UI.Components
             if (challengeIDTextBox != null)
             {
                 challengeIDTextBox.held = challengeIDTextBox._KeyboardOn;
+                // TODO: pain
+                // if (challengeIDTextBox.valueInt <= 0)
+                // {
+                //     challengeIDTextBox.valueInt = 1;
+                // }
+                // if (challengeIDTextBox.valueInt > 70)
+                // {
+                //     challengeIDTextBox.valueInt = 70;
+                // }
                 challengeIDTextBox.valueInt = challengeMode.challengeID;
                 challengeIDTextBox.greyedOut = OwnerSettingsDisabled;
             }

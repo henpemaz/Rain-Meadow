@@ -25,16 +25,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 1;
-            self.survivalScore = 0;
-            self.spearHitScore = 0;
-            self.repeatSingleLevelForever = false;
-            self.savingAndLoadingSession = true;
-            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-            self.rainWhenOnePlayerLeft = true;
-            self.levelItems = true;
-            self.fliesSpawn = true;
-            self.saveCreatures = false;
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
         }
@@ -63,25 +53,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             ArenaBehaviors.ExitManager self
         )
         {
-            int playersStillStanding =
-                self.gameSession.Players?.Count(player =>
-                    player.realizedCreature != null && (player.realizedCreature.State.alive)
-                ) ?? 0;
-
-            if (
-                playersStillStanding == 1
-                && arena.arenaSittingOnlineOrder.Count > 1
-                && !arena.countdownInitiatedHoldFire
-            )
-            {
-                return true;
-            }
-
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
-
             return orig(self);
         }
 
@@ -113,14 +84,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
-            if (arena.setupTime > 0)
-            {
-                return arena.countdownInitiatedHoldFire = true;
-            }
-            else
-            {
-                return arena.countdownInitiatedHoldFire = false;
-            }
+            return arena.countdownInitiatedHoldFire = false;
         }
 
         public override void LandSpear(

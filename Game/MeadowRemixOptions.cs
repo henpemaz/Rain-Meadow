@@ -604,21 +604,6 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadow.Error(e);
                 }
             };
-
-            editBannedUsers.OnClick += _ =>
-            {
-                try
-                {
-                    BanHammer.GetBannedUsers();
-                    System.Diagnostics.Process.Start(
-                        AssetManager.ResolveFilePath(BanHammer.BannedUsers)
-                    );
-                }
-                catch (Exception e)
-                {
-                    RainMeadow.Error(e);
-                }
-            };
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
             OnlineStorySettings =

@@ -2246,6 +2246,37 @@ namespace RainMeadow
                 int score = 0;
                 for (int i = 0; i < self.players.Count; i++)
                 {
+                    if (
+                        self.gameTypeSetup.foodScore != 0
+                        && System.Math.Abs(self.gameTypeSetup.foodScore) < 100
+                    )
+                    {
+                        self.players[i].score +=
+                            (session.Players[i].state as PlayerState).foodInStomach
+                            * self.gameTypeSetup.foodScore;
+                        if (session.Players[i].realizedCreature != null)
+                        {
+                            for (
+                                int k = 0;
+                                k < session.Players[i].realizedCreature.grasps.Length;
+                                k++
+                            )
+                            {
+                                if (
+                                    session.Players[i].realizedCreature.grasps[k] != null
+                                    && session.Players[i].realizedCreature.grasps[k].grabbed
+                                        is IPlayerEdible
+                                )
+                                {
+                                    self.players[i].score +=
+                                        (
+                                            session.Players[i].realizedCreature.grasps[k].grabbed
+                                            as IPlayerEdible
+                                        ).FoodPoints * self.gameTypeSetup.foodScore;
+                                }
+                            }
+                        }
+                    }
                     self.players[i].alive = session.EndOfSessionLogPlayerAsAlive(
                         self.players[i].playerNumber
                     );
