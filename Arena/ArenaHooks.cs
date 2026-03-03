@@ -8,6 +8,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
@@ -719,7 +720,10 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 orig(self);
-                if (OnlineManager.lobby.isOwner)
+                if (
+                    OnlineManager.lobby.isOwner
+                    && arena.externalArenaGameMode is not ArenaChallengeMode
+                )
                 {
                     var restartButton = new SimplerButton(
                         self,

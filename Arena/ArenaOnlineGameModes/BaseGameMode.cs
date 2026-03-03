@@ -643,7 +643,8 @@ namespace RainMeadow
             }
 
             if (
-                ModManager.MSC
+                OnlineManager.lobby.isOwner
+                && ModManager.MSC
                 && room.abstractRoom.name == "Chal_AI"
                 && self.GameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge
             )
