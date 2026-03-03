@@ -112,6 +112,7 @@ namespace RainMeadow.UI.Components
         {
             if (!(OnlineManager.lobby?.isOwner == true))
                 return;
+            RainMeadow.rainMeadowOptions.ChallengeID.Value = challengeMode.challengeID;
         }
 
         public void DeletePageButtons()
