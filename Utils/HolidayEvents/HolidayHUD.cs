@@ -14,7 +14,7 @@ namespace RainMeadow
         public const string Spear = "Spear";
         public const string ExplosiveSpear = "Explosive Spear";
         public const string ScavengerBomb = "Scavenger Bomb";
-        public const string InvsFrind = "Inv's Friend";
+        public const string JokerRifle = "Joke Rifle";
         public Vector2 pos;
 
         public class ItemButton
@@ -91,19 +91,13 @@ namespace RainMeadow
                                 game.GetNewID()
                             );
                             break;
-                        case InvsFrind:
-                            me.Room.world.game.session.creatureCommunities.SetLikeOfPlayer(
-                                CreatureCommunities.CommunityID.Lizards,
-                                -1,
-                                0,
-                                1f
-                            );
-                            desiredObject = new AbstractCreature(
-                                me.Room.world,
-                                StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.RedLizard),
+                        case JokerRifle:
+                            desiredObject = new JokeRifle.AbstractRifle(
+                                game.world,
                                 null,
                                 me.pos,
-                                me.Room.world.game.GetNewID()
+                                game.GetNewID(),
+                                JokeRifle.AbstractRifle.AmmoType.Fruit
                             );
                             break;
                     }
@@ -176,7 +170,7 @@ namespace RainMeadow
                 { Spear, 5 },
                 { ExplosiveSpear, 10 },
                 { ScavengerBomb, 15 },
-                { InvsFrind, 0 },
+                { JokerRifle, 50 },
             };
             for (int i = 0; i < game.Players.Count; i++)
             {
@@ -203,6 +197,11 @@ namespace RainMeadow
                     this.pages[0].subObjects.Add(newItemButton.button);
                 }
 
+                if (newItemButton.name == JokerRifle && !ModManager.MSC)
+                {
+                    index++;
+                    continue;
+                }
                 this.storeItemList.Add(newItemButton);
                 index++;
             }
