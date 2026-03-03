@@ -5,6 +5,7 @@ using HarmonyLib;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using On.Expedition;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
@@ -97,6 +98,12 @@ namespace RainMeadow
             self.levelItems = true;
             self.fliesSpawn = true;
             self.saveCreatures = false;
+            if (
+                SpecialEvents.IsSpecialEvent
+                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
+            ) { }
+            self.challengeID = 70;
+            self.gameType = DLCSharedEnums.GameTypeID.Challenge;
         }
 
         public string PlayingAsText()
@@ -348,6 +355,7 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+
             if (abstractCreature.realizedCreature is not Player)
             {
                 return;
@@ -510,6 +518,16 @@ namespace RainMeadow
             )
             {
                 (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+            }
+            if (
+                SpecialEvents.IsSpecialEvent
+                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
+            )
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    a.SpawnSliver(self, room);
+                }
             }
         }
 

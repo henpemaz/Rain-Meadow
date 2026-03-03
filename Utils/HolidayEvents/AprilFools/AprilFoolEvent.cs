@@ -14,9 +14,9 @@ namespace RainMeadow
         public static AprilFools AprilFoolsEvent = new AprilFools()
         {
             Name = Utils.Translate("April Fool's"),
-            StartMonth = 4,
+            StartMonth = 3,
             StartDay = 1,
-            EndDay = 2,
+            EndDay = 3,
         };
 
         public class AprilFools : Event
@@ -44,7 +44,7 @@ namespace RainMeadow
                             ? "You need more Meadow Coins to play this game"
                             : "Game Over! Try again?"
                     },
-                    { 1, "You again?" },
+                    { 1, "Was it your fault?" },
                     { 2, "I heard they were removing capes" },
                     { 3, "That crash was probably your fault" },
                     { 4, "Rain Meadow definitely failed to start" },
@@ -58,9 +58,9 @@ namespace RainMeadow
                             ? "Take ¤10 Meadow Coins"
                             : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
                     },
-                    { 1, ";__;" },
-                    { 2, "I don't deserve a cape" },
-                    { 3, "I acknowledge that crash was my fault" },
+                    { 1, "No!" },
+                    { 2, "Good." },
+                    { 3, "It was." },
                     { 4, "Please work" },
                 };
                 int result = UnityEngine.Random.Range(0, aprilMessages.Count);
@@ -86,7 +86,7 @@ namespace RainMeadow
                 );
             }
 
-            public static void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
+            public void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
             {
                 AbstractCreature bringTheSnails = new AbstractCreature(
                     room.world,
@@ -102,6 +102,36 @@ namespace RainMeadow
                 room.world.GetResource().ApoEnteringWorld(bringTheSnails);
                 room.abstractRoom.GetResource()
                     ?.ApoEnteringRoom(bringTheSnails, bringTheSnails.pos);
+            }
+
+            public void SpawnSliver(ArenaGameSession self, Room room)
+            {
+                RainMeadow.Debug("CustomGameType: Injecting Sliver of Straw...");
+                if (
+                    ModManager.MSC
+                    && room.abstractRoom.name == "Chal_AI"
+                    && self.GameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge
+                )
+                {
+                    Oracle obj = new Oracle(
+                        new AbstractPhysicalObject(
+                            self.game.world,
+                            AbstractPhysicalObject.AbstractObjectType.Oracle,
+                            null,
+                            new WorldCoordinate(room.abstractRoom.index, 15, 15, -1),
+                            self.game.GetNewID()
+                        ),
+                        room
+                    );
+                    room.AddObject(obj);
+
+                    self.room.world.GetResource().ApoEnteringWorld(obj.abstractPhysicalObject);
+                    self.room.abstractRoom.GetResource()
+                        ?.ApoEnteringRoom(
+                            obj.abstractPhysicalObject,
+                            obj.abstractPhysicalObject.pos
+                        );
+                }
             }
 
             public void UpdateSlotsButton(
