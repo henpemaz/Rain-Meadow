@@ -719,6 +719,24 @@ namespace RainMeadow
             {
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
+
+                    if (SpecialEvents.IsSpecialEvent && !storyGameMode.hasSheltered)
+                    {
+                        var entities = self.room.abstractRoom.entities;
+                        int coinCount = 0;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                                {
+                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                                    {
+                                        coinCount++;
+                                    }
+                                }
+                        }
+                        SpecialEvents.GainedMeadowCoin(coinCount);
+                    }
+
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
@@ -732,35 +750,12 @@ namespace RainMeadow
                     }
                 }
             }
-            else
-            {
-            }
         }
 
         private void ShelterDoor_DoorClosed(On.ShelterDoor.orig_DoorClosed orig, ShelterDoor self)
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-            if (isStoryMode(out _) && SpecialEvents.IsSpecialEvent)
-            {
-                var entities = self.room.abstractRoom.entities;
-                int coinCount = 0;
-                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs))
-                {
-                    return;
-                }
-                for (int i = entities.Count - 1; i >= 0; i--)
-                {
-                    if (entities[i] is DataPearl.AbstractDataPearl pearl)
-                        {
-                            if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
-                            {
-                                coinCount++;
-                            }
-                        }
-                }
-                SpecialEvents.GainedMeadowCoin(coinCount);
-            }
     }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)

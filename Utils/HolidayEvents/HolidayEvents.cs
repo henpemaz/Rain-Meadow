@@ -87,6 +87,12 @@ namespace RainMeadow
                 orig(self, sLeaser, rCam);
                 return;
             }
+            if (self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc || self.AbstractPearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+            {
+                orig(self, sLeaser, rCam);
+                return;
+            }
+            
             SpecialEvents.LoadElement("meadowcoin");
             sLeaser.sprites = new FSprite[3];
             sLeaser.sprites[0] = new FSprite("meadowcoin");
