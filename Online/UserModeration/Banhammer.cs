@@ -1,11 +1,32 @@
 ﻿using Menu;
+using System.IO;
+using System.Linq;
 using System;
-
 
 namespace RainMeadow
 {
     public class BanHammer
     {
+        public static string BannedUsers => "meadow-bannedusers.txt";
+
+        public static string[] GetBannedUsers()
+        {
+            string path = AssetManager.ResolveFilePath(BannedUsers);
+
+            // If the file doesn't exist, create an empty one
+            if (!File.Exists(path))
+            {
+                // We use WriteAllText with an empty string to initialize the file
+                File.WriteAllText(path, ""); 
+                return new string[0]; 
+            }
+
+            // Read the file and filter out empty lines or spaces
+            return File.ReadAllLines(path)
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToArray();
+        }
+
         public static void ShowBan(ProcessManager manager)
         {
 
