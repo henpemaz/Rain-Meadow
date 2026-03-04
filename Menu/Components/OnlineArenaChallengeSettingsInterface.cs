@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using HarmonyLib;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
@@ -20,6 +16,8 @@ namespace RainMeadow.UI.Components
         public FSprite divider;
         public MenuTabWrapper tabWrapper;
         public MenuLabel challengeIDLabel;
+        public MenuLabel challengeNameLabel;
+        public MenuLabel notifyUserToQueueMap;
 
         public EventfulScrollButton? prevButton,
             nextButton;
@@ -31,6 +29,8 @@ namespace RainMeadow.UI.Components
 
         public ArenaMode arenaMode;
         public ArenaChallengeMode challengeMode;
+
+        public ChallengeInformation.ChallengeMeta meta;
 
         public bool AllSettingsDisabled =>
             arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
@@ -61,12 +61,6 @@ namespace RainMeadow.UI.Components
                 alignment = FLabelAlignment.Center,
                 description = menu.Translate("Challenge ID"),
             };
-            challengeIDTextBox.OnValueUpdate += (config, value, oldValue) =>
-            {
-                challenge.challengeID = challengeIDTextBox.valueInt;
-            };
-
-            new PatchedUIelementWrapper(tabWrapper, challengeIDTextBox);
             challengeIDLabel = new(
                 menu,
                 this,
@@ -78,8 +72,42 @@ namespace RainMeadow.UI.Components
                 new(challengeIDTextBox.size.x, 0),
                 false
             );
+            challengeIDTextBox.accept = OpTextBox.Accept.Int;
+            challengeIDTextBox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (challengeIDTextBox.valueInt < 0)
+                {
+                    challengeIDTextBox.valueInt = 0;
+                }
+                challenge.challengeID = challengeIDTextBox.valueInt;
+                meta = new ChallengeInformation.ChallengeMeta(challenge.challengeID);
+            };
 
-            this.SafeAddSubobjects(tabWrapper, challengeIDLabel);
+            new PatchedUIelementWrapper(tabWrapper, challengeIDTextBox);
+            meta = new ChallengeInformation.ChallengeMeta(challenge.challengeID);
+            challengeNameLabel = new MenuLabel(
+                menu,
+                this,
+                $"{meta.arena}: {meta.GetMetaDescription(this.menu)}",
+                new Vector2(size.x * 0.5f, dividerY + 150f),
+                new Vector2(0, 0),
+                true
+            );
+
+            notifyUserToQueueMap = new MenuLabel(
+                menu,
+                this,
+                this.menu.Translate("Queue up any map to begin"),
+                new Vector2(size.x * 0.5f, challengeNameLabel.pos.y + 40),
+                new Vector2(0, 0),
+                false
+            );
+            this.SafeAddSubobjects(
+                tabWrapper,
+                challengeIDLabel,
+                challengeNameLabel,
+                notifyUserToQueueMap
+            );
         }
 
         public void PopulatePage(int offset)
@@ -149,6 +177,10 @@ namespace RainMeadow.UI.Components
                 challengeIDTextBox.valueInt = challengeMode.challengeID;
                 challengeIDTextBox.greyedOut = OwnerSettingsDisabled;
             }
+            if (challengeNameLabel != null)
+            {
+                challengeNameLabel.text = $"{meta.arena}: {meta.GetMetaDescription(this.menu)}";
+            }
         }
 
         public void SetCurrentlySelectedOfSeries(string id, int index) =>
@@ -156,61 +188,5 @@ namespace RainMeadow.UI.Components
 
         public int GetCurrentlySelectedOfSeries(string id) =>
             arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team;
-
-        public class TeamButton : EventfulSelectOneButton
-        {
-            public string teamName;
-            public float widthOfText = 190;
-            public FSprite symbol;
-            public MenuLabel teamLabel;
-            public ProperlyAlignedMenuLabel teamCount;
-            public Color teamColor = Color.white;
-
-            public TeamButton(
-                Menu.Menu menu,
-                MenuObject owner,
-                Vector2 pos,
-                Vector2 size,
-                EventfulSelectOneButton[] selectButtons,
-                int index,
-                string teamName,
-                string symbolName,
-                float symbolSpriteScale = 2.8f
-            )
-                : base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
-            {
-                this.teamName = teamName;
-                symbol = new(symbolName) { scale = symbolSpriteScale };
-                Container.AddChild(symbol);
-                teamLabel = new(menu, this, this.teamName, new(0, -25), new(size.x, 20), true);
-                teamCount = new(
-                    menu,
-                    this,
-                    "",
-                    new Vector2(symbol.x + 10, symbol.y + 10),
-                    new(10, 10),
-                    false
-                );
-                this.SafeAddSubobjects(teamLabel, teamCount);
-            }
-
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                Vector2 drawPos = DrawPos(timeStacker),
-                    drawSize = DrawSize(timeStacker);
-                symbol.x = drawPos.x + drawSize.x * 0.5f;
-                symbol.y = drawPos.y + drawSize.y * 0.5f;
-                symbol.color = teamColor;
-                teamLabel.text = LabelTest.TrimText(teamName, widthOfText, true, true);
-                teamLabel.label.color = teamColor;
-            }
-
-            public override void RemoveSprites()
-            {
-                symbol.RemoveFromContainer();
-                base.RemoveSprites();
-            }
-        }
     }
 }

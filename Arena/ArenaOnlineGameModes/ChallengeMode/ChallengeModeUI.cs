@@ -1,14 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using HarmonyLib;
-using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
-using RainMeadow.UI.Pages;
-using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
