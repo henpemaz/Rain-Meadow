@@ -339,13 +339,21 @@ namespace RainMeadow
                 lastWorldLines = regionNode.lines;
             }
 
+            //Creature icons
+
+            for (int i = 0; i < entityNodes.Count; i++)
+            {
+                entityNodes[i].RemoveSprites();
+            }
+            entityNodes.Clear();
+
             for (int i = 0; i < resourceNodes.Count; i++)
             {
                 resourceNodes[i].Update();
                 resourceNodes[i].childEntities.Clear();
             }
 
-            var onlineEntities = OnlineManager.recentEntities.Values.ToList();
+            List<OnlineEntity> onlineEntities = OnlineManager.recentEntities.Values.ToList();
             for (int i = 0; i < onlineEntities.Count; i++)
             {
                 ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntities[i].currentlyJoinedResource);
@@ -363,6 +371,8 @@ namespace RainMeadow
 
             for (int i = 0; i < resourceNodes.Count; i++)
             {
+                if (resourceNodes[i].childEntities.Count == 0) { continue; }
+
                 resourceNodes[i].childEntities.Sort((x, y) =>
                 {
                     int comp = (x.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? -1 : 0) + (y.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? 1 : 0); //Creatures then items
@@ -384,17 +394,6 @@ namespace RainMeadow
                     comp = (x.Entity.isMine ? -1 : 0) + (y.Entity.isMine ? 1 : 0); //Owned first
                     return comp;
                 });
-            }
-
-            for (int i = 0; i < entityNodes.Count; i++)
-            {
-                entityNodes[i].RemoveSprites();
-            }
-            entityNodes.Clear();
-
-            for (int i = 0; i < resourceNodes.Count; i++)
-            {
-                if (resourceNodes[i].childEntities.Count == 0) { continue; }
 
                 IconSymbol.IconSymbolData iconType = new();
                 IconSymbol.IconSymbolData lastIconType = new();
@@ -415,6 +414,8 @@ namespace RainMeadow
                     else
                     {
                         iconCount = 1;
+                        //Ok so, I'm not really using EntityNode for its intended purpose here; it's designed to link a creature instance to an icon, and I'm using it to just show *an* icon.
+                        //I've done this because the code already works and does roughly what I want with very few modifications, and also so EntityNode can be reused later if it's ever helpful.
                         EntityNode entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j].Entity)
                         {
                             text = (resourceNodes[i].childEntities[j].Entity.isMine && iconType.critType == CreatureTemplate.Type.Slugcat) ?
