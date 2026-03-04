@@ -1,3 +1,7 @@
+# Release 1.13.0
+## Arena
+- Added More Slugcat's "Challenges" to Arena! 
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
