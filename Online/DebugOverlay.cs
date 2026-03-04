@@ -22,7 +22,7 @@ namespace RainMeadow
             public float thickness = 3;
             public int lines = 0;
             public int entityCount = 0;
-            public List<OnlineEntity> childEntities = [];
+            public List<EntityIconPair> childEntities = [];
 
             public float width => label.textRect.width;
             public ResourceNode(RainWorld rainWorld, FContainer container, OnlineResource resource)
@@ -177,6 +177,12 @@ namespace RainMeadow
 
         public static playerCache playersRead = new playerCache(16, TimeSpan.FromSeconds(5));
         public static playerCache playersWritten = new playerCache(16, TimeSpan.FromSeconds(5));
+
+        private class EntityIconPair
+        {
+            public OnlineEntity Entity { get; set; }
+            public IconSymbol.IconSymbolData Icon { get; set; }
+        }
 
         public static void Update(RainWorldGame self, float dt)
         {
@@ -345,8 +351,39 @@ namespace RainMeadow
                 ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntities[i].currentlyJoinedResource);
                 if (resourceNode != null && onlineEntities[i] is OnlinePhysicalObject onlinePhysicalObject)
                 {
-                    resourceNode.childEntities.Add(onlineEntities[i]);
+                    resourceNode.childEntities.Add(new EntityIconPair
+                    {
+                        Entity = onlineEntities[i],
+                        Icon = (((OnlinePhysicalObject)onlineEntities[i]).apo is AbstractCreature creature) ?
+                        CreatureSymbol.SymbolDataFromCreature(creature) :
+                        ItemSymbol.SymbolDataFromItem(((OnlinePhysicalObject)onlineEntities[i]).apo).GetValueOrDefault(),
+                    });
                 }
+            }
+
+            for (int i = 0; i < resourceNodes.Count; i++)
+            {
+                resourceNodes[i].childEntities.Sort((x, y) =>
+                {
+                    int comp = (x.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? -1 : 0) + (y.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? 1 : 0); //Creatures then items
+                    if (comp != 0) { return comp; }
+                    if ((x.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature) && (y.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature))
+                    {
+                        comp = (((OnlineCreature)x.Entity).creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat ? -1 : 0) + (((OnlineCreature)y.Entity).creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat ? 1 : 0); //Us always first
+                        if (comp != 0) { return comp; }
+                        comp = (int)x.Icon.critType - (int)y.Icon.critType; //Creatures by type
+                        if (comp != 0) { return comp; }
+                    }
+                    else
+                    {
+                        comp = (int)x.Icon.itemType - (int)y.Icon.itemType; //Items by type
+                        if (comp != 0) { return comp; }
+                    }
+                    comp = x.Icon.intData - y.Icon.intData; //Objects by subtype (aka the root of all evil)
+                    if (comp != 0) { return comp; }
+                    comp = (x.Entity.isMine ? -1 : 0) + (y.Entity.isMine ? 1 : 0); //Owned first
+                    return comp;
+                });
             }
 
             for (int i = 0; i < entityNodes.Count; i++)
@@ -354,10 +391,10 @@ namespace RainMeadow
                 entityNodes[i].RemoveSprites();
             }
             entityNodes.Clear();
+
             for (int i = 0; i < resourceNodes.Count; i++)
             {
                 if (resourceNodes[i].childEntities.Count == 0) { continue; }
-                SortOnlineEntities(resourceNodes[i].childEntities);
 
                 IconSymbol.IconSymbolData iconType = new();
                 IconSymbol.IconSymbolData lastIconType = new();
@@ -366,11 +403,11 @@ namespace RainMeadow
                 bool lastIsMine = true;
                 while (j < resourceNodes[i].childEntities.Count)
                 {
-                    iconType = (((OnlinePhysicalObject)resourceNodes[i].childEntities[j]).apo is AbstractCreature creature) ?
+                    iconType = (((OnlinePhysicalObject)resourceNodes[i].childEntities[j].Entity).apo is AbstractCreature creature) ?
                         CreatureSymbol.SymbolDataFromCreature(creature) :
-                        ItemSymbol.SymbolDataFromItem(((OnlinePhysicalObject)resourceNodes[i].childEntities[j]).apo).GetValueOrDefault();
+                        ItemSymbol.SymbolDataFromItem(((OnlinePhysicalObject)resourceNodes[i].childEntities[j].Entity).apo).GetValueOrDefault();
 
-                    if (iconType == lastIconType && resourceNodes[i].childEntities[j].isMine == lastIsMine)
+                    if (iconType == lastIconType && resourceNodes[i].childEntities[j].Entity.isMine == lastIsMine)
                     {
                         iconCount++;
                         entityNodes.Last().text = iconCount.ToString();
@@ -378,35 +415,24 @@ namespace RainMeadow
                     else
                     {
                         iconCount = 1;
-
-                        EntityNode entityNode = entityNodes.Find(node => node.entity == resourceNodes[i].childEntities[j]);
-                        if (entityNode == null)
+                        EntityNode entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j].Entity)
                         {
-                            entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j])
-                            {
-                                text = (resourceNodes[i].childEntities[j].isMine && iconType.critType == CreatureTemplate.Type.Slugcat) ? "YOU" : iconCount.ToString()
-                            };
-                            entityNodes.Add(entityNode);
-                        }
-                        entityNode.pos = resourceNodes[i].pos + new Vector2(40 + 25 * resourceNodes[i].entityCount + resourceNodes[i].width, 0);
+                            text = (resourceNodes[i].childEntities[j].Entity.isMine && iconType.critType == CreatureTemplate.Type.Slugcat) ?
+                                iconCount > 1 ?
+                                    "U" + iconCount.ToString() : //This should never happen in normal gameplay, but, may as well support it I guess.
+                                    "YOU" :
+                                iconCount.ToString()
+                        };
+                        entityNodes.Add(entityNode);
+                        entityNode.pos = resourceNodes[i].pos + new Vector2(40 + 22.5f * resourceNodes[i].entityCount + resourceNodes[i].width, 0);
                         resourceNodes[i].entityCount++;
                     }
 
                     lastIconType = iconType;
-                    lastIsMine = resourceNodes[i].childEntities[j].isMine;
+                    lastIsMine = resourceNodes[i].childEntities[j].Entity.isMine;
                     j++;
                 }
             }
-
-            entityNodes.RemoveAll(node =>
-            {
-                if (!OnlineManager.recentEntities.ContainsValue(node.entity) || node.entity.primaryResource == null)
-                {
-                    node.RemoveSprites();
-                    return true;
-                }
-                return false;
-            });
 
             for (int i = 0; i < entityNodes.Count; i++)
             {
@@ -445,7 +471,7 @@ namespace RainMeadow
             // Lobby (Root)
             resourceNodes.Add(new ResourceNode(self.rainWorld, overlayContainer, OnlineManager.lobby)
             {
-                pos = new Vector2(400, screenSize.y - 30),
+                pos = new Vector2(400, screenSize.y - 35),
             });
 
             Futile.stage.AddChild(overlayContainer);
@@ -459,6 +485,7 @@ namespace RainMeadow
             overlayContainer = null;
         }
 
+        //This is no longer used but I do think it's good to keep around.
         private static List<OnlineEntity> SortOnlineEntities(List<OnlineEntity> onlineEntities)
         {
             onlineEntities.Sort((x, y) =>
