@@ -1,6 +1,6 @@
 ## General
 - The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
-- The Dev Tools debug UI now groups creature symbols together, and should lag less.
+- The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 
 # Release 1.12.0
 ## Arena
