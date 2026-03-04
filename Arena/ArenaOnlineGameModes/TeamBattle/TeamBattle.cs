@@ -360,6 +360,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             List<ArenaSitting.ArenaPlayer> list
         )
         {
+            base.ArenaSessionEnded(arena, orig, self, session, list);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;

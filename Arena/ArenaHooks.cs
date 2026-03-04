@@ -8,6 +8,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
@@ -719,7 +720,10 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 orig(self);
-                if (OnlineManager.lobby.isOwner)
+                if (
+                    OnlineManager.lobby.isOwner
+                    && arena.externalArenaGameMode is not ArenaChallengeMode
+                )
                 {
                     var restartButton = new SimplerButton(
                         self,
@@ -2239,76 +2243,8 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                int score = 0;
-                for (int i = 0; i < self.players.Count; i++)
-                {
-                    self.players[i].alive = session.EndOfSessionLogPlayerAsAlive(
-                        self.players[i].playerNumber
-                    );
-                    if (self.players[i].alive)
-                    {
-                        self.players[i].AddSandboxScore(self.gameTypeSetup.survivalScore);
-                    }
-                    self.players[i].score += 100 * self.players[i].sandboxWin;
-                    score += self.players[i].score;
-                }
-
                 List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
-
-                for (int m = 0; m < self.players.Count; m++)
-                {
-                    ArenaSitting.ArenaPlayer arenaPlayer = self.players[m];
-                    bool flag = false;
-                    for (int n = 0; n < list.Count; n++)
-                    {
-                        if (self.PlayerSessionResultSort(arenaPlayer, list[n]))
-                        {
-                            list.Insert(n, arenaPlayer);
-                            flag = true;
-                            break;
-                        }
-                    }
-
-                    if (!flag)
-                    {
-                        list.Add(arenaPlayer);
-                    }
-                }
-
-                if (self.gameTypeSetup.gameType == ArenaSetup.GameTypeID.Competitive)
-                {
-                    arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
-                }
-
-                for (int num2 = 0; num2 < list.Count; num2++)
-                {
-                    if (list[num2].winner)
-                    {
-                        list[num2].wins++;
-                    }
-
-                    if (!self.players[num2].alive)
-                    {
-                        self.players[num2].deaths++;
-                    }
-
-                    self.players[num2].totScore += self.players[num2].score;
-
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            self.players[num2].playerNumber
-                        );
-                        if (pl != null)
-                        {
-                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
-                        }
-                    }
-                }
-
-                session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
-                session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
+                arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
             }
             else
             {

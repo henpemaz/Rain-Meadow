@@ -1,14 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
 using Menu;
-using Menu.Remix;
 using Menu.Remix.MixedUI;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
-using RainMeadow.UI.Components;
-using Steamworks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -60,27 +54,123 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> list
         )
         {
+            int totalScore = 0;
+            int foodScore = self.gameTypeSetup.foodScore;
+            bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
+
+            // --- Phase 1: Update Scores and States ---
+            for (int i = 0; i < self.players.Count; i++)
+            {
+                var arenaPlayer = self.players[i];
+                var sessionPlayer = session.Players[i];
+
+                if (countFood)
+                {
+                    if (sessionPlayer.state is PlayerState playerState)
+                    {
+                        arenaPlayer.score += playerState.foodInStomach * foodScore;
+                    }
+
+                    var creature = sessionPlayer.realizedCreature;
+                    if (creature != null)
+                    {
+                        foreach (var grasp in creature.grasps)
+                        {
+                            if (grasp?.grabbed is IPlayerEdible edible)
+                            {
+                                arenaPlayer.score += edible.FoodPoints * foodScore;
+                            }
+                        }
+                    }
+                }
+
+                arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
+
+                if (arenaPlayer.alive)
+                {
+                    arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
+                }
+
+                arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+                totalScore += arenaPlayer.score;
+            }
+
+            // --- Phase 2: Sort Players into Session Result List ---
+            foreach (var arenaPlayer in self.players)
+            {
+                bool inserted = false;
+                for (int n = 0; n < list.Count; n++)
+                {
+                    if (self.PlayerSessionResultSort(arenaPlayer, list[n]))
+                    {
+                        list.Insert(n, arenaPlayer);
+                        inserted = true;
+                        break;
+                    }
+                }
+
+                if (!inserted)
+                {
+                    list.Add(arenaPlayer);
+                }
+            }
+
+            // --- Phase 3: Update Persistent Stats ---
+            bool isLobbyOwner = OnlineManager.lobby.isOwner;
+
+            // Process wins based on the sorted list
+            foreach (var listItem in list)
+            {
+                if (listItem.winner)
+                {
+                    listItem.wins++;
+                }
+            }
+
+            // Process deaths and total scores based on the original players list
+            foreach (var arenaPlayer in self.players)
+            {
+                if (!arenaPlayer.alive)
+                {
+                    arenaPlayer.deaths++;
+                }
+
+                arenaPlayer.totScore += arenaPlayer.score;
+
+                if (isLobbyOwner)
+                {
+                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arena,
+                        arenaPlayer.playerNumber
+                    );
+                    if (onlinePlayer != null)
+                    {
+                        arena.AddOrInsertPlayerStats(arena, arenaPlayer, onlinePlayer);
+                    }
+                }
+            }
+
+            // --- Phase 4: UI / Overlay Update ---
+            session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
+            session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
+
+            // --- Phase 5: Determine Winner for Next Round / Record ---
             if (list.Count == 1)
             {
                 list[0].winner = list[0].alive;
             }
             else if (list.Count > 1)
             {
-                if (list[0].alive && !list[1].alive)
+                var first = list[0];
+                var second = list[1];
+
+                if (first.alive && !second.alive)
                 {
-                    list[0].winner = true;
+                    first.winner = true;
                 }
-                // else if (list[0].allKills.Count > list[1].allKills.Count)
-                // {
-                //     list[0].winner = true;
-                // }
-                // else if (list[0].deaths < list[1].deaths)
-                // {
-                //     list[0].winner = true;
-                // }
-                else if (list[0].score > list[1].score)
+                else if (first.score > second.score)
                 {
-                    list[0].winner = true;
+                    first.winner = true;
                 }
             }
         }
@@ -632,6 +722,26 @@ namespace RainMeadow
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
                 arena.hasPermissionToRejoin = false;
+            }
+
+            if (
+                OnlineManager.lobby.isOwner
+                && ModManager.MSC
+                && room.abstractRoom.name == "Chal_AI"
+                && self.GameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge
+            )
+            {
+                Oracle obj = new Oracle(
+                    new AbstractPhysicalObject(
+                        self.game.world,
+                        AbstractPhysicalObject.AbstractObjectType.Oracle,
+                        null,
+                        new WorldCoordinate(room.abstractRoom.index, 15, 15, -1),
+                        self.game.GetNewID()
+                    ),
+                    room
+                );
+                room.AddObject(obj);
             }
         }
 

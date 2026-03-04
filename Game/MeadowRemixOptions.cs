@@ -81,6 +81,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<IntroRoll> PickedIntroRoll;
     private readonly Configurable<string> LobbyMusic;
     public readonly Configurable<bool> AnniversaryCape;
+    public readonly Configurable<int> ChallengeID;
 
     public enum IntroRoll
     {
@@ -196,6 +197,7 @@ public class RainMeadowOptions : OptionInterface
 
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
+        ChallengeID = config.Bind("ChallengeID", 1);
 
     }
 
