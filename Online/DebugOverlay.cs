@@ -397,9 +397,9 @@ namespace RainMeadow
 
                 IconSymbol.IconSymbolData iconType = new();
                 IconSymbol.IconSymbolData lastIconType = new();
-                int j = 0;
                 int iconCount = 1;
                 bool lastIsMine = true;
+                int j = 0;
                 while (j < resourceNodes[i].childEntities.Count)
                 {
                     iconType = (((OnlinePhysicalObject)resourceNodes[i].childEntities[j].Entity).apo is AbstractCreature creature) ?
