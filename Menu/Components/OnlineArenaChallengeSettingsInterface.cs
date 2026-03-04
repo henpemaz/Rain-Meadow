@@ -145,30 +145,10 @@ namespace RainMeadow.UI.Components
             if (challengeIDTextBox != null)
             {
                 challengeIDTextBox.held = challengeIDTextBox._KeyboardOn;
-                // TODO: pain
-                // if (challengeIDTextBox.valueInt <= 0)
-                // {
-                //     challengeIDTextBox.valueInt = 1;
-                // }
-                // if (challengeIDTextBox.valueInt > 70)
-                // {
-                //     challengeIDTextBox.valueInt = 70;
-                // }
+
                 challengeIDTextBox.valueInt = challengeMode.challengeID;
                 challengeIDTextBox.greyedOut = OwnerSettingsDisabled;
             }
-
-            // if (!challengeIDTextBox.held)
-            //     challengeIDTextBox.valueFloat = challengeMode.lerp;
-            // if (prevButton != null)
-            //     prevButton.buttonBehav.greyedOut = !(CurrentOffset > 0);
-            // if (nextButton != null)
-            //     nextButton.buttonBehav.greyedOut = !(CurrentOffset < MaxOffset);
-            // if (friendlyFireCheckbox != null)
-            // {
-            //     friendlyFireCheckbox.SetValueBool(this.arenaMode.friendlyFire);
-            //     friendlyFireCheckbox.greyedOut = OwnerSettingsDisabled;
-            // }
         }
 
         public void SetCurrentlySelectedOfSeries(string id, int index) =>
