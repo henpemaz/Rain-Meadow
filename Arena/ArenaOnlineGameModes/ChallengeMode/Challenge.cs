@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using HUD;
 using Menu;
 using RainMeadow;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
@@ -145,7 +144,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(
-                menu.LongTranslate("Pit yourself against a series of challenges"),
+                menu.LongTranslate("Pit yourself against a series of challenges<LINE>Scoring scales with lobby size"),
                 new Vector2(500f, 400f),
                 menu.manager,
                 () =>

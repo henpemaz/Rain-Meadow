@@ -2182,7 +2182,6 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                // keep list here for backwards compat
                 List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
                 arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
             }
