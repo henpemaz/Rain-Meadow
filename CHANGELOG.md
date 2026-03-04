@@ -1,11 +1,11 @@
-## General
-- Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
-
 # Release 1.13.0
 ## Arena
 - Added More Slugcat's "Challenges" to Arena! 
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+## General
+- Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
+
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 
