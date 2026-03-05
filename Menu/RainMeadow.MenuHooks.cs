@@ -61,14 +61,21 @@ namespace RainMeadow
             if (meadowAnniversaryBackgroundOption >= offset && meadowAnniversaryBackgroundOption < maxOffset)
             {
                 var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption - offset].pos, crispPixels: true, anchorCenter: false);
-                self.backgroundIllustrations = [..self.backgroundIllustrations.AddItem(anniv)];
+                self.backgroundIllustrations = [.. self.backgroundIllustrations.AddItem(anniv)];
                 self.pages[0].subObjects.Add(anniv);
             }
             if (meadowSeeBgOption >= offset && meadowSeeBgOption < maxOffset)
             {
                 var medsee = new MenuIllustration(self, self.pages[0], string.Empty, "meadowsee_small", self.backgroundIllustrations[meadowSeeBgOption - offset].pos, crispPixels: true, anchorCenter: false);
-                self.backgroundIllustrations = [..self.backgroundIllustrations.AddItem(medsee)];
+                self.backgroundIllustrations = [.. self.backgroundIllustrations.AddItem(medsee)];
                 self.pages[0].subObjects.Add(medsee);
+            }
+
+            if (meadowCoinBg >= offset && meadowCoinBg < maxOffset)
+            {
+                var medCoin = new MenuIllustration(self, self.pages[0], string.Empty, "coin_small", self.backgroundIllustrations[meadowCoinBg - offset].pos, crispPixels: true, anchorCenter: false);
+                self.backgroundIllustrations = [.. self.backgroundIllustrations.AddItem(medCoin)];
+                self.pages[0].subObjects.Add(medCoin);
             }
         }
 
@@ -77,10 +84,11 @@ namespace RainMeadow
             int buttons = orig(self);
             meadowAnniversaryBackgroundOption = buttons;
             meadowSeeBgOption = buttons + 1;
-            return buttons + 2; 
+            meadowCoinBg = buttons + 2;
+            return buttons + 3;
         }
 
-        public static int meadowAnniversaryBackgroundOption = -1, meadowSeeBgOption = -1;
+        public static int meadowAnniversaryBackgroundOption = -1, meadowSeeBgOption = -1, meadowCoinBg = -1;
         int BackgroundOptionsMenu_OptionToIndex(On.MoreSlugcats.BackgroundOptionsMenu.orig_OptionToIndex orig, MoreSlugcats.BackgroundOptionsMenu self, MenuScene.SceneID option)
         {
             if (option == Ext_SceneID.Meadow_Anniversary)
@@ -90,6 +98,10 @@ namespace RainMeadow
             if (option == Ext_SceneID.Meadow_See)
             {
                 return meadowSeeBgOption;
+            }
+            if (option == Ext_SceneID.Meadow_Coin)
+            {
+                return meadowCoinBg;
             }
             return orig(self, option);
         }
@@ -101,13 +113,19 @@ namespace RainMeadow
                 return Ext_SceneID.Meadow_Anniversary;
             }
             if (ind == meadowSeeBgOption)
+            {
                 return Ext_SceneID.Meadow_See;
+            }
+            if (ind == meadowCoinBg)
+            {
+                return Ext_SceneID.Meadow_Coin;
+            }
             return orig(self, ind);
         }
-        
+
         bool BackgroundOptionsMenu_IndexUnlocked(On.MoreSlugcats.BackgroundOptionsMenu.orig_IndexUnlocked orig, MoreSlugcats.BackgroundOptionsMenu self, int ind, List<string> regions)
         {
-            if (ind == meadowAnniversaryBackgroundOption || ind == meadowSeeBgOption)
+            if (ind == meadowAnniversaryBackgroundOption || ind == meadowSeeBgOption || ind == meadowCoinBg)
             {
                 return true;
             }
@@ -295,6 +313,13 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(0.9f);
                     (self as InteractiveMenuScene).idleDepths.Add(0.4f);
                 }
+            }
+
+            if (self.sceneID == RainMeadow.Ext_SceneID.Meadow_Coin)
+            {
+                self.flatMode = true;
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - coin";
+                self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "coin_flat", new(683f, 384f), false, true));
             }
             if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada)
             {
@@ -572,13 +597,6 @@ namespace RainMeadow
                 self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
-
-            
-            if (SpecialEvents.IsSpecialEvent)
-            {
-                SpecialEvents.GetActiveEvent().UpdateLoginMessage(self);
-            }
-            
 
             // we might get here from quitting out of game
             OnlineManager.LeaveLobby();
