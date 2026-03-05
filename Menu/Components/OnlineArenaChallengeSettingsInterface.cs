@@ -91,8 +91,8 @@ namespace RainMeadow.UI.Components
             challengeNameLabel = new MenuLabel(
                 menu,
                 this,
-                $"{meta.arena}: {meta.GetMetaDescription(this.menu)}",
-                new Vector2(size.x * 0.5f, dividerY + 140f),
+                $"{this.menu.Translate(meta.arena)}: {this.menu.Translate(meta.GetMetaDescription(this.menu))}",
+                new Vector2(size.x * 0.5f, dividerY + 120f),
                 new Vector2(0, 0),
                 true
             );
@@ -101,7 +101,7 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 this.menu.Translate("Queue up any map to begin"),
-                new Vector2(size.x * 0.5f, challengeNameLabel.pos.y + 40),
+                new Vector2(size.x * 0.5f, challengeNameLabel.pos.y + 45),
                 new Vector2(0, 0),
                 false
             );
