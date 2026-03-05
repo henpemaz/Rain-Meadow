@@ -92,7 +92,7 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 $"{meta.arena}: {meta.GetMetaDescription(this.menu)}",
-                new Vector2(size.x * 0.5f, dividerY + 150f),
+                new Vector2(size.x * 0.5f, dividerY + 140f),
                 new Vector2(0, 0),
                 true
             );
@@ -186,6 +186,10 @@ namespace RainMeadow.UI.Components
                 if (unstableChallenges.Contains(challengeMode.challengeID))
                 {
                     challengeNameLabel.label.color = Color.red;
+                }
+                else
+                {
+                    challengeNameLabel.label.color = Futile.white;
                 }
             }
         }
