@@ -6,6 +6,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
+using System.Collections.Generic;
 
 namespace RainMeadow.UI.Components
 {
@@ -31,6 +32,8 @@ namespace RainMeadow.UI.Components
         public ArenaChallengeMode challengeMode;
 
         public ChallengeInformation.ChallengeMeta meta;
+
+        public List<int> unstableChallenges = new List<int> { 60 };
 
         public bool AllSettingsDisabled =>
             arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
@@ -180,6 +183,10 @@ namespace RainMeadow.UI.Components
             if (challengeNameLabel != null)
             {
                 challengeNameLabel.text = $"{meta.arena}: {meta.GetMetaDescription(this.menu)}";
+                if (unstableChallenges.Contains(challengeMode.challengeID))
+                {
+                    challengeNameLabel.label.color = Color.red;
+                }
             }
         }
 
