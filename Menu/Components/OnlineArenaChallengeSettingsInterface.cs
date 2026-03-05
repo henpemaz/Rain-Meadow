@@ -33,7 +33,7 @@ namespace RainMeadow.UI.Components
 
         public ChallengeInformation.ChallengeMeta meta;
 
-        public List<int> unstableChallenges = new List<int> { 60 };
+        public List<int> unstableChallenges = new List<int> { 62 };
 
         public bool AllSettingsDisabled =>
             arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;

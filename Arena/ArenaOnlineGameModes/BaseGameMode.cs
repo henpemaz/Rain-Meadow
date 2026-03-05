@@ -2,6 +2,7 @@
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI;
 using UnityEngine;
 
@@ -58,7 +59,6 @@ namespace RainMeadow
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
-            // --- Phase 1: Update Scores and States ---
             for (int i = 0; i < self.players.Count; i++)
             {
                 var arenaPlayer = self.players[i];
@@ -243,7 +243,8 @@ namespace RainMeadow
             Player player,
             Creature killedCrit,
             int playerIndex
-        ) { }
+        )
+        { }
 
         public virtual void LandSpear(
             ArenaOnlineGameMode arena,
@@ -251,7 +252,8 @@ namespace RainMeadow
             Player player,
             Creature target,
             ArenaSitting.ArenaPlayer aPlayer
-        ) { }
+        )
+        { }
 
         public virtual void HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arena,
@@ -290,7 +292,8 @@ namespace RainMeadow
             ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
             ref List<AbstractCreature> availableCreatures,
             ref MultiplayerUnlocks unlocks
-        ) { }
+        )
+        { }
 
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
@@ -403,6 +406,7 @@ namespace RainMeadow
                 abstractCreature.GetOnlineObject(out var oe)
                 && oe.TryGetData<SlugcatCustomization>(out var customization)
             )
+
             {
                 abstractCreature.state = new PlayerState(
                     abstractCreature,
