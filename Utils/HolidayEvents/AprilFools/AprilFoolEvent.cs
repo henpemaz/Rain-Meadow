@@ -48,6 +48,8 @@ namespace RainMeadow
                     { 2, "I heard they were removing capes" },
                     { 3, "That crash was probably your fault" },
                     { 4, "Rain Meadow definitely failed to start" },
+                    { 5, "Rain Meadow servers will go offline soon for maintenance"},
+                    { 6, "Would you like to erase all save progress?"}
                 };
 
                 Dictionary<int, string> okMessage = new Dictionary<int, string>
@@ -62,6 +64,8 @@ namespace RainMeadow
                     { 2, "Good." },
                     { 3, "It was." },
                     { 4, "Please work" },
+                    {5 , "Ok"},
+                    { 6, "Yep"}
                 };
                 int result = UnityEngine.Random.Range(0, aprilMessages.Count);
                 if (result == 0)
@@ -73,6 +77,7 @@ namespace RainMeadow
                     result = 0;
                     GainedMeadowCoin(10);
                 }
+                result = 5;
                 string selectedMessage = self.Translate(aprilMessages[result]);
                 self.manager.ShowDialog(
                     CreateDialogNotify(self, selectedMessage, okMessage[result])
