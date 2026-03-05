@@ -139,7 +139,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(
-                menu.LongTranslate("Ascension comes with a heavy price..."),
+                menu.LongTranslate("Pit yourself against a series of challenges"),
                 new Vector2(500f, 400f),
                 menu.manager,
                 () =>
