@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -13,6 +13,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 namespace RainMeadow
 {
@@ -32,8 +33,6 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool killedCreatures;
-
         private void ArenaHooks()
         {
             On.Options.LoadArenaSetup += On_Options_LoadArenaSetup;
@@ -47,7 +46,6 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
-            On.ArenaGameSession.EndSession += ArenaGameSession_EndSession;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive +=
                 ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
@@ -178,7 +176,21 @@ namespace RainMeadow
                 typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
                 this.OverseerBodyColor
             );
+            On.Menu.PlayerResultBox.Update += PlayerResultBox_Update_Hook;
         }
+
+        private void PlayerResultBox_Update_Hook(On.Menu.PlayerResultBox.orig_Update orig, Menu.PlayerResultBox self)
+        {
+            // Another Null rectangle error? I am so surprised
+            if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && self.extraRect == null)
+            {
+                self.extraRect = new RoundedRect(self.menu, self, new Vector2(0.01f, 0.01f), self.size, filled: true);
+                self.subObjects.Add(self.extraRect);
+            }
+            orig(self);
+        }
+
+
 
         private Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
         {
@@ -722,16 +734,14 @@ namespace RainMeadow
                 orig(self);
                 if (arena.externalArenaGameMode is ArenaChallengeMode)
                 {
-                    // why was this made into a local restart button. WHY!
-                    for (int i = 0; i < self.pages[0].subObjects.Count; i++)
+                    for (int x = 0; x < self.pages[0].subObjects.Count; x++)
                     {
-                        if (self.pages[0].subObjects[i] is SimpleButton s && s.signalText == "RESTART")
+                        if (self.pages[0].subObjects[x] is SimpleButton s && s.signalText == "RESTART")
                         {
-                            self.pages[0].subObjects[i].RemoveSprites();
-                            self.pages[0].RemoveSubObject(self.pages[0].subObjects[i]);
+                            s.RemoveSprites();
+                            self.pages[0].RemoveSubObject(self.pages[0].subObjects[x]);
                         }
                     }
-
                 }
                 if (
                     OnlineManager.lobby.isOwner
@@ -964,10 +974,17 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                if (!OnlineManager.lobby.isOwner && arena.leaveForNextLevel && !self.nextLevelCall)
+                if (arena.leaveForNextLevel)
                 {
-                    self.ArenaSitting.NextLevel(self.manager);
-                    self.nextLevelCall = true;
+                    self.headingLabel.text = self.Translate("LOADING...");
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        if (!self.nextLevelCall)
+                        {
+                            self.ArenaSitting.NextLevel(self.manager);
+                            self.nextLevelCall = true;
+                        }
+                    }
                 }
             }
         }
@@ -1603,89 +1620,6 @@ namespace RainMeadow
             return orig(self, commID, region, playerNumber);
         }
 
-        private void ArenaGameSession_EndSession(
-            On.ArenaGameSession.orig_EndSession orig,
-            ArenaGameSession self
-        )
-        {
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                if (!killedCreatures)
-                {
-                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
-                    {
-                        // we go over all APOs in the room
-                        var entities = self.room.abstractRoom.entities;
-                        for (int i = entities.Count - 1; i >= 0; i--)
-                        {
-                            if (
-                                entities[i] is AbstractPhysicalObject apo
-                                && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
-                                && apo is AbstractCreature ac
-                                && ac.creatureTemplate.type.value
-                                    != CreatureTemplate.Type.Slugcat.value
-                            )
-                            {
-                                for (int num = ac.stuckObjects.Count - 1; num >= 0; num--)
-                                {
-                                    if (
-                                        ac.stuckObjects[num]
-                                            is AbstractPhysicalObject.AbstractSpearStick
-                                        && ac.stuckObjects[num].A.type
-                                            == AbstractPhysicalObject.AbstractObjectType.Spear
-                                        && ac.stuckObjects[num].A.realizedObject != null
-                                    )
-                                    {
-                                        (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(
-                                            Weapon.Mode.Free
-                                        );
-                                    }
-                                }
-
-                                bool playerGrabbed = false;
-                                if (
-                                    ac.realizedCreature != null
-                                    && ac.realizedCreature.State.alive
-                                    && ac.realizedCreature.grasps != null
-                                )
-                                {
-                                    for (int g = 0; g < ac.realizedCreature.grasps.Length; g++)
-                                    {
-                                        if (
-                                            ac.realizedCreature.grasps[g] != null
-                                            && ac.realizedCreature.grasps[g].grabbed != null
-                                            && ac.realizedCreature.grasps[g].grabbed is Player pl
-                                        )
-                                        {
-                                            playerGrabbed = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (!playerGrabbed)
-                                {
-                                    ac.realizedCreature?.Die();
-                                    oe.apo.LoseAllStuckObjects();
-                                    if (!oe.isMine)
-                                    {
-                                        // not-online-aware removal
-                                        oe.RemoveEntityFromGame(false);
-                                    }
-                                    else // mine leave the old online world elegantly
-                                    {
-                                        Debug("removing my entity from online " + oe);
-                                        oe.ExitResource(roomSession);
-                                        oe.ExitResource(roomSession.worldSession);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                killedCreatures = true;
-            }
-        }
 
         private void PauseMenu_Singal(
             On.Menu.PauseMenu.orig_Singal orig,
@@ -1694,49 +1628,52 @@ namespace RainMeadow
             string message
         )
         {
-            if (message == "EXIT" && isArenaMode(out var arena))
+            if (isArenaMode(out var arena))
             {
-                if (arena.leaveForNextLevel)
+                if (message == "EXIT")
                 {
-                    return;
-                }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    if (arena.leaveForNextLevel)
                     {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            arena.arenaSittingOnlineOrder[i]
-                        );
-                        if (onlinePlayer != null && !onlinePlayer.isMe)
-                        {
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
-                        }
+                        return;
                     }
-                    foreach (var player in self.manager.arenaSitting.players)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        OnlinePlayer? onlinePlayer =
-                            ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                                arena,
-                                player.playerNumber
+                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        {
+                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                                arena.arenaSittingOnlineOrder[i]
                             );
-                        if (onlinePlayer != null)
-                        {
-                            arena.ReadFromStats(player, onlinePlayer);
+                            if (onlinePlayer != null && !onlinePlayer.isMe)
+                            {
+                                onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
+                            }
                         }
+                        foreach (var player in self.manager.arenaSitting.players)
+                        {
+                            OnlinePlayer? onlinePlayer =
+                                ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                                    arena,
+                                    player.playerNumber
+                                );
+                            if (onlinePlayer != null)
+                            {
+                                arena.ReadFromStats(player, onlinePlayer);
+                            }
+                        }
+                        self.manager.RequestMainProcessSwitch(
+                            ProcessManager.ProcessID.MultiplayerResults
+                        );
                     }
-                    self.manager.RequestMainProcessSwitch(
-                        ProcessManager.ProcessID.MultiplayerResults
-                    );
-                }
-                arena.returnToLobby = true;
+                    arena.returnToLobby = true;
 
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    arena.clientWantsToLeaveGame = true;
-                    OnlineManager.lobby.owner.InvokeOnceRPC(
-                        ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                        OnlineManager.mePlayer
-                    );
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        arena.clientWantsToLeaveGame = true;
+                        OnlineManager.lobby.owner.InvokeOnceRPC(
+                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                            OnlineManager.mePlayer
+                        );
+                    }
                 }
             }
             orig(self, sender, message);
@@ -2311,7 +2248,6 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
-                killedCreatures = false;
                 if (!ModManager.MSC)
                 {
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
@@ -2577,22 +2513,29 @@ namespace RainMeadow
                         }
                     }
 
+                    float playerFactor = Math.Max(1f, (float)self.arenaSitting.players.Count);
+                    float rawContribution = 0f;
+
                     if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
                     {
+                        // 1. Handle the milestone "Ding"
                         if (player.FoodInStomach > 0 || num2 > 0f)
                         {
-                            self.arenaSitting.players[i]
-                                .AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
+                            self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
                         }
 
-                        num += self.arenaSitting.players[i].score;
+                        // 2. In milestone mode, only the base score counts toward total progress
+                        rawContribution = (float)self.arenaSitting.players[i].score;
+                    }
+                    else
+                    {
+                        // 3. In standard mode, Score + Food counts toward progress
+                        rawContribution = (float)self.arenaSitting.players[i].score +
+                                          ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore;
                     }
 
-                    num += (int)(
-                        (float)self.arenaSitting.players[i].score
-                        + ((float)player.FoodInStomach + num2)
-                            * (float)self.arenaSitting.gameTypeSetup.foodScore
-                    );
+                    // 4. Scale the final amount and add to the global total ONCE
+                    num += UnityEngine.Mathf.RoundToInt(rawContribution / playerFactor);
                 }
 
                 return num;
@@ -2614,6 +2557,7 @@ namespace RainMeadow
             int index
         )
         {
+
             // for random class players.
             if (isArenaMode(out var aren))
             {
