@@ -512,7 +512,7 @@ namespace RainMeadow
                     x => x.MatchBneUn(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -552,7 +552,7 @@ namespace RainMeadow
                     x => x.MatchBrtrue(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -606,7 +606,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_3);
                 c.EmitDelegate(
-                    delegate(VoidSpawnGraphics self, float timeStacker)
+                    delegate (VoidSpawnGraphics self, float timeStacker)
                     {
                         if (isArenaMode(out _)) //keep it visible to creator
                             self.playerGlowVision = Mathf.Lerp(
@@ -720,9 +720,22 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 orig(self);
+                if (arena.externalArenaGameMode is ArenaChallengeMode)
+                {
+                    // why was this made into a local restart button. WHY!
+                    for (int i = 0; i < self.pages[0].subObjects.Count; i++)
+                    {
+                        if (self.pages[0].subObjects[i] is SimpleButton s && s.signalText == "RESTART")
+                        {
+                            self.pages[0].subObjects[i].RemoveSprites();
+                            self.pages[0].RemoveSubObject(self.pages[0].subObjects[i]);
+                        }
+                    }
+
+                }
                 if (
                     OnlineManager.lobby.isOwner
-                    && arena.externalArenaGameMode is not ArenaChallengeMode
+
                 )
                 {
                     var restartButton = new SimplerButton(
@@ -1177,7 +1190,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(bool mscWatcher, ArenaSetup self)
+                    delegate (bool mscWatcher, ArenaSetup self)
                     {
                         return mscWatcher || self is ArenaOnlineSetup;
                     }
@@ -1199,7 +1212,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloca, 0);
                 cursor.EmitDelegate(
-                    delegate(ArenaSetup self, ref string text)
+                    delegate (ArenaSetup self, ref string text)
                     {
                         if (self is ArenaOnlineSetup onlineSetup)
                             text = onlineSetup.SetSaveStringFilter(text);
@@ -2720,7 +2733,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color whiteCol, Menu.PlayerResultBox self)
+                    delegate (Color whiteCol, Menu.PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
@@ -2751,7 +2764,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color defaultSlugColor, PlayerResultBox self)
+                    delegate (Color defaultSlugColor, PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
