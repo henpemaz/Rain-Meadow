@@ -774,7 +774,6 @@ namespace RainMeadow
                 totalScore += arenaPlayer.score;
             }
 
-            // --- Phase 2: Sort Players into Session Result List ---
             for (int m = 0; m < self.players.Count; m++)
             {
                 ArenaSitting.ArenaPlayer arenaPlayer = self.players[m];
