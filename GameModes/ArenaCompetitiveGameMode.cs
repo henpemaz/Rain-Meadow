@@ -94,11 +94,11 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
-
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
         public Dictionary<int, List<string>> playerNumberWithTrophies =
             new Dictionary<int, List<string>>();
-
+        public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound =
+            new Dictionary<int, List<string>>();
         public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
@@ -468,6 +468,11 @@ namespace RainMeadow
             this.addedChampstoList = false;
         }
 
+        public void ResetRoundKills()
+        {
+            this.playerNumberWithTrophiesPerRound.Clear();
+        }
+
         public void ResetForceReadyCountDown()
         {
             this.forceReadyCountdownTimer = 15;
@@ -501,6 +506,7 @@ namespace RainMeadow
             ResetGameTimer();
             ResetPlayersEntered();
             ResetChampAddition();
+            ResetRoundKills();
         }
 
         public void RestartGame()
@@ -744,6 +750,10 @@ namespace RainMeadow
             {
                 playerNumberWithTrophies.Add(getPlayer.inLobbyId, new List<string>());
             }
+            if (!playerNumberWithTrophiesPerRound.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithTrophiesPerRound.Add(getPlayer.inLobbyId, new List<string>());
+            }
         }
 
         public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
@@ -754,7 +764,8 @@ namespace RainMeadow
                 player.score = playerNumberWithScore[pl.inLobbyId];
                 player.deaths = playerNumberWithDeaths[pl.inLobbyId];
                 player.totScore = playerTotScore[pl.inLobbyId];
-                player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(this, player.playerNumber);
+                player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
+                player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
 
                 RainMeadow.Debug($"Read stats: {player} from online player: {pl}");
                 RainMeadow.Debug($"Read witih stats: {player.wins} from online player: {player}");
@@ -768,7 +779,7 @@ namespace RainMeadow
                     $"Read witih totScore stats: {player.totScore} from online player: {player}"
                 );
                 RainMeadow.Debug(
-                    $"Client read stats with allKills stats: {player.allKills} from online player: {player}"
+                    $"Client read stats with allKills stats: {player.allKills.Count} from online player: {player}"
                 );
             }
         }
@@ -789,12 +800,22 @@ namespace RainMeadow
                     arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
-                        < ArenaHelpers.GetPlayerTrophies(arena, newArenaPlayer).Count
+                        < ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer).Count
                     )
                     {
                         arena.playerNumberWithTrophies[pl.inLobbyId] =
-                            ArenaHelpers.GetPlayerTrophies(arena, newArenaPlayer);
+                            ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer);
                     }
+                    if (
+                        arena.playerNumberWithTrophiesPerRound.TryGetValue(pl.inLobbyId, out _) && arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Count
+                        < ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer).Count
+                    )
+                    {
+                        arena.playerNumberWithTrophiesPerRound[pl.inLobbyId] =
+                            ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer);
+                    }
+
+
                     RainMeadow.Debug(
                         $"Player found witih stats: {newArenaPlayer} from online player: {pl}"
                     );
@@ -820,7 +841,11 @@ namespace RainMeadow
                     newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
                     newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
                     newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
-                    newArenaPlayer.allKills = ArenaHelpers.GetOnlinePlayerTrophies(
+                    newArenaPlayer.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(
+    arena,
+    newArenaPlayer.playerNumber
+);
+                    newArenaPlayer.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(
                         arena,
                         newArenaPlayer.playerNumber
                     );
@@ -855,9 +880,12 @@ namespace RainMeadow
                     arena.playerTotScore.Add(pl.inLobbyId, newArenaPlayer.totScore);
                     arena.playerNumberWithTrophies.Add(
                         pl.inLobbyId,
-                        ArenaHelpers.GetPlayerTrophies(arena, newArenaPlayer)
+                        ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer)
                     );
-
+                    arena.playerNumberWithTrophiesPerRound.Add(
+                        pl.inLobbyId,
+                        ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer)
+                    );
                     RainMeadow.Debug(
                         $"New Player assigned witih stats: {newArenaPlayer} from online player: {pl}"
                     );
@@ -919,6 +947,7 @@ namespace RainMeadow
             playerNumberWithScore.Clear();
             playerTotScore.Clear();
             playerNumberWithTrophies.Clear();
+            playerNumberWithTrophiesPerRound.Clear();
         }
 
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)

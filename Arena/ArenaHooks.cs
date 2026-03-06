@@ -808,30 +808,7 @@ namespace RainMeadow
                 );
                 if (pl != null)
                 {
-                    player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(
-                        arena,
-                        player.playerNumber
-                    );
-
-                    if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
-                    {
-                        player.deaths = d;
-                    }
-
-                    if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w))
-                    {
-                        player.wins = w;
-                    }
-
-                    if (arena.playerNumberWithScore.TryGetValue(pl.inLobbyId, out var s))
-                    {
-                        player.score = s;
-                    }
-
-                    if (arena.playerTotScore.TryGetValue(pl.inLobbyId, out var t))
-                    {
-                        player.totScore = s;
-                    }
+                    arena.ReadFromStats(player, pl);
                 }
             }
             orig(self, resultPage, owner, player, index);
@@ -2183,6 +2160,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+                // keep list here for backwards compat
                 List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
                 arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
             }
@@ -2405,6 +2383,9 @@ namespace RainMeadow
                                 arena
                                     .playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId]
                                     .Add(iconSymbolData.ToString());
+                                arena
+        .playerNumberWithTrophiesPerRound[absPlayerCreature.owner.inLobbyId]
+        .Add(iconSymbolData.ToString());
                             }
 
                             if (!OnlineManager.lobby.isOwner)
@@ -3128,7 +3109,7 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out _))
             {
                 if (self == null)
                 {
@@ -3190,3 +3171,4 @@ namespace RainMeadow
         }
     }
 }
+
