@@ -3228,7 +3228,7 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out _))
             {
                 if (self == null)
                 {
@@ -3290,3 +3290,4 @@ namespace RainMeadow
         }
     }
 }
+
