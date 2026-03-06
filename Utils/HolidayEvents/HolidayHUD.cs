@@ -15,6 +15,8 @@ namespace RainMeadow
         public const string ExplosiveSpear = "Explosive Spear";
         public const string ScavengerBomb = "Scavenger Bomb";
         public const string JokerRifle = "Joke Rifle";
+        public const string MeadowCoin = "Meadow Coin";
+
         public Vector2 pos;
 
         public class ItemButton
@@ -90,6 +92,19 @@ namespace RainMeadow
                                 me.pos,
                                 game.GetNewID()
                             );
+                            break;
+                        case MeadowCoin:
+                            desiredObject = new DataPearl.AbstractDataPearl(
+                            game.world,
+                            AbstractPhysicalObject.AbstractObjectType.DataPearl,
+                            null,
+                            me.pos,
+                            game.GetNewID(),
+                            -1,
+                            -1,
+                            null,
+                            DataPearl.AbstractDataPearl.DataPearlType.Misc
+                        );
                             break;
                         case JokerRifle:
                             desiredObject = new JokeRifle.AbstractRifle(
@@ -171,12 +186,12 @@ namespace RainMeadow
                 { ExplosiveSpear, 10 },
                 { ScavengerBomb, 15 },
                 { JokerRifle, 50 },
+                { MeadowCoin, 1 },
             };
             for (int i = 0; i < game.Players.Count; i++)
             {
                 if (
-                    OnlinePhysicalObject.map.TryGetValue(game.Players[i], out var onlineP)
-                    && onlineP.owner == OnlineManager.mePlayer
+                    game.Players[i].IsLocal()
                 )
                 {
                     me = game.Players[i];

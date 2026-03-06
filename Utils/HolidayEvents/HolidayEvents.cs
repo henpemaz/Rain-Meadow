@@ -82,12 +82,12 @@ namespace RainMeadow
             RoomCamera rCam
         )
         {
-            if (self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc && self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+            if (self != null && self.AbstractPearl != null && self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc && self.AbstractPearl.dataPearlType != DataPearl.AbstractDataPearl.DataPearlType.Misc2)
             {
                 orig(self, sLeaser, rCam);
                 return;
             }
-            
+
             SpecialEvents.LoadElement("meadowcoin");
             sLeaser.sprites = new FSprite[3];
             sLeaser.sprites[0] = new FSprite("meadowcoin");
