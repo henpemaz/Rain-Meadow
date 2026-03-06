@@ -2,6 +2,9 @@
 ## Arena
 - Added More Slugcat's "Challenges" to Arena! 
 
+## Story
+- Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
