@@ -1,3 +1,6 @@
+## General
+- Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
+
 # Release 1.13.0
 ## Arena
 - Added More Slugcat's "Challenges" to Arena! 
