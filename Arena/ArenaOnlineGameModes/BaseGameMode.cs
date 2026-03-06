@@ -775,8 +775,9 @@ namespace RainMeadow
             }
 
             // --- Phase 2: Sort Players into Session Result List ---
-            foreach (var arenaPlayer in self.players)
+            for (int m = 0; m < self.players.Count; m++)
             {
+                ArenaSitting.ArenaPlayer arenaPlayer = self.players[m];
                 bool inserted = false;
                 for (int n = 0; n < list.Count; n++)
                 {
@@ -794,7 +795,6 @@ namespace RainMeadow
                 }
             }
 
-            // --- Phase 5: Determine Winner for Next Round / Record ---
             if (list.Count == 1)
             {
                 list[0].winner = list[0].alive;
@@ -813,35 +813,36 @@ namespace RainMeadow
                 }
             }
 
-            // --- Phase 3: Update Persistent Stats ---
 
-            for (int num2 = 0; num2 < list.Count; num2++)
+            for (int x = 0; x < list.Count; x++)
             {
-                if (list[num2].winner)
+                if (list[x].winner)
                 {
-                    list[num2].wins++;
+                    list[x].wins++;
                 }
 
-                if (!self.players[num2].alive)
+                if (!self.players[x].alive)
                 {
-                    self.players[num2].deaths++;
+                    self.players[x].deaths++;
                 }
 
-                self.players[num2].totScore += self.players[num2].score;
-
-                if (OnlineManager.lobby.isOwner)
+                self.players[x].totScore += self.players[x].score;
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    self.players[x].playerNumber
+                );
+                if (pl != null)
                 {
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                        arena,
-                        self.players[num2].playerNumber
-                    );
-                    if (pl != null)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
+                        arena.AddOrInsertPlayerStats(arena, self.players[x], pl);
+                    }
+                    else
+                    {
+                        arena.ReadFromStats(self.players[x], pl);
                     }
                 }
             }
-            // --- Phase 4: UI / Overlay Update ---
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
 
