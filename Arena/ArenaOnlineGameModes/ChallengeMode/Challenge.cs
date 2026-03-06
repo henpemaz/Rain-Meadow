@@ -158,7 +158,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(
-                menu.LongTranslate("Pit yourself against a series of challenges<LINE>Scoring scales with lobby size<LINE>All players must remain alive to win"),
+                menu.LongTranslate("Pit yourself against a series of challenges!<LINE>Points scored scales down with lobby size.<LINE>All players must remain alive to win.<LINE>Challenges marked in red text are unstable."),
                 new Vector2(500f, 400f),
                 menu.manager,
                 () =>
