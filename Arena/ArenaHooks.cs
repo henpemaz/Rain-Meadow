@@ -511,7 +511,7 @@ namespace RainMeadow
                     x => x.MatchBneUn(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -551,7 +551,7 @@ namespace RainMeadow
                     x => x.MatchBrtrue(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -605,7 +605,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_3);
                 c.EmitDelegate(
-                    delegate(VoidSpawnGraphics self, float timeStacker)
+                    delegate (VoidSpawnGraphics self, float timeStacker)
                     {
                         if (isArenaMode(out _)) //keep it visible to creator
                             self.playerGlowVision = Mathf.Lerp(
@@ -791,30 +791,7 @@ namespace RainMeadow
                 );
                 if (pl != null)
                 {
-                    player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(
-                        arena,
-                        player.playerNumber
-                    );
-
-                    if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
-                    {
-                        player.deaths = d;
-                    }
-
-                    if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w))
-                    {
-                        player.wins = w;
-                    }
-
-                    if (arena.playerNumberWithScore.TryGetValue(pl.inLobbyId, out var s))
-                    {
-                        player.score = s;
-                    }
-
-                    if (arena.playerTotScore.TryGetValue(pl.inLobbyId, out var t))
-                    {
-                        player.totScore = s;
-                    }
+                    arena.ReadFromStats(player, pl);
                 }
             }
             orig(self, resultPage, owner, player, index);
@@ -1173,7 +1150,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(bool mscWatcher, ArenaSetup self)
+                    delegate (bool mscWatcher, ArenaSetup self)
                     {
                         return mscWatcher || self is ArenaOnlineSetup;
                     }
@@ -1195,7 +1172,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloca, 0);
                 cursor.EmitDelegate(
-                    delegate(ArenaSetup self, ref string text)
+                    delegate (ArenaSetup self, ref string text)
                     {
                         if (self is ArenaOnlineSetup onlineSetup)
                             text = onlineSetup.SetSaveStringFilter(text);
@@ -2280,29 +2257,32 @@ namespace RainMeadow
                     arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
                 }
 
-                for (int num2 = 0; num2 < list.Count; num2++)
+                for (int x = 0; x < list.Count; x++)
                 {
-                    if (list[num2].winner)
+                    if (list[x].winner)
                     {
-                        list[num2].wins++;
+                        list[x].wins++;
                     }
 
-                    if (!self.players[num2].alive)
+                    if (!self.players[x].alive)
                     {
-                        self.players[num2].deaths++;
+                        self.players[x].deaths++;
                     }
 
-                    self.players[num2].totScore += self.players[num2].score;
-
-                    if (OnlineManager.lobby.isOwner)
+                    self.players[x].totScore += self.players[x].score;
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arena,
+                        self.players[x].playerNumber
+                    );
+                    if (pl != null)
                     {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            self.players[num2].playerNumber
-                        );
-                        if (pl != null)
+                        if (OnlineManager.lobby.isOwner)
                         {
-                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
+                            arena.AddOrInsertPlayerStats(arena, self.players[x], pl);
+                        }
+                        else
+                        {
+                            arena.ReadFromStats(self.players[x], pl);
                         }
                     }
                 }
@@ -2530,6 +2510,9 @@ namespace RainMeadow
                                 arena
                                     .playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId]
                                     .Add(iconSymbolData.ToString());
+                                arena
+        .playerNumberWithTrophiesPerRound[absPlayerCreature.owner.inLobbyId]
+        .Add(iconSymbolData.ToString());
                             }
 
                             if (!OnlineManager.lobby.isOwner)
@@ -2784,7 +2767,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color whiteCol, Menu.PlayerResultBox self)
+                    delegate (Color whiteCol, Menu.PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
@@ -2815,7 +2798,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color defaultSlugColor, PlayerResultBox self)
+                    delegate (Color defaultSlugColor, PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
@@ -3245,7 +3228,7 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 if (self == null)
                 {
