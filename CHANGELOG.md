@@ -1,3 +1,8 @@
+# Release 1.13.0
+## Arena
+- Synced round kills
+- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
