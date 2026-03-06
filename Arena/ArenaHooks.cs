@@ -176,19 +176,9 @@ namespace RainMeadow
                 typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
                 this.OverseerBodyColor
             );
-            On.Menu.PlayerResultBox.Update += PlayerResultBox_Update_Hook;
         }
 
-        private void PlayerResultBox_Update_Hook(On.Menu.PlayerResultBox.orig_Update orig, Menu.PlayerResultBox self)
-        {
-            // Another Null rectangle error? I am so surprised
-            if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && self.extraRect == null)
-            {
-                self.extraRect = new RoundedRect(self.menu, self, new Vector2(0.01f, 0.01f), self.size, filled: true);
-                self.subObjects.Add(self.extraRect);
-            }
-            orig(self);
-        }
+
 
 
 

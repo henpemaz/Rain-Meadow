@@ -47,137 +47,11 @@ namespace RainMeadow
         }
 
         /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
-        public virtual void ArenaSessionEnded(
-            ArenaOnlineGameMode arena,
-            On.ArenaSitting.orig_SessionEnded orig,
-            ArenaSitting self,
-            ArenaGameSession session,
-            List<ArenaSitting.ArenaPlayer> list
-        )
-        {
-            int totalScore = 0;
-            int foodScore = self.gameTypeSetup.foodScore;
-            bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
-            for (int i = 0; i < self.players.Count; i++)
-            {
-                var arenaPlayer = self.players[i];
-                var sessionPlayer = session.Players[i];
-
-                if (countFood)
-                {
-                    if (sessionPlayer.state is PlayerState playerState)
-                    {
-                        arenaPlayer.score += playerState.foodInStomach * foodScore;
-                    }
-
-                    var creature = sessionPlayer.realizedCreature;
-                    if (creature != null)
-                    {
-                        foreach (var grasp in creature.grasps)
-                        {
-                            if (grasp?.grabbed is IPlayerEdible edible)
-                            {
-                                arenaPlayer.score += edible.FoodPoints * foodScore;
-                            }
-                        }
-                    }
-                }
-
-                arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
-
-                if (arenaPlayer.alive)
-                {
-                    arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
-                }
-
-                arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
-                totalScore += arenaPlayer.score;
-            }
-
-            // --- Phase 2: Sort Players into Session Result List ---
-            foreach (var arenaPlayer in self.players)
-            {
-                bool inserted = false;
-                for (int n = 0; n < list.Count; n++)
-                {
-                    if (self.PlayerSessionResultSort(arenaPlayer, list[n]))
-                    {
-                        list.Insert(n, arenaPlayer);
-                        inserted = true;
-                        break;
-                    }
-                }
-
-                if (!inserted)
-                {
-                    list.Add(arenaPlayer);
-                }
-            }
-
-            // --- Phase 3: Update Persistent Stats ---
-            bool isLobbyOwner = OnlineManager.lobby.isOwner;
-
-            // Process wins based on the sorted list
-            foreach (var listItem in list)
-            {
-                if (listItem.winner)
-                {
-                    listItem.wins++;
-                }
-            }
-
-            // Process deaths and total scores based on the original players list
-            foreach (var arenaPlayer in self.players)
-            {
-                if (!arenaPlayer.alive)
-                {
-                    arenaPlayer.deaths++;
-                }
-
-                arenaPlayer.totScore += arenaPlayer.score;
-
-                if (isLobbyOwner)
-                {
-                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                        arena,
-                        arenaPlayer.playerNumber
-                    );
-                    if (onlinePlayer != null)
-                    {
-                        arena.AddOrInsertPlayerStats(arena, arenaPlayer, onlinePlayer);
-                    }
-                }
-            }
-
-            // --- Phase 4: UI / Overlay Update ---
-            session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
-            session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
-
-            // --- Phase 5: Determine Winner for Next Round / Record ---
-            if (list.Count == 1)
-            {
-                list[0].winner = list[0].alive;
-            }
-            else if (list.Count > 1)
-            {
-                var first = list[0];
-                var second = list[1];
-
-                if (first.alive && !second.alive)
-                {
-                    first.winner = true;
-                }
-                else if (first.score > second.score)
-                {
-                    first.winner = true;
-                }
-            }
-        }
 
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 1;
+            self.foodScore = 0;
             self.survivalScore = 0;
             self.spearHitScore = 0;
             self.repeatSingleLevelForever = false;
@@ -185,8 +59,9 @@ namespace RainMeadow
             self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             self.rainWhenOnePlayerLeft = true;
             self.levelItems = true;
-            self.fliesSpawn = true;
+            self.fliesSpawn = false;
             self.saveCreatures = false;
+            self.gameType = ArenaSetup.GameTypeID.Competitive;
         }
 
         public string PlayingAsText()
@@ -851,7 +726,132 @@ namespace RainMeadow
                 }
             }
         }
+        public virtual void ArenaSessionEnded(
+                   ArenaOnlineGameMode arena,
+                   On.ArenaSitting.orig_SessionEnded orig,
+                   ArenaSitting self,
+                   ArenaGameSession session,
+                   List<ArenaSitting.ArenaPlayer> list
+               )
+        {
+            int totalScore = 0;
+            int foodScore = self.gameTypeSetup.foodScore;
+            bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
+            for (int i = 0; i < self.players.Count; i++)
+            {
+                var arenaPlayer = self.players[i];
+                var sessionPlayer = session.Players[i];
+
+                if (countFood)
+                {
+                    if (sessionPlayer.state is PlayerState playerState)
+                    {
+                        arenaPlayer.score += playerState.foodInStomach * foodScore;
+                    }
+
+                    var creature = sessionPlayer.realizedCreature;
+                    if (creature != null)
+                    {
+                        foreach (var grasp in creature.grasps)
+                        {
+                            if (grasp?.grabbed is IPlayerEdible edible)
+                            {
+                                arenaPlayer.score += edible.FoodPoints * foodScore;
+                            }
+                        }
+                    }
+                }
+
+                arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
+
+                if (arenaPlayer.alive)
+                {
+                    arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
+                }
+
+                arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+                totalScore += arenaPlayer.score;
+            }
+
+            // --- Phase 2: Sort Players into Session Result List ---
+            foreach (var arenaPlayer in self.players)
+            {
+                bool inserted = false;
+                for (int n = 0; n < list.Count; n++)
+                {
+                    if (self.PlayerSessionResultSort(arenaPlayer, list[n]))
+                    {
+                        list.Insert(n, arenaPlayer);
+                        inserted = true;
+                        break;
+                    }
+                }
+
+                if (!inserted)
+                {
+                    list.Add(arenaPlayer);
+                }
+            }
+
+            // --- Phase 5: Determine Winner for Next Round / Record ---
+            if (list.Count == 1)
+            {
+                list[0].winner = list[0].alive;
+            }
+            else if (list.Count > 1)
+            {
+
+
+                if (list[0].alive && !list[1].alive)
+                {
+                    list[0].winner = true;
+                }
+                else if (list[0].score > list[1].score)
+                {
+                    list[0].winner = true;
+                }
+            }
+
+            // --- Phase 3: Update Persistent Stats ---
+
+            // Process wins based on the sorted list
+            foreach (var listItem in list)
+            {
+                if (listItem.winner)
+                {
+                    listItem.wins++;
+                }
+            }
+
+            // Process deaths and total scores based on the original players list
+            foreach (var arenaPlayer in self.players)
+            {
+                if (!arenaPlayer.alive)
+                {
+                    arenaPlayer.deaths++;
+                }
+
+                arenaPlayer.totScore += arenaPlayer.score;
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arena,
+                        arenaPlayer.playerNumber
+                    );
+                    if (onlinePlayer != null)
+                    {
+                        arena.AddOrInsertPlayerStats(arena, arenaPlayer, onlinePlayer);
+                    }
+                }
+            }
+
+            // --- Phase 4: UI / Overlay Update ---
+            session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
+            session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
+
+        }
         public virtual bool PlayerSessionResultSort(
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
