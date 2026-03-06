@@ -140,7 +140,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             base.HUD_InitMultiplayerHud(arena, self, session);
-            var psmh = new PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x.GetOnlineCreature().isMine));
+            var psmh = new PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
             psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
             psmh.flip = -1;
 
