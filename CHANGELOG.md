@@ -2,6 +2,9 @@
 - The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 
+## Story
+- Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession

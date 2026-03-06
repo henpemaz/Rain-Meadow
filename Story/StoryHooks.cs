@@ -791,8 +791,8 @@ namespace RainMeadow
 
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
-                    {
-                        touchedInput = ticker > 200; // 5 seconds at 40 ticks a second
+                    { // 5 seconds at 40 ticks a second
+                        touchedInput = (ticker > 200) || ((self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11)));
                     }
                     if (touchedInput || inVoidSea)
                     {
