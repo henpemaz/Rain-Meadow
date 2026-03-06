@@ -815,38 +815,32 @@ namespace RainMeadow
 
             // --- Phase 3: Update Persistent Stats ---
 
-            // Process wins based on the sorted list
-            foreach (var listItem in list)
+            for (int num2 = 0; num2 < list.Count; num2++)
             {
-                if (listItem.winner)
+                if (list[num2].winner)
                 {
-                    listItem.wins++;
-                }
-            }
-
-            // Process deaths and total scores based on the original players list
-            foreach (var arenaPlayer in self.players)
-            {
-                if (!arenaPlayer.alive)
-                {
-                    arenaPlayer.deaths++;
+                    list[num2].wins++;
                 }
 
-                arenaPlayer.totScore += arenaPlayer.score;
+                if (!self.players[num2].alive)
+                {
+                    self.players[num2].deaths++;
+                }
+
+                self.players[num2].totScore += self.players[num2].score;
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                         arena,
-                        arenaPlayer.playerNumber
+                        self.players[num2].playerNumber
                     );
-                    if (onlinePlayer != null)
+                    if (pl != null)
                     {
-                        arena.AddOrInsertPlayerStats(arena, arenaPlayer, onlinePlayer);
+                        arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
                     }
                 }
             }
-
             // --- Phase 4: UI / Overlay Update ---
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
