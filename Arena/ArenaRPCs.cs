@@ -233,7 +233,7 @@ namespace RainMeadow
         [RPCMethod(runDeferred = true)]
         public static void Arena_RestartGame(RPCEvent rpcEvent)
         {
-            
+
             if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
             {
                 arena.leaveToRestart = true;
@@ -273,6 +273,7 @@ namespace RainMeadow
                             {
 
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
+                                arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
 
                             }
                         }

@@ -1,6 +1,9 @@
 # Release 1.13.0
 ## General
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
+## Arena
+- Synced round kills
+- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 
