@@ -2,6 +2,8 @@
 ## Arena
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+## Story
+- Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 
 # Release 1.12.0
 ## Arena
