@@ -2489,23 +2489,19 @@ namespace RainMeadow
 
                     if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
                     {
-                        // 1. Handle the milestone "Ding"
                         if (player.FoodInStomach > 0 || num2 > 0f)
                         {
                             self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
                         }
 
-                        // 2. In milestone mode, only the base score counts toward total progress
                         rawContribution = (float)self.arenaSitting.players[i].score;
                     }
                     else
                     {
-                        // 3. In standard mode, Score + Food counts toward progress
                         rawContribution = (float)self.arenaSitting.players[i].score +
                                           ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore;
                     }
 
-                    // 4. Scale the final amount and add to the global total ONCE
                     num += UnityEngine.Mathf.RoundToInt(rawContribution / playerFactor);
                 }
 
