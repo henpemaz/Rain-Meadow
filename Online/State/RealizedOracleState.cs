@@ -6,19 +6,33 @@ namespace RainMeadow
     public class RealizedOracleState : RealizedPhysicalObjectState
     {
         [OnlineField]
+        public string phase;
+
+        [OnlineField]
         public Vector2 lookPoint;
+
         [OnlineField(nullable = true)]
         public Generics.DynamicOrderedEntityIDs mySwarmers;
 
         public RealizedOracleState() { }
 
-        public RealizedOracleState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedOracleState(OnlinePhysicalObject onlineEntity)
+            : base(onlineEntity)
         {
             var oracle = (Oracle)onlineEntity.apo.realizedObject;
 
             this.lookPoint = oracle.oracleBehavior.lookPoint;
+            if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
+            {
+                phase = (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase.value;
+            }
 
-            mySwarmers = new(oracle.mySwarmers.Select(x => x?.abstractPhysicalObject?.GetOnlineObject()?.id).OfType<OnlineEntity.EntityId>().ToList());
+            mySwarmers = new(
+                oracle
+                    .mySwarmers.Select(x => x?.abstractPhysicalObject?.GetOnlineObject()?.id)
+                    .OfType<OnlineEntity.EntityId>()
+                    .ToList()
+            );
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -26,11 +40,19 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
 
             var oracle = (Oracle)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            if (oracle == null) return;            
+            if (oracle == null)
+                return;
+            if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
+            {
+                (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase =
+                    new MoreSlugcats.STOracleBehavior.Phase(phase);
+            }
             oracle.oracleBehavior.lookPoint = this.lookPoint;
 
-            oracle.mySwarmers = this.mySwarmers.list
-                .Select(x => (x.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject as OracleSwarmer)
+            oracle.mySwarmers = this
+                .mySwarmers.list.Select(x =>
+                    (x.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject as OracleSwarmer
+                )
                 .Where(x => x is not null)
                 .ToList();
         }

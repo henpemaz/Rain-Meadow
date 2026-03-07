@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Menu;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -121,7 +122,6 @@ namespace RainMeadow
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
-
         public SlugcatCustomization avatarSettings;
 
         public bool shufflePlayList;
@@ -392,6 +392,7 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+            this.AddExternalGameModes(ArenaChallengeMode.ChallengeMode, new ArenaChallengeMode());
         }
 
         public void ResetInvDetails()
@@ -1089,7 +1090,10 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            if (item.type == PlacedObject.Type.StuckDaddy || item.type == DLCSharedEnums.PlacedObjectType.Stowaway)
+            if (
+                item.type == PlacedObject.Type.StuckDaddy
+                || item.type == DLCSharedEnums.PlacedObjectType.Stowaway
+            )
             {
                 return OnlineManager.lobby.isOwner;
             }
@@ -1164,6 +1168,7 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
+                lobby.AddData(new ChallengeLobbyData());
             }
         }
 
