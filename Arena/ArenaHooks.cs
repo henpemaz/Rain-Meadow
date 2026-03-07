@@ -176,8 +176,30 @@ namespace RainMeadow
                 typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
                 this.OverseerBodyColor
             );
+            On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
+            On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
+
+
+        }
+        private void SandboxGameSession_SpawnEntity(On.SandboxGameSession.orig_SpawnEntity orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
+        {
+            if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
+            {
+                return; // Clients ignore adding local entities
+            }
+
+            orig(self, placedIconData);
         }
 
+        private void SandboxGameSession_SpawnEntityAfterRoomLoad(On.SandboxGameSession.orig_SpawnEntityAfterRoomLoad orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
+        {
+            if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
+            {
+                return; // Clients ignore adding local entities
+            }
+
+            orig(self, placedIconData);
+        }
 
 
 
@@ -2440,52 +2462,23 @@ namespace RainMeadow
                     return 0;
                 }
 
+
                 int num = 0;
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
                 {
+
                     float num2 = 0f;
                     if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
                     {
                         for (int j = 0; j < player.grasps.Length; j++)
                         {
-                            if (
-                                player.grasps[j] != null
-                                && player.grasps[j].grabbed is IPlayerEdible
-                            )
+                            if (player.grasps[j] != null && player.grasps[j].grabbed is IPlayerEdible)
                             {
-                                IPlayerEdible playerEdible =
-                                    player.grasps[j].grabbed as IPlayerEdible;
-                                num2 = (
-                                    (
-                                        !ModManager.MSC
-                                        || !(
-                                            player.SlugCatClass
-                                            == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint
-                                        )
-                                        || (
-                                            !(playerEdible is JellyFish)
-                                            && !(playerEdible is Centipede)
-                                            && !(playerEdible is Fly)
-                                            && !(playerEdible is VultureGrub)
-                                            && !(playerEdible is SmallNeedleWorm)
-                                            && !(playerEdible is Hazer)
-                                        )
-                                    )
-                                        ? (
-                                            num2
-                                            + (float)
-                                                (
-                                                    player.grasps[j].grabbed as IPlayerEdible
-                                                ).FoodPoints
-                                        )
-                                        : (num2 + 0f)
-                                );
+                                IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
+                                num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
                             }
                         }
                     }
-
-                    float playerFactor = Math.Max(1f, (float)self.arenaSitting.players.Count);
-                    float rawContribution = 0f;
 
                     if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
                     {
@@ -2494,15 +2487,10 @@ namespace RainMeadow
                             self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
                         }
 
-                        rawContribution = (float)self.arenaSitting.players[i].score;
-                    }
-                    else
-                    {
-                        rawContribution = (float)self.arenaSitting.players[i].score +
-                                          ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore;
+                        num += self.arenaSitting.players[i].score;
                     }
 
-                    num += UnityEngine.Mathf.RoundToInt(rawContribution / playerFactor);
+                    num += (int)((float)self.arenaSitting.players[i].score + ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore);
                 }
 
                 return num;

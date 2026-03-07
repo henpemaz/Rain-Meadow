@@ -158,6 +158,18 @@ namespace RainMeadow
                 RainMeadow.Debug("Adding Watcher Camo Meter");
                 self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
             }
+            var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
+            psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
+            psmh.flip = -1;
+
+            psmh.parts.Clear();
+            var killsList = new HUD.PlayerSpecificMultiplayerHud.KillList(psmh);
+            var scoreCounter = new HUD.PlayerSpecificMultiplayerHud.ScoreCounter(psmh);
+            scoreCounter.scoreText.color = Color.white; // can't see crap
+            scoreCounter.lightGradient.color = Color.white;
+            psmh.parts.Add(killsList);
+            psmh.parts.Add(scoreCounter);
+            self.AddPart(psmh);
         }
 
         public virtual void ArenaCreatureSpawner_SpawnCreatures(
