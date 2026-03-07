@@ -746,7 +746,6 @@ namespace RainMeadow
                    List<ArenaSitting.ArenaPlayer> list
                )
         {
-            int totalScore = 0;
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
@@ -783,7 +782,6 @@ namespace RainMeadow
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
-                totalScore += arenaPlayer.score;
             }
 
             for (int m = 0; m < self.players.Count; m++)
