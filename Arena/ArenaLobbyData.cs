@@ -144,23 +144,23 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public int currentLevel;
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithScore;
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithDeaths;
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithWins;
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerTotScore;
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophies;
 
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound;
 
             [OnlineField(group = "arenaGameplay")]
