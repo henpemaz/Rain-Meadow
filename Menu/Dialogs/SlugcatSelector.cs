@@ -111,7 +111,7 @@ namespace RainMeadow.UI
                 signalText = "ROLL",
             };
             if (
-                SpecialEvents.IsSpecialEvent
+                SpecialEvents.IsSpecialEventInLobby
                 && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
             )
             {

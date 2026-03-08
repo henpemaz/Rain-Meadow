@@ -22,44 +22,42 @@ namespace RainMeadow
         public const string RainbowCape = "Rainbow Cape";
         public Vector2 pos;
 
-        public class ItemButton
+        public class ItemButton : SimplerButton
         {
+            public Configurable<bool>? permanentPurchase;
             public OnlinePhysicalObject player;
-            public SimplerButton button;
-            public Dictionary<string, int> storeItems;
-            public HolidayStoreOverlay overlay;
             public int cost;
+            public HolidayStoreOverlay overlay;
+
             public string name;
-            public bool didRespawn;
             public bool RequiresWatcher => ModManager.Watcher;
             public bool RequiresMSC => ModManager.MSC;
 
             public ItemButton(
                 HolidayStoreOverlay menu,
-                AbstractCreature me,
+                MenuObject menuObject,
                 Vector2 pos,
+                AbstractCreature me,
                 RainWorldGame game,
-                KeyValuePair<string, int> itemEntry,
-                int index,
-                bool canBuy = false
-            )
+                string item,
+                int cost,
+                Configurable<bool>? permanentPurchase
+            ) : base(menu, menuObject, "", pos, new Vector2(110, 30))
             {
+                
+                this.permanentPurchase = permanentPurchase;
                 this.overlay = menu;
-                this.name = itemEntry.Key;
-                this.cost = itemEntry.Value;
-                this.button = new SimplerButton(
-                    menu,
-                    menu.pages[0],
-                    $"{itemEntry.Key}: ¤{itemEntry.Value}",
-                    pos,
-                    new Vector2(110, 30)
-                );
+                this.name = item;
+                this.cost = cost;
+                UpdateText();
 
-                this.button.OnClick += (_) =>
+                
+
+                OnClick += (_) =>
                 {
                     ICapeColor? desiredCape = null;
                     AbstractPhysicalObject? desiredObject = null;
-                    switch (itemEntry.Key)
+                    switch (name)
                     {
                         case Spear:
                             desiredObject = new AbstractSpear(
@@ -119,12 +117,14 @@ namespace RainMeadow
                                 JokeRifle.AbstractRifle.AmmoType.Fruit
                             );
                             break;
-                        case SilverCape: desiredCape = new SolidCapeColor(Color.red); break;
-                        case GoldenCape: desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); break;
+                        case SilverCape: desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); break;
+                        case GoldenCape: desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); break;
                         case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }
 
-                    if (me != null && SpecialEvents.CanSpendMeadowCoin(itemEntry.Value))
+                    bool purchased = permanentPurchase?.Value ?? false;
+
+                    if (me != null && (SpecialEvents.CanSpendMeadowCoin(cost) || purchased))
                     {
                         if (desiredObject != null)
                         {
@@ -138,33 +138,33 @@ namespace RainMeadow
                                 if (freehand >= 0) p.SlugcatGrab(desiredObject.realizedObject, freehand);   
                             }
 
-                            SpecialEvents.SpendMeadowCoin(itemEntry.Value);
+                            if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
+                            if (permanentPurchase is not null) permanentPurchase.Value = true;
                         }
                         else if (desiredCape != null)
                         {
                             if (me.GetOnlineCreature() is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var slugcatCustomization))
                             {
                                 slugcatCustomization.eventCape = desiredCape;
+                                CapeManager.RefreshGraphicalModule(critter.realizedCreature);
                             }
-                            
-                            SpecialEvents.SpendMeadowCoin(itemEntry.Value);
+
+                            if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
+                            if (permanentPurchase is not null) permanentPurchase.Value = true;
                         }
                     }
-                    didRespawn = false;
+                    UpdateText();
                 };
-                menu.pages[0].subObjects.Add(this.button); // Add to the page specifically
             }
 
-            public void Destroy()
+            public void UpdateText()
             {
-                this.button.RemoveSprites();
-                this.button.page.RemoveSubObject(this.button);
+                this.menuLabel.text = (permanentPurchase?.Value ?? false)? $"{name} : Free" : $"{name}: ¤{cost}";
             }
         }
 
         public RainWorldGame game;
         public List<ItemButton> storeItemList;
-        ItemButton itemButtons;
         public ButtonScroller playerScroller;
         public List<ItemButton> ItemButtons => playerScroller.GetSpecificButtons<ItemButton>();
 
@@ -204,47 +204,27 @@ namespace RainMeadow
             );
             this.pages[0].subObjects.Add(meadowCoinValue);
 
-            var storeItems = new Dictionary<string, int>
+            var storeItems = new List<(string, int, Configurable<bool>?)>
             {
-                { Rock, 1 },
-                { Spear, 5 },
-                { ExplosiveSpear, 10 },
-                { ScavengerBomb, 15 },
-                { JokerRifle, 50 },
-                { MeadowCoin, 1 },
-                { SilverCape, 75 },
-                { GoldenCape, 100 },
-                { RainbowCape, 150 },
+                (SilverCape, 75, RainMeadow.rainMeadowOptions.boughtSilverCape),
+                (GoldenCape, 100, RainMeadow.rainMeadowOptions.boughtGoldenCape),
+                (RainbowCape, 150, RainMeadow.rainMeadowOptions.boughtRainbowCape),
+                (Rock, 1, null),
+                (Spear, 5, null),
+                (ExplosiveSpear, 10, null),
+                (ScavengerBomb, 15, null),
+                (MeadowCoin, 1, null),
             };
-            for (int i = 0; i < game.Players.Count; i++)
-            {
-                if (
-                    game.Players[i].IsLocal()
-                )
-                {
-                    me = game.Players[i];
-                    break;
-                }
-            }
+
+            if (ModManager.MSC) storeItems.Add((JokerRifle, 50, null));
+            me = game.Players.First(x => x is not null && x.IsLocal());
             int index = 0;
             foreach (var item in storeItems)
             {
                 // Pass the calculated position to the button
                 Vector2 buttonPos = new Vector2(pos.x, this.pos.y - 38 - (index * 40));
-
-                var newItemButton = new ItemButton(this, me, buttonPos, game, item, index, true);
-
-                // Ensure the button is actually visible on the page
-                if (!this.pages[0].subObjects.Contains(newItemButton.button))
-                {
-                    this.pages[0].subObjects.Add(newItemButton.button);
-                }
-
-                if (newItemButton.name == JokerRifle && !ModManager.MSC)
-                {
-                    index++;
-                    continue;
-                }
+                var newItemButton = new ItemButton(this, this.pages[0], buttonPos, me, game, item.Item1, item.Item2, item.Item3);
+                this.pages[0].subObjects.Add(newItemButton);
                 this.storeItemList.Add(newItemButton);
                 index++;
             }
@@ -273,7 +253,7 @@ namespace RainMeadow
             }
             for (int i = 0; i < storeItemList.Count; i++)
             {
-                storeItemList[i].button.buttonBehav.greyedOut =
+                storeItemList[i].buttonBehav.greyedOut =
                     me != null
                         ? RainMeadow.rainMeadowOptions.MeadowCoins.Value < storeItemList[i].cost
                         : me == null;

@@ -45,6 +45,7 @@ namespace RainMeadow
 
         private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
         public static bool IsSpecialEvent => AllEvents.Any(e => e.IsActive);
+        public static bool IsSpecialEventInLobby => OnlineManager.lobby != null && OnlineManager.lobby.eventGags && AllEvents.Any(e => e.IsActive);
 
         public static Event? GetActiveEvent()
         {
@@ -53,7 +54,7 @@ namespace RainMeadow
 
         public static void LoadElement(string elementName)
         {
-            if (!SpecialEvents.IsSpecialEvent)
+            if (!SpecialEvents.IsSpecialEventInLobby)
             {
                 return;
             }
@@ -115,6 +116,7 @@ namespace RainMeadow
             if (CanSpendMeadowCoin(coinsSpent))
             {
                 RainMeadow.rainMeadowOptions.MeadowCoins.Value -= coinsSpent;
+                RainMeadow.rainMeadowOptions.config.Save();
                 return true;
             }
             

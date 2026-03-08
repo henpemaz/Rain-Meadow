@@ -209,6 +209,28 @@ namespace RainMeadow
             return null;
         }
 
+        public static void RefreshGraphicalModule(PhysicalObject obj)
+        {
+            if (obj is not null && obj.graphicsModule is GraphicsModule module && obj.room is Room r)
+            {
+                r.drawableObjects.Remove(module);
+                obj.graphicsModule = null;
+                obj.InitiateGraphicsModule();
+                for (int k = 0; k < r.game.cameras.Length; k++)
+                {
+                    if (r.game.cameras[k].room == r)
+                    {
+                        r.game.cameras[k].ReplaceDrawable(module, obj.graphicsModule);
+                    }
+                }
+
+                for (int i = 0; i < 40; i++)
+                {
+                    obj.graphicsModule?.Update();
+                }
+            }
+  
+        }
     }
 
     class SlugcatCape
@@ -263,8 +285,7 @@ namespace RainMeadow
             for (int k = 0; k <= SlugcatCape.size; k++)
             {
                 for (int l = 0; l <= SlugcatCape.size; l++)
-                {
-                    ICapeColor color = this.cloakColor;
+                {;
                     Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
                     Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
                     Vector2 vector = Custom.DirVec(p, p2) * 5f;
@@ -290,10 +311,22 @@ namespace RainMeadow
         // Token: 0x060022B4 RID: 8884 RVA: 0x002B2484 File Offset: 0x002B0684
         private void ConnectEnd()
         {
-            if ((ModManager.Watcher && playerGFX.player.isCamo) || SpecialEvents.IsSpecialEvent && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools)
+            if ((ModManager.Watcher && playerGFX.player.isCamo))
             {
                 return;
             }
+
+            if (SpecialEvents.IsSpecialEventInLobby && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools)
+            {
+                if (playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
+                {
+                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.eventCape is null)
+                    {
+                        return;
+                    }
+                }
+            }
+
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             BodyChunk bodyChunk = playerGFX.player.bodyChunks[1];
             Vector2 normalized = GetBodyNormalized();

@@ -77,7 +77,7 @@ namespace RainMeadow
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEvent)
+            if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
             {
                 SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
             } 
@@ -720,7 +720,7 @@ namespace RainMeadow
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
 
-                    if (SpecialEvents.IsSpecialEvent && !storyGameMode.hasSheltered)
+                    if (SpecialEvents.IsSpecialEventInLobby && !storyGameMode.hasSheltered)
                     {
                         var entities = self.room.abstractRoom.entities;
                         int coinCount = 0;

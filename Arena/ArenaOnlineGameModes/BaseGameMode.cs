@@ -348,10 +348,7 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
-            if (
-                SpecialEvents.IsSpecialEvent
-                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
-            )
+            if (SpecialEvents.IsSpecialEventInLobby && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a)
             {
                 a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
             }

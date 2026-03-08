@@ -79,8 +79,11 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
     private readonly Configurable<string> LobbyMusic;
-    public readonly Configurable<bool> AnniversaryCape;
     public readonly Configurable<int> MeadowCoins;
+
+    public readonly Configurable<bool> boughtSilverCape;
+    public readonly Configurable<bool> boughtGoldenCape;
+    public readonly Configurable<bool> boughtRainbowCape;
 
     public enum IntroRoll
     {
@@ -194,9 +197,11 @@ public class RainMeadowOptions : OptionInterface
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
-        AnniversaryCape = config.Bind("AnniversaryCape", true);
         MeadowCoins = config.Bind("MeadowCoins", 0);
 
+        boughtSilverCape = config.Bind("BoughtSilverCape", false);
+        boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
+        boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
     }
 
     public override void Initialize()
@@ -338,9 +343,6 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
-
-                new OpLabel(120, 420, Translate("Anniversary Gift")),
-                new OpCheckBox(AnniversaryCape, new Vector2(120, 390f)),
                 
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
