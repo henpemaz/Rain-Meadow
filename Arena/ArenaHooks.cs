@@ -2509,50 +2509,60 @@ namespace RainMeadow
             bool inHands
         )
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var _) && player != null)
             {
-                if (player == null)
+                // 1. Target the specific player in the session
+                int sessionPlayerIndex = self.Players.IndexOf(player.abstractCreature);
+
+                // Safety check: Ensure the player is actually registered in the arena sitting
+                if (sessionPlayerIndex == -1 || sessionPlayerIndex >= self.arenaSitting.players.Count)
                 {
                     return 0;
                 }
 
+                ArenaSitting.ArenaPlayer sittingPlayer = self.arenaSitting.players[sessionPlayerIndex];
 
-                int num = 0;
-                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                // 2. Calculate food points currently being held
+                float graspFoodPoints = 0f;
+                if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
                 {
-
-                    float num2 = 0f;
-                    if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
+                    for (int j = 0; j < player.grasps.Length; j++)
                     {
-                        for (int j = 0; j < player.grasps.Length; j++)
+                        if (player.grasps[j]?.grabbed is IPlayerEdible playerEdible)
                         {
-                            if (player.grasps[j] != null && player.grasps[j].grabbed is IPlayerEdible)
+                            // Saint-specific restriction (MSC compatibility)
+                            bool isSaintInedible = ModManager.MSC &&
+                                player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Saint &&
+                                (playerEdible is JellyFish || playerEdible is Centipede || playerEdible is Fly ||
+                                 playerEdible is VultureGrub || playerEdible is SmallNeedleWorm || playerEdible is Hazer);
+
+                            if (!isSaintInedible)
                             {
-                                IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
-                                num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
+                                graspFoodPoints += (float)playerEdible.FoodPoints;
                             }
                         }
                     }
-
-                    if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
-                    {
-                        if (player.FoodInStomach > 0 || num2 > 0f)
-                        {
-                            self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
-                        }
-
-                        num += self.arenaSitting.players[i].score;
-                    }
-
-                    num += (int)((float)self.arenaSitting.players[i].score + ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore);
                 }
 
-                return num;
+                // 3. Handle Sandbox scoring (usually for large foodScore values)
+                if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
+                {
+                    if (player.FoodInStomach > 0 || graspFoodPoints > 0f)
+                    {
+                        sittingPlayer.AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
+                    }
+                }
+
+                // 4. Final Calculation for this individual player
+                // Formula: Current Base Score + ((Stomach + Hands) * Score Multiplier)
+                int finalScore = (int)((float)sittingPlayer.score +
+                                      ((float)player.FoodInStomach + graspFoodPoints) * (float)self.arenaSitting.gameTypeSetup.foodScore);
+
+                return finalScore;
             }
-            else
-            {
-                return orig(self, player, inHands);
-            }
+
+            // Default behavior for non-arena modes
+            return orig(self, player, inHands);
         }
 
         private void PlayerResultBox_ctor(
