@@ -107,6 +107,9 @@ namespace RainMeadow
                             null,
                             DataPearl.AbstractDataPearl.DataPearlType.Misc
                         );
+
+                            List<string> resizedAttributes = desiredObject.unrecognizedAttributes == null? [] : [.. desiredObject.unrecognizedAttributes];
+                            desiredObject.unrecognizedAttributes = ["meadowcoin", .. resizedAttributes];
                             break;
                         case JokerRifle:
                             desiredObject = new JokeRifle.AbstractRifle(

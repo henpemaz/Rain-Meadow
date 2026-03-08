@@ -730,6 +730,8 @@ namespace RainMeadow
                                 {
                                     if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                     {
+                                        if (pearl.GetOnlineObject()?.isMine == true && pearl.unrecognizedAttributes is string[] attributes && attributes.Contains("meadowcoin"))
+                                            pearl.GetOnlineObject()?.RemoveEntityFromGame();
                                         coinCount++;
                                     }
                                 }
