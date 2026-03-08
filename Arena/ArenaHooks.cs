@@ -176,8 +176,68 @@ namespace RainMeadow
             );
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
+            IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
+
+        }
 
 
+        private void IL_ExitManager_Update(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // --- TARGET 1: PARRY CONDITION ---
+            if (cursor.TryGotoNext(MoveType.Before,
+                i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
+                i => i.MatchLdcI4(0),
+                i => i.MatchCallvirt<List<ArenaSitting.ArenaPlayer>>("get_Item"),
+                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.parries))
+            ))
+            {
+                cursor.Index++;
+                cursor.RemoveRange(3);
+                cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
+                {
+                    if (players == null || players.Count == 0) return 0;
+
+                    // If offline or not challenge mode, maintain vanilla behavior (Player 0 only)
+                    if (OnlineManager.lobby == null || RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode) return players[0].parries;
+
+                    // Online behavior: check if ANY player met the goal by taking the Max
+                    int maxParries = 0;
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        if (players[i].parries > maxParries) maxParries = players[i].parries;
+                    }
+                    return maxParries;
+                });
+            }
+
+            // --- TARGET 2: SURVIVAL TIME CONDITION ---
+            cursor.Index = 0; // Reset cursor to search from the top again
+            if (cursor.TryGotoNext(MoveType.Before,
+                i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
+                i => i.MatchLdcI4(0),
+                i => i.MatchCallvirt<List<ArenaSitting.ArenaPlayer>>("get_Item"),
+                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.timeAlive))
+            ))
+            {
+                cursor.Index++;
+                cursor.RemoveRange(3);
+
+                cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
+                {
+                    if (players == null || players.Count == 0) return 0;
+
+                    if (OnlineManager.lobby == null || RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode) return players[0].timeAlive;
+
+                    int maxTime = 0;
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        if (players[i].timeAlive > maxTime) maxTime = players[i].timeAlive;
+                    }
+                    return maxTime;
+                });
+            }
         }
         private void SandboxGameSession_SpawnEntity(On.SandboxGameSession.orig_SpawnEntity orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
         {
