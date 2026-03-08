@@ -187,11 +187,10 @@ namespace RainMeadow.UI
         public override void Singal(MenuObject sender, string message)
         {
             base.Singal(sender, message);
-            if (message == "ROLL")
+            if (message == "ROLL" && (!SpecialEvents.AprilFoolsEvent.IsActive || SpecialEvents.SpendMeadowCoin(1)))
             {
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 rolling = true;
-                SpecialEvents.SpentMeadowCoin(1);
             }
             if (message == "STOP")
             {

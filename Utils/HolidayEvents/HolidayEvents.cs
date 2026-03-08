@@ -105,10 +105,20 @@ namespace RainMeadow
             RainMeadow.rainMeadowOptions.config.Save();
         }
 
-        public static void SpentMeadowCoin(int coinsSpent)
+        public static bool CanSpendMeadowCoin(int coinsSpent)
         {
-            RainMeadow.rainMeadowOptions.MeadowCoins.Value -= coinsSpent;
-            RainMeadow.rainMeadowOptions.config.Save();
+            return RainMeadow.rainMeadowOptions.MeadowCoins.Value > coinsSpent;
+        }
+
+        public static bool SpendMeadowCoin(int coinsSpent)
+        {
+            if (CanSpendMeadowCoin(coinsSpent))
+            {
+                RainMeadow.rainMeadowOptions.MeadowCoins.Value -= coinsSpent;
+                return true;
+            }
+            
+            return false;
         }
     }
 }

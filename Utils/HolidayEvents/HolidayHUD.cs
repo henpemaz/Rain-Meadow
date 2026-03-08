@@ -17,6 +17,9 @@ namespace RainMeadow
         public const string JokerRifle = "Joke Rifle";
         public const string MeadowCoin = "Meadow Coin";
 
+        public const string SilverCape = "Silver Cape";
+        public const string GoldenCape = "Golden Cape";
+        public const string RainbowCape = "Rainbow Cape";
         public Vector2 pos;
 
         public class ItemButton
@@ -54,7 +57,8 @@ namespace RainMeadow
 
                 this.button.OnClick += (_) =>
                 {
-                    AbstractPhysicalObject desiredObject = null;
+                    ICapeColor? desiredCape = null;
+                    AbstractPhysicalObject? desiredObject = null;
                     switch (itemEntry.Key)
                     {
                         case Spear:
@@ -115,15 +119,36 @@ namespace RainMeadow
                                 JokeRifle.AbstractRifle.AmmoType.Fruit
                             );
                             break;
+                        case SilverCape: desiredCape = new SolidCapeColor(Color.red); break;
+                        case GoldenCape: desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); break;
+                        case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }
 
-                    if (desiredObject != null && me != null)
+                    if (me != null && SpecialEvents.CanSpendMeadowCoin(itemEntry.Value))
                     {
-                        (game.cameras[0].room.abstractRoom).AddEntity(desiredObject);
-                        desiredObject.RealizeInRoom();
-                        me.Room.world.GetResource().ApoEnteringWorld(desiredObject);
-                        me.Room.GetResource()?.ApoEnteringRoom(desiredObject, desiredObject.pos);
-                        SpecialEvents.SpentMeadowCoin(itemEntry.Value);
+                        if (desiredObject != null)
+                        {
+                            (game.cameras[0].room.abstractRoom).AddEntity(desiredObject);
+                            desiredObject.RealizeInRoom();
+                            // me.Room.world.GetResource().ApoEnteringWorld(desiredObject);
+                            me.Room.GetResource()?.ApoEnteringRoom(desiredObject, desiredObject.pos);
+                            if (me.realizedCreature is Player p)
+                            {
+                                int freehand = p.FreeHand();
+                                if (freehand >= 0) p.SlugcatGrab(desiredObject.realizedObject, freehand);   
+                            }
+
+                            SpecialEvents.SpendMeadowCoin(itemEntry.Value);
+                        }
+                        else if (desiredCape != null)
+                        {
+                            if (me.GetOnlineCreature() is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var slugcatCustomization))
+                            {
+                                slugcatCustomization.eventCape = desiredCape;
+                            }
+                            
+                            SpecialEvents.SpendMeadowCoin(itemEntry.Value);
+                        }
                     }
                     didRespawn = false;
                 };
@@ -187,6 +212,9 @@ namespace RainMeadow
                 { ScavengerBomb, 15 },
                 { JokerRifle, 50 },
                 { MeadowCoin, 1 },
+                { SilverCape, 75 },
+                { GoldenCape, 100 },
+                { RainbowCape, 150 },
             };
             for (int i = 0; i < game.Players.Count; i++)
             {
