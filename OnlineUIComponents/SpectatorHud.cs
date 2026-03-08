@@ -36,7 +36,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
-                    if (SpecialEvents.IsSpecialEvent)
+                    if (SpecialEvents.IsSpecialEventInLobby)
                     {
                         holidayStoreOverlay = new HolidayStoreOverlay(game.manager, game);
                     }
@@ -68,6 +68,9 @@ namespace RainMeadow
             spectatee = null;
             spectatorOverlay?.ShutDownProcess();
             spectatorOverlay = null;
+
+            holidayStoreOverlay?.ShutDownProcess();
+            holidayStoreOverlay = null;
             isActive = false;
         }
 
@@ -140,6 +143,8 @@ namespace RainMeadow
                         );
                         spectatorOverlay.ShutDownProcess();
                         spectatorOverlay = null;
+                        holidayStoreOverlay?.ShutDownProcess();
+                        holidayStoreOverlay = null;
                         return;
                     }
                 }

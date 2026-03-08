@@ -14,9 +14,9 @@ namespace RainMeadow
         public static AprilFools AprilFoolsEvent = new AprilFools()
         {
             Name = Utils.Translate("April Fool's"),
-            StartMonth = 4,
+            StartMonth = 3,
             StartDay = 1,
-            EndDay = 2,
+            EndDay = 30,
         };
 
         public class AprilFools : Event
@@ -67,7 +67,8 @@ namespace RainMeadow
                     {5 , "Ok"},
                     { 6, "Yep"}
                 };
-                int result = UnityEngine.Random.Range(0, aprilMessages.Count);
+                
+                int result = new System.Random().Next(aprilMessages.Count);
                 if (result == 0)
                 {
                     RainMeadow.rainMeadowOptions.MeadowCoins.Value--;

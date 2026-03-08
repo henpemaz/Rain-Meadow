@@ -48,7 +48,7 @@ namespace RainMeadow
             RainMeadow.Debug("Collected locally:" + online);
             collectedLocally = true;
             MeadowProgression.ItemCollected(this);
-            if (SpecialEvents.IsSpecialEvent)
+            if (SpecialEvents.IsSpecialEventInLobby)
             {
                 SpecialEvents.GainedMeadowCoin(1);
             }

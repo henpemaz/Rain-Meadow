@@ -114,7 +114,7 @@ namespace RainMeadow
             timelineLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
             pages[0].subObjects.Add(timelineLabel);
 
-            if (SpecialEvents.IsSpecialEvent)
+            if (SpecialEvents.IsSpecialEventInLobby)
             {
                 pos.y -= 40f;
                 SpecialEvents.LoadElement("meadowcoin");
