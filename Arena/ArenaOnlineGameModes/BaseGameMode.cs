@@ -739,12 +739,12 @@ namespace RainMeadow
             }
         }
         public virtual void ArenaSessionEnded(
-                   ArenaOnlineGameMode arena,
-                   On.ArenaSitting.orig_SessionEnded orig,
-                   ArenaSitting self,
-                   ArenaGameSession session,
-                   List<ArenaSitting.ArenaPlayer> list
-               )
+            ArenaOnlineGameMode arena,
+            On.ArenaSitting.orig_SessionEnded orig,
+            ArenaSitting self,
+            ArenaGameSession session,
+            List<ArenaSitting.ArenaPlayer> list
+        )
         {
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
@@ -752,23 +752,27 @@ namespace RainMeadow
             for (int i = 0; i < self.players.Count; i++)
             {
                 var arenaPlayer = self.players[i];
-                var sessionPlayer = session.Players[i];
 
-                if (countFood)
+                if (session.Players != null && i < session.Players.Count)
                 {
-                    if (sessionPlayer.state is PlayerState playerState)
-                    {
-                        arenaPlayer.score += playerState.foodInStomach * foodScore;
-                    }
+                    var sessionPlayer = session.Players[i];
 
-                    var creature = sessionPlayer.realizedCreature;
-                    if (creature != null)
+                    if (countFood)
                     {
-                        foreach (var grasp in creature.grasps)
+                        if (sessionPlayer.state is PlayerState playerState)
                         {
-                            if (grasp?.grabbed is IPlayerEdible edible)
+                            arenaPlayer.score += playerState.foodInStomach * foodScore;
+                        }
+
+                        var creature = sessionPlayer.realizedCreature;
+                        if (creature != null)
+                        {
+                            foreach (var grasp in creature.grasps)
                             {
-                                arenaPlayer.score += edible.FoodPoints * foodScore;
+                                if (grasp?.grabbed is IPlayerEdible edible)
+                                {
+                                    arenaPlayer.score += edible.FoodPoints * foodScore;
+                                }
                             }
                         }
                     }
@@ -810,8 +814,6 @@ namespace RainMeadow
             }
             else if (list.Count > 1)
             {
-
-
                 if (list[0].alive && !list[1].alive)
                 {
                     list[0].winner = true;
@@ -822,39 +824,41 @@ namespace RainMeadow
                 }
             }
 
-
             for (int x = 0; x < list.Count; x++)
             {
-                if (list[x].winner)
+                var sortedPlayer = list[x];
+                if (sortedPlayer.winner)
                 {
-                    list[x].wins++;
+                    sortedPlayer.wins++;
                 }
 
-                if (!self.players[x].alive)
+                if (!sortedPlayer.alive)
                 {
-                    self.players[x].deaths++;
+                    sortedPlayer.deaths++;
                 }
 
-                self.players[x].totScore += self.players[x].score;
+                sortedPlayer.totScore += sortedPlayer.score;
+
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     arena,
-                    self.players[x].playerNumber
+                    sortedPlayer.playerNumber
                 );
+
                 if (pl != null)
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.AddOrInsertPlayerStats(arena, self.players[x], pl);
+                        arena.AddOrInsertPlayerStats(arena, sortedPlayer, pl);
                     }
                     else
                     {
-                        arena.ReadFromStats(self.players[x], pl);
+                        arena.ReadFromStats(sortedPlayer, pl);
                     }
                 }
             }
+
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
-
         }
         public virtual bool PlayerSessionResultSort(
             ArenaOnlineGameMode arena,
