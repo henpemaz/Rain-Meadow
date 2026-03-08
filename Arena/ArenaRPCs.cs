@@ -1,13 +1,30 @@
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
-using System.Net;
-using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void AddKilledCreatureToHUD(OnlineCreature onlineKilledCreature)
+        {
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+            for (int j = 0; j < game.cameras[0].hud.parts.Count; j++)
+            {
+                if (game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
+                {
+                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.abstractCreature));
+                    break;
+                }
+            }
+        }
         [RPCMethod]
         public static void Arena_ForceReady()
         {
@@ -241,7 +258,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
+        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum, int score)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -274,6 +291,7 @@ namespace RainMeadow
 
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                                arena.playerNumberWithScore[pl.inLobbyId] += score;
 
                             }
                         }
