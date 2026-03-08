@@ -2483,10 +2483,10 @@ namespace RainMeadow
 
                 if (earnsTrophy)
                 {
-                    self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                    self.arenaSitting.players[i].allKills.Add(iconSymbolData);
                     if (killedCrit.IsLocal())
                     {
+                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
                         int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                         int scoreToAdd = unlockIndex >= 0 ? self.arenaSitting.gameTypeSetup.killScores[unlockIndex] : 0;
                         if (OnlineManager.lobby.isOwner)
