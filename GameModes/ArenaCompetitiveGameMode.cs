@@ -121,8 +121,8 @@ namespace RainMeadow
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
-
         public SlugcatCustomization avatarSettings;
+
 
         public bool shufflePlayList;
         public List<string> playList = new List<string>();

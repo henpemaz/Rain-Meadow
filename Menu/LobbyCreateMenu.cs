@@ -19,7 +19,7 @@ public class LobbyCreateMenu : SmartMenu
     private OpTextBox lobbyLimitNumberTextBox;
     private int maxPlayerCount;
     private OpCheckBox? lobbyPinnedCheckBox;
-    private OpCheckBox? lobbyAnniversaryGags;
+    private OpCheckBox? lobbyEventGags;
 
     private OpComboBox2 meadowTimelineDropdown;
 
@@ -109,10 +109,9 @@ public class LobbyCreateMenu : SmartMenu
         where.x += 80;
         where.y -= 5;
         meadowTimeline = SlugcatStats.Name.White.value;
-        string[] excludedSlugcats = { "MeadowOnline", "MeadowRandom", "Slugpup" }; // visual. Timelines default to White if unknown
 
         var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
-            .Where(li => !excludedSlugcats.Contains(li.name))
+            .Where(li => !SlugcatStats.HiddenOrUnplayableSlugcat((SlugcatStats.Name)ExtEnumBase.Parse(typeof(SlugcatStats.Name), li.name, false)))
             .Select(li => 
             { 
                 li.displayName = Translate(li.displayName); 
@@ -140,15 +139,15 @@ public class LobbyCreateMenu : SmartMenu
             new UIelementWrapper(this.tabWrapper, lobbyPinnedCheckBox);
             where.y += 5;
         }
-        if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
+        if (SpecialEvents.IsSpecialEvent)
         {
             where.x -= 120;
             where.y -= 45;
-            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Anniversary Gags:"), where, new Vector2(400, 20f), false));
+            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Event Gags:"), where, new Vector2(400, 20f), false));
             where.x += 120;
             where.y -= 5;
-            lobbyAnniversaryGags = new OpCheckBox(new Configurable<bool>(false), where);
-            new UIelementWrapper(this.tabWrapper, lobbyAnniversaryGags);
+            lobbyEventGags = new OpCheckBox(new Configurable<bool>(false), where);
+            new UIelementWrapper(this.tabWrapper, lobbyEventGags);
             where.y += 5;
         }
 
@@ -176,11 +175,7 @@ public class LobbyCreateMenu : SmartMenu
         }
         else
         {
-            if (this.lobbyAnniversaryGags?.GetValueBool() ?? false)
-            {
-                OnlineManager.lobby.configurableBools.Add("MEADOW_ANNIVERSARY", true);
-            }
-
+            OnlineManager.lobby.eventGags = lobbyEventGags?.GetValueBool() ?? false;
             OnlineManager.lobby.meadowTimeline = this.meadowTimeline;  
         }
 
@@ -218,7 +213,7 @@ public class LobbyCreateMenu : SmartMenu
         //Column; enforce element order, and fix/adjust left/right binds.
         List<MenuObject> VerticalElements = [modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper, meadowTimelineDropdown.wrapper];
         if (lobbyPinnedCheckBox != null) { VerticalElements.Add(lobbyPinnedCheckBox.wrapper); }
-        if (lobbyAnniversaryGags != null) { VerticalElements.Add(lobbyAnniversaryGags.wrapper); }
+        if (lobbyEventGags != null) { VerticalElements.Add(lobbyEventGags.wrapper); }
         Extensions.TrySequentialMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);
         Extensions.TryMassBind(VerticalElements, backObject, left:true);
         Extensions.TryMassBind(VerticalElements, createButton, right:true);

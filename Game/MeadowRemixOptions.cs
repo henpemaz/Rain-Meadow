@@ -75,12 +75,15 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
     public readonly Configurable<bool> DevNightskySkin;
-
     public readonly Configurable<bool> EnableAchievementsOnline;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
     private readonly Configurable<string> LobbyMusic;
-    public readonly Configurable<bool> AnniversaryCape;
+    public readonly Configurable<int> MeadowCoins;
+
+    public readonly Configurable<bool> boughtSilverCape;
+    public readonly Configurable<bool> boughtGoldenCape;
+    public readonly Configurable<bool> boughtRainbowCape;
 
     public enum IntroRoll
     {
@@ -193,10 +196,12 @@ public class RainMeadowOptions : OptionInterface
         StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
-
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
-        AnniversaryCape = config.Bind("AnniversaryCape", true);
+        MeadowCoins = config.Bind("MeadowCoins", 0);
 
+        boughtSilverCape = config.Bind("BoughtSilverCape", false);
+        boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
+        boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
     }
 
     public override void Initialize()
@@ -323,14 +328,12 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editBannedModsButton;
 
             OpLabel devOptions;
-
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
                 devOptions = new OpLabel(410f, 560f, Translate("Dev options")),
                 new OpCheckBox(DevNightskySkin, new Vector2(410f, 535f)),
                 new OpLabel(440f, 535f, Translate("Nightsky Skin")),
-
 
 
                 new OpLabel(10f, 490f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
@@ -340,17 +343,14 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
-
-                new OpLabel(120, 420, Translate("Anniversary Gift")),
-                new OpCheckBox(AnniversaryCape, new Vector2(120, 390f)),
                 
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                 watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
-                new OpLabel(10, 310, Translate("Lobby Music")),
-                music = new OpComboBox2(LobbyMusic, new Vector2(10, 280f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+                new OpLabel(10, 250, Translate("Lobby Music")),
+                music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
             };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
