@@ -161,8 +161,7 @@ namespace RainMeadow
             var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
             psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
             psmh.flip = -1;
-
-            psmh.parts.Clear();
+            psmh.parts.RemoveAll(x => x is HUD.PlayerSpecificMultiplayerHud.PlayerArrow);
             var killsList = new HUD.PlayerSpecificMultiplayerHud.KillList(psmh);
             var scoreCounter = new HUD.PlayerSpecificMultiplayerHud.ScoreCounter(psmh);
             scoreCounter.scoreText.color = Color.white; // can't see crap
