@@ -730,8 +730,7 @@ namespace RainMeadow
                                 {
                                     if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                     {
-                                        if (pearl.GetOnlineObject()?.isMine == true && pearl.unrecognizedAttributes is string[] attributes && attributes.Contains("meadowcoin"))
-                                            pearl.GetOnlineObject()?.RemoveEntityFromGame();
+                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
                                         coinCount++;
                                     }
                                 }
