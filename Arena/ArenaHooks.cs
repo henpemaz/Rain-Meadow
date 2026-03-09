@@ -2431,8 +2431,17 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena) && player != null)
             {
-                // 1. Target the specific player in the session
-                int sessionPlayerIndex = self.Players.IndexOf(player.abstractCreature);
+                var onlineCreature = player?.abstractCreature?.GetOnlineCreature();
+
+                if (onlineCreature == null || onlineCreature.owner == null)
+                {
+                    RainMeadow.Error("Abort: Player or OnlineOwner is null");
+                    return 0;
+                }
+                var targetOwner = onlineCreature.owner;
+                int sessionPlayerIndex = self.arenaSitting.players.FindIndex(x =>
+                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, x.playerNumber) == targetOwner
+                );
 
                 // Safety check: Ensure the player is actually registered in the arena sitting
                 if (sessionPlayerIndex == -1 || sessionPlayerIndex >= self.arenaSitting.players.Count)
@@ -2478,6 +2487,10 @@ namespace RainMeadow
                 int finalScore = (int)((float)sittingPlayer.score +
                                       ((float)player.FoodInStomach + graspFoodPoints) * (float)self.arenaSitting.gameTypeSetup.foodScore);
 
+                if (OnlineManager.lobby.isOwner && arena.playerNumberWithScore.TryGetValue(targetOwner.inLobbyId, out _))
+                {
+                    arena.playerNumberWithScore[targetOwner.inLobbyId] = finalScore;
+                }
                 return finalScore;
             }
 
