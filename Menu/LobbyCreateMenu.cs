@@ -65,7 +65,7 @@ public class LobbyCreateMenu : SmartMenu
         visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
         new UIelementWrapper(this.tabWrapper, visibilityDropDown);
 
-        
+
         where.y -= 45;
         where.x -= 80;
         mainPage.subObjects.Add(
@@ -112,19 +112,20 @@ public class LobbyCreateMenu : SmartMenu
 
         var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
             .Where(li => !SlugcatStats.HiddenOrUnplayableSlugcat((SlugcatStats.Name)ExtEnumBase.Parse(typeof(SlugcatStats.Name), li.name, false)))
-            .Select(li => 
-            { 
-                li.displayName = Translate(li.displayName); 
-                return li; 
+            .Select(li =>
+            {
+                li.displayName = Translate(li.displayName);
+                return li;
             })
             .ToList();
 
         meadowTimelineDropdown = new OpComboBox2(
-            new Configurable<string>(meadowTimeline), 
-            where, 
-            160, 
+            new Configurable<string>(meadowTimeline),
+            where,
+            160,
             filteredList
-        ) { colorEdge = MenuColorEffect.rgbWhite };            
+        )
+        { colorEdge = MenuColorEffect.rgbWhite };
         meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
         new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
 
@@ -141,10 +142,10 @@ public class LobbyCreateMenu : SmartMenu
         }
         if (SpecialEvents.IsSpecialEvent)
         {
-            where.x -= 120;
+            where.x -= 80;
             where.y -= 45;
             mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Event Gags:"), where, new Vector2(400, 20f), false));
-            where.x += 120;
+            where.x += 80;
             where.y -= 5;
             lobbyEventGags = new OpCheckBox(new Configurable<bool>(false), where);
             new UIelementWrapper(this.tabWrapper, lobbyEventGags);
@@ -176,7 +177,7 @@ public class LobbyCreateMenu : SmartMenu
         else
         {
             OnlineManager.lobby.eventGags = lobbyEventGags?.GetValueBool() ?? false;
-            OnlineManager.lobby.meadowTimeline = this.meadowTimeline;  
+            OnlineManager.lobby.meadowTimeline = this.meadowTimeline;
         }
 
         MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
@@ -200,7 +201,7 @@ public class LobbyCreateMenu : SmartMenu
             meadowTimelineDropdown.greyedOut = true;
             meadowTimeline = "";
         }
-        
+
     }
 
     private void UpdateMeadowTimeline()
@@ -215,12 +216,12 @@ public class LobbyCreateMenu : SmartMenu
         if (lobbyPinnedCheckBox != null) { VerticalElements.Add(lobbyPinnedCheckBox.wrapper); }
         if (lobbyEventGags != null) { VerticalElements.Add(lobbyEventGags.wrapper); }
         Extensions.TrySequentialMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);
-        Extensions.TryMassBind(VerticalElements, backObject, left:true);
-        Extensions.TryMassBind(VerticalElements, createButton, right:true);
+        Extensions.TryMassBind(VerticalElements, backObject, left: true);
+        Extensions.TryMassBind(VerticalElements, createButton, right: true);
         //Bottom row; enforce element order and fix/adjust up/down binds.
         List<MenuObject> BottomRowElements = [backObject, createButton];
-        Extensions.TryMassBind(BottomRowElements, VerticalElements.Last(), top:true);
-        Extensions.TryMassBind(BottomRowElements, VerticalElements.First(), bottom:true);
+        Extensions.TryMassBind(BottomRowElements, VerticalElements.Last(), top: true);
+        Extensions.TryMassBind(BottomRowElements, VerticalElements.First(), bottom: true);
         Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
     }
 
