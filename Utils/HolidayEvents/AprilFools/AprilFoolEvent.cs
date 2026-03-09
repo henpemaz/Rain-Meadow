@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text.RegularExpressions;
 using Menu;
 using UnityEngine;
 
@@ -14,9 +15,9 @@ namespace RainMeadow
         public static AprilFools AprilFoolsEvent = new AprilFools()
         {
             Name = Utils.Translate("April Fool's"),
-            StartMonth = 3,
+            StartMonth = 4,
             StartDay = 1,
-            EndDay = 30,
+            EndDay = 7,
         };
 
         public class AprilFools : Event
@@ -67,7 +68,7 @@ namespace RainMeadow
                     {5 , "Ok"},
                     { 6, "Yep"}
                 };
-                
+
                 int result = new System.Random().Next(aprilMessages.Count);
                 if (result == 0)
                 {
@@ -78,8 +79,7 @@ namespace RainMeadow
                     result = 0;
                     GainedMeadowCoin(10);
                 }
-                result = 5;
-                string selectedMessage = self.Translate(aprilMessages[result]);
+                string selectedMessage = Regex.Replace(self.Translate($"{aprilMessages[result]}<LINE>Event days remaining: {this.DaysRemaining}"), "<LINE>", "\r\n");
                 self.manager.ShowDialog(
                     CreateDialogNotify(self, selectedMessage, okMessage[result])
                 );

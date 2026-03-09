@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq;
 using System.Security;
 using System.Security;
+using System.Text.RegularExpressions;
 using Menu;
 using Menu;
 using UnityEngine;
@@ -33,10 +34,7 @@ namespace RainMeadow
                 DateTime startDate = new DateTime(2024, 12, 20);
                 DateTime today = DateTime.UtcNow;
                 int yearsSince = today.Year - startDate.Year;
-                int daysLeft = EndDay - DateTime.UtcNow.Day;
-                string message = self.Translate(
-                    $"Special event: {Name} number {yearsSince}!<LINE>Days remaining: {daysLeft}"
-                );
+                string message = Regex.Replace(self.Translate($"Special event: {Name} number {yearsSince}!<LINE>Event days remaining: {AnniversaryEvent.DaysRemaining}"), "<LINE>", "\r\n");
 
                 DialogNotify dialog = new DialogNotify(message, self.manager, null);
                 dialog.okButton.size = new Vector2(100f, 30f);

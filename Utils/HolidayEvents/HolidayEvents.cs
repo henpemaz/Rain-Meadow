@@ -14,6 +14,7 @@ namespace RainMeadow
             public int StartMonth;
             public int StartDay;
             public int EndDay;
+            public int DaysRemaining => EndDay - DateTime.UtcNow.Day;
 
             public bool IsActive =>
                 DateTime.UtcNow.Month == StartMonth
@@ -22,9 +23,8 @@ namespace RainMeadow
 
             public virtual void UpdateLoginMessage(Menu.Menu self)
             {
-                int daysLeft = EndDay - DateTime.UtcNow.Day;
                 string message = self.Translate(
-                    $"Special event: {Name}. Days remaining: {daysLeft}"
+                    $"Special event: {Name}. Days remaining: {DaysRemaining}"
                 );
 
                 self.manager.ShowDialog(CreateDialogNotify(self, message));
@@ -119,7 +119,7 @@ namespace RainMeadow
                 RainMeadow.rainMeadowOptions.config.Save();
                 return true;
             }
-            
+
             return false;
         }
     }
