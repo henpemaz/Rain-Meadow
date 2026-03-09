@@ -1474,6 +1474,7 @@ namespace RainMeadow
                     storyGameMode.changedRegions = false;
                     storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self, malnourished, fromWarpPoint);
         }
@@ -1495,8 +1496,8 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1517,8 +1518,8 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToGhostScreen, ghostID);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self, ghostID);
         }
 
@@ -1539,8 +1540,8 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1561,8 +1562,8 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
                     return;
                 }
+               if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1580,8 +1581,7 @@ namespace RainMeadow
                 {
                     if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToPassageScreen, endGameID);
                 }
-            }
-
+            }            
             orig(self, endGameID);
         }
 
@@ -1997,12 +1997,13 @@ namespace RainMeadow
 
         // This is nescesary because sometimes ripple levels are not properly synched
         // we should probably synch them -- but at the moment this helps avoid black screens of death
+        //The future is now, and ripple is synced! Remains to be seen though whether removing this hook still explodes something.
         private string HUD_KarmaMeter_RippleSymbolSprite(On.HUD.KarmaMeter.orig_RippleSymbolSprite orig, bool small, float rippleLevel)
         {
             if (OnlineManager.lobby != null)
             {
                 double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
-                num = Math.Max(num, 1.0);
+                num = Math.Min(Math.Max(1.0, num), 5.0);
                 return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
             }
             else
