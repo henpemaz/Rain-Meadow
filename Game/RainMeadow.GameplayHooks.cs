@@ -730,6 +730,7 @@ namespace RainMeadow
                                 {
                                     if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                     {
+                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
                                         coinCount++;
                                     }
                                 }
