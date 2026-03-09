@@ -226,6 +226,7 @@ namespace RainMeadow.UI.Components
         public override void RemoveSprites()
         {
             divider.RemoveFromContainer();
+            previewSprite.RemoveFromContainer();
             base.RemoveSprites();
         }
 
