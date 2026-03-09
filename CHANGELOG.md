@@ -2,15 +2,20 @@
 ## General
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 ## Arena
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
 - Synced round kills
+- Synced scores
+- Added KillList & ScoreCounter HUDs from vanilla Arena
+### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
-- ⚠️ BREAKING: Updated `arena.Killing` inside of `arena.ExternalGameMode` and removed the `playerIndex` param
-## General
-- Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
+- ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
+- ⚠️ BREAKING: Updated `arena.Arena_AddTrophy` to add `score` param
 
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+### Watcher
+- Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
 # Release 1.12.0
 ## Arena

@@ -64,8 +64,8 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
 
-            On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots +=
-                ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
+            On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
+            IL.ShortcutHelper.Update += ShortcutHelper_Update;
 
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
@@ -2404,6 +2404,20 @@ namespace RainMeadow
             {
                 orig(self, toShelters);
             }
+        }
+        private void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
+        {
+            //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+            //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
+                    x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));
+                cursor.EmitDelegate(delegate(bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
+            }
+            catch (Exception ex) { RainMeadow.Error(ex); }
         }
 
         private void ArenaGameSession_Killing(
