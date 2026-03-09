@@ -1,3 +1,7 @@
+## Story
+### Watcher
+- Impossibly high ripple levels (6+) no longer crash the game when viewed.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
