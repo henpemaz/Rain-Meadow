@@ -34,7 +34,7 @@ namespace RainMeadow.UI.Components
 
         public ChallengeInformation.ChallengeMeta meta;
 
-        public List<int> unstableChallenges = new List<int> { 62 };
+        public List<int> unstableChallenges = new List<int> { 62, 67 };
 
         public bool changedChallenge;
 
