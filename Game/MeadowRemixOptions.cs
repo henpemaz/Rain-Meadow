@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Menu.Remix.MixedUI;
+using Menu.Remix.MixedUI.ValueTypes;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -84,6 +85,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> boughtSilverCape;
     public readonly Configurable<bool> boughtGoldenCape;
     public readonly Configurable<bool> boughtRainbowCape;
+
+    public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<bool> wantsDefaultCapeColor;
 
     public enum IntroRoll
     {
@@ -202,6 +206,9 @@ public class RainMeadowOptions : OptionInterface
         boughtSilverCape = config.Bind("BoughtSilverCape", false);
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
+        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
+        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", false);
+
     }
 
     public override void Initialize()
@@ -249,7 +256,7 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(310, 400f, Translate("Pointing Key")),
             new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
-            
+
             new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
             new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
@@ -328,6 +335,42 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editBannedModsButton;
 
             OpLabel devOptions;
+
+
+            OpCheckBox silverCapeCheck = new OpCheckBox(boughtSilverCape, new Vector2(10f, 150f));
+            OpCheckBox goldenCapeCheck = new OpCheckBox(boughtGoldenCape, new Vector2(10f, 120f));
+
+            silverCapeCheck.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                goldenCapeCheck.greyedOut = silverCapeCheck.GetValueBool();
+                wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
+                if (silverCapeCheck.GetValueBool())
+                {
+                    currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f); // Silver color
+                    RainMeadow.rainMeadowOptions.config.Save();
+                    RainMeadow.Debug($"CapeColor: Set to {currentlyActiveCapeColor.Value}");
+
+                }
+
+            };
+
+            goldenCapeCheck.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                silverCapeCheck.greyedOut = goldenCapeCheck.GetValueBool();
+                wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
+                if (goldenCapeCheck.GetValueBool())
+                {
+                    currentlyActiveCapeColor.Value = RainWorld.SaturatedGold; // Gold color
+                    RainMeadow.rainMeadowOptions.config.Save();
+                    RainMeadow.Debug($"CapeColor: Set to {currentlyActiveCapeColor.Value}, {wantsDefaultCapeColor}");
+                }
+
+            };
+
+            silverCapeCheck.greyedOut = !boughtSilverCape.Value || goldenCapeCheck.GetValueBool();
+            goldenCapeCheck.greyedOut = !boughtGoldenCape.Value || silverCapeCheck.GetValueBool();
+
+            wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -343,7 +386,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
-                
+
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
@@ -351,7 +394,17 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 250, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-            };
+
+                // --- New Cape Options Section ---
+                new OpLabel(10f, 180f, Translate("Cape Colors")),
+
+
+                silverCapeCheck,
+                new OpLabel(40f, 150f, Translate("Silver Cape")),
+
+                goldenCapeCheck,
+                new OpLabel(40f, 120f, Translate("Golden Cape")),
+                        };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);

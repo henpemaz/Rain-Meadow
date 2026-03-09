@@ -21,8 +21,9 @@ namespace RainMeadow
 
     public class RainbowCapeColor : ICapeColor
     {
-        public void ApplyColor(TriangleMesh mesh, int vertex) {
-            Color color = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f);;
+        public void ApplyColor(TriangleMesh mesh, int vertex)
+        {
+            Color color = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f); ;
             mesh.verticeColors[vertex] = color;
         }
 
@@ -36,8 +37,9 @@ namespace RainMeadow
         {
             this.color = color;
         }
-        
-        public void ApplyColor(TriangleMesh mesh, int vertex) {
+
+        public void ApplyColor(TriangleMesh mesh, int vertex)
+        {
             mesh.verticeColors[vertex] = color;
         }
 
@@ -47,7 +49,7 @@ namespace RainMeadow
     static class CapeManager
     {
         const string capes_latest_commit = "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
-        static string getRemoteLatestCommit() 
+        static string getRemoteLatestCommit()
         {
             using (WebClient client = new WebClient())
             {
@@ -76,7 +78,7 @@ namespace RainMeadow
                 throw new Exception("We couldn't find the remote hash");
             }
         }
-        
+
 
         const string capes_remote_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics16/refs/heads/master/capes.txt";
         static public void FetchCapes()
@@ -144,7 +146,7 @@ namespace RainMeadow
 
                             // Check if the color is a list of floats (RGB)
                             ICapeColor capeColor = ParseCapeColor(color);
-                            
+
 
                             // Add the parsed entry to the list
                             if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
@@ -168,16 +170,20 @@ namespace RainMeadow
                     float.TryParse(rgbParts[1].Trim(), out float g) &&
                     float.TryParse(rgbParts[2].Trim(), out float b))
                 {
-                    return new SolidCapeColor(new Color(r, g, b));
+                    if (RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value)
+                    {
+                        return new SolidCapeColor(new Color(r, g, b));
+                    }
+
                 }
             }
             else
             {
                 if (color == "sgold") return new SolidCapeColor(RainWorld.SaturatedGold);
                 if (color == "rainbow") return new RainbowCapeColor();
-            } 
+            }
 
-            return new SolidCapeColor(Color.red);
+            return new SolidCapeColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value);
         }
 
         private static Dictionary<string, ICapeColor> entries = new();
@@ -229,7 +235,7 @@ namespace RainMeadow
                     obj.graphicsModule?.Update();
                 }
             }
-  
+
         }
     }
 
@@ -285,7 +291,8 @@ namespace RainMeadow
             for (int k = 0; k <= SlugcatCape.size; k++)
             {
                 for (int l = 0; l <= SlugcatCape.size; l++)
-                {;
+                {
+                    ;
                     Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
                     Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
                     Vector2 vector = Custom.DirVec(p, p2) * 5f;
@@ -320,7 +327,7 @@ namespace RainMeadow
             {
                 if (playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
                 {
-                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.eventCape is null)
+                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && (customization.eventCape is null || !customization.wearingCape))
                     {
                         return;
                     }
@@ -339,7 +346,7 @@ namespace RainMeadow
                 ptr.vel = mainBodyChunk.vel;
 
                 ref SimpleSegment ptr2 = ref this.segments[i, 1];
-                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d * 5f + Vector2.right*-playerGFX.player.flipDirection*1.0f;
+                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d * 5f + Vector2.right * -playerGFX.player.flipDirection * 1.0f;
                 ptr2.vel = mainBodyChunk.vel;
             }
         }
@@ -371,7 +378,7 @@ namespace RainMeadow
                 normalized.x = (float)playerGFX.player.flipDirection * 0.05f;
 
                 // simplification of sin(acos(x)) 
-                normalized.y = Mathf.Sqrt(1 - (normalized.x*normalized.x))*Math.Sign(normalized.y); 
+                normalized.y = Mathf.Sqrt(1 - (normalized.x * normalized.x)) * Math.Sign(normalized.y);
             }
 
             return normalized;
@@ -451,7 +458,7 @@ namespace RainMeadow
                     }
                 }
             }
-            
+
             this.ConnectEnd();
         }
     }

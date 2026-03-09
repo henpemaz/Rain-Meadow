@@ -44,14 +44,14 @@ namespace RainMeadow
                 Configurable<bool>? permanentPurchase
             ) : base(menu, menuObject, "", pos, new Vector2(110, 30))
             {
-                
+
                 this.permanentPurchase = permanentPurchase;
                 this.overlay = menu;
                 this.name = item;
                 this.cost = cost;
                 UpdateText();
 
-                
+
 
                 OnClick += (_) =>
                 {
@@ -117,8 +117,12 @@ namespace RainMeadow
                                 JokeRifle.AbstractRifle.AmmoType.Fruit
                             );
                             break;
-                        case SilverCape: desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); break;
-                        case GoldenCape: desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); break;
+                        case SilverCape:
+                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); RainMeadow.rainMeadowOptions.boughtSilverCape.Value = true; RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f); RainMeadow.rainMeadowOptions.config.Save();
+                            break;
+                        case GoldenCape:
+                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); RainMeadow.rainMeadowOptions.boughtGoldenCape.Value = true; RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = RainWorld.SaturatedGold; RainMeadow.rainMeadowOptions.config.Save();
+                            break;
                         case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }
 
@@ -135,7 +139,7 @@ namespace RainMeadow
                             if (me.realizedCreature is Player p)
                             {
                                 int freehand = p.FreeHand();
-                                if (freehand >= 0) p.SlugcatGrab(desiredObject.realizedObject, freehand);   
+                                if (freehand >= 0) p.SlugcatGrab(desiredObject.realizedObject, freehand);
                             }
 
                             if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
@@ -159,7 +163,7 @@ namespace RainMeadow
 
             public void UpdateText()
             {
-                this.menuLabel.text = (permanentPurchase?.Value ?? false)? $"{name} : Free" : $"{name}: ¤{cost}";
+                this.menuLabel.text = (permanentPurchase?.Value ?? false) ? $"{name} : Free" : $"{name}: ¤{cost}";
             }
         }
 
