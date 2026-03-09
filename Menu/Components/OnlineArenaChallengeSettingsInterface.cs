@@ -13,8 +13,7 @@ using Expedition;
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaChallengeSettingsInterface
-        : RectangularMenuObject,
-            SelectOneButton.SelectOneButtonOwner
+        : RectangularMenuObject
     {
         public FSprite divider;
         public MenuTabWrapper tabWrapper;
@@ -282,11 +281,5 @@ namespace RainMeadow.UI.Components
 
             }
         }
-
-        public void SetCurrentlySelectedOfSeries(string id, int index) =>
-            arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;
-
-        public int GetCurrentlySelectedOfSeries(string id) =>
-            arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team;
     }
 }
