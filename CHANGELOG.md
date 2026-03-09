@@ -5,6 +5,7 @@
 - Added More Slugcat's "Challenges" to Arena! 
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+- ⚠️ BREAKING: Updated `arena.Killing` inside of `arena.ExternalGameMode` and removed the `playerIndex` param
 ## General
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 

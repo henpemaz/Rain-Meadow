@@ -2418,87 +2418,7 @@ namespace RainMeadow
                 return;
             }
 
-            RainMeadow.Debug(this);
-
-            if (!OnlineCreature.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
-            {
-                Error("Error getting abs Player Creature");
-                return;
-            }
-
-            if (!OnlineCreature.map.TryGetValue(killedCrit.abstractCreature, out var onlineKilledCreature))
-            {
-                Error("Error getting targetAbsCreature");
-                return;
-            }
-
-            if (self.sessionEnded || (ModManager.MSC && player.AI != null))
-            {
-                return;
-            }
-
-            IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
-            bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
-
-            for (int i = 0; i < self.arenaSitting.players.Count; i++)
-            {
-                var sittingPlayer = self.arenaSitting.players[i];
-                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
-                if (onlinePlayer == null)
-                {
-                    continue;
-                }
-
-                // Skip until we find the matching player
-                if (absPlayerCreature.owner != onlinePlayer) continue;
-
-                if (earnsTrophy)
-                {
-                    if (killedCrit.IsLocal())
-                    {
-                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                        int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                        int scoreToAdd = unlockIndex >= 0 ? self.arenaSitting.gameTypeSetup.killScores[unlockIndex] : 0;
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            string trophyString = iconSymbolData.ToString();
-                            ushort lobbyId = absPlayerCreature.owner.inLobbyId;
-
-                            arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
-                            arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
-                            arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                        }
-                        else
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(
-                                ArenaRPCs.Arena_AddTrophy,
-                                onlineKilledCreature,
-                                sittingPlayer.playerNumber, scoreToAdd
-                            );
-                        }
-
-                        // notify the killer about the trophy
-                        if (!player.IsLocal())
-                        {
-                            player.abstractCreature.GetOnlineCreature().owner.InvokeOnceRPC(ArenaRPCs.AddKilledCreatureToHUD, onlineKilledCreature);
-                        }
-                        // player is local AND killed creature is local
-                        else
-                        {
-                            for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
-                            {
-                                if (self.game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
-                                {
-                                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                break; // We found the player and processed everything, exit the loop
-            }
+            arena.externalArenaGameMode.Killing(arena, orig, self, player, killedCrit);
         }
 
         // TODO: Unused for Comp?
@@ -2509,7 +2429,7 @@ namespace RainMeadow
             bool inHands
         )
         {
-            if (isArenaMode(out var _) && player != null)
+            if (isArenaMode(out var arena) && player != null)
             {
                 // 1. Target the specific player in the session
                 int sessionPlayerIndex = self.Players.IndexOf(player.abstractCreature);
