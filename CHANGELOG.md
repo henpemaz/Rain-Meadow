@@ -4,6 +4,7 @@
 ## Arena
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 
