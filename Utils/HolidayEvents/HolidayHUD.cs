@@ -118,10 +118,10 @@ namespace RainMeadow
                             );
                             break;
                         case SilverCape:
-                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); RainMeadow.rainMeadowOptions.boughtSilverCape.Value = true; RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f); RainMeadow.rainMeadowOptions.config.Save();
+                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f);
                             break;
                         case GoldenCape:
-                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); RainMeadow.rainMeadowOptions.boughtGoldenCape.Value = true; RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = RainWorld.SaturatedGold; RainMeadow.rainMeadowOptions.config.Save();
+                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = RainWorld.SaturatedGold;
                             break;
                         case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }
@@ -156,6 +156,7 @@ namespace RainMeadow
                             if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
                             if (permanentPurchase is not null) permanentPurchase.Value = true;
                         }
+                        RainMeadow.rainMeadowOptions.config.Save();
                     }
                     UpdateText();
                 };
