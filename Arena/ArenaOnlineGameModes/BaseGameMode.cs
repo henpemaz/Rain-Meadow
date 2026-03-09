@@ -1,14 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using BepInEx;
-using HarmonyLib;
 using Menu;
-using Menu.Remix;
 using Menu.Remix.MixedUI;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
-using RainMeadow.UI.Components;
-using Steamworks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -153,7 +147,8 @@ namespace RainMeadow
             Player player,
             Creature killedCrit,
             int playerIndex
-        ) { }
+        )
+        { }
 
         public virtual void LandSpear(
             ArenaOnlineGameMode arena,
@@ -161,7 +156,8 @@ namespace RainMeadow
             Player player,
             Creature target,
             ArenaSitting.ArenaPlayer aPlayer
-        ) { }
+        )
+        { }
 
         public virtual void HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arena,
@@ -191,6 +187,17 @@ namespace RainMeadow
                 RainMeadow.Debug("Adding Watcher Camo Meter");
                 self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
             }
+            var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
+            psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
+            psmh.flip = -1;
+            psmh.parts.RemoveAll(x => x is HUD.PlayerSpecificMultiplayerHud.PlayerArrow);
+            var killsList = new HUD.PlayerSpecificMultiplayerHud.KillList(psmh);
+            var scoreCounter = new HUD.PlayerSpecificMultiplayerHud.ScoreCounter(psmh);
+            scoreCounter.scoreText.color = Color.white; // can't see crap
+            scoreCounter.lightGradient.color = Color.white;
+            psmh.parts.Add(killsList);
+            psmh.parts.Add(scoreCounter);
+            self.AddPart(psmh);
         }
 
         public virtual void ArenaCreatureSpawner_SpawnCreatures(
@@ -200,7 +207,8 @@ namespace RainMeadow
             ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
             ref List<AbstractCreature> availableCreatures,
             ref MultiplayerUnlocks unlocks
-        ) { }
+        )
+        { }
 
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {

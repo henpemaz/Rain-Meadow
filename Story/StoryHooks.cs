@@ -791,8 +791,8 @@ namespace RainMeadow
 
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
-                    {
-                        touchedInput = ticker > 200; // 5 seconds at 40 ticks a second
+                    { // 5 seconds at 40 ticks a second
+                        touchedInput = (ticker > 200) || ((self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11)));
                     }
                     if (touchedInput || inVoidSea)
                     {
@@ -1474,6 +1474,7 @@ namespace RainMeadow
                     storyGameMode.changedRegions = false;
                     storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self, malnourished, fromWarpPoint);
         }
@@ -1495,8 +1496,8 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1517,8 +1518,8 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToGhostScreen, ghostID);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self, ghostID);
         }
 
@@ -1539,8 +1540,8 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
                     return;
                 }
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1561,8 +1562,8 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
                     return;
                 }
+               if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
-
             orig(self);
         }
 
@@ -1580,8 +1581,7 @@ namespace RainMeadow
                 {
                     if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToPassageScreen, endGameID);
                 }
-            }
-
+            }            
             orig(self, endGameID);
         }
 
