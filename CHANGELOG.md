@@ -7,6 +7,8 @@
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+### Watcher
+- Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
 # Release 1.12.0
 ## Arena
