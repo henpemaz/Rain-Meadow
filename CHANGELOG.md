@@ -1,3 +1,6 @@
+## Arena
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
