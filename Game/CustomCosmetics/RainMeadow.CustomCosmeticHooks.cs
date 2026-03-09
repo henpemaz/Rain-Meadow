@@ -55,7 +55,7 @@ namespace RainMeadow
                                         {
                                             cape_color = customization.eventCape;
                                         }
-                                        else if (cape_color is not null)
+                                        if (cape_color is not null)
                                         {
                                             cape = new SlugcatCape(self, numofsprites, cape_color);
                                         }
