@@ -14,7 +14,7 @@ namespace RainMeadow
     {
         public static AprilFools AprilFoolsEvent = new AprilFools()
         {
-            Name = Utils.Translate("April Fool's"),
+            Name = Utils.Translate("April Fool's!"),
             StartMonth = 4,
             StartDay = 1,
             EndDay = 7,
@@ -79,7 +79,7 @@ namespace RainMeadow
                     result = 0;
                     GainedMeadowCoin(10);
                 }
-                string selectedMessage = Regex.Replace(self.Translate($"{aprilMessages[result]}<LINE>Event days remaining: {this.DaysRemaining}"), "<LINE>", "\r\n");
+                string selectedMessage = Regex.Replace(self.Translate($"Event days remaining: {this.DaysRemaining}<LINE>{aprilMessages[result]}"), "<LINE>", "\r\n");
                 self.manager.ShowDialog(
                     CreateDialogNotify(self, selectedMessage, okMessage[result])
                 );
