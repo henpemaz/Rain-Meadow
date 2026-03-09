@@ -732,22 +732,20 @@ namespace RainMeadow
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
-            orig(self, eu);
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, eu);
+                return;
+            }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature))
             {
                 Trace($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                orig(self, eu);
                 return;
             }
+
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
-                {
-                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
-                }
-
-                if (self is AirBreatherCreature breather) breather.lungs = 1f;
-
                 if (self.room != null)
                 {
                     // fall out of world handling
@@ -803,6 +801,18 @@ namespace RainMeadow
                         self.State.alive = false;
                     }
                 }
+            }
+
+            orig(self, eu); //Need to run our fall out of world handling BEFORE orig, otherwise entering WallClimb below -250y will run orig's kill code before we have a chance to detect and abort it.
+
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
             }
 
             // this is here as a safegard because we don't transfer full detail grasp data
