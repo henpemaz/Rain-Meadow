@@ -266,17 +266,19 @@ namespace RainMeadow.UI.Components
                         m.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
                         m.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(meta.arena);
                     }
+                    challengeNameLabel.text = $"{meta.arena}: {meta.GetMetaDescription(this.menu)}";
+                    if (unstableChallenges.Contains(challengeMode.challengeID))
+                    {
+                        challengeNameLabel.label.color = Color.red;
+                    }
+                    else
+                    {
+                        challengeNameLabel.label.color = Futile.white;
+                    }
                     challengeIdForChangingSprite = challengeMode.challengeID;
+
                 }
-                challengeNameLabel.text = $"{meta.arena}: {meta.GetMetaDescription(this.menu)}";
-                if (unstableChallenges.Contains(challengeMode.challengeID))
-                {
-                    challengeNameLabel.label.color = Color.red;
-                }
-                else
-                {
-                    challengeNameLabel.label.color = Futile.white;
-                }
+
             }
         }
 
