@@ -2456,6 +2456,8 @@ namespace RainMeadow
         }
         private void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
         {
+            //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+            //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
             try
             {
                 ILCursor cursor = new(il);
