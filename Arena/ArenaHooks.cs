@@ -177,9 +177,55 @@ namespace RainMeadow
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
-
+            IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
         }
+        // so many IL hooks mang
+        private void ArenaGameSession_ctor_IL(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
 
+            // Find where the array is actually created first.
+            if (!c.TryGotoNext(MoveType.After,
+                x => x.MatchNewarr<SlugcatStats>(),
+                x => x.MatchStfld<ArenaGameSession>("characterStats_Mplayer")))
+            {
+                return; // If we can't find the array creation, get out.
+            }
+
+            int originalIndex = -1;
+
+            // Now search for the assignments (ldc.i4.1, 2, 3)
+            while (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdfld<ArenaGameSession>("characterStats_Mplayer"),
+                x => x.MatchLdcI4(out originalIndex) && originalIndex > 0))
+            {
+                int capturedIndex = originalIndex;
+
+                // Redirect index to 0 for the assignment
+                c.Index--;
+                c.Remove();
+                c.EmitDelegate<Func<int>>(() => isArenaMode(out _) ? 0 : capturedIndex);
+
+                // Move to after the value is stored to do our safety-fill
+                if (c.TryGotoNext(MoveType.After, x => x.MatchStelemRef()))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate<Action<ArenaGameSession>>((self) =>
+                    {
+                        if (isArenaMode(out _))
+                        {
+                            // Check array existence, length, and nulls before touching indices
+                            if (self.characterStats_Mplayer != null &&
+                                capturedIndex < self.characterStats_Mplayer.Length && // Check bounds!
+                                self.characterStats_Mplayer[0] != null)
+                            {
+                                self.characterStats_Mplayer[capturedIndex] = self.characterStats_Mplayer[0];
+                            }
+                        }
+                    });
+                }
+            }
+        }
 
         private void IL_ExitManager_Update(ILContext il)
         {
@@ -2415,7 +2461,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After,
                     x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
                     x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));
-                cursor.EmitDelegate(delegate(bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
+                cursor.EmitDelegate(delegate (bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
             }
             catch (Exception ex) { RainMeadow.Error(ex); }
         }
