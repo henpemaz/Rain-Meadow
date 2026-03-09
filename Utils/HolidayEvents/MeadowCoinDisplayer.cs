@@ -13,7 +13,7 @@ namespace RainMeadow
 
         public MeadowCoinDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, Color color, string text) : base(menu, owner, pos, color, text)
         {
-            Shader.SetGlobalVector(RainWorld.ShadPropSpriteRect, new Vector4(0, 0, 1, 1)); // only ever set in game smh
+            Shader.SetGlobalVector(RainWorld.ShadPropSpriteRect, new Vector4(0, 0, 1, 1)); 
             Shader.SetGlobalVector(RainWorld.ShadPropScreenSize, menu.manager.rainWorld.screenSize);
             this.text = text;
             this.token = new MeadowCoinIcon(this.Container, color, pos, 1.5f, 1f);
