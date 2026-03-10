@@ -85,8 +85,8 @@ namespace RainMeadow
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 0;
-            self.survivalScore = 0;
-            self.spearHitScore = 0;
+            self.survivalScore = arena.winScore;
+            self.spearHitScore = arena.spearScore;
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
             string ruleName = ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule);
