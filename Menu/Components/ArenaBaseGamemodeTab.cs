@@ -83,7 +83,7 @@ namespace RainMeadow.UI.Components
         return li;
     }).ToList();
             denEntryRule = new OpComboBox2(
-                new Configurable<ArenaSetup.GameTypeSetup.DenEntryRule>(ArenaSetup.GameTypeSetup.DenEntryRule.Standard),
+                new Configurable<ArenaSetup.GameTypeSetup.DenEntryRule>(new(ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule))),
                 new(boxMargin, (topOffset - (rowHeight * 2)) - 5f),
                 110,
                 denRuleItems
