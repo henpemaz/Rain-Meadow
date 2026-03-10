@@ -1,3 +1,6 @@
+## General
+- Fixed neuron glow not using players' selected body color.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
