@@ -202,7 +202,7 @@ namespace RainMeadow.UI.Components
                 winScoreTextBox.greyedOut = OwnerSettingsDisabled;
                 winScoreTextBox.held = winScoreTextBox._KeyboardOn;
 
-                winScoreTextBox.valueInt = arena.spearScore;
+                winScoreTextBox.valueInt = arena.winScore;
             }
             if (denEntryRule != null)
             {
