@@ -67,10 +67,11 @@ namespace RainMeadow.UI.Components
 
         public HSLColor? baseColor;
         public float textOverlayFade = 0, lastTextOverlayFade = 0, desiredPortraitSecondaryLerpFactor = 0;
-        public bool enabledTextOverlay;
+        public bool enabledTextOverlay, banList;
         public ModerationPlayerBox(Menu.Menu menu, MenuObject owner, SteamPlayerRep player, bool banned, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;
+            banList = banned;
             sprites = [new("pixel"), new("pixel")];
             for (int i = 0; i < sprites.Length; i++)
             {
@@ -121,6 +122,14 @@ namespace RainMeadow.UI.Components
             lastTextOverlayFade = textOverlayFade;
             textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
             slugcatButton.isBlackPortrait = enabledTextOverlay;
+            if (!banList && BanHammer.bannedUsers.Contains(profileIdentifier))
+            {
+                banButton.inactive = true;
+            }
+            else
+            {
+                banButton.inactive = false;
+            }
         }
 
         public override void GrafUpdate(float timeStacker)

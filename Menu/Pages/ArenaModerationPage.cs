@@ -16,7 +16,11 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
     public ModerationPlayerDisplayer recentDisplayer;
     public ModerationPlayerDisplayer banDisplayer;
 
+    public MenuLabel bannedLabel, recentsLabel, readyWarningLabel;
+
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
+    public bool readyWarning;
+    public int warningCounter;
 
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
@@ -31,9 +35,11 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
             ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton;
         };
 
+        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
+
         BuildPlayerDisplay();
 
-        this.SafeAddSubobjects(backButton, recentDisplayer, banDisplayer);
+        this.SafeAddSubobjects(backButton, recentDisplayer, banDisplayer, readyWarningLabel);
 
         if (ArenaMenu != null)
         {
@@ -110,6 +116,15 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
     {
         base.Update();
 
+        if (warningCounter >= 0) warningCounter++;
+        if (readyWarning)
+            warningCounter = Mathf.Max(warningCounter, 0);
+        else warningCounter = -1;
+        if (readyWarningLabel != null)
+        {
+            readyWarningLabel.text = Arena != null && Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in <COUNTDOWN>! Ready up!!").Replace("<COUNTDOWN>", Arena.lobbyCountDown.ToString()) : menu.LongTranslate(defaultReadyWarningText);
+        }
+
         if (recentDisplayer != null)
         {
             foreach(var button in recentDisplayer.buttons)
@@ -147,7 +162,7 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
                 playerBox.slugcatButton.LoadNewSlugcat(
                     selected,
                     !string.IsNullOrEmpty(playerRep.SlugcatColor),
-                    banList
+                    banList || BanHammer.bannedUsers.Contains(playerRep)
                 );
 
                 playerBox.slugcatButton.portraitColor = playerBox.slugcatButton.isColored ? Custom.hexToColor(playerRep.SlugcatColor) : Color.white;
@@ -161,16 +176,18 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
 
         if (owner is not PositionedMenuObject positionedOwner) return;
 
-        
+        if (readyWarning)
+        {
+            readyWarningLabel.label.color = Color.Lerp(MenuColorEffect.rgbWhite, new Color(0.85f, 0.35f, 0.4f), 0.5f - 0.5f * Mathf.Sin((timeStacker + warningCounter) / 30 * Mathf.PI * 2));
+            readyWarningLabel.label.alpha = 1;
+        }
+        else readyWarningLabel.label.alpha = 0;
     }
 
-    public int GetCurrentlySelectedOfSeries(string series)
-    {
-        throw new NotImplementedException();
-    }
+    public int GetCurrentlySelectedOfSeries(string series) => 0;
 
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
-        throw new NotImplementedException();
+        //TODO implement
     }
 }

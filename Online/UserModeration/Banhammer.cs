@@ -136,7 +136,7 @@ namespace RainMeadow
         public static void PermaBanUser(OnlinePlayer steamUser)
         {
             if (steamUser.isMe) return;
-            BanUser(steamUser);
+            if (OnlineManager.lobby.owner.isMe) BanUser(steamUser);
 
             bannedUsers.Add(SteamPlayerRep.FromOnlinePlayer(steamUser));
 
@@ -153,9 +153,14 @@ namespace RainMeadow
         {
             if (bannedUsers.Contains(steamUser)) return;
 
-            var player = OnlineManager.players.Where(x => x.id is SteamMatchmakingManager.SteamPlayerId steamID && steamID.steamID.ToString() == steamUser.SteamID);
+            if (OnlineManager.lobby.owner.isMe)
+            {
 
-            foreach(var p in player) BanUser(p);
+                var player = OnlineManager.players.Where(x => x.id is SteamMatchmakingManager.SteamPlayerId steamID && steamID.steamID.ToString() == steamUser.SteamID);
+
+                foreach (var p in player) BanUser(p);
+
+            }
 
             bannedUsers.Add(steamUser);
 
