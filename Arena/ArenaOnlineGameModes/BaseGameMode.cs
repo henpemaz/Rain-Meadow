@@ -898,14 +898,16 @@ namespace RainMeadow
             }
             else if (list.Count > 1)
             {
-                if (list[0].alive && !list[1].alive)
+                // if survivalScore && killScore are 0, then this should skip 
+                if (list[0].score > list[1].score)
                 {
                     list[0].winner = true;
                 }
-                else if (list[0].score > list[1].score)
+                else if (list[0].alive && !list[1].alive)
                 {
                     list[0].winner = true;
                 }
+                 
             }
 
             for (int x = 0; x < list.Count; x++)
