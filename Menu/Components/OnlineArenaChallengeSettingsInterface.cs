@@ -33,7 +33,7 @@ namespace RainMeadow.UI.Components
 
         public ChallengeInformation.ChallengeMeta meta;
 
-        public List<int> unstableChallenges = new List<int> { 62, 67 };
+        public List<int> unstableChallenges = new List<int> { 70 };
 
         public bool changedChallenge;
 
@@ -133,23 +133,14 @@ namespace RainMeadow.UI.Components
                 return;
             }
 
-            // 2. Resolve the file path. Both vanilla and custom arena thumbnails 
-            // are typically located in the "Levels" folder and end with "_thumb.png"
             string filePath = AssetManager.ResolveFilePath($"Levels{System.IO.Path.DirectorySeparatorChar}{arenaName}_thumb.png");
 
-            // 3. If the file is found, load it manually into memory
             if (System.IO.File.Exists(filePath))
             {
-                // Create a blank texture (size doesn't matter, LoadImage will resize it)
                 Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
-                // Important: Set filter mode to Point to keep Rain World's pixel art crisp!
                 texture.filterMode = FilterMode.Point;
-
-                // Read the file and apply it to the texture
                 texture.LoadImage(System.IO.File.ReadAllBytes(filePath));
-
-                // Inject the texture into Futile's Atlas Manager using the expected thumbName
                 Futile.atlasManager.LoadAtlasFromTexture(thumbName, texture, false);
             }
             else
@@ -171,14 +162,12 @@ namespace RainMeadow.UI.Components
             }
             else
             {
-                // Fallback if the thumbnail isn't found (e.g., missing custom map thumb)
                 if (Futile.atlasManager.DoesContainElementWithName("LevelThumb_Error"))
                 {
                     previewSprite.element = Futile.atlasManager.GetElementWithName("LevelThumb_Error");
                 }
                 else
                 {
-                    // If no error thumb exists, just hide or tint a placeholder
                     previewSprite.element = Futile.atlasManager.GetElementWithName("Futile_White");
                     previewSprite.color = new Color(0.2f, 0.2f, 0.2f);
                 }
