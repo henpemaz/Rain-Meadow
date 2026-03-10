@@ -199,10 +199,10 @@ namespace RainMeadow
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             RainMeadow.Debug($"{this} hit for {damage}");
-            if (creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
+            if (creature.State is HealthState hs1) RainMeadow.Debug($"health was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
-            if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
+            if (creature.State is HealthState hs2) RainMeadow.Debug($"health became {hs2.health}");
         }
 
 
