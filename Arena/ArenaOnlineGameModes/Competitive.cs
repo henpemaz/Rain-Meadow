@@ -41,6 +41,10 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
+            if (self.gameSession.GameTypeSetup.denEntryRule != ArenaSetup.GameTypeSetup.DenEntryRule.Standard)
+            {
+                return orig(self);
+            }
             int playersStillStanding =
                 self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
