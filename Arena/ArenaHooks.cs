@@ -184,12 +184,11 @@ namespace RainMeadow
         {
             ILCursor c = new ILCursor(il);
 
-            // Find where the array is actually created first.
             if (!c.TryGotoNext(MoveType.After,
                 x => x.MatchNewarr<SlugcatStats>(),
                 x => x.MatchStfld<ArenaGameSession>("characterStats_Mplayer")))
             {
-                return; // If we can't find the array creation, get out.
+                return;
             }
 
             int originalIndex = -1;
@@ -206,7 +205,6 @@ namespace RainMeadow
                 c.Remove();
                 c.EmitDelegate<Func<int>>(() => isArenaMode(out _) ? 0 : capturedIndex);
 
-                // Move to after the value is stored to do our safety-fill
                 if (c.TryGotoNext(MoveType.After, x => x.MatchStelemRef()))
                 {
                     c.Emit(OpCodes.Ldarg_0);
@@ -246,7 +244,7 @@ namespace RainMeadow
                     if (players == null || players.Count == 0) return 0;
 
                     // If offline or not challenge mode, maintain vanilla behavior (Player 0 only)
-                    if (OnlineManager.lobby == null || RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode) return players[0].parries;
+                    if (OnlineManager.lobby == null) return players[0].parries;
 
                     // Online behavior: check if ANY player met the goal by taking the Max
                     int maxParries = 0;
@@ -274,7 +272,7 @@ namespace RainMeadow
                 {
                     if (players == null || players.Count == 0) return 0;
 
-                    if (OnlineManager.lobby == null || RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode) return players[0].timeAlive;
+                    if (OnlineManager.lobby == null) return players[0].timeAlive;
 
                     int maxTime = 0;
                     for (int i = 0; i < players.Count; i++)
