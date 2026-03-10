@@ -131,6 +131,15 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool enableOverseer;
 
+            [OnlineField(group = "arenaSetup")]
+            public int spearScore;
+
+            [OnlineField(group = "arenaSetup")]
+            public int winScore;
+
+            [OnlineField(group = "arenaSetup")]
+            public int denRule;
+
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -239,6 +248,10 @@ namespace RainMeadow
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
+
+                spearScore = arena.spearScore;
+                winScore = arena.winScore;
+                denRule = arena.denEntryRule;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -318,6 +331,11 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
+
+                (lobby.gameMode as ArenaOnlineGameMode).spearScore = spearScore;
+                (lobby.gameMode as ArenaOnlineGameMode).winScore = winScore;
+                (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
+
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
