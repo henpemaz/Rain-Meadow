@@ -23,7 +23,7 @@ namespace RainMeadow
             public static SlugcatStats.Name OnlineRandomSlugcat = new("MeadowRandom", true);
             public static SlugcatStats.Name OnlineOverseerSpectator = new("OnlineOverseerSpectator", true);
 
-        public static readonly List<SlugcatStats.Name> AllMeadowExtSlugcats = new()
+            public static readonly List<SlugcatStats.Name> AllMeadowExtSlugcats = new()
           {
            OnlineSessionPlayer,
            OnlineRandomSlugcat,
@@ -45,6 +45,8 @@ namespace RainMeadow
 
             internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);
             internal static MenuScene.SceneID Meadow_Anniversary = new("Meadow_Anniversary", true);
+            internal static MenuScene.SceneID Meadow_Coin = new("Meadow_Coin", true);
+
         }
 
         public class Ext_PhysicalObjectType

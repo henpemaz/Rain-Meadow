@@ -48,6 +48,26 @@ namespace RainMeadow
             RainMeadow.Debug("Collected locally:" + online);
             collectedLocally = true;
             MeadowProgression.ItemCollected(this);
+            if (SpecialEvents.IsSpecialEventInLobby)
+            {
+                int coinsEarned = 1;
+
+                if (this.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+                {
+                    coinsEarned = 1;
+                }
+                else if (this.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+                {
+                    coinsEarned = 3;
+                }
+                else if (this.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
+                {
+                    coinsEarned = 5;
+                }
+
+                SpecialEvents.GainedMeadowCoin(coinsEarned);
+
+            }
 
             if (collected) { return; }
             if (online.isMine)
