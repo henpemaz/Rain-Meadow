@@ -22,6 +22,7 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
+        public int denEntryRule;
 
         public bool registeredNewGameModes = false;
 
@@ -55,6 +56,10 @@ namespace RainMeadow
         public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
+
+        public int spearScore;
+        public int winScore;
+
 
         public string paincatName;
         public int lizardEvent;
@@ -105,12 +110,12 @@ namespace RainMeadow
         public bool hasPermissionToRejoin;
         public bool initiateLobbyCountdown;
 
+
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int lobbyCountDown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
-
         public int arenaSaintAscendanceTimer = RainMeadow
             .rainMeadowOptions
             .ArenaSaintAscendanceTimer
@@ -129,6 +134,7 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public List<int> bannedSlugs = new List<int>();
+
 
         public ArenaOnlineGameMode(Lobby lobby)
             : base(lobby)
@@ -161,6 +167,9 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
+            spearScore = 0;
+            winScore = 0;
+
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },

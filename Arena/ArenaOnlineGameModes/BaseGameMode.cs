@@ -3,6 +3,7 @@ using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI;
+using RainMeadow.UI.Components;
 using UnityEngine;
 
 namespace RainMeadow
@@ -10,6 +11,8 @@ namespace RainMeadow
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
+        public OnlineArenaBaseGameModeTab? arenaBaseGameModeTab;
+        public TabContainer.Tab? myTab;
 
         public abstract ArenaSetup.GameTypeID GetGameModeId { get; set; }
 
@@ -79,14 +82,15 @@ namespace RainMeadow
             }
         }
 
-        public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
+        public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 1;
+            self.foodScore = 0;
             self.survivalScore = 0;
             self.spearHitScore = 0;
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
-            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+            string ruleName = ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule);
+            self.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(ruleName);
             self.rainWhenOnePlayerLeft = true;
             self.levelItems = true;
             self.fliesSpawn = true;
@@ -778,13 +782,40 @@ namespace RainMeadow
         public virtual bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player) =>
             arena.reigningChamps.list.Contains(player.id);
 
-        public virtual void OnUIEnabled(ArenaOnlineLobbyMenu menu) { }
+        public virtual void OnUIEnabled(ArenaOnlineLobbyMenu menu)
+        {
+            myTab = new(menu, menu.arenaMainLobbyPage.tabContainer);
+            myTab.AddObjects(
+                arenaBaseGameModeTab = new OnlineArenaBaseGameModeTab(
+                    myTab.menu,
+                    myTab,
+                    new(0, 0),
+                    menu.arenaMainLobbyPage.tabContainer.size
+                )
+            );
+            menu.arenaMainLobbyPage.tabContainer.AddTab(
+                myTab,
+                menu.Translate("Arena Settings")
+            );
+        }
 
-        public virtual void OnUIDisabled(ArenaOnlineLobbyMenu menu) { }
+        public virtual void OnUIDisabled(ArenaOnlineLobbyMenu menu)
+        {
+            arenaBaseGameModeTab?.OnShutdown();
+            if (myTab != null)
+                menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
+            myTab = null;
+        }
 
-        public virtual void OnUIUpdate(ArenaOnlineLobbyMenu menu) { }
+        public virtual void OnUIUpdate(ArenaOnlineLobbyMenu menu)
+        {
+            arenaBaseGameModeTab?.Update();
+        }
 
-        public virtual void OnUIShutDown(ArenaOnlineLobbyMenu menu) { }
+        public virtual void OnUIShutDown(ArenaOnlineLobbyMenu menu)
+        {
+            arenaBaseGameModeTab?.OnShutdown();
+        }
 
         public virtual Color GetPortraitColor(
             ArenaOnlineGameMode arena,

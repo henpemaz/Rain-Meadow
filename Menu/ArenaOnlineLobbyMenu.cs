@@ -297,8 +297,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
         else
             for (int i = 0; i < GetGameTypeSetup.playList.Count; i++)
-            for (int j = 0; j < GetGameTypeSetup.levelRepeats; j++)
-                manager.arenaSitting.levelPlaylist.Add(GetGameTypeSetup.playList[i]);
+                for (int j = 0; j < GetGameTypeSetup.levelRepeats; j++)
+                    manager.arenaSitting.levelPlaylist.Add(GetGameTypeSetup.playList[i]);
     }
 
     public void InitializeNewOnlineSitting()
@@ -348,7 +348,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 .Value;
         }
 
-        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(this.Arena, GetGameTypeSetup);
     }
 
     public override void ShutDownProcess()
