@@ -4,11 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Menu;
+using RainMeadow.UI.Pages;
 using UnityEngine;
 namespace RainMeadow.UI.Components
 {
     public class PlayerDisplayer : ButtonDisplayer
     {
+        public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
+        public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
+
         public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton, int numOfLargeButtonsToView, float xListSize, (float, float) largeButtonHeightSpacing, (float, float) smallButtonHeightSpacing, float scrollSliderSizeYOffset = -40) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeightSpacing)
         {
             this.getPlayerButton = getPlayerButton;
@@ -20,9 +24,15 @@ namespace RainMeadow.UI.Components
             {
                     MatchmakingManager.currentInstance.OpenInvitationOverlay();
             };
+            moderationMenu = this.AddSideButton("Meadow_Menu_MutePlayerChat10", description: menu.Translate("Moderation Options"), signal: "MODERATION");
+            moderationMenu.OnClick += (_) =>
+            {
+                if (ArenaMenu != null) ArenaMenu.GoToModerationPage();
+            };
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(onlinePlayers);
         }
+
         public void UpdatePlayerList(List<OnlinePlayer> lobbyOnlinePlayers)
         {
             onlinePlayers = lobbyOnlinePlayers;
@@ -51,5 +61,6 @@ namespace RainMeadow.UI.Components
         public List<OnlinePlayer> onlinePlayers;
         public Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton;
         public SideButton inviteFriends;
+        public SideButton moderationMenu;
     }
 }
