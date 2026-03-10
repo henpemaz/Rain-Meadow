@@ -22,8 +22,6 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
-        public int denEntryRule;
-
         public bool registeredNewGameModes = false;
 
         public bool isInGame;
@@ -57,8 +55,9 @@ namespace RainMeadow
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
-        public int spearScore;
-        public int winScore;
+        public int spearScore = RainMeadow.rainMeadowOptions.ArenaSpearScore.Value;
+        public int winScore = RainMeadow.rainMeadowOptions.ArenaWinScore.Value;
+        public int denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
 
 
         public string paincatName;

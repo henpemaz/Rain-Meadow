@@ -82,6 +82,11 @@ public class RainMeadowOptions : OptionInterface
     private readonly Configurable<string> LobbyMusic;
     public readonly Configurable<bool> AnniversaryCape;
 
+    public readonly Configurable<int> ArenaSpearScore;
+    public readonly Configurable<int> ArenaWinScore;
+    public readonly Configurable<int> ArenaDenType;
+
+
     public enum IntroRoll
     {
         Meadow,
@@ -196,6 +201,9 @@ public class RainMeadowOptions : OptionInterface
 
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
+        ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
+        ArenaWinScore = config.Bind("ArenaWinScore", 0);
+        ArenaDenType = config.Bind("ArenaDenType", 0);
 
     }
 
@@ -244,7 +252,7 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(310, 400f, Translate("Pointing Key")),
             new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
-            
+
             new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
             new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
@@ -343,7 +351,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(120, 420, Translate("Anniversary Gift")),
                 new OpCheckBox(AnniversaryCape, new Vector2(120, 390f)),
-                
+
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),

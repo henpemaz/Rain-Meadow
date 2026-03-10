@@ -31,7 +31,7 @@ namespace RainMeadow.UI.Components
             !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
 
 
-        // TODO: sync arena.spearScore, arena.winScore, arena.denEntryRule, block clients from adjustment, save to Remix
+        // TODO: sync arena.spearScore, arena.winScore, arena.denEntryRule
         public OnlineArenaBaseGameModeTab(
             Menu.Menu menu,
             MenuObject owner,
@@ -73,6 +73,7 @@ namespace RainMeadow.UI.Components
             spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
                 if (spearScoreTextBox.valueInt < 0) spearScoreTextBox.valueInt = 0;
+                arena.spearScore = spearScoreTextBox.valueInt;
             };
 
             var denRuleItems = OpResourceSelector.GetEnumNames(null, typeof(ArenaSetup.GameTypeSetup.DenEntryRule))
@@ -95,6 +96,7 @@ namespace RainMeadow.UI.Components
             winScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
                 if (winScoreTextBox.valueInt < 0) winScoreTextBox.valueInt = 0;
+                arena.winScore = winScoreTextBox.valueInt;
             };
 
             spearScoreTextBox.accept = OpTextBox.Accept.Int;
@@ -163,7 +165,10 @@ namespace RainMeadow.UI.Components
         {
             if (!(OnlineManager.lobby?.isOwner == true))
                 return;
-            //RainMeadow.rainMeadowOptions.ChallengeID.Value = challengeMode.challengeID;
+            RainMeadow.rainMeadowOptions.ArenaSpearScore.Value = arena.spearScore;
+            RainMeadow.rainMeadowOptions.ArenaWinScore.Value = arena.winScore;
+            RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
+
         }
 
         public void DeletePageButtons()
@@ -191,6 +196,19 @@ namespace RainMeadow.UI.Components
 
                 spearScoreTextBox.valueInt = arena.spearScore;
                 spearScoreTextBox.greyedOut = OwnerSettingsDisabled;
+            }
+            if (winScoreTextBox != null)
+            {
+                winScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                winScoreTextBox.held = winScoreTextBox._KeyboardOn;
+
+                winScoreTextBox.valueInt = arena.spearScore;
+            }
+            if (denEntryRule != null)
+            {
+                denEntryRule.greyedOut = OwnerSettingsDisabled;
+                string ruleName = ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule);
+                denEntryRule.value = ruleName;
             }
         }
     }
