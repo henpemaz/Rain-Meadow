@@ -2,6 +2,7 @@
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using UnityEngine;
@@ -49,38 +50,7 @@ namespace RainMeadow
         }
 
         /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
-        public virtual void ArenaSessionEnded(
-            ArenaOnlineGameMode arena,
-            On.ArenaSitting.orig_SessionEnded orig,
-            ArenaSitting self,
-            ArenaGameSession session,
-            List<ArenaSitting.ArenaPlayer> list
-        )
-        {
-            if (list.Count == 1)
-            {
-                list[0].winner = list[0].alive;
-            }
-            else if (list.Count > 1)
-            {
-                if (list[0].alive && !list[1].alive)
-                {
-                    list[0].winner = true;
-                }
-                // else if (list[0].allKills.Count > list[1].allKills.Count)
-                // {
-                //     list[0].winner = true;
-                // }
-                // else if (list[0].deaths < list[1].deaths)
-                // {
-                //     list[0].winner = true;
-                // }
-                else if (list[0].score > list[1].score)
-                {
-                    list[0].winner = true;
-                }
-            }
-        }
+
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
@@ -93,8 +63,9 @@ namespace RainMeadow
             self.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(ruleName);
             self.rainWhenOnePlayerLeft = true;
             self.levelItems = true;
-            self.fliesSpawn = true;
+            self.fliesSpawn = false;
             self.saveCreatures = false;
+            self.gameType = ArenaSetup.GameTypeID.Competitive;
         }
 
         public string PlayingAsText()
@@ -149,10 +120,91 @@ namespace RainMeadow
             On.ArenaGameSession.orig_Killing orig,
             ArenaGameSession self,
             Player player,
-            Creature killedCrit,
-            int playerIndex
+            Creature killedCrit
         )
-        { }
+        {
+            RainMeadow.Debug(this);
+
+            if (!OnlineCreature.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
+            {
+                RainMeadow.Error("Error getting abs Player Creature");
+                return;
+            }
+
+            if (!OnlineCreature.map.TryGetValue(killedCrit.abstractCreature, out var onlineKilledCreature))
+            {
+                RainMeadow.Error("Error getting targetAbsCreature");
+                return;
+            }
+
+            if (self.sessionEnded || (ModManager.MSC && player.AI != null))
+            {
+                return;
+            }
+
+            IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+            bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
+
+            for (int i = 0; i < self.arenaSitting.players.Count; i++)
+            {
+                var sittingPlayer = self.arenaSitting.players[i];
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
+                if (onlinePlayer == null)
+                {
+                    continue;
+                }
+
+                // Skip until we find the matching player
+                if (absPlayerCreature.owner != onlinePlayer) continue;
+
+                if (earnsTrophy)
+                {
+                    if (killedCrit.IsLocal())
+                    {
+                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        int scoreToAdd = unlockIndex >= 0 ? self.arenaSitting.gameTypeSetup.killScores[unlockIndex] : 0;
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            string trophyString = iconSymbolData.ToString();
+                            ushort lobbyId = absPlayerCreature.owner.inLobbyId;
+
+                            arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
+                            arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                            arena.playerNumberWithScore[lobbyId] += scoreToAdd;
+                        }
+                        else
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(
+                                ArenaRPCs.Arena_AddTrophy,
+                                onlineKilledCreature,
+                                sittingPlayer.playerNumber, scoreToAdd
+                            );
+                        }
+
+                        // notify the killer about the trophy
+                        if (!player.IsLocal())
+                        {
+                            player.abstractCreature.GetOnlineCreature().owner.InvokeOnceRPC(ArenaRPCs.AddKilledCreatureToHUD, onlineKilledCreature);
+                        }
+                        // player is local AND killed creature is local
+                        else
+                        {
+                            for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
+                            {
+                                if (self.game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
+                                {
+                                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                break; // We found the player and processed everything, exit the loop
+            }
+        }
 
         public virtual void LandSpear(
             ArenaOnlineGameMode arena,
@@ -325,6 +377,7 @@ namespace RainMeadow
                 abstractCreature.GetOnlineObject(out var oe)
                 && oe.TryGetData<SlugcatCustomization>(out var customization)
             )
+
             {
                 abstractCreature.state = new PlayerState(
                     abstractCreature,
@@ -645,6 +698,26 @@ namespace RainMeadow
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
                 arena.hasPermissionToRejoin = false;
             }
+
+            if (
+                OnlineManager.lobby.isOwner
+                && ModManager.MSC
+                && room.abstractRoom.name == "Chal_AI"
+                && self.GameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge
+            )
+            {
+                Oracle obj = new Oracle(
+                    new AbstractPhysicalObject(
+                        self.game.world,
+                        AbstractPhysicalObject.AbstractObjectType.Oracle,
+                        null,
+                        new WorldCoordinate(room.abstractRoom.index, 15, 15, -1),
+                        self.game.GetNewID()
+                    ),
+                    room
+                );
+                room.AddObject(obj);
+            }
         }
 
         public virtual void ArenaSessionUpdate(
@@ -749,7 +822,128 @@ namespace RainMeadow
                 }
             }
         }
+        public virtual void ArenaSessionEnded(
+            ArenaOnlineGameMode arena,
+            On.ArenaSitting.orig_SessionEnded orig,
+            ArenaSitting self,
+            ArenaGameSession session,
+            List<ArenaSitting.ArenaPlayer> list
+        )
+        {
+            int foodScore = self.gameTypeSetup.foodScore;
+            bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
+            for (int i = 0; i < self.players.Count; i++)
+            {
+                var arenaPlayer = self.players[i];
+
+                if (session.Players != null && i < session.Players.Count)
+                {
+                    var sessionPlayer = session.Players[i];
+
+                    if (countFood)
+                    {
+                        if (sessionPlayer.state is PlayerState playerState)
+                        {
+                            arenaPlayer.score += playerState.foodInStomach * foodScore;
+                        }
+
+                        var creature = sessionPlayer.realizedCreature;
+                        if (creature != null)
+                        {
+                            foreach (var grasp in creature.grasps)
+                            {
+                                if (grasp?.grabbed is IPlayerEdible edible)
+                                {
+                                    arenaPlayer.score += edible.FoodPoints * foodScore;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
+
+                if (arenaPlayer.alive)
+                {
+                    arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
+                }
+
+                arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+            }
+
+            for (int m = 0; m < self.players.Count; m++)
+            {
+                ArenaSitting.ArenaPlayer arenaPlayer = self.players[m];
+                bool inserted = false;
+                for (int n = 0; n < list.Count; n++)
+                {
+                    if (self.PlayerSessionResultSort(arenaPlayer, list[n]))
+                    {
+                        list.Insert(n, arenaPlayer);
+                        inserted = true;
+                        break;
+                    }
+                }
+
+                if (!inserted)
+                {
+                    list.Add(arenaPlayer);
+                }
+            }
+
+            if (list.Count == 1)
+            {
+                list[0].winner = list[0].alive;
+            }
+            else if (list.Count > 1)
+            {
+                if (list[0].alive && !list[1].alive)
+                {
+                    list[0].winner = true;
+                }
+                else if (list[0].score > list[1].score)
+                {
+                    list[0].winner = true;
+                }
+            }
+
+            for (int x = 0; x < list.Count; x++)
+            {
+                var sortedPlayer = list[x];
+                if (sortedPlayer.winner)
+                {
+                    sortedPlayer.wins++;
+                }
+
+                if (!sortedPlayer.alive)
+                {
+                    sortedPlayer.deaths++;
+                }
+
+                sortedPlayer.totScore += sortedPlayer.score;
+
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    sortedPlayer.playerNumber
+                );
+
+                if (pl != null)
+                {
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.AddOrInsertPlayerStats(arena, sortedPlayer, pl);
+                    }
+                    else
+                    {
+                        arena.ReadFromStats(sortedPlayer, pl);
+                    }
+                }
+            }
+
+            session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
+            session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
+        }
         public virtual bool PlayerSessionResultSort(
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,

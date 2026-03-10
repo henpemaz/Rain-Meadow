@@ -81,6 +81,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<IntroRoll> PickedIntroRoll;
     private readonly Configurable<string> LobbyMusic;
     public readonly Configurable<bool> AnniversaryCape;
+    public readonly Configurable<int> ChallengeID;
 
     public readonly Configurable<int> ArenaSpearScore;
     public readonly Configurable<int> ArenaWinScore;
@@ -204,6 +205,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
         ArenaWinScore = config.Bind("ArenaWinScore", 0);
         ArenaDenType = config.Bind("ArenaDenType", 0);
+        ChallengeID = config.Bind("ChallengeID", 1);
 
     }
 
