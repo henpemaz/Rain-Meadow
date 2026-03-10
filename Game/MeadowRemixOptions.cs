@@ -84,10 +84,10 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> boughtSilverCape;
     public readonly Configurable<bool> boughtGoldenCape;
-    public readonly Configurable<bool> boughtRainbowCape;
 
-    public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<bool> boughtRainbowCape;
     public readonly Configurable<bool> wantsDefaultCapeColor;
+    public readonly Configurable<Color> currentlyActiveCapeColor;
 
     public enum IntroRoll
     {
@@ -96,6 +96,7 @@ public class RainMeadowOptions : OptionInterface
         Downpour,
         Watcher
     }
+
 
     public enum StreamMode
     {
@@ -210,6 +211,12 @@ public class RainMeadowOptions : OptionInterface
         wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", false);
 
     }
+    List<ListItem> capeList = new List<ListItem>
+{
+    new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
+    new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
+    new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold), "Gold")
+};
 
     public override void Initialize()
     {
@@ -327,6 +334,8 @@ public class RainMeadowOptions : OptionInterface
             meadowTab.AddItems(OnlineMeadowSettings);
 
             OpComboBox2 introroll;
+            OpComboBox2 capeColor;
+
             OpComboBox2 music;
             OpLabel downpourWarning;
             OpLabel watcherWarning;
@@ -336,41 +345,6 @@ public class RainMeadowOptions : OptionInterface
 
             OpLabel devOptions;
 
-
-            OpCheckBox silverCapeCheck = new OpCheckBox(boughtSilverCape, new Vector2(10f, 150f));
-            OpCheckBox goldenCapeCheck = new OpCheckBox(boughtGoldenCape, new Vector2(10f, 120f));
-
-            silverCapeCheck.OnValueChanged += (UIconfig config, string value, string oldValue) =>
-            {
-                goldenCapeCheck.greyedOut = silverCapeCheck.GetValueBool();
-                wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
-                if (silverCapeCheck.GetValueBool())
-                {
-                    currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f); // Silver color
-                    RainMeadow.rainMeadowOptions.config.Save();
-                    RainMeadow.Debug($"CapeColor: Set to {currentlyActiveCapeColor.Value}");
-
-                }
-
-            };
-
-            goldenCapeCheck.OnValueChanged += (UIconfig config, string value, string oldValue) =>
-            {
-                silverCapeCheck.greyedOut = goldenCapeCheck.GetValueBool();
-                wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
-                if (goldenCapeCheck.GetValueBool())
-                {
-                    currentlyActiveCapeColor.Value = RainWorld.SaturatedGold; // Gold color
-                    RainMeadow.rainMeadowOptions.config.Save();
-                    RainMeadow.Debug($"CapeColor: Set to {currentlyActiveCapeColor.Value}, {wantsDefaultCapeColor}");
-                }
-
-            };
-
-            silverCapeCheck.greyedOut = !boughtSilverCape.Value || goldenCapeCheck.GetValueBool();
-            goldenCapeCheck.greyedOut = !boughtGoldenCape.Value || silverCapeCheck.GetValueBool();
-
-            wantsDefaultCapeColor.Value = silverCapeCheck.GetValueBool() == false && goldenCapeCheck.GetValueBool() == false;
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -398,18 +372,35 @@ public class RainMeadowOptions : OptionInterface
                 // --- New Cape Options Section ---
                 new OpLabel(10f, 180f, Translate("Cape Colors")),
 
+            capeColor = new OpComboBox2(
+                currentlyActiveCapeColor,
+                new Vector2(10f, 150f),
+                160f,
+                capeList.Where(i =>
+                    (i.displayName == Translate("Default")) ||
+                    (i.displayName == Translate("Silver") && boughtSilverCape.Value) ||
+                    (i.displayName == Translate("Gold") && boughtGoldenCape.Value)
+                ).ToList()
+            )
+            {
+                colorEdge = Menu.MenuColorEffect.rgbWhite
+            }
 
-                silverCapeCheck,
-                new OpLabel(40f, 150f, Translate("Silver Cape")),
-
-                goldenCapeCheck,
-                new OpLabel(40f, 120f, Translate("Golden Cape")),
-                        };
+        };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
             }
+            capeColor.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                var selectedItem = capeList.FirstOrDefault(i => i.name == value);
 
+                if (selectedItem != null)
+                {
+                    currentlyActiveCapeColor.Value = Menu.MenuColorEffect.HexToColor(value);
+                    wantsDefaultCapeColor.Value = selectedItem.displayName == "Default";
+                }
+            };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
                 if (value == "Downpour" && !ModManager.MSC)

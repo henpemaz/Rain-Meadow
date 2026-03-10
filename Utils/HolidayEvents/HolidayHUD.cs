@@ -118,10 +118,10 @@ namespace RainMeadow
                             );
                             break;
                         case SilverCape:
-                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = new Color(0.863f, 0.918f, 0.941f);
+                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); ;
                             break;
                         case GoldenCape:
-                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold); RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = RainWorld.SaturatedGold;
+                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold);
                             break;
                         case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }

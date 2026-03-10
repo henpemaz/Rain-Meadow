@@ -51,7 +51,7 @@ namespace RainMeadow
                                     if (critter.TryGetData<SlugcatCustomization>(out var customization))
                                     {
                                         ICapeColor? cape_color = customization.wearingCape ? CapeManager.HasCape(critter.owner.id) : null;
-                                        if (SpecialEvents.IsSpecialEventInLobby && customization.eventCape is not null)
+                                        if (customization.eventCape is not null)
                                         {
                                             cape_color = customization.eventCape;
                                         }

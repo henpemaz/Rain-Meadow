@@ -147,7 +147,6 @@ namespace RainMeadow
                             // Check if the color is a list of floats (RGB)
                             ICapeColor capeColor = ParseCapeColor(color);
 
-
                             // Add the parsed entry to the list
                             if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
                         }
@@ -170,10 +169,9 @@ namespace RainMeadow
                     float.TryParse(rgbParts[1].Trim(), out float g) &&
                     float.TryParse(rgbParts[2].Trim(), out float b))
                 {
-                    if (RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value)
-                    {
-                        return new SolidCapeColor(new Color(r, g, b));
-                    }
+
+                    return new SolidCapeColor(new Color(r, g, b));
+
 
                 }
             }
@@ -183,7 +181,7 @@ namespace RainMeadow
                 if (color == "rainbow") return new RainbowCapeColor();
             }
 
-            return new SolidCapeColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value);
+            return new SolidCapeColor(Color.red);
         }
 
         private static Dictionary<string, ICapeColor> entries = new();
