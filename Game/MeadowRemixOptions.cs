@@ -208,7 +208,7 @@ public class RainMeadowOptions : OptionInterface
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
-        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", false);
+        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
 
     }
     List<ListItem> capeList = new List<ListItem>
