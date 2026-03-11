@@ -156,20 +156,17 @@ namespace RainMeadow
                 {
                     continue;
                 }
-                // killer was located at the given index
 
                 if (earnsTrophy)
                 {
 
                     int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-
-                    if (unlockIndex >= 0)
-                    {
-                        self.arenaSitting.players[i].AddSandboxScore(arena.spearScore);
-                    }
+                    int scoreToAdd = arena.spearScore;
                     self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                     self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                    self.arenaSitting.players[i].score += scoreToAdd;
 
+                    RainMeadow.Debug($"==== {self.arenaSitting.players[i].playerNumber} EARNED {scoreToAdd}");
 
                     if (OnlineManager.lobby.isOwner)
                     {
@@ -198,8 +195,9 @@ namespace RainMeadow
                             }
                         }
                     }
-                    break;
                 }
+
+                break; // We found the player and processed everything, exit the loop
             }
         }
 

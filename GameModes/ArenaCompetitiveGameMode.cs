@@ -772,8 +772,9 @@ namespace RainMeadow
                 player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
 
                 RainMeadow.Debug($"Read witih stats: {player.wins} for online player: {player.playerNumber}");
-
-
+                RainMeadow.Debug(
+                    $"Read witih score stats: {player.score} for online player: {player.playerNumber}"
+                );
                 RainMeadow.Debug(
                     $"Read witih death stats: {player.deaths} for online player: {player.playerNumber}"
                 );
