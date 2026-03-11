@@ -194,7 +194,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.isOwner && arena.playerNumberWithScore.TryGetValue(onlinePlayer.inLobbyId, out _))
                 {
                     arena.playerNumberWithScore[onlinePlayer.inLobbyId] += self.score;
                 }

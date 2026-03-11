@@ -168,6 +168,7 @@ namespace RainMeadow.UI.Components
             RainMeadow.rainMeadowOptions.ArenaAliveScore.Value = arena.aliveScore;
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
             RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
+            RainMeadow.rainMeadowOptions.config.Save();
 
         }
 
