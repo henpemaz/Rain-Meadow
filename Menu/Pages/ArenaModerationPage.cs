@@ -16,7 +16,7 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
     public ModerationPlayerDisplayer recentDisplayer;
     public ModerationPlayerDisplayer banDisplayer;
 
-    public MenuLabel bannedLabel, recentsLabel, readyWarningLabel;
+    public MenuLabel bannedLabel, recentsLabel, readyWarningLabel, userModerationLabel;
 
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
     public bool readyWarning;
@@ -35,11 +35,21 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
             ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton;
         };
 
+        userModerationLabel = new(menu, this, menu.Translate("USER MODERATION"), new Vector2(680f, 575f), default, true);
+        userModerationLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
+        userModerationLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
+
+        recentsLabel = new MenuLabel(menu, this, "RECENT PLAYERS", new Vector2(365f, 555), default, true);
+        recentsLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
+
+        bannedLabel = new MenuLabel(menu, this, "BLOCKED PLAYERS", new Vector2(1005f, 555), default, true);
+        bannedLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
+
         readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
 
         BuildPlayerDisplay();
 
-        this.SafeAddSubobjects(backButton, recentDisplayer, banDisplayer, readyWarningLabel);
+        this.SafeAddSubobjects(backButton, recentDisplayer, banDisplayer, readyWarningLabel, userModerationLabel, recentsLabel, bannedLabel);
 
         if (ArenaMenu != null)
         {
@@ -55,7 +65,7 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
             new Vector2(220f, 130f),
             BanHammer.recentUsers,
             GetPlayerButton,
-            4,
+            3,
             ArenaPlayerBox.DefaultSize.x,
             new(ArenaPlayerBox.DefaultSize.y, 0),
             new(ArenaPlayerSmallBox.DefaultSize.y, 10)
@@ -69,7 +79,7 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
             new Vector2(860f, 130f),
             BanHammer.bannedUsers,
             GetPlayerButton,
-            4,
+            3,
             ArenaPlayerBox.DefaultSize.x,
             new(ArenaPlayerBox.DefaultSize.y, 0),
             new(ArenaPlayerSmallBox.DefaultSize.y, 10),
@@ -78,21 +88,16 @@ public class ArenaModerationPage : PositionedMenuObject, SelectOneButton.SelectO
         subObjects.Add(banDisplayer);
         banDisplayer.CallForRefresh();
 
-        BanHammer.OnRecentsRefresh += BanHammer_OnRecentsRefresh;
-        BanHammer.OnBannedRefresh += BanHammer_OnBannedRefresh;
+        BanHammer.OnRefresh += BanHammer_OnRefresh;
 
         banDisplayer.UpdatePlayerList(BanHammer.bannedUsers);
         recentDisplayer.UpdatePlayerList(BanHammer.recentUsers);
     }
 
-    private void BanHammer_OnBannedRefresh(SteamPlayerRep[] players)
+    private void BanHammer_OnRefresh(List<SteamPlayerRep> recents, List<SteamPlayerRep> banned)
     {
-        banDisplayer.UpdatePlayerList(players.ToList());
-    }
-
-    private void BanHammer_OnRecentsRefresh(SteamPlayerRep[] players)
-    {
-        recentDisplayer.UpdatePlayerList(players.ToList());
+        recentDisplayer.UpdatePlayerList(recents);
+        banDisplayer.UpdatePlayerList(banned);
     }
 
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(

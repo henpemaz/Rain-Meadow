@@ -25,9 +25,9 @@ namespace RainMeadow.UI.Components
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(this.players);
         }
-        public void UpdatePlayerList(List<SteamPlayerRep> lobbyOnlinePlayers)
+        public void UpdatePlayerList(List<SteamPlayerRep> playerList)
         {
-            players = lobbyOnlinePlayers;
+            players = playerList;
             CallForRefresh();
         }
         public IPartOfButtonScroller[] PopulatePlayerDisplays(ButtonDisplayer buttonDisplayer, bool IsCurrentlyLargeDisplay)

@@ -439,6 +439,8 @@ namespace RainMeadow
             OnlineManager.players.Add(player);
 
             HandleJoin(player);
+
+            BanHammer.UpdateRecents(OnlineManager.players.ToArray());
         }
 
         private void PlayerLeft(CSteamID p)
