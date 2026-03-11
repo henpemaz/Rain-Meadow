@@ -41,10 +41,17 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (self.gameSession.GameTypeSetup.denEntryRule != ArenaSetup.GameTypeSetup.DenEntryRule.Standard)
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
+            {
+                // idk why orig ignores this when 2 player exists
+                return true;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
             {
                 return orig(self);
             }
+
             int playersStillStanding =
                 self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
