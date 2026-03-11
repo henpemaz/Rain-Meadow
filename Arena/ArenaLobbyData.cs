@@ -156,9 +156,6 @@ namespace RainMeadow
             public int currentLevel;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerNumberWithScore;
-
-            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithDeaths;
 
             [OnlineField(group = "arenaScore")]
@@ -204,7 +201,6 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
-                playerNumberWithScore = new(arena.playerNumberWithScore);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
                 playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
@@ -277,8 +273,7 @@ namespace RainMeadow
                     playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore =
-                    playerNumberWithScore;
+
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths =
                     playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;

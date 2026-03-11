@@ -33,7 +33,6 @@ namespace RainMeadow.UI.Components
             !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled || arena.externalArenaGameMode is ArenaChallengeMode;
 
 
-        // TODO: sync arena.spearScore, arena.aliveScore, arena.denEntryRule
         public OnlineArenaBaseGameModeTab(
             Menu.Menu menu,
             MenuObject owner,
@@ -54,9 +53,13 @@ namespace RainMeadow.UI.Components
                 new(leftMargin, topOffset), new(labelWidth, 20f), false);
             spearScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            spearScoreTextBox = new(new Configurable<int>(arena.spearScore),
+            spearScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaSpearScore,
                 new(boxMargin, topOffset - 2f), 60)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Points a kill is worth"), accept = OpTextBox.Accept.Int };
+            {
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("Points a kill is worth"),
+                accept = OpTextBox.Accept.Int
+            };
 
             spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
@@ -69,7 +72,7 @@ namespace RainMeadow.UI.Components
                 new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
             aliveScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            aliveScoreTextBox = new(new Configurable<int>(arena.aliveScore),
+            aliveScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaAliveScore,
                 new(boxMargin, topOffset - rowHeight - 2f), 60)
             { alignment = FLabelAlignment.Center, description = menu.Translate("Points surviving to the shelter is worth"), accept = OpTextBox.Accept.Int };
 
@@ -79,20 +82,25 @@ namespace RainMeadow.UI.Components
                 arena.aliveScore = aliveScoreTextBox.valueInt;
             };
 
+
             // --- Row 3: Den Score ---
             denScoreLabel = new(menu, this, menu.Translate("Den Score:"),
-                new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
+                    new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
             denScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            denScoreTextBox = new(new Configurable<int>(arena.denScore),
+            denScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaDenScore,
                 new(boxMargin, topOffset - (rowHeight * 2) - 2f), 60) // FIXED: Added '- (rowHeight * 2)'
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Points required to open dens"), accept = OpTextBox.Accept.Int };
+            {
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("Points required to open dens"),
+                accept = OpTextBox.Accept.Int
+            };
 
             denScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
-            {
-                if (denScoreTextBox.valueInt < 0) denScoreTextBox.valueInt = 0;
-                arena.denScore = denScoreTextBox.valueInt;
-            };
+                    {
+                        if (denScoreTextBox.valueInt < 0) denScoreTextBox.valueInt = 0;
+                        arena.denScore = denScoreTextBox.valueInt;
+                    };
 
             // --- Row 4: Den Entry ---
             denEntryRuleLabel = new(menu, this, menu.Translate("Den Entry:"),
@@ -107,7 +115,7 @@ namespace RainMeadow.UI.Components
                 }).ToList();
 
             denEntryRule = new OpComboBox2(
-                new Configurable<ArenaSetup.GameTypeSetup.DenEntryRule>(arena.denEntryRule),
+                RainMeadow.rainMeadowOptions.ArenaDenType,
                 new(boxMargin, topOffset - (rowHeight * 3) - 2f),
                 110,
                 denRuleItems
@@ -134,7 +142,6 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
 
         }
-
         public void PopulatePage(int offset)
         {
             ClearInterface();
@@ -194,16 +201,23 @@ namespace RainMeadow.UI.Components
             if (spearScoreTextBox != null)
             {
                 spearScoreTextBox.held = spearScoreTextBox._KeyboardOn;
+                if (!spearScoreTextBox.held)
+                {
+                    spearScoreTextBox.valueInt = arena.spearScore;
+                }
 
-                spearScoreTextBox.valueInt = arena.spearScore;
                 spearScoreTextBox.greyedOut = OwnerSettingsDisabled;
             }
             if (aliveScoreTextBox != null)
             {
                 aliveScoreTextBox.greyedOut = OwnerSettingsDisabled;
                 aliveScoreTextBox.held = aliveScoreTextBox._KeyboardOn;
+                if (!aliveScoreTextBox.held)
+                {
+                    aliveScoreTextBox.valueInt = arena.aliveScore;
 
-                aliveScoreTextBox.valueInt = arena.aliveScore;
+                }
+
             }
             if (denEntryRule != null)
             {
@@ -215,7 +229,11 @@ namespace RainMeadow.UI.Components
             {
                 denScoreTextBox.held = denScoreTextBox._KeyboardOn;
                 denScoreTextBox.greyedOut = OwnerSettingsDisabled;
-                denScoreTextBox.valueInt = arena.denScore;
+                if (!denScoreTextBox.held)
+                {
+                    denScoreTextBox.valueInt = arena.denScore;
+
+                }
             }
         }
     }

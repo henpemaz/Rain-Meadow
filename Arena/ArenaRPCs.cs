@@ -258,7 +258,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum, int score)
+        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -286,15 +286,12 @@ namespace RainMeadow
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            game.GetArenaGameSession.arenaSitting.players[i].score += score;
 
                             if (pl != null)
                             {
 
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithScore[pl.inLobbyId] += score;
-
                             }
                         }
 

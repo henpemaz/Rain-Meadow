@@ -180,31 +180,8 @@ namespace RainMeadow
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
-            On.ArenaSitting.ArenaPlayer.AddSandboxScore += ArenaPlayer_AddSandboxScore;
-
         }
 
-        private void ArenaPlayer_AddSandboxScore(On.ArenaSitting.ArenaPlayer.orig_AddSandboxScore orig, ArenaSitting.ArenaPlayer self, int scoreToAdd)
-        {
-            orig(self, scoreToAdd);
-            if (isArenaMode(out var arena))
-            {
-                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.playerNumber);
-                if (onlinePlayer == null)
-                {
-                    return;
-                }
-                if (OnlineManager.lobby.isOwner && arena.playerNumberWithScore.TryGetValue(onlinePlayer.inLobbyId, out _))
-                {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += self.score;
-                }
-                else
-                {
-                    arena.ReadFromStats(self, onlinePlayer);
-                }
-            }
-
-        }
 
         private int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
         {
@@ -2580,10 +2557,6 @@ namespace RainMeadow
                 int finalScore = (int)((float)sittingPlayer.score +
                                       ((float)player.FoodInStomach + graspFoodPoints) * (float)self.arenaSitting.gameTypeSetup.foodScore);
 
-                if (OnlineManager.lobby.isOwner && arena.playerNumberWithScore.TryGetValue(targetOwner.inLobbyId, out _))
-                {
-                    arena.playerNumberWithScore[targetOwner.inLobbyId] = finalScore;
-                }
                 return finalScore;
             }
 

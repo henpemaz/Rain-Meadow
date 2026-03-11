@@ -96,7 +96,6 @@ namespace RainMeadow
             new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
@@ -739,10 +738,6 @@ namespace RainMeadow
 
         public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
         {
-            if (!playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
-            {
-                playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
-            }
             if (!playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
             {
                 playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
@@ -770,25 +765,23 @@ namespace RainMeadow
             if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
             {
                 player.wins = wins;
-                player.score = playerNumberWithScore[pl.inLobbyId];
                 player.deaths = playerNumberWithDeaths[pl.inLobbyId];
                 player.totScore = playerTotScore[pl.inLobbyId];
                 player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
                 player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
 
-                RainMeadow.Debug($"Read stats: {player} from online player: {pl}");
-                RainMeadow.Debug($"Read witih stats: {player.wins} from online player: {player}");
+                RainMeadow.Debug($"Read witih stats: {player.wins} for online player: {player.playerNumber}");
                 RainMeadow.Debug(
-                    $"Read witih score stats: {player.score} from online player: {player}"
+                    $"Read witih score stats: {player.score} for online player: {player.playerNumber}"
                 );
                 RainMeadow.Debug(
-                    $"Read witih death stats: {player.deaths} from online player: {player}"
+                    $"Read witih death stats: {player.deaths} for online player: {player.playerNumber}"
                 );
                 RainMeadow.Debug(
-                    $"Read witih totScore stats: {player.totScore} from online player: {player}"
+                    $"Read witih totScore stats: {player.totScore} for online player: {player.playerNumber}"
                 );
                 RainMeadow.Debug(
-                    $"Client read stats with allKills stats: {player.allKills.Count} from online player: {player}"
+                    $"Client read stats with allKills stats: {player.allKills.Count} for online player: {player.playerNumber}"
                 );
             }
         }
@@ -804,7 +797,6 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
-                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
                     arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
                     arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
                     if (
@@ -847,7 +839,6 @@ namespace RainMeadow
                 else
                 {
                     newArenaPlayer.wins = wins;
-                    newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
                     newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
                     newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
                     newArenaPlayer.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(
@@ -883,7 +874,6 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithScore.Add(pl.inLobbyId, newArenaPlayer.score);
                     arena.playerNumberWithDeaths.Add(pl.inLobbyId, newArenaPlayer.deaths);
                     arena.playerNumberWithWins.Add(pl.inLobbyId, newArenaPlayer.wins);
                     arena.playerTotScore.Add(pl.inLobbyId, newArenaPlayer.totScore);
@@ -953,7 +943,6 @@ namespace RainMeadow
             arenaSittingOnlineOrder.Clear();
             playerNumberWithWins.Clear();
             playerNumberWithDeaths.Clear();
-            playerNumberWithScore.Clear();
             playerTotScore.Clear();
             playerNumberWithTrophies.Clear();
             playerNumberWithTrophiesPerRound.Clear();
