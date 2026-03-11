@@ -49,7 +49,7 @@ namespace RainMeadow
 
             if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
             {
-                return orig(self) || self.gameSession.arenaSitting.players.Any(x => x.score >= arena.denScore);
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
             }
 
             int playersStillStanding =
