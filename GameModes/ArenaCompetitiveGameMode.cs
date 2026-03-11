@@ -482,7 +482,6 @@ namespace RainMeadow
         public void ResetRoundKills()
         {
             this.playerNumberWithTrophiesPerRound.Clear();
-            this.playerNumberWithScore.Clear();
         }
 
         public void ResetForceReadyCountDown()
@@ -770,29 +769,49 @@ namespace RainMeadow
 
         public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
+            RainMeadow.Debug(this);
+            // Wins
             if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
             {
                 player.wins = wins;
-                player.deaths = playerNumberWithDeaths[pl.inLobbyId];
-                player.totScore = playerTotScore[pl.inLobbyId];
-                player.score = playerNumberWithScore[pl.inLobbyId];
-                player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
-                player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
-
-                RainMeadow.Debug($"Read witih stats: {player.wins} for online player: {player.playerNumber}");
-                RainMeadow.Debug(
-                    $"Read witih score stats: {player.score} for online player: {player.playerNumber}"
-                );
-                RainMeadow.Debug(
-                    $"Read witih death stats: {player.deaths} for online player: {player.playerNumber}"
-                );
-                RainMeadow.Debug(
-                    $"Read witih totScore stats: {player.totScore} for online player: {player.playerNumber}"
-                );
-                RainMeadow.Debug(
-                    $"Client read stats with allKills stats: {player.allKills.Count} for online player: {player.playerNumber}"
-                );
             }
+
+            // Deaths
+            if (playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var deaths))
+            {
+                player.deaths = deaths;
+            }
+
+            // Total Score
+            if (playerTotScore.TryGetValue(pl.inLobbyId, out var totScore))
+            {
+                player.totScore = totScore;
+            }
+
+            // Current Score
+            if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out var score))
+            {
+                player.score = score;
+            }
+
+            // Trophies/Kills
+            player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
+            player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
+
+            RainMeadow.Debug($"Read witih stats: {player.wins} for online player: {player.playerNumber}");
+            RainMeadow.Debug(
+                $"Read witih score stats: {player.score} for online player: {player.playerNumber}: {playerNumberWithScore[pl.inLobbyId]}"
+            );
+            RainMeadow.Debug(
+                $"Read witih death stats: {player.deaths} for online player: {player.playerNumber}"
+            );
+            RainMeadow.Debug(
+                $"Read witih totScore stats: {player.totScore} for online player: {player.playerNumber}"
+            );
+            RainMeadow.Debug(
+                $"Client read stats with allKills stats: {player.allKills.Count} for online player: {player.playerNumber}"
+            );
+
         }
 
         public void AddOrInsertPlayerStats(

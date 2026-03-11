@@ -162,14 +162,16 @@ namespace RainMeadow
                 {
 
                     //int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                    // self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                    // self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                    // self.arenaSitting.players[i].score += scoreToAdd;
+
 
                     if (OnlineManager.lobby.isOwner)
                     {
                         string trophyString = iconSymbolData.ToString();
                         ushort lobbyId = absPlayerCreature.owner.inLobbyId;
+
+                        // self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        // self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        // self.arenaSitting.players[i].score += arena.spearScore;
 
                         arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
                         arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
@@ -940,11 +942,11 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.AddOrInsertPlayerStats(arena, sortedPlayer, pl);
-                    }
-                    else
-                    {
-                        arena.ReadFromStats(sortedPlayer, pl);
+                        arena.playerNumberWithWins[pl.inLobbyId] = sortedPlayer.wins;
+                        arena.playerNumberWithDeaths[pl.inLobbyId] = sortedPlayer.deaths;
+                        arena.playerTotScore[pl.inLobbyId] = sortedPlayer.totScore;
+                        arena.playerNumberWithScore[pl.inLobbyId] = sortedPlayer.score;
+                        //arena.AddOrInsertPlayerStats(arena, sortedPlayer, pl);
                     }
                 }
             }

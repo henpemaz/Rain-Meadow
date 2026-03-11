@@ -1016,6 +1016,8 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> result
         )
         {
+
+
             orig(self, manager, ArenaSitting, result);
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -2578,6 +2580,14 @@ namespace RainMeadow
             // for random class players.
             if (isArenaMode(out var aren))
             {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                aren,
+                player.playerNumber);
+
+                if (pl != null)
+                {
+                    aren.ReadFromStats(player, pl);
+                }
                 bool playingAsRandom = false;
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     aren,
