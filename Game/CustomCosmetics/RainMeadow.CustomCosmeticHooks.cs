@@ -19,8 +19,10 @@ namespace RainMeadow
             IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
         }
 
-        void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor) {
-            try {
+        void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor)
+        {
+            try
+            {
                 ILCursor c = new(cursor);
 
                 // inserted right after 
@@ -33,11 +35,13 @@ namespace RainMeadow
                     x => x.MatchNewarr<FSprite>(),
                     x => x.MatchStfld<RoomCamera.SpriteLeaser>(nameof(RoomCamera.SpriteLeaser.sprites))
                 );
-   
+
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, numofsprites_loc);
-                c.EmitDelegate((PlayerGraphics self, ref int numofsprites) => {
-                    try {
+                c.EmitDelegate((PlayerGraphics self, ref int numofsprites) =>
+                {
+                    try
+                    {
                         if (OnlineManager.lobby != null)
                         {
                             if (!SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
@@ -46,20 +50,27 @@ namespace RainMeadow
                                 {
                                     if (critter.TryGetData<SlugcatCustomization>(out var customization))
                                     {
-                                        ICapeColor? cape_color = customization.wearingCape? CapeManager.HasCape(critter.owner.id) : null;
-                                        if (SpecialEvents.IsSpecialEventInLobby && customization.eventCape is not null) cape_color = customization.eventCape;
+                                        ICapeColor? cape_color = customization.wearingCape ? CapeManager.HasCape(critter.owner.id) : null;
+                                        if (customization.eventCape is not null)
+                                        {
+                                            cape_color = customization.eventCape;
+                                        }
                                         if (cape_color is not null)
                                         {
                                             cape = new SlugcatCape(self, numofsprites, cape_color);
                                         }
+
+
                                     }
-                                    
+
                                 }
                             }
 
                             if (cape is not null) numofsprites += SlugcatCape.totalSprites;
                         }
-                    } catch (Exception except) {
+                    }
+                    catch (Exception except)
+                    {
                         RainMeadow.Error(except);
                     }
                 });
@@ -69,26 +80,36 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_1);
                 c.Emit(OpCodes.Ldarg_2);
-                c.EmitDelegate((PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam) => {
-                    try {
-                        if (OnlineManager.lobby != null) {
-                            if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape)) {
+                c.EmitDelegate((PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam) =>
+                {
+                    try
+                    {
+                        if (OnlineManager.lobby != null)
+                        {
+                            if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                            {
                                 cape.InitiateSprites(sLeaser, rCam);
                             }
                         }
-                    } catch (Exception except) {
+                    }
+                    catch (Exception except)
+                    {
                         RainMeadow.Error(except);
                     }
                 });
 
-            } catch(Exception except) {
-                RainMeadow.Error(except); 
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
             }
         }
 
-        void PlayerGraphics_UpdateCosmetics(On.PlayerGraphics.orig_Update orig, PlayerGraphics self) {
+        void PlayerGraphics_UpdateCosmetics(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
+        {
             orig(self);
-            try {                
+            try
+            {
                 if (OnlineManager.lobby != null)
                 {
                     if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
@@ -96,51 +117,70 @@ namespace RainMeadow
                         cape.Update();
                     }
                 }
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 RainMeadow.Error(except);
             }
         }
 
-        void PlayerGraphics_ResetCosmetics(On.PlayerGraphics.orig_Reset orig, PlayerGraphics self) {
+        void PlayerGraphics_ResetCosmetics(On.PlayerGraphics.orig_Reset orig, PlayerGraphics self)
+        {
             orig(self);
-            try {                
-                if (OnlineManager.lobby != null) {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape)) {
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    {
                         cape.Reset();
                     }
                 }
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 RainMeadow.Error(except);
             }
         }
 
-        void PlayerGraphics_DrawSpritesCosmetics(On.PlayerGraphics.orig_DrawSprites orig, 
-                PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, 
-                RoomCamera rCam, float timeStacker, Vector2 camPos) {  
+        void PlayerGraphics_DrawSpritesCosmetics(On.PlayerGraphics.orig_DrawSprites orig,
+                PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser,
+                RoomCamera rCam, float timeStacker, Vector2 camPos)
+        {
             orig(self, sLeaser, rCam, timeStacker, camPos);
 
-            try {
-                if (OnlineManager.lobby != null) {
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
                     if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
                     {
                         cape.DrawSprites(sLeaser, rCam, timeStacker, camPos);
                     }
                 }
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 RainMeadow.Error(except);
             }
         }
 
-        public void PlayerGraphics_AddToContainerCosmetics(On.PlayerGraphics.orig_AddToContainer orig, global::PlayerGraphics self, global::RoomCamera.SpriteLeaser sLeaser, global::RoomCamera rCam, global::FContainer newContatiner) {  
+        public void PlayerGraphics_AddToContainerCosmetics(On.PlayerGraphics.orig_AddToContainer orig, global::PlayerGraphics self, global::RoomCamera.SpriteLeaser sLeaser, global::RoomCamera rCam, global::FContainer newContatiner)
+        {
             orig(self, sLeaser, rCam, newContatiner);
 
-            try {
-                if (OnlineManager.lobby != null) {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape)) {
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    {
                         cape.AddToContainer(sLeaser, rCam, newContatiner);
                     }
                 }
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 RainMeadow.Error(except);
             }
         }
