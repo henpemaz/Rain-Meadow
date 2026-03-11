@@ -1079,26 +1079,7 @@ namespace RainMeadow
             {
                 if (arena.leaveForNextLevel)
                 {
-                    string loadingString;
-
-                    // Check for nulls and ensure we have players to avoid dividing by zero
-                    if (OnlineManager.lobby.overworld != null &&
-                        OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) &&
-                        self.ArenaSitting.players?.Count > 0)
-                    {
-                        float progress = 1.0f - ((float)ws.participants.Count / self.ArenaSitting.players.Count);
-
-                        // Format: "LOADING: 75%"
-                        loadingString = $"{self.Translate("LOADING")}: {progress:P0}";
-                    }
-                    else
-                    {
-                        loadingString = self.Translate("LOADING...");
-                    }
-
-                    self.headingLabel.text = loadingString;
-
-                    self.headingLabel.text = loadingString;
+                    self.headingLabel.text = self.Translate("LOADING...");
                     if (!OnlineManager.lobby.isOwner)
                     {
                         if (!self.nextLevelCall)

@@ -128,6 +128,7 @@ namespace RainMeadow
         public ArenaTeamClientSettings arenaTeamClientSettings;
         public SlugcatCustomization avatarSettings;
 
+
         public bool shufflePlayList;
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();

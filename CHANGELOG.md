@@ -1,5 +1,7 @@
 # Release 1.13.0
 ## General
+- The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
+- The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 ## Arena
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
