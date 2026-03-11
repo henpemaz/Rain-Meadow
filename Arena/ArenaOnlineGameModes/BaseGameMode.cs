@@ -874,6 +874,10 @@ namespace RainMeadow
                 if (arenaPlayer.alive)
                 {
                     arenaPlayer.AddSandboxScore(arena.aliveScore);
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playerNumberWithScore[ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaPlayer.playerNumber).inLobbyId] += arena.aliveScore;
+                    }
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
