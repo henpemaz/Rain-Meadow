@@ -72,6 +72,19 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+            On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
+        }
+
+        private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
+            {
+                SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
+            } 
+            else
+            {
+                orig(self, sLeaser, rCam);
+            }
         }
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
@@ -706,6 +719,25 @@ namespace RainMeadow
             {
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
+
+                    if (SpecialEvents.IsSpecialEventInLobby && !storyGameMode.hasSheltered)
+                    {
+                        var entities = self.room.abstractRoom.entities;
+                        int coinCount = 0;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                                {
+                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                                    {
+                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                        coinCount++;
+                                    }
+                                }
+                        }
+                        SpecialEvents.GainedMeadowCoin(coinCount);
+                    }
+
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
@@ -719,35 +751,30 @@ namespace RainMeadow
                     }
                 }
             }
-            else
-            {
-            }
         }
 
         private void ShelterDoor_DoorClosed(On.ShelterDoor.orig_DoorClosed orig, ShelterDoor self)
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-        }
+    }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
-            orig(self, eu);
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, eu);
+                return;
+            }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature))
             {
                 Trace($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                orig(self, eu);
                 return;
             }
+
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
-                {
-                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
-                }
-
-                if (self is AirBreatherCreature breather) breather.lungs = 1f;
-
                 if (self.room != null)
                 {
                     // fall out of world handling
@@ -803,6 +830,18 @@ namespace RainMeadow
                         self.State.alive = false;
                     }
                 }
+            }
+
+            orig(self, eu); //Need to run our fall out of world handling BEFORE orig, otherwise entering WallClimb below -250y will run orig's kill code before we have a chance to detect and abort it.
+
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
             }
 
             // this is here as a safegard because we don't transfer full detail grasp data
