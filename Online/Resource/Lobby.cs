@@ -41,7 +41,7 @@ namespace RainMeadow
 
             if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam)
             {
-                string[] permaBannedUsers = BanHammer.GetBannedUsers();
+                string[] permaBannedUsers = BanHammer.bannedUsers.Select(x => x.SteamID).ToArray();
                 foreach (var idString in permaBannedUsers)
                 {
                     if (ulong.TryParse(idString.Trim(), out ulong steamID64))
