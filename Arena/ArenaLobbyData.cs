@@ -135,10 +135,12 @@ namespace RainMeadow
             public int spearScore;
 
             [OnlineField(group = "arenaSetup")]
-            public int winScore;
-
+            public int aliveScore;
             [OnlineField(group = "arenaSetup")]
-            public int denRule;
+            public int denScore;
+
+            [OnlineField(group = "arenaSetup", nullable = true)]
+            public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -250,8 +252,10 @@ namespace RainMeadow
                 enableOverseer = arena.enableOverseer;
 
                 spearScore = arena.spearScore;
-                winScore = arena.winScore;
+                aliveScore = arena.aliveScore;
                 denRule = arena.denEntryRule;
+                denScore = arena.denScore;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -333,8 +337,9 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
 
                 (lobby.gameMode as ArenaOnlineGameMode).spearScore = spearScore;
-                (lobby.gameMode as ArenaOnlineGameMode).winScore = winScore;
+                (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
                 (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
+                (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
 
             }
 

@@ -55,17 +55,17 @@ namespace RainMeadow
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 0;
-            self.survivalScore = arena.winScore;
+            self.survivalScore = arena.aliveScore;
             self.spearHitScore = arena.spearScore;
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
-            string ruleName = ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule);
-            self.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(ruleName);
+            self.denEntryRule = arena.denEntryRule;
             self.rainWhenOnePlayerLeft = true;
             self.levelItems = true;
             self.fliesSpawn = false;
             self.saveCreatures = false;
             self.gameType = ArenaSetup.GameTypeID.Competitive;
+
         }
 
         public string PlayingAsText()
@@ -161,10 +161,12 @@ namespace RainMeadow
                 {
                     if (killedCrit.IsLocal())
                     {
-                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
                         int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                         int scoreToAdd = unlockIndex >= 0 ? self.arenaSitting.gameTypeSetup.killScores[unlockIndex] : 0;
+                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        self.arenaSitting.players[i].score += scoreToAdd;
+
                         if (OnlineManager.lobby.isOwner)
                         {
                             string trophyString = iconSymbolData.ToString();
@@ -861,12 +863,12 @@ namespace RainMeadow
                         }
                     }
                 }
-
                 arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
-
                 if (arenaPlayer.alive)
                 {
+
                     arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
+
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
@@ -898,6 +900,7 @@ namespace RainMeadow
             }
             else if (list.Count > 1)
             {
+
                 // if survivalScore && killScore are 0, then this should skip 
                 if (list[0].score > list[1].score)
                 {
@@ -907,7 +910,7 @@ namespace RainMeadow
                 {
                     list[0].winner = true;
                 }
-                 
+
             }
 
             for (int x = 0; x < list.Count; x++)

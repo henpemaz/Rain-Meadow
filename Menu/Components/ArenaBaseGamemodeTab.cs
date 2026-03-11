@@ -6,6 +6,7 @@ using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -14,10 +15,11 @@ namespace RainMeadow.UI.Components
         public MenuTabWrapper tabWrapper;
         public MenuLabel spearScoreLabel;
         public OpTextBox spearScoreTextBox;
-        public MenuLabel winScoreLabel;
-        public OpTextBox winScoreTextBox;
+        public MenuLabel aliveScoreLabel;
+        public OpTextBox aliveScoreTextBox;
         public MenuLabel denEntryRuleLabel;
-
+        public OpTextBox denScoreTextBox;
+        public MenuLabel denScoreLabel;
         public OpComboBox2 denEntryRule;
         public EventfulScrollButton? prevButton,
             nextButton;
@@ -28,10 +30,10 @@ namespace RainMeadow.UI.Components
         public bool AllSettingsDisabled =>
             arena.initiateLobbyCountdown && arena.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled =>
-            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
+            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled || arena.externalArenaGameMode is ArenaChallengeMode;
 
 
-        // TODO: sync arena.spearScore, arena.winScore, arena.denEntryRule
+        // TODO: sync arena.spearScore, arena.aliveScore, arena.denEntryRule
         public OnlineArenaBaseGameModeTab(
             Menu.Menu menu,
             MenuObject owner,
@@ -46,93 +48,90 @@ namespace RainMeadow.UI.Components
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
             float boxMargin = leftMargin + labelWidth + 30f; // The X-position for all boxes
+
             // --- Row 1: Spear Score ---
             spearScoreLabel = new(menu, this, menu.Translate("Spear Score:"),
                 new(leftMargin, topOffset), new(labelWidth, 20f), false);
             spearScoreLabel.label.alignment = FLabelAlignment.Left;
 
             spearScoreTextBox = new(new Configurable<int>(arena.spearScore),
-                new(boxMargin, topOffset - 2f), 60) // Now using boxMargin
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Adjust points per spear kill") };
+                new(boxMargin, topOffset - 2f), 60)
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points a kill is worth"), accept = OpTextBox.Accept.Int };
 
-            // --- Row 2: Win Score ---
-            winScoreLabel = new(menu, this, menu.Translate("Win Score:"),
-                new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
-            winScoreLabel.label.alignment = FLabelAlignment.Left;
-
-            winScoreTextBox = new(new Configurable<int>(arena.winScore),
-                new(boxMargin, (topOffset - rowHeight) - 2f), 60)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("How many points a win is worth") };
-
-            // --- Row 3: Den Entry ---
-            denEntryRuleLabel = new(menu, this, menu.Translate("Den Entry:"),
-                new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
-            denEntryRuleLabel.label.alignment = FLabelAlignment.Left;
-
-            spearScoreTextBox.accept = OpTextBox.Accept.Int;
             spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
                 if (spearScoreTextBox.valueInt < 0) spearScoreTextBox.valueInt = 0;
                 arena.spearScore = spearScoreTextBox.valueInt;
             };
 
+            // --- Row 2: Win Score ---
+            aliveScoreLabel = new(menu, this, menu.Translate("Win Score:"),
+                new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
+            aliveScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            aliveScoreTextBox = new(new Configurable<int>(arena.aliveScore),
+                new(boxMargin, topOffset - rowHeight - 2f), 60)
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points surviving to the shelter is worth"), accept = OpTextBox.Accept.Int };
+
+            aliveScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (aliveScoreTextBox.valueInt < 0) aliveScoreTextBox.valueInt = 0;
+                arena.aliveScore = aliveScoreTextBox.valueInt;
+            };
+
+            // --- Row 3: Den Score ---
+            denScoreLabel = new(menu, this, menu.Translate("Den Score:"),
+                new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
+            denScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            denScoreTextBox = new(new Configurable<int>(arena.denScore),
+                new(boxMargin, topOffset - (rowHeight * 2) - 2f), 60) // FIXED: Added '- (rowHeight * 2)'
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points required to open dens"), accept = OpTextBox.Accept.Int };
+
+            denScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (denScoreTextBox.valueInt < 0) denScoreTextBox.valueInt = 0;
+                arena.denScore = denScoreTextBox.valueInt;
+            };
+
+            // --- Row 4: Den Entry ---
+            denEntryRuleLabel = new(menu, this, menu.Translate("Den Entry:"),
+                new(leftMargin, topOffset - (rowHeight * 3)), new(labelWidth, 20f), false);
+            denEntryRuleLabel.label.alignment = FLabelAlignment.Left;
+
             var denRuleItems = OpResourceSelector.GetEnumNames(null, typeof(ArenaSetup.GameTypeSetup.DenEntryRule))
-    .Select(li =>
-    {
-        li.displayName = menu.Translate(li.displayName);
-        return li;
-    }).ToList();
+                .Select(li =>
+                {
+                    li.displayName = menu.Translate(li.displayName);
+                    return li;
+                }).ToList();
+
             denEntryRule = new OpComboBox2(
-                new Configurable<ArenaSetup.GameTypeSetup.DenEntryRule>(new(ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule))),
-                new(boxMargin, (topOffset - (rowHeight * 2)) - 5f),
+                new Configurable<ArenaSetup.GameTypeSetup.DenEntryRule>(arena.denEntryRule),
+                new(boxMargin, topOffset - (rowHeight * 3) - 2f),
                 110,
                 denRuleItems
             )
             {
-                description = menu.Translate("Select den entry behavior"),
+                description = menu.Translate("Den entry behavior"),
             };
-
-            winScoreTextBox.accept = OpTextBox.Accept.Int;
-            winScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
-            {
-                if (winScoreTextBox.valueInt < 0) winScoreTextBox.valueInt = 0;
-                arena.winScore = winScoreTextBox.valueInt;
-            };
-
-            spearScoreTextBox.accept = OpTextBox.Accept.Int;
-            spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
-            {
-                if (spearScoreTextBox.valueInt < 0)
-                {
-                    spearScoreTextBox.valueInt = 0;
-                }
-            };
-
-            spearScoreTextBox.accept = OpTextBox.Accept.Int;
-            spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
-            {
-                if (spearScoreTextBox.valueInt < 0)
-                {
-                    spearScoreTextBox.valueInt = 0;
-                }
-            };
-
 
             denEntryRule.OnValueChanged += (UIconfig, value, oldValue) =>
             {
-                var result = new ArenaSetup.GameTypeSetup.DenEntryRule(value);
-                arena.denEntryRule = result.Index;
+                arena.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(value); ;
             };
 
             this.SafeAddSubobjects(
                 tabWrapper,
                 spearScoreLabel,
-                winScoreLabel,
-                denEntryRuleLabel
+                aliveScoreLabel,
+                denEntryRuleLabel,
+                denScoreLabel
             );
             new PatchedUIelementWrapper(tabWrapper, spearScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
-            new PatchedUIelementWrapper(tabWrapper, winScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, aliveScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
 
         }
 
@@ -166,8 +165,9 @@ namespace RainMeadow.UI.Components
             if (!(OnlineManager.lobby?.isOwner == true))
                 return;
             RainMeadow.rainMeadowOptions.ArenaSpearScore.Value = arena.spearScore;
-            RainMeadow.rainMeadowOptions.ArenaWinScore.Value = arena.winScore;
+            RainMeadow.rainMeadowOptions.ArenaAliveScore.Value = arena.aliveScore;
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
+            RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
 
         }
 
@@ -197,18 +197,24 @@ namespace RainMeadow.UI.Components
                 spearScoreTextBox.valueInt = arena.spearScore;
                 spearScoreTextBox.greyedOut = OwnerSettingsDisabled;
             }
-            if (winScoreTextBox != null)
+            if (aliveScoreTextBox != null)
             {
-                winScoreTextBox.greyedOut = OwnerSettingsDisabled;
-                winScoreTextBox.held = winScoreTextBox._KeyboardOn;
+                aliveScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                aliveScoreTextBox.held = aliveScoreTextBox._KeyboardOn;
 
-                winScoreTextBox.valueInt = arena.winScore;
+                aliveScoreTextBox.valueInt = arena.aliveScore;
             }
             if (denEntryRule != null)
             {
-                denEntryRule.greyedOut = OwnerSettingsDisabled;
-                string ruleName = ArenaSetup.GameTypeSetup.DenEntryRule.values.GetEntry(arena.denEntryRule);
-                denEntryRule.value = ruleName;
+                denEntryRule.greyedOut = OwnerSettingsDisabled; ;
+                denEntryRule.value = arena.denEntryRule.value;
+            }
+
+            if (denScoreTextBox != null)
+            {
+                denScoreTextBox.held = denScoreTextBox._KeyboardOn;
+                denScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                denScoreTextBox.valueInt = arena.denScore;
             }
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -178,6 +179,40 @@ namespace RainMeadow
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
+            new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
+            On.ArenaSitting.ArenaPlayer.AddSandboxScore += ArenaPlayer_AddSandboxScore;
+
+        }
+
+        private void ArenaPlayer_AddSandboxScore(On.ArenaSitting.ArenaPlayer.orig_AddSandboxScore orig, ArenaSitting.ArenaPlayer self, int scoreToAdd)
+        {
+            orig(self, scoreToAdd);
+            if (isArenaMode(out var arena))
+            {
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.playerNumber);
+                if (onlinePlayer == null)
+                {
+                    return;
+                }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += self.score;
+                }
+                else
+                {
+                    arena.ReadFromStats(self, onlinePlayer);
+                }
+            }
+
+        }
+
+        private int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
+        {
+            if (isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode)
+            {
+                return arena.denScore;
+            }
+            return orig(self);
         }
         // so many IL hooks mang
         private void ArenaGameSession_ctor_IL(ILContext il)

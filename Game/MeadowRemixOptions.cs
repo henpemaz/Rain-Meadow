@@ -84,8 +84,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ChallengeID;
 
     public readonly Configurable<int> ArenaSpearScore;
-    public readonly Configurable<int> ArenaWinScore;
-    public readonly Configurable<int> ArenaDenType;
+    public readonly Configurable<int> ArenaAliveScore;
+    public readonly Configurable<int> ArenaDenScore;
+    public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
 
 
     public enum IntroRoll
@@ -203,8 +204,10 @@ public class RainMeadowOptions : OptionInterface
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
         ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
-        ArenaWinScore = config.Bind("ArenaWinScore", 0);
-        ArenaDenType = config.Bind("ArenaDenType", 0);
+        ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
+        ArenaDenScore = config.Bind("ArenaDenScore", 0);
+
+        ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
 
     }

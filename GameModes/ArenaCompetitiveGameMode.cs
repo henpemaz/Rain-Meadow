@@ -57,8 +57,9 @@ namespace RainMeadow
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
         public int spearScore = RainMeadow.rainMeadowOptions.ArenaSpearScore.Value;
-        public int winScore = RainMeadow.rainMeadowOptions.ArenaWinScore.Value;
-        public int denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
+        public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
+        public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
+        public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
 
         public string paincatName;
@@ -167,7 +168,7 @@ namespace RainMeadow
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
             spearScore = 0;
-            winScore = 0;
+            aliveScore = 0;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {

@@ -6,7 +6,7 @@ namespace RainMeadow
     public class RealizedOracleState : RealizedPhysicalObjectState
     {
         [OnlineField]
-        public string phase;
+        public MoreSlugcats.STOracleBehavior.Phase phase;
 
         [OnlineField]
         public Vector2 lookPoint;
@@ -20,11 +20,10 @@ namespace RainMeadow
             : base(onlineEntity)
         {
             var oracle = (Oracle)onlineEntity.apo.realizedObject;
-
             this.lookPoint = oracle.oracleBehavior.lookPoint;
             if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
             {
-                phase = (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase.value;
+                phase = (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase;
             }
 
             mySwarmers = new(
@@ -45,7 +44,7 @@ namespace RainMeadow
             if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
             {
                 (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase =
-                    new MoreSlugcats.STOracleBehavior.Phase(phase);
+                    phase;
             }
             oracle.oracleBehavior.lookPoint = this.lookPoint;
 

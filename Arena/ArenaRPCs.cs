@@ -286,6 +286,8 @@ namespace RainMeadow
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].score += score;
+
                             if (pl != null)
                             {
 
