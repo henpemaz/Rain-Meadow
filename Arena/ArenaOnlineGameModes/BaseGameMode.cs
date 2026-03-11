@@ -839,7 +839,7 @@ namespace RainMeadow
             {
                 var arenaPlayer = self.players[i];
 
-                if (session.Players != null && i < session.Players.Count)
+                if (session.Players != null && i < session.Players.Count && session.Players[i].GetOnlineCreature().owner == ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber))
                 {
                     var sessionPlayer = session.Players[i];
 
