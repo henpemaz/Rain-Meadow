@@ -99,6 +99,8 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
+
         public Dictionary<int, List<string>> playerNumberWithTrophies =
             new Dictionary<int, List<string>>();
         public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound =
@@ -480,6 +482,7 @@ namespace RainMeadow
         public void ResetRoundKills()
         {
             this.playerNumberWithTrophiesPerRound.Clear();
+            this.playerNumberWithScore.Clear();
         }
 
         public void ResetForceReadyCountDown()
@@ -751,6 +754,10 @@ namespace RainMeadow
             {
                 playerTotScore.Add(getPlayer.inLobbyId, 0);
             }
+            if (!playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
+            }
             if (!playerNumberWithTrophies.ContainsKey(getPlayer.inLobbyId))
             {
                 playerNumberWithTrophies.Add(getPlayer.inLobbyId, new List<string>());
@@ -768,6 +775,7 @@ namespace RainMeadow
                 player.wins = wins;
                 player.deaths = playerNumberWithDeaths[pl.inLobbyId];
                 player.totScore = playerTotScore[pl.inLobbyId];
+                player.score = playerNumberWithScore[pl.inLobbyId];
                 player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
                 player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
 
@@ -800,6 +808,8 @@ namespace RainMeadow
                     arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
                     arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
                     arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
+                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
+
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
                         < ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer).Count
@@ -842,6 +852,7 @@ namespace RainMeadow
                     newArenaPlayer.wins = wins;
                     newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
                     newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
+                    newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
                     newArenaPlayer.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(
     arena,
     newArenaPlayer.playerNumber
@@ -878,6 +889,7 @@ namespace RainMeadow
                     arena.playerNumberWithDeaths.Add(pl.inLobbyId, newArenaPlayer.deaths);
                     arena.playerNumberWithWins.Add(pl.inLobbyId, newArenaPlayer.wins);
                     arena.playerTotScore.Add(pl.inLobbyId, newArenaPlayer.totScore);
+                    arena.playerNumberWithScore.Add(pl.inLobbyId, newArenaPlayer.score);
                     arena.playerNumberWithTrophies.Add(
                         pl.inLobbyId,
                         ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer)
@@ -945,6 +957,7 @@ namespace RainMeadow
             playerNumberWithWins.Clear();
             playerNumberWithDeaths.Clear();
             playerTotScore.Clear();
+            playerNumberWithScore.Clear();
             playerNumberWithTrophies.Clear();
             playerNumberWithTrophiesPerRound.Clear();
         }

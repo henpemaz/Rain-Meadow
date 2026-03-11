@@ -2315,8 +2315,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
-                arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
+                arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session);
             }
             else
             {

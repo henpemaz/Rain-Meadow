@@ -6,6 +6,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace RainMeadow
 {
@@ -157,16 +158,13 @@ namespace RainMeadow
                     continue;
                 }
 
-                if (earnsTrophy)
+                if (killedCrit.IsLocal() && earnsTrophy)
                 {
 
-                    int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                    int scoreToAdd = arena.spearScore;
-                    self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                    self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                    self.arenaSitting.players[i].score += scoreToAdd;
-
-                    RainMeadow.Debug($"==== {self.arenaSitting.players[i].playerNumber} EARNED {scoreToAdd}");
+                    //int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                    // self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                    // self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                    // self.arenaSitting.players[i].score += scoreToAdd;
 
                     if (OnlineManager.lobby.isOwner)
                     {
@@ -175,7 +173,17 @@ namespace RainMeadow
 
                         arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
                         arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
-
+                        arena.playerNumberWithScore[lobbyId] += arena.spearScore;
+                    }
+                    else
+                    {
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(
+                                ArenaRPCs.Arena_AddTrophy,
+                                onlineKilledCreature,
+                                self.arenaSitting.players[i].playerNumber
+                            );
+                        }
                     }
 
                     // notify the killer about the trophy
@@ -826,10 +834,9 @@ namespace RainMeadow
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
-            ArenaGameSession session,
-            List<ArenaSitting.ArenaPlayer> list
-        )
+            ArenaGameSession session)
         {
+            List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 

@@ -286,12 +286,13 @@ namespace RainMeadow
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-
+                            game.GetArenaGameSession.arenaSitting.players[i].score += arena.spearScore;
                             if (pl != null)
                             {
-
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                                arena.playerNumberWithScore[pl.inLobbyId] += arena.spearScore;
+
                             }
                         }
 

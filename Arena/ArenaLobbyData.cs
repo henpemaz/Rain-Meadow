@@ -166,6 +166,8 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophies;
+            [OnlineField(group = "arenaScore")]
+            public Dictionary<int, int> playerNumberWithScore;
 
 
             [OnlineField(group = "arenaScore")]
@@ -206,6 +208,7 @@ namespace RainMeadow
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playerNumberWithTrophies = new(arena.playerNumberWithTrophies);
                 playerNumberWithTrophiesPerRound = new(arena.playerNumberWithTrophiesPerRound);
+                playerNumberWithScore = new(arena.playerNumberWithScore);
 
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
@@ -284,7 +287,8 @@ namespace RainMeadow
 playerNumberWithTrophiesPerRound;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
-
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore =
+                    playerNumberWithScore;
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound =
                     playersLateWaitingInLobby;
 
