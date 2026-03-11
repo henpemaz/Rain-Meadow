@@ -7,7 +7,7 @@
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
 - Synced round kills
-- Synced scores
+- Added configurable scoring
 - Added KillList & ScoreCounter HUDs from vanilla Arena
 ### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
