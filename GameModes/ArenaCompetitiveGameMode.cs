@@ -814,6 +814,15 @@ namespace RainMeadow
 
         }
 
+        public void SetPlayerStatsFromLocalPlayer(
+            ArenaSitting.ArenaPlayer player,
+            OnlinePlayer pl)
+        {
+            playerNumberWithWins[pl.inLobbyId] = player.wins;
+            playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
+            playerTotScore[pl.inLobbyId] = player.totScore;
+            playerNumberWithScore[pl.inLobbyId] = player.score;
+        }
         public void AddOrInsertPlayerStats(
             ArenaOnlineGameMode arena,
             ArenaSitting.ArenaPlayer newArenaPlayer,

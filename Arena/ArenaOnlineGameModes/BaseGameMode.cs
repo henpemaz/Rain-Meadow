@@ -946,11 +946,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.playerNumberWithWins[pl.inLobbyId] = sortedPlayer.wins;
-                        arena.playerNumberWithDeaths[pl.inLobbyId] = sortedPlayer.deaths;
-                        arena.playerTotScore[pl.inLobbyId] = sortedPlayer.totScore;
-                        arena.playerNumberWithScore[pl.inLobbyId] = sortedPlayer.score;
-                        //arena.AddOrInsertPlayerStats(arena, sortedPlayer, pl);
+                        arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl);
                     }
                 }
             }
