@@ -10,7 +10,7 @@ namespace RainMeadow
         // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
         public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
         public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
-        public ICapeColor? eventCape { get; set; } = (SpecialEvents.IsSpecialEventInLobby && SpecialEvents.GetActiveEvent() is SpecialEvents.Anniversary)? new RainbowCapeColor() : null;
+        public ICapeColor? eventCape { get; set; } = (SpecialEvents.IsSpecialEventInLobby && SpecialEvents.GetActiveEvent() is SpecialEvents.Anniversary) ? new RainbowCapeColor() : RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value ? null : new SolidCapeColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value);
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
         public bool fakePup { get; set; }
@@ -94,7 +94,7 @@ namespace RainMeadow
                 slugcatCustomization.nickname = nickname;
                 slugcatCustomization.wearingCape = wearingCape;
                 if (string.IsNullOrWhiteSpace(eventCape)) slugcatCustomization.eventCape = null;
-                else if (slugcatCustomization.eventCape?.ToString() != eventCape) 
+                else if (slugcatCustomization.eventCape?.ToString() != eventCape)
                 {
                     slugcatCustomization.eventCape = CapeManager.ParseCapeColor(eventCape);
                     if (onlineEntity is OnlineCreature critter && critter.abstractCreature.realizedCreature is Creature s)
@@ -102,7 +102,7 @@ namespace RainMeadow
                         CapeManager.RefreshGraphicalModule(s);
                     }
                 }
-                slugcatCustomization.playerIndex =  playerIndex;
+                slugcatCustomization.playerIndex = playerIndex;
                 slugcatCustomization.fakePup = fakePup;
             }
 
