@@ -199,7 +199,6 @@ namespace RainMeadow
                         {
                             scoreToAdd = arena.spearScore;
                         }
-                        self.arenaSitting.players[i].score += scoreToAdd;
                         arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                     }
 
