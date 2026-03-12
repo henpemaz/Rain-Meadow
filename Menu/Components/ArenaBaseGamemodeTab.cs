@@ -42,11 +42,11 @@ namespace RainMeadow.UI.Components
             : base(menu, owner, pos, size)
         {
             tabWrapper = new(menu, this);
-            float leftMargin = 20f;
+            float leftMargin = 10f;
             float labelWidth = 100f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
-            float boxMargin = leftMargin + labelWidth + 30f; // The X-position for all boxes
+            float boxMargin = leftMargin + labelWidth + 50f; // The X-position for all boxes
 
             // --- Row 1: Spear Score ---
             spearScoreLabel = new(menu, this, menu.Translate("Kill Score:"),
@@ -68,7 +68,7 @@ namespace RainMeadow.UI.Components
             };
 
             // --- Row 2: Win Score ---
-            aliveScoreLabel = new(menu, this, menu.Translate("Survive Score:"),
+            aliveScoreLabel = new(menu, this, menu.Translate("Survival Score:"),
                 new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
             aliveScoreLabel.label.alignment = FLabelAlignment.Left;
 
