@@ -13,6 +13,7 @@
 - Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Granted Saint a kill credit if using ascension to ascend others
+- Fixed Spears Hit toggle not actually working during that current game session
 ### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
