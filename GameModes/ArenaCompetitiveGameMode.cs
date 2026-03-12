@@ -112,6 +112,8 @@ namespace RainMeadow
         public bool hasPermissionToRejoin;
         public bool initiateLobbyCountdown;
 
+        // host needs time to do scoring for everyone else before they load the overlay
+        public bool hostLoadedOverlay;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -171,6 +173,7 @@ namespace RainMeadow
             initiateLobbyCountdown = false;
             spearScore = 0;
             aliveScore = 0;
+            hostLoadedOverlay = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -497,6 +500,18 @@ namespace RainMeadow
             }
         }
 
+        public void ResetHostLoadedOverlayBool()
+        {
+            hostLoadedOverlay = false;
+        }
+
+        public void ResetClientRoundScore()
+        {
+            foreach (var key in playerNumberWithScore.Keys.ToList())
+            {
+                playerNumberWithScore[key] = 0;
+            }
+        }
         public void ResetScrollTimer()
         {
             this.scrollInitiatedTimer = 0;
@@ -508,6 +523,8 @@ namespace RainMeadow
             ResetInvDetails();
             ResetChampAddition();
             AllowJoinOrRejoin();
+            ResetHostLoadedOverlayBool();
+            ResetClientRoundScore();
         }
 
         public void ResetAtNextLevel()
@@ -820,7 +837,7 @@ namespace RainMeadow
         {
             playerNumberWithWins[pl.inLobbyId] = player.wins;
             playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
-            playerTotScore[pl.inLobbyId] = player.totScore;
+            playerTotScore[pl.inLobbyId] += player.totScore;
             playerNumberWithScore[pl.inLobbyId] = player.score;
         }
         public void AddOrInsertPlayerStats(

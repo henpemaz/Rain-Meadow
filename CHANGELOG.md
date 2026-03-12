@@ -12,7 +12,8 @@
 ### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
-- ⚠️ BREAKING: Updated `arena.Arena_AddTrophy` to add `score` param
+- Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
+
 
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.

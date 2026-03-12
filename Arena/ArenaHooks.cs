@@ -32,7 +32,7 @@ namespace RainMeadow
             return false;
         }
 
-        private void ArenaHooks()
+        public void ArenaHooks()
         {
             On.Options.LoadArenaSetup += On_Options_LoadArenaSetup;
             On.Options.SaveArenaSetup += On_Options_SaveArenaSetup;
@@ -183,7 +183,7 @@ namespace RainMeadow
         }
 
 
-        private int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
+        public int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
         {
             if (isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode)
             {
@@ -192,7 +192,7 @@ namespace RainMeadow
             return orig(self);
         }
         // so many IL hooks mang
-        private void ArenaGameSession_ctor_IL(ILContext il)
+        public void ArenaGameSession_ctor_IL(ILContext il)
         {
             ILCursor c = new ILCursor(il);
 
@@ -237,7 +237,7 @@ namespace RainMeadow
             }
         }
 
-        private void IL_ExitManager_Update(ILContext il)
+        public void IL_ExitManager_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
 
@@ -295,7 +295,7 @@ namespace RainMeadow
                 });
             }
         }
-        private void SandboxGameSession_SpawnEntity(On.SandboxGameSession.orig_SpawnEntity orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
+        public void SandboxGameSession_SpawnEntity(On.SandboxGameSession.orig_SpawnEntity orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
         {
             if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
             {
@@ -305,7 +305,7 @@ namespace RainMeadow
             orig(self, placedIconData);
         }
 
-        private void SandboxGameSession_SpawnEntityAfterRoomLoad(On.SandboxGameSession.orig_SpawnEntityAfterRoomLoad orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
+        public void SandboxGameSession_SpawnEntityAfterRoomLoad(On.SandboxGameSession.orig_SpawnEntityAfterRoomLoad orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
         {
             if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
             {
@@ -318,7 +318,7 @@ namespace RainMeadow
 
 
 
-        private Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
+        public Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
         {
             if (isArenaMode(out var arena) && self.overseer.IsLocal())
             {
@@ -328,7 +328,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private void IL_Arena_Overlay_Update(ILContext il)
+        public void IL_Arena_Overlay_Update(ILContext il)
         {
             try
             {
@@ -366,7 +366,7 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ctor2(
+        public void Player_ctor2(
             On.Player.orig_ctor orig,
             Player self,
             AbstractCreature creature,
@@ -381,7 +381,7 @@ namespace RainMeadow
             }
         }
 
-        private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
+        public void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
             if (!isArenaMode(out var arena))
@@ -405,14 +405,14 @@ namespace RainMeadow
             }
         }
 
-        private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
+        public int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
         {
             if (isArenaMode(out var arena))
                 return 75;
             return orig(self);
         }
 
-        private void Player_SpawnDynamicWarpPoint(
+        public void Player_SpawnDynamicWarpPoint(
             On.Player.orig_SpawnDynamicWarpPoint orig,
             Player self,
             string forcedDestination,
@@ -473,7 +473,7 @@ namespace RainMeadow
             self.camoCharge += requiredCharge;
         }
 
-        private void Room_MaterializeRippleSpawn(
+        public void Room_MaterializeRippleSpawn(
             On.Room.orig_MaterializeRippleSpawn orig,
             Room self,
             Vector2 spawnPos,
@@ -516,7 +516,7 @@ namespace RainMeadow
             return 2 + additionalPoints;
         }
 
-        private Vector2 ChasePlayer(
+        public Vector2 ChasePlayer(
             Func<VoidSpawn.ChasePlayer, Vector2> orig,
             VoidSpawn.ChasePlayer self
         )
@@ -604,7 +604,7 @@ namespace RainMeadow
             return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
         }
 
-        private void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(
+        public void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(
             On.VoidSpawn.orig_ctor_AbstractPhysicalObject_float_bool_SpawnType orig,
             VoidSpawn self,
             AbstractPhysicalObject apo,
@@ -619,7 +619,7 @@ namespace RainMeadow
             orig(self, apo, voidMeltInRoom, daylightmode, variant);
         }
 
-        private void VoidSpawn_GenerateBody(On.VoidSpawn.orig_GenerateBody orig, VoidSpawn self)
+        public void VoidSpawn_GenerateBody(On.VoidSpawn.orig_GenerateBody orig, VoidSpawn self)
         {
             if (!isArenaMode(out _))
             {
@@ -632,7 +632,7 @@ namespace RainMeadow
             UnityEngine.Random.state = savedState;
         }
 
-        private void VoidSpawn_Update2(ILContext il)
+        public void VoidSpawn_Update2(ILContext il)
         {
             try
             {
@@ -663,7 +663,7 @@ namespace RainMeadow
             }
         }
 
-        private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
+        public void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
         {
             orig(self, eu);
             if (!isArenaMode(out _))
@@ -671,7 +671,7 @@ namespace RainMeadow
             self.culled = false;
         }
 
-        private void VoidSpawnGraphics_Update2(ILContext il)
+        public void VoidSpawnGraphics_Update2(ILContext il)
         {
             try
             {
@@ -703,7 +703,7 @@ namespace RainMeadow
             }
         }
 
-        private void VoidSpawnGraphics_Update(
+        public void VoidSpawnGraphics_Update(
             On.VoidSpawnGraphics.orig_Update orig,
             VoidSpawnGraphics self
         )
@@ -732,7 +732,7 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void VoidSpawnGraphics_DrawSprites(ILContext il)
+        public void VoidSpawnGraphics_DrawSprites(ILContext il)
         {
             try
             {
@@ -761,7 +761,7 @@ namespace RainMeadow
             }
         }
 
-        private float VoidSpawnGraphics_AlphaFromGlowDist(
+        public float VoidSpawnGraphics_AlphaFromGlowDist(
             On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig,
             VoidSpawnGraphics self,
             Vector2 A,
@@ -773,7 +773,7 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        private bool GetRippleModeForLocalPlayer(
+        public bool GetRippleModeForLocalPlayer(
             Func<VoidSpawnGraphics, bool> orig,
             VoidSpawnGraphics self
         )
@@ -794,7 +794,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private void PlayerGraphics_ctor(
+        public void PlayerGraphics_ctor(
             On.PlayerGraphics.orig_ctor orig,
             PlayerGraphics self,
             PhysicalObject ow
@@ -815,7 +815,7 @@ namespace RainMeadow
             }
         }
 
-        private void PlayerGraphics_DrawSprites(
+        public void PlayerGraphics_DrawSprites(
             On.PlayerGraphics.orig_DrawSprites orig,
             PlayerGraphics self,
             RoomCamera.SpriteLeaser sLeaser,
@@ -833,7 +833,7 @@ namespace RainMeadow
             orig(self, sLeaser, rCam, timeStacker, camPos);
         }
 
-        private void PlayerGraphics_WeaverParts_Update(
+        public void PlayerGraphics_WeaverParts_Update(
             On.PlayerGraphics.WeaverParts.orig_Update orig,
             PlayerGraphics.WeaverParts self
         )
@@ -850,7 +850,7 @@ namespace RainMeadow
             }
         }
 
-        private void PauseMenu_SpawnExitContinueButtons2(
+        public void PauseMenu_SpawnExitContinueButtons2(
             On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig,
             Menu.PauseMenu self
         )
@@ -904,7 +904,7 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
+        public void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
         {
             if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
             {
@@ -913,7 +913,7 @@ namespace RainMeadow
             orig(self);
         }
 
-        private int SetKarmaLevel(Func<Player, int> orig, Player self)
+        public int SetKarmaLevel(Func<Player, int> orig, Player self)
         {
             if (
                 isArenaMode(out var arena)
@@ -927,7 +927,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private void FinalResultbox_ctor(
+        public void FinalResultbox_ctor(
             On.Menu.FinalResultbox.orig_ctor orig,
             FinalResultbox self,
             MultiplayerResults resultPage,
@@ -950,7 +950,7 @@ namespace RainMeadow
             orig(self, resultPage, owner, player, index);
         }
 
-        private List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
+        public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
             On.ArenaSitting.orig_FinalSittingResult orig,
             ArenaSitting self
         )
@@ -1008,7 +1008,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private void ArenaOverlay_ctor(
+        public void ArenaOverlay_ctor(
             On.Menu.ArenaOverlay.orig_ctor orig,
             ArenaOverlay self,
             ProcessManager manager,
@@ -1021,6 +1021,10 @@ namespace RainMeadow
             orig(self, manager, ArenaSitting, result);
             if (RainMeadow.isArenaMode(out var arena))
             {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.hostLoadedOverlay = true;
+                }
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
                     if (tb.winningTeam != -1)
@@ -1037,7 +1041,7 @@ namespace RainMeadow
             }
         }
 
-        private bool ArenaSitting_PlayerSittingResultSort(
+        public bool ArenaSitting_PlayerSittingResultSort(
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -1054,7 +1058,7 @@ namespace RainMeadow
             }
         }
 
-        private bool ArenaSitting_PlayerSessionResultSort(
+        public bool ArenaSitting_PlayerSessionResultSort(
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -1071,7 +1075,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaOverlay_Update(
+        public void ArenaOverlay_Update(
             On.Menu.ArenaOverlay.orig_Update orig,
             Menu.ArenaOverlay self
         )
@@ -1164,7 +1168,7 @@ namespace RainMeadow
             return orig(id);
         }
 
-        private void CamoMeter_Draw(
+        public void CamoMeter_Draw(
             On.Watcher.CamoMeter.orig_Draw orig,
             Watcher.CamoMeter self,
             float timeStacker
@@ -1185,7 +1189,7 @@ namespace RainMeadow
             }
         }
 
-        private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
+        public void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
             if (isArenaMode(out var arena))
             {
@@ -1254,7 +1258,7 @@ namespace RainMeadow
             }
         }
 
-        private bool SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
+        public bool SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
         {
             if (isArenaMode(out var _))
             {
@@ -1264,7 +1268,7 @@ namespace RainMeadow
         }
 
         // This is funky. Can't seem to ever get it to only be true when airborne
-        private bool SetLevitate(Func<Player, bool> orig, Player self)
+        public bool SetLevitate(Func<Player, bool> orig, Player self)
         {
             if (isArenaMode(out var _))
             {
@@ -1273,7 +1277,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private float SetRippleLevel(Func<Player, float> orig, Player self)
+        public float SetRippleLevel(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var arena))
             {
@@ -1282,7 +1286,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private string? On_Options_LoadArenaSetup(
+        public string? On_Options_LoadArenaSetup(
             On.Options.orig_LoadArenaSetup orig,
             Options self,
             string fallBack
@@ -1297,7 +1301,7 @@ namespace RainMeadow
             return orig(self, fallBack);
         }
 
-        private void On_Options_SaveArenaSetup(
+        public void On_Options_SaveArenaSetup(
             On.Options.orig_SaveArenaSetup orig,
             Options self,
             string arenaSetupStrings
@@ -1320,7 +1324,7 @@ namespace RainMeadow
             orig(self, arenaSetupStrings);
         }
 
-        private void IL_ArenaSetup_SaveSlugcatFix(ILContext il)
+        public void IL_ArenaSetup_SaveSlugcatFix(ILContext il)
         {
             try
             {
@@ -1343,7 +1347,7 @@ namespace RainMeadow
             }
         }
 
-        private void IL_ArenaSetup_SaveToFile(ILContext il)
+        public void IL_ArenaSetup_SaveToFile(ILContext il)
         {
             try
             {
@@ -1366,7 +1370,7 @@ namespace RainMeadow
             }
         }
 
-        private float SetCamoDuration(Func<Player, float> orig, Player self)
+        public float SetCamoDuration(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var arena))
             {
@@ -1375,7 +1379,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
+        public bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
         {
             if (isArenaMode(out var arena) && !arena.piggyBack)
             {
@@ -1394,7 +1398,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private static void Player_Collide2(ILContext il, MethodBase original)
+        public static void Player_Collide2(ILContext il, MethodBase original)
         {
             // Find Violence, Inject our RPC call, then run it locally
             var c = new ILCursor(il);
@@ -1489,7 +1493,7 @@ namespace RainMeadow
             }
         }
 
-        private void MultiplayerResults_Update(
+        public void MultiplayerResults_Update(
             On.Menu.MultiplayerResults.orig_Update orig,
             Menu.MultiplayerResults self
         )
@@ -1577,7 +1581,7 @@ namespace RainMeadow
             }
         }
 
-        private void PlayerResultMenu_Update(
+        public void PlayerResultMenu_Update(
             On.Menu.PlayerResultMenu.orig_Update orig,
             Menu.PlayerResultMenu self
         )
@@ -1611,7 +1615,7 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ClassMechanicsSaint1(ILContext il)
+        public void Player_ClassMechanicsSaint1(ILContext il)
         {
             try
             {
@@ -1681,7 +1685,7 @@ namespace RainMeadow
             }
         }
 
-        private void SingularityBomb_ctor(
+        public void SingularityBomb_ctor(
             On.MoreSlugcats.SingularityBomb.orig_ctor orig,
             SingularityBomb self,
             AbstractPhysicalObject abstractPhysicalObject,
@@ -1729,7 +1733,7 @@ namespace RainMeadow
             }
         }
 
-        private float CreatureCommunities_LikeOfPlayer(
+        public float CreatureCommunities_LikeOfPlayer(
             On.CreatureCommunities.orig_LikeOfPlayer orig,
             CreatureCommunities self,
             CreatureCommunities.CommunityID commID,
@@ -1745,7 +1749,7 @@ namespace RainMeadow
         }
 
 
-        private void PauseMenu_Singal(
+        public void PauseMenu_Singal(
             On.Menu.PauseMenu.orig_Singal orig,
             Menu.PauseMenu self,
             Menu.MenuObject sender,
@@ -1803,7 +1807,7 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
-        private bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(
+        public bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(
             On.MultiplayerUnlocks.orig_IsCreatureUnlockedForLevelSpawn orig,
             MultiplayerUnlocks self,
             CreatureTemplate.Type tp
@@ -1816,7 +1820,7 @@ namespace RainMeadow
             return orig(self, tp);
         }
 
-        private Color CreatureSymbol_ColorOfCreature(
+        public Color CreatureSymbol_ColorOfCreature(
             On.CreatureSymbol.orig_ColorOfCreature orig,
             IconSymbol.IconSymbolData iconData
         )
@@ -1832,7 +1836,7 @@ namespace RainMeadow
             return orig(iconData);
         }
 
-        private void ArenaSettingsInterface_Update(
+        public void ArenaSettingsInterface_Update(
             On.Menu.ArenaSettingsInterface.orig_Update orig,
             Menu.ArenaSettingsInterface self
         )
@@ -1848,7 +1852,7 @@ namespace RainMeadow
             }
         }
 
-        private string MultiplayerMenu_ArenaImage(
+        public string MultiplayerMenu_ArenaImage(
             On.Menu.MultiplayerMenu.orig_ArenaImage orig,
             Menu.MultiplayerMenu self,
             SlugcatStats.Name classID,
@@ -1862,7 +1866,7 @@ namespace RainMeadow
             return orig(self, classID, color);
         }
 
-        private void ArenaGameSession_PlayerLandSpear(
+        public void ArenaGameSession_PlayerLandSpear(
             On.ArenaGameSession.orig_PlayerLandSpear orig,
             ArenaGameSession self,
             Player player,
@@ -1919,7 +1923,7 @@ namespace RainMeadow
             }
         }
 
-        private int ArenaGameSession_PlayersStillActive(
+        public int ArenaGameSession_PlayersStillActive(
             On.ArenaGameSession.orig_PlayersStillActive orig,
             ArenaGameSession self,
             bool addToAliveTime,
@@ -1993,7 +1997,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaSettingsInterface_ctor(
+        public void ArenaSettingsInterface_ctor(
             On.Menu.ArenaSettingsInterface.orig_ctor orig,
             Menu.ArenaSettingsInterface self,
             Menu.Menu menu,
@@ -2092,7 +2096,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaSettingsInterface_SetSelected(
+        public void ArenaSettingsInterface_SetSelected(
             On.Menu.ArenaSettingsInterface.orig_SetSelected orig,
             Menu.ArenaSettingsInterface self,
             Menu.MultipleChoiceArray array,
@@ -2129,7 +2133,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaSettingsInterface_SetChecked(
+        public void ArenaSettingsInterface_SetChecked(
             On.Menu.ArenaSettingsInterface.orig_SetChecked orig,
             Menu.ArenaSettingsInterface self,
             Menu.CheckBox box,
@@ -2163,7 +2167,7 @@ namespace RainMeadow
             }
         }
 
-        private void MultiplayerMenu_InitiateGameTypeSpecificButtons(
+        public void MultiplayerMenu_InitiateGameTypeSpecificButtons(
             On.Menu.MultiplayerMenu.orig_InitiateGameTypeSpecificButtons orig,
             Menu.MultiplayerMenu self
         )
@@ -2175,7 +2179,7 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void LevelSelector_LevelFromPlayList(
+        public void LevelSelector_LevelFromPlayList(
             On.Menu.LevelSelector.orig_LevelFromPlayList orig,
             Menu.LevelSelector self,
             int index
@@ -2210,7 +2214,7 @@ namespace RainMeadow
             }
         }
 
-        private void LevelSelector_LevelToPlaylist(
+        public void LevelSelector_LevelToPlaylist(
             On.Menu.LevelSelector.orig_LevelToPlaylist orig,
             Menu.LevelSelector self,
             string levelName
@@ -2243,7 +2247,7 @@ namespace RainMeadow
             }
         }
 
-        private bool MultiplayerUnlocks_IsLevelUnlocked(
+        public bool MultiplayerUnlocks_IsLevelUnlocked(
             On.MultiplayerUnlocks.orig_IsLevelUnlocked orig,
             MultiplayerUnlocks self,
             string levelName
@@ -2256,7 +2260,7 @@ namespace RainMeadow
             return orig(self, levelName);
         }
 
-        private bool ArenaGameSession_EndOfSessionLogPlayerAsAlive(
+        public bool ArenaGameSession_EndOfSessionLogPlayerAsAlive(
             On.ArenaGameSession.orig_EndOfSessionLogPlayerAsAlive orig,
             ArenaGameSession self,
             int playerNumber
@@ -2309,7 +2313,7 @@ namespace RainMeadow
             return orig(self, playerNumber);
         }
 
-        private void ArenaSitting_SessionEnded(
+        public void ArenaSitting_SessionEnded(
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
             ArenaGameSession session
@@ -2325,7 +2329,7 @@ namespace RainMeadow
             }
         }
 
-        private Player.InputPackage RWInput_PlayerUIInput_int(
+        public Player.InputPackage RWInput_PlayerUIInput_int(
             On.RWInput.orig_PlayerUIInput_int orig,
             int playerNumber
         )
@@ -2337,7 +2341,7 @@ namespace RainMeadow
             return orig(playerNumber);
         }
 
-        private Player.InputPackage RWInput_PlayerInputLogic_int_int(
+        public Player.InputPackage RWInput_PlayerInputLogic_int_int(
             On.RWInput.orig_PlayerInputLogic_int_int orig,
             int categoryID,
             int playerNumber
@@ -2350,7 +2354,7 @@ namespace RainMeadow
             return orig(categoryID, playerNumber);
         }
 
-        private Rewired.Controller RWInput_PlayerRecentController_int(
+        public Rewired.Controller RWInput_PlayerRecentController_int(
             On.RWInput.orig_PlayerRecentController_int orig,
             int playerNumber
         )
@@ -2362,7 +2366,7 @@ namespace RainMeadow
             return orig(playerNumber);
         }
 
-        private void ArenaGameSession_ctor(
+        public void ArenaGameSession_ctor(
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
             RainWorldGame game
@@ -2380,10 +2384,10 @@ namespace RainMeadow
             }
         }
 
-        private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
+        public void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
         // Thank you, Dragon-Seeker
-        private void OverwriteArenaPlayerMax(
+        public void OverwriteArenaPlayerMax(
             ILContext il,
             bool checkLdarg = false,
             int maxReplace = -1
@@ -2428,7 +2432,7 @@ namespace RainMeadow
             }
         }
 
-        private void ShortcutGraphics_ChangeAllExitsToSheltersOrDots(
+        public void ShortcutGraphics_ChangeAllExitsToSheltersOrDots(
             On.ShortcutGraphics.orig_ChangeAllExitsToSheltersOrDots orig,
             ShortcutGraphics self,
             bool toShelters
@@ -2462,7 +2466,7 @@ namespace RainMeadow
                 orig(self, toShelters);
             }
         }
-        private void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
+        public void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
         {
             //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
             //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
@@ -2477,7 +2481,7 @@ namespace RainMeadow
             catch (Exception ex) { RainMeadow.Error(ex); }
         }
 
-        private void ArenaGameSession_Killing(
+        public void ArenaGameSession_Killing(
     On.ArenaGameSession.orig_Killing orig,
     ArenaGameSession self,
     Player player,
@@ -2493,7 +2497,7 @@ namespace RainMeadow
         }
 
         // TODO: Unused for Comp?
-        private int ArenaGameSession_ScoreOfPlayer(
+        public int ArenaGameSession_ScoreOfPlayer(
             On.ArenaGameSession.orig_ScoreOfPlayer orig,
             ArenaGameSession self,
             Player player,
@@ -2565,7 +2569,7 @@ namespace RainMeadow
             return orig(self, player, inHands);
         }
 
-        private void PlayerResultBox_ctor(
+        public void PlayerResultBox_ctor(
             On.Menu.PlayerResultBox.orig_ctor orig,
             Menu.PlayerResultBox self,
             Menu.Menu menu,
@@ -2696,7 +2700,7 @@ namespace RainMeadow
             }
         }
 
-        private void IL_PlayerResultBox_GrafUpdate(ILContext il)
+        public void IL_PlayerResultBox_GrafUpdate(ILContext il)
         {
             try
             {
@@ -2767,7 +2771,7 @@ namespace RainMeadow
             }
         }
 
-        private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
+        public void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
             if (RainMeadow.isArenaMode(out var _))
             {
@@ -2791,7 +2795,7 @@ namespace RainMeadow
             }
         }
 
-        private void MultiplayerResults_ctor(
+        public void MultiplayerResults_ctor(
             On.Menu.MultiplayerResults.orig_ctor orig,
             Menu.MultiplayerResults self,
             ProcessManager manager
@@ -2828,7 +2832,7 @@ namespace RainMeadow
             }
         }
 
-        private void MultiplayerResults_Singal(
+        public void MultiplayerResults_Singal(
             On.Menu.MultiplayerResults.orig_Singal orig,
             Menu.MultiplayerResults self,
             Menu.MenuObject sender,
@@ -2867,7 +2871,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaCreatureSpawner_SpawnArenaCreatures(
+        public void ArenaCreatureSpawner_SpawnArenaCreatures(
             On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig,
             RainWorldGame game,
             ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
@@ -2903,7 +2907,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaGameSession_SpawnCreatures(
+        public void ArenaGameSession_SpawnCreatures(
             On.ArenaGameSession.orig_SpawnCreatures orig,
             ArenaGameSession self
         )
@@ -2927,7 +2931,7 @@ namespace RainMeadow
             }
         }
 
-        private void HUD_InitMultiplayerHud(
+        public void HUD_InitMultiplayerHud(
             On.HUD.HUD.orig_InitMultiplayerHud orig,
             HUD.HUD self,
             ArenaGameSession session
@@ -2943,7 +2947,7 @@ namespace RainMeadow
             }
         }
 
-        private bool ExitManager_PlayerTryingToEnterDen(
+        public bool ExitManager_PlayerTryingToEnterDen(
             On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig,
             ArenaBehaviors.ExitManager self,
             ShortcutHandler.ShortCutVessel shortcutVessel
@@ -3082,7 +3086,7 @@ namespace RainMeadow
             }
         }
 
-        private void ArenaOverlay_PlayerPressedContinue(
+        public void ArenaOverlay_PlayerPressedContinue(
             On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig,
             Menu.ArenaOverlay self
         )
@@ -3106,7 +3110,7 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void ArenaGameSession_Update(
+        public void ArenaGameSession_Update(
             On.ArenaGameSession.orig_Update orig,
             ArenaGameSession self
         )
@@ -3121,7 +3125,7 @@ namespace RainMeadow
             }
         }
 
-        private void RespawnFlies_Update(
+        public void RespawnFlies_Update(
             On.ArenaBehaviors.RespawnFlies.orig_Update orig,
             ArenaBehaviors.RespawnFlies self
         )
@@ -3141,7 +3145,7 @@ namespace RainMeadow
             }
         }
 
-        private void Evilifier_Update(
+        public void Evilifier_Update(
             On.ArenaBehaviors.Evilifier.orig_Update orig,
             ArenaBehaviors.Evilifier self
         )
@@ -3160,7 +3164,7 @@ namespace RainMeadow
             }
         }
 
-        private void ExitManager_Update(
+        public void ExitManager_Update(
             On.ArenaBehaviors.ExitManager.orig_Update orig,
             ArenaBehaviors.ExitManager self
         )
@@ -3192,7 +3196,7 @@ namespace RainMeadow
             }
         }
 
-        private bool ExitManager_ExitsOpen(
+        public bool ExitManager_ExitsOpen(
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
         )
@@ -3209,7 +3213,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private void ArenaGameSession_SpawnPlayers(
+        public void ArenaGameSession_SpawnPlayers(
             On.ArenaGameSession.orig_SpawnPlayers orig,
             ArenaGameSession self,
             Room room,

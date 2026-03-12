@@ -185,6 +185,9 @@ namespace RainMeadow
             [OnlineField]
             public bool playersEqualToOnlineSitting;
 
+
+            [OnlineField]
+            public bool hostLoadedOverlay;
             public State() { }
 
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -254,6 +257,7 @@ namespace RainMeadow
                 aliveScore = arena.aliveScore;
                 denRule = arena.denEntryRule;
                 denScore = arena.denScore;
+                hostLoadedOverlay = arena.hostLoadedOverlay;
 
             }
 
@@ -339,6 +343,7 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
                 (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
                 (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
+                (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
 
             }
 

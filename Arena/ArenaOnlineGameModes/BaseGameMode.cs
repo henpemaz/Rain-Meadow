@@ -176,6 +176,8 @@ namespace RainMeadow
                         arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
                         arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
                         arena.playerNumberWithScore[lobbyId] += arena.spearScore;
+                        arena.playerNumberWithDeaths[lobbyId] += 1;
+
                     }
                     else
                     {
@@ -742,6 +744,10 @@ namespace RainMeadow
             {
                 self.endSessionCounter = 30;
             }
+            if (!OnlineManager.lobby.isOwner && !arena.hostLoadedOverlay)
+            {
+                self.endSessionCounter = 30;
+            }
             orig(self);
 
             if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
@@ -845,39 +851,40 @@ namespace RainMeadow
             for (int i = 0; i < self.players.Count; i++)
             {
                 var arenaPlayer = self.players[i];
+                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaPlayer.playerNumber);
 
-                if (session.Players != null && i < session.Players.Count && session.Players[i].GetOnlineCreature().owner == ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber))
+                if (session.Players != null && i < session.Players.Count)
                 {
                     var sessionPlayer = session.Players[i];
 
-                    if (countFood)
+                    if (sessionPlayer?.GetOnlineCreature()?.owner == onlinePlayer)
                     {
-                        if (sessionPlayer.state is PlayerState playerState)
+                        if (countFood)
                         {
-                            arenaPlayer.score += playerState.foodInStomach * foodScore;
-                        }
-
-                        var creature = sessionPlayer.realizedCreature;
-                        if (creature != null)
-                        {
-                            foreach (var grasp in creature.grasps)
+                            if (sessionPlayer.state is PlayerState playerState)
                             {
-                                if (grasp?.grabbed is IPlayerEdible edible)
+                                arenaPlayer.score += playerState.foodInStomach * foodScore;
+                            }
+
+                            if (sessionPlayer.realizedCreature != null)
+                            {
+                                foreach (var grasp in sessionPlayer.realizedCreature.grasps)
                                 {
-                                    arenaPlayer.score += edible.FoodPoints * foodScore;
+                                    if (grasp?.grabbed is IPlayerEdible edible)
+                                    {
+                                        arenaPlayer.score += edible.FoodPoints * foodScore;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
                 arenaPlayer.alive = session.EndOfSessionLogPlayerAsAlive(arenaPlayer.playerNumber);
+
                 if (arenaPlayer.alive)
                 {
                     arenaPlayer.AddSandboxScore(arena.aliveScore);
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.playerNumberWithScore[ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaPlayer.playerNumber).inLobbyId] += arena.aliveScore;
-                    }
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
@@ -953,6 +960,7 @@ namespace RainMeadow
 
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
+
         }
         public virtual bool PlayerSessionResultSort(
             ArenaOnlineGameMode arena,
