@@ -8,6 +8,7 @@
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
+- Granted Saint a kill credit if using ascension to ascend others  
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
