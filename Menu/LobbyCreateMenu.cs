@@ -111,7 +111,12 @@ public class LobbyCreateMenu : SmartMenu
         meadowTimeline = SlugcatStats.Name.White.value;
 
         var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
-            .Where(li => !SlugcatStats.HiddenOrUnplayableSlugcat((SlugcatStats.Name)ExtEnumBase.Parse(typeof(SlugcatStats.Name), li.name, false)))
+            .Where(li =>
+            {
+                var name = (SlugcatStats.Name)ExtEnumBase.Parse(typeof(SlugcatStats.Name), li.name, false);
+                // Include eg boi
+                return !SlugcatStats.HiddenOrUnplayableSlugcat(name) || (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+            })
             .Select(li =>
             {
                 li.displayName = Translate(li.displayName);
