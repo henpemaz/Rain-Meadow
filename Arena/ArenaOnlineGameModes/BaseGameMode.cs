@@ -66,6 +66,7 @@ namespace RainMeadow
             self.fliesSpawn = false;
             self.saveCreatures = false;
             self.gameType = ArenaSetup.GameTypeID.Competitive;
+            self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
 
         }
 

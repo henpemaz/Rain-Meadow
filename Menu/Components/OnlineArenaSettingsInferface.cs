@@ -339,12 +339,16 @@ namespace RainMeadow.UI.Components
         public void SetChecked(CheckBox box, bool c)
         {
             string id = box.IDString;
-            if (id == "SPEARSHIT")
-                GetGameTypeSetup.spearsHitPlayers = c;
-            if (id == "EVILAI")
-                GetGameTypeSetup.evilAI = c;
             if (RainMeadow.isArenaMode(out var arena))
             {
+                if (id == "SPEARSHIT")
+                {
+                    arena.onlineArenaSettingsInterfaceeBool[id] = c;
+                    GetGameTypeSetup.spearsHitPlayers = c;
+                }
+                if (id == "EVILAI")
+                    GetGameTypeSetup.evilAI = c;
+
                 if (id == "OVERSEER")
                 {
                     arena.enableOverseer = c;

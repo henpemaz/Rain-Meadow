@@ -202,8 +202,8 @@ namespace RainMeadow
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice =
-                    arena.onlineArenaSettingsInterfaceMultiChoice;
-                onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
+                    new(arena.onlineArenaSettingsInterfaceMultiChoice);
+                onlineArenaSettingsInterfaceBool = new(arena.onlineArenaSettingsInterfaceeBool);
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
