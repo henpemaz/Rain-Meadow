@@ -1,4 +1,5 @@
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 
@@ -286,19 +287,31 @@ namespace RainMeadow
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            game.GetArenaGameSession.arenaSitting.players[i].score += arena.spearScore;
-                            game.GetArenaGameSession.arenaSitting.players[i].deaths += 1;
-
                             if (pl != null)
                             {
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithScore[pl.inLobbyId] += arena.spearScore;
-                                arena.playerNumberWithDeaths[pl.inLobbyId] += 1;
-
                             }
                         }
 
+                        int scoreToAdd = 0;
+                        if (arena.externalArenaGameMode is ArenaChallengeMode)
+                        {
+                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                            if (index >= 0)
+                            {
+                                scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
+                            }
+                        }
+                        else
+                        {
+                            scoreToAdd = arena.spearScore;
+                        }
+                        game.GetArenaGameSession.arenaSitting.players[i].score += scoreToAdd;
+                        if (pl != null)
+                        {
+                            arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
+                        }
                     }
 
                 }

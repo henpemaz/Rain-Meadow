@@ -158,36 +158,47 @@ namespace RainMeadow
                     continue;
                 }
 
-                if (killedCrit.IsLocal() && earnsTrophy)
+                if (killedCrit.IsLocal())
                 {
 
-                    //int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                    ushort lobbyId = absPlayerCreature.owner.inLobbyId;
+                    if (earnsTrophy)
+                    {
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            string trophyString = iconSymbolData.ToString();
 
-
+                            arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
+                            arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                        }
+                        else
+                        {
+                            {
+                                OnlineManager.lobby.owner.InvokeRPC(
+                                    ArenaRPCs.Arena_AddTrophy,
+                                    onlineKilledCreature,
+                                    self.arenaSitting.players[i].playerNumber
+                                );
+                            }
+                        }
+                    }
                     if (OnlineManager.lobby.isOwner)
                     {
-                        string trophyString = iconSymbolData.ToString();
-                        ushort lobbyId = absPlayerCreature.owner.inLobbyId;
-
-                        // self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                        // self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                        // self.arenaSitting.players[i].score += arena.spearScore;
-
-                        arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
-                        arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
-                        arena.playerNumberWithScore[lobbyId] += arena.spearScore;
-                        arena.playerNumberWithDeaths[lobbyId] += 1;
-
-                    }
-                    else
-                    {
+                        int scoreToAdd = 0;
+                        if (arena.externalArenaGameMode is ArenaChallengeMode)
                         {
-                            OnlineManager.lobby.owner.InvokeRPC(
-                                ArenaRPCs.Arena_AddTrophy,
-                                onlineKilledCreature,
-                                self.arenaSitting.players[i].playerNumber
-                            );
+                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                            if (index >= 0)
+                            {
+                                scoreToAdd = self.arenaSitting.gameTypeSetup.killScores[index];
+                            }
                         }
+                        else
+                        {
+                            scoreToAdd = arena.spearScore;
+                        }
+
+                        arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                     }
 
                     // notify the killer about the trophy
@@ -884,7 +895,8 @@ namespace RainMeadow
 
                 if (arenaPlayer.alive)
                 {
-                    arenaPlayer.AddSandboxScore(arena.aliveScore);
+
+                    arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
