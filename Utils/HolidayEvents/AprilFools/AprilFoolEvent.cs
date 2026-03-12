@@ -1,9 +1,4 @@
-using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security;
 using System.Text.RegularExpressions;
 using Menu;
 using UnityEngine;
@@ -37,6 +32,12 @@ namespace RainMeadow
 
             public override void UpdateLoginMessage(Menu.Menu self)
             {
+                int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
+                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                {
+                    return;
+                }
+
                 Dictionary<int, string> aprilMessages = new Dictionary<int, string>
                 {
                     {
@@ -50,7 +51,10 @@ namespace RainMeadow
                     { 3, "That crash was probably your fault" },
                     { 4, "Rain Meadow definitely failed to start" },
                     { 5, "Rain Meadow servers will go offline soon for maintenance"},
-                    { 6, "Would you like to erase all save progress?"}
+                    { 6, "Would you like to erase all save progress?"},
+                    { 7, "Resist the greed"},
+                    { 8, "Let the greed consume you"}
+
                 };
 
                 Dictionary<int, string> okMessage = new Dictionary<int, string>
@@ -66,7 +70,9 @@ namespace RainMeadow
                     { 3, "It was." },
                     { 4, "Please work" },
                     {5 , "Ok"},
-                    { 6, "Yep"}
+                    { 6, "Yep"},
+                    {7, "Ok"},
+                    {8, "Ok"}
                 };
 
                 int result = new System.Random().Next(aprilMessages.Count);
