@@ -11,15 +11,27 @@ namespace RainMeadow.UI.Components
 {
     public class ArenaPlayerBox : RectangularMenuObject, IPartOfButtonScroller
     {
-        public static float GetLerpedRainbowHue(float alternatingSpeed = 0.167f, float length = 1) //3sf 1/6
+
+        public static float GetLerped(float alternatingSpeed = 0.167f, float length = 1) //3sf 1/6
         {
             return Mathf.PingPong(Time.time * alternatingSpeed, length);
         }
+
         public static Color MyRainbowColor(HSLColor rainbowColor, bool showRainbow, float alpha = 0.5f)
         {
             Color color = rainbowColor.rgb;
             return new(color.r, color.g, color.b, showRainbow ? alpha : 0);
         }
+
+
+        public static Color RichInGold(Color goldColor, bool flexYourCash, float maxAlpha = 0.85f)
+        {
+            float rawPingPong = GetLerped();
+            float curvedAlpha = Mathf.Pow(rawPingPong, 2.5f);
+            float pulsingAlpha = curvedAlpha * maxAlpha;
+            return new Color(goldColor.r, goldColor.g, goldColor.b, flexYourCash ? pulsingAlpha : 0);
+        }
+
         public static string GetMuteSymbol(bool isMuted)
         {
             float gen = UnityEngine.Random.Range(0, 100), type = 0;
@@ -42,6 +54,7 @@ namespace RainMeadow.UI.Components
         {
             profileIdentifier = player;
             rainbowColor = new(0, 1, 0.5f);
+            goldColor = RainWorld.SaturatedGold;
             sprites = [new("pixel"), new("pixel"), new("Meadow_Menu_Ping")];
             for (int i = 0; i < sprites.Length; i++)
             {
@@ -57,7 +70,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(100, 100), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(100, 100), null, false, signal: profileIdentifier.isMe ? "CHANGE_SLUGCAT" : "");
             nameLabel = new(menu, this, player.id.DisplayName, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
@@ -96,9 +109,12 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
-            rainbowColor.hue = GetLerpedRainbowHue();
-            slugcatButton.portraitSecondaryLerpFactor = showRainbow? GetLerpedRainbowHue(0.75f) : desiredPortraitSecondaryLerpFactor;
-            realPing = Math.Max(1, profileIdentifier.ping - 16);
+            rainbowColor.hue = GetLerped();
+            slugcatButton.portraitSecondaryLerpFactor = showRainbow
+                    ? GetLerped(0.75f)
+                    : showGold
+                        ? GetLerped(0.75f)
+                        : desiredPortraitSecondaryLerpFactor; realPing = Math.Max(1, profileIdentifier.ping - 16);
             lastTextOverlayFade = textOverlayFade;
             textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
             slugcatButton.isBlackPortrait = enabledTextOverlay;
@@ -132,26 +148,30 @@ namespace RainMeadow.UI.Components
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
+            Color gold = RichInGold(goldColor, showGold);
+
             HSLColor basecolor = MyBaseColor();
-            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            slugcatButton.secondaryColor = showRainbow ? rainbow : desiredSlugcatButtonSecondaryColor;
+            nameLabel.label.color = showGold ? Color.Lerp(basecolor.rgb, gold, gold.a) : Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
+            slugcatButton.secondaryColor = showRainbow ? rainbow : showGold ? goldColor : desiredSlugcatButtonSecondaryColor;
             if (!RainMeadow.isArenaMode(out var arena))
             {
                 return;
             }
             if (hostIdentifierButton != null)
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb)) {
-                hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
-                } else
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
+                }
+                else
                 {
                     if (hostIdentifierButton.symbolSprite.element.name != "ChieftainA")
                     {
-                      hostIdentifierButton.symbolSprite.SetElementByName("ChieftainA");
+                        hostIdentifierButton.symbolSprite.SetElementByName("ChieftainA");
                     }
                 }
             }
-            
+
         }
         public void InitButtons(bool canKick)
         {
@@ -182,7 +202,7 @@ namespace RainMeadow.UI.Components
                 {
                     return;
                 }
-                hostIdentifierButton =  new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
+                hostIdentifierButton = new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
                 UiLineConnector connector = new(menu, infoKickButton, hostIdentifierButton, false);
                 connector.MoveLineSpriteBeforeNode(hostIdentifierButton.roundedRect.sprites[0]);
                 lines.Add(connector);
@@ -210,9 +230,12 @@ namespace RainMeadow.UI.Components
 
         public float textOverlayFade = 0, lastTextOverlayFade = 0, desiredPortraitSecondaryLerpFactor = 0;
         public int realPing;
-        public bool showRainbow, enabledTextOverlay;
+        public bool showRainbow, enabledTextOverlay, showGold;
+
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
+
+        public Color goldColor;
         public Color? desiredSlugcatButtonSecondaryColor;
         public FSprite[] sprites;
         public FLabel pingLabel;
