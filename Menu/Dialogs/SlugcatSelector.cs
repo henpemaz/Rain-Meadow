@@ -16,12 +16,12 @@ namespace RainMeadow.UI
         public Page selectPage;
         public SlugcatRandomizer[] slugcatRandomizers;
         public ButtonScroller.ScrollerButton continueButton;
-        public HSLColor rainbowColor = new(0, 1, 0.5f);
+        public HSLColor goldColor = new(RainWorld.SaturatedGold.r, RainWorld.SaturatedGold.g, RainWorld.SaturatedGold.b);
         public bool rolling,
             hasAlreadyRolled,
             isClosing,
             queuedToClose,
-            showRainbow;
+            showGold;
         public int myRollingCounter,
             showResultsCounter,
             resultShownCounter = -1,
@@ -124,7 +124,6 @@ namespace RainMeadow.UI
         {
             base.Update();
             PlayQueuedSounds();
-            rainbowColor.hue = Mathf.PingPong(showResultsCounter, 40) / 40;
             if (selectPage.pos.y != desiredSelectPagePosY)
             {
                 selectPage.pos.y = Custom.LerpAndTick(
@@ -177,9 +176,9 @@ namespace RainMeadow.UI
             congratsLabel.x = titleName.x;
             congratsLabel.y = titleName.y - 20;
             congratsLabel.alpha = congratsLabelAlpha > 0 ? 1 : 0;
-            if (!showRainbow)
+            if (!showGold)
                 return;
-            Color rB = MyRainbowColor();
+            Color rB = MyGoldColor();
             titleName.color = Color.Lerp(Color.white, rB, rB.a);
             congratsLabel.color = titleName.color;
         }
@@ -205,7 +204,19 @@ namespace RainMeadow.UI
         {
             System.Random random = new();
             if (IsMatching)
-                return winningDescriptions[random.Next(winningDescriptions.Count)];
+            {
+                if (SpecialEvents.IsSpecialEventInLobby)
+                {
+                    string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
+                    SpecialEvents.GainedMeadowCoin(1000);
+                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
+
+                }
+                RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value = true;
+                RainMeadow.rainMeadowOptions.config.Save();
+                return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
+            }
+
             if (IsCloseMatching)
                 return closeDesriptions[random.Next(closeDesriptions.Count)];
             return losingDescriptions[random.Next(losingDescriptions.Count)];
@@ -228,7 +239,7 @@ namespace RainMeadow.UI
         public void RollingUpdate()
         {
             continueButton.buttonBehav.greyedOut = true;
-            if (SpecialEvents.AprilFoolsEvent.IsActive)
+            if (SpecialEvents.IsSpecialEventInLobby)
                 continueButton.menuLabel.text = Translate(
                     $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                 );
@@ -264,7 +275,7 @@ namespace RainMeadow.UI
             {
                 congratsLabel.text = Translate(GetDescription());
                 if (IsMatching)
-                    showRainbow = true;
+                    showGold = true;
                 else
                     PlaySound(SoundID.UI_Multiplayer_Game_Over, 0, 1, 1);
             }
@@ -272,7 +283,7 @@ namespace RainMeadow.UI
             {
                 if (IsMatching)
                 {
-                    slugcatRandomizer.resultsColor = MyRainbowColor();
+                    slugcatRandomizer.resultsColor = MyGoldColor();
                     slugcatRandomizer.flash = false;
                     continue;
                 }
@@ -376,9 +387,9 @@ namespace RainMeadow.UI
             return continueButtonYPos;
         }
 
-        public Color MyRainbowColor(float alpha = 0.5f)
+        public Color MyGoldColor(float alpha = 0.5f)
         {
-            Color col = rainbowColor.rgb;
+            Color col = goldColor.rgb;
             col.a = alpha;
             return col;
         }

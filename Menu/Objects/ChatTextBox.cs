@@ -49,7 +49,7 @@ namespace RainMeadow
         public int? visibleTextLimit;
         public static string Clipboard
         {
-            get 
+            get
             {
                 var contents = GUIUtility.systemCopyBuffer;
                 RainMeadow.Debug($"Clipboard was accessed! Reading {contents.Length} chars from system clipboard!");
@@ -104,7 +104,7 @@ namespace RainMeadow
             {
                 if (!MultiView)
                     cs.isInteracting = true;
-                else 
+                else
                     cs.isInteracting = Focused;
             }
         }
@@ -226,6 +226,31 @@ namespace RainMeadow
                     {
                         messageHistory.Add(msg);
                     }
+
+
+                    if (SpecialEvents.IsSpecialEventInLobby && UnityEngine.Random.Range(0, 100) == 1)
+                    {
+                        string coinBoast = "";
+                        int coins = RainMeadow.rainMeadowOptions.MeadowCoins.Value;
+                        switch (coins)
+                        {
+                            case > 1000:
+                                coinBoast = " i hacked to get all my meadow coins";
+                                break;
+                            case > 500:
+                                coinBoast = " (i beat meadow)";
+                                break;
+                            case > 100:
+                                coinBoast = $" btw I have {coins} coins";
+                                break;
+                            case < 50:
+                                coinBoast = " im poor";
+                                break;
+                            default:
+                                break;
+                        }
+                        msg += coinBoast;
+                    }
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)
                     {
@@ -275,7 +300,7 @@ namespace RainMeadow
             if (!isUnloading) blockInput = true;
             UpdateLabel(lastSentMessage);
         }
-            
+
         public override void Update()
         {
             base.Update();
@@ -323,10 +348,11 @@ namespace RainMeadow
             if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
             {
                 // reset @ blindly
-                if (completionMatches != null) {
+                if (completionMatches != null)
+                {
                     UpdateCompletions();
 
-               }
+                }
                 // no alt + backspace, because alt can be finnicky
                 // activates on either the first frame the key is held, or for every (DASRepeatRate)th of a second after (DASDelay) seconds of being held
                 if (AnyCtrl && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
@@ -417,7 +443,7 @@ namespace RainMeadow
                     clipboardHeld = true;
                 }
 
-                else if (Input.GetKeyDown(KeyCode.Tab)) 
+                else if (Input.GetKeyDown(KeyCode.Tab))
                 {
                     AutoComplete();
                 }
@@ -640,7 +666,7 @@ namespace RainMeadow
         {
             int lastAt = lastSentMessage.LastIndexOf('@', cursorPos - 1 >= 0 ? cursorPos - 1 : 0);
             string currentSearchPrefix = "";
-            
+
             if (lastAt != -1)
             {
                 currentSearchPrefix = lastSentMessage.Substring(lastAt + 1, cursorPos - (lastAt + 1));
@@ -674,10 +700,10 @@ namespace RainMeadow
 
                 string prefix = lastSentMessage.Substring(0, completionStartPos + 1);
                 string suffix = lastSentMessage.Substring(cursorPos);
-                
+
                 lastSentMessage = prefix + match + suffix;
                 cursorPos = prefix.Length + match.Length;
-                
+
                 completionIndex++;
                 menu.PlaySound(SoundID.MENU_Button_Select_Gamepad_Or_Keyboard);
                 return;
@@ -691,8 +717,8 @@ namespace RainMeadow
 
         private void UpdateCompletions()
         {
-                completionMatches = null;
-                completionStartPos = -1;
+            completionMatches = null;
+            completionStartPos = -1;
         }
 
         private void ResetCompletions()
@@ -707,7 +733,7 @@ namespace RainMeadow
         private int GetStart(string text, int pos)
         {
             int i = pos - 1;
-            while(i >= 0 && text[i] != ' ')
+            while (i >= 0 && text[i] != ' ')
             {
                 i--;
             }
@@ -803,7 +829,7 @@ namespace RainMeadow
         private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.UpArrow || code == KeyCode.DownArrow ||
-                code == KeyCode.LeftControl || code == KeyCode.RightControl || 
+                code == KeyCode.LeftControl || code == KeyCode.RightControl ||
                 code == KeyCode.LeftApple) return orig(code);
 
             return blockInput ? false : orig(code);
