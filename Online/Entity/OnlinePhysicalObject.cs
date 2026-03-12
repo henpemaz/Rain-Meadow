@@ -438,7 +438,8 @@ namespace RainMeadow
 
             if (apo.realizedObject is PhysicalObject po)
             {
-                foreach (Creature.Grasp grabbedBy in po.grabbedBy)
+                // Release removes the grasp from grabbedBy list, so we can't directly enumerate the list
+                foreach (Creature.Grasp grabbedBy in po.grabbedBy.ToList())
                 {
                     grabbedBy.Release();
                 }
