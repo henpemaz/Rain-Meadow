@@ -16,10 +16,12 @@ namespace RainMeadow.UI.Components
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
         public float Alpha { get; set; } = 1;
-        public ArenaPlayerSmallBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
+        public ArenaPlayerSmallBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;
             rainbowColor = new(0, 1, 0.5f);
+            goldColor = RainWorld.SaturatedGold;
+
             baseSprites = [new FSprite("pixel"), new FSprite("pixel")];
             for (int i = 0; i < baseSprites.Length; i++)
             {
@@ -67,7 +69,7 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
-            rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
+            rainbowColor.hue = ArenaPlayerBox.GetLerped();
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -81,7 +83,9 @@ namespace RainMeadow.UI.Components
                 baseSprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             Color rainbowCol = ArenaPlayerBox.MyRainbowColor(rainbowColor, showRainbow);
-            HSLColor baseCol = MyBaseColor(), lerpedBaseCol = Color.Lerp(baseCol.rgb, rainbowCol, rainbowCol.a).ToHSL();
+            Color goldColForStraightCashMoneyBaby = ArenaPlayerBox.RichInGold(goldColor, flexYourCash);
+
+            HSLColor baseCol = MyBaseColor(), lerpedBaseCol = flexYourCash ? Color.Lerp(baseCol.rgb, goldColForStraightCashMoneyBaby, goldColForStraightCashMoneyBaby.a).ToHSL() : Color.Lerp(baseCol.rgb, rainbowCol, rainbowCol.a).ToHSL();
             playerButton.rectColor = lerpedBaseCol;
             playerButton.labelColor = lerpedBaseCol;
             slugcatButton.rectColor = lerpedBaseCol;
@@ -90,7 +94,7 @@ namespace RainMeadow.UI.Components
         public void InitButtons(bool canKick)
         {
             float yPosDefaultSymbol = MiddleOfY(24);
-            string sprite = profileIdentifier.isMe ? "Meadow_Menu_ColorBucket" : canKick? "Menu_Symbol_Clear_All" : ArenaPlayerBox.GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), 
+            string sprite = profileIdentifier.isMe ? "Meadow_Menu_ColorBucket" : canKick ? "Menu_Symbol_Clear_All" : ArenaPlayerBox.GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true),
                 signal = profileIdentifier.isMe ? "COLOR_SLUGCAT" : canKick ? "KICKPLAYER" : "MUTEPLAYER";
             colorKickButton = new(menu, this, sprite, signal, new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
         }
@@ -107,8 +111,11 @@ namespace RainMeadow.UI.Components
             slugcatButton.slug = slugcat;
         }
         public bool showRainbow;
+        public bool flexYourCash;
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
+        public Color goldColor;
+
         public FSprite[] baseSprites;
         public ScrollerButton playerButton;
         public StoryMenuSlugcatButton slugcatButton;
