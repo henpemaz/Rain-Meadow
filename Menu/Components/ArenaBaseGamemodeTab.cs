@@ -49,7 +49,7 @@ namespace RainMeadow.UI.Components
             float boxMargin = leftMargin + labelWidth + 30f; // The X-position for all boxes
 
             // --- Row 1: Spear Score ---
-            spearScoreLabel = new(menu, this, menu.Translate("Spear Score:"),
+            spearScoreLabel = new(menu, this, menu.Translate("Kill Score:"),
                 new(leftMargin, topOffset), new(labelWidth, 20f), false);
             spearScoreLabel.label.alignment = FLabelAlignment.Left;
 
@@ -68,13 +68,13 @@ namespace RainMeadow.UI.Components
             };
 
             // --- Row 2: Win Score ---
-            aliveScoreLabel = new(menu, this, menu.Translate("Win Score:"),
+            aliveScoreLabel = new(menu, this, menu.Translate("Survive Score:"),
                 new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
             aliveScoreLabel.label.alignment = FLabelAlignment.Left;
 
             aliveScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaAliveScore,
                 new(boxMargin, topOffset - rowHeight - 2f), 60)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Points surviving to the shelter is worth"), accept = OpTextBox.Accept.Int };
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points for surviving inside the shelter"), accept = OpTextBox.Accept.Int };
 
             aliveScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
