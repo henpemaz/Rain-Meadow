@@ -182,6 +182,7 @@ namespace RainMeadow
                             }
                         }
                     }
+                    // im the one dying
                     if (OnlineManager.lobby.isOwner)
                     {
                         int scoreToAdd = 0;
@@ -197,7 +198,7 @@ namespace RainMeadow
                         {
                             scoreToAdd = arena.spearScore;
                         }
-
+                        self.arenaSitting.players[i].score += scoreToAdd;
                         arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                     }
 
