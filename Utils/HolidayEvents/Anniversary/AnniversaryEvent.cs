@@ -1,17 +1,5 @@
 using System;
-using System;
-using System.CodeDom;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Collections.Generic;
-using System.IO;
-using System.IO;
-using System.Linq;
-using System.Linq;
-using System.Security;
-using System.Security;
 using System.Text.RegularExpressions;
-using Menu;
 using Menu;
 using UnityEngine;
 
@@ -31,6 +19,12 @@ namespace RainMeadow
         {
             public override void UpdateLoginMessage(Menu.Menu self)
             {
+                int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
+                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                {
+                    return;
+                }
+
                 DateTime startDate = new DateTime(2024, 12, 20);
                 DateTime today = DateTime.UtcNow;
                 int yearsSince = today.Year - startDate.Year;

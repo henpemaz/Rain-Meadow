@@ -205,7 +205,19 @@ namespace RainMeadow.UI
         {
             System.Random random = new();
             if (IsMatching)
-                return winningDescriptions[random.Next(winningDescriptions.Count)];
+            {
+                if (SpecialEvents.IsSpecialEventInLobby)
+                {
+                    string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
+                    SpecialEvents.GainedMeadowCoin(1000);
+                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
+
+                }
+                RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value = true;
+                RainMeadow.rainMeadowOptions.config.Save();
+                return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
+            }
+
             if (IsCloseMatching)
                 return closeDesriptions[random.Next(closeDesriptions.Count)];
             return losingDescriptions[random.Next(losingDescriptions.Count)];
@@ -228,7 +240,7 @@ namespace RainMeadow.UI
         public void RollingUpdate()
         {
             continueButton.buttonBehav.greyedOut = true;
-            if (SpecialEvents.AprilFoolsEvent.IsActive)
+            if (SpecialEvents.IsSpecialEventInLobby)
                 continueButton.menuLabel.text = Translate(
                     $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                 );

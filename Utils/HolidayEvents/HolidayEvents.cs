@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using JetBrains.Annotations;
 using Menu;
 using UnityEngine;
 
@@ -23,11 +22,18 @@ namespace RainMeadow
 
             public virtual void UpdateLoginMessage(Menu.Menu self)
             {
+                int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
+                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                {
+                    return;
+                }
+
                 string message = self.Translate(
                     $"Special event: {Name}. Days remaining: {DaysRemaining}"
                 );
 
                 self.manager.ShowDialog(CreateDialogNotify(self, message));
+
             }
 
             public virtual DialogNotify CreateDialogNotify(
