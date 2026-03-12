@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class RealizedOracleState : RealizedPhysicalObjectState
     {
-        [OnlineField]
+        [OnlineField(nullable = true)]
         public MoreSlugcats.STOracleBehavior.Phase phase;
 
         [OnlineField]
