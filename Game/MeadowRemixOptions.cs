@@ -88,6 +88,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> boughtRainbowCape;
     public readonly Configurable<bool> wantsDefaultCapeColor;
     public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<bool> ArenaWonTheSlots;
 
     public enum IntroRoll
     {
@@ -209,6 +210,8 @@ public class RainMeadowOptions : OptionInterface
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
         wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
+
+        ArenaWonTheSlots = config.Bind("ArenaWonTheSlots", false);
 
     }
     List<ListItem> capeList = new List<ListItem>
