@@ -215,13 +215,13 @@ public class RainMeadowOptions : OptionInterface
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
-        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", false);
         ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
         ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
         ArenaDenScore = config.Bind("ArenaDenScore", 0);
 
         ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
+        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
 
     }
     List<ListItem> capeList = new List<ListItem>

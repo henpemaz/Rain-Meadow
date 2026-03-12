@@ -1621,16 +1621,22 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 ILLabel skip = il.DefineLabel();
+                int physicalObjectVar = 0;
+
+                c.GotoNext(MoveType.After, //Hardcoding this as 18 seemed like a bad idea.
+                    x => x.MatchCallvirt(typeof(List<PhysicalObject>).GetMethod("get_Item")),
+                    x => x.MatchStloc(out physicalObjectVar));
+
 
                 c.GotoNext(
                     MoveType.After,
-                    i => i.MatchLdloc(18), // physicalObject
+                    i => i.MatchLdloc(physicalObjectVar),
                     i => i.MatchLdarg(0),
                     i => i.MatchBeq(out skip)
                 );
 
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, 18);
+                c.Emit(OpCodes.Ldloc, physicalObjectVar);
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
@@ -1642,12 +1648,12 @@ namespace RainMeadow
                 c.Emit(OpCodes.Brtrue_S, skip);
 
                 c.GotoNext(
-                    i => i.MatchLdloc(18), //physicalObject
+                    i => i.MatchLdloc(physicalObjectVar),
                     i => i.MatchIsinst<Creature>(),
                     i => i.MatchCallvirt<Creature>("Die")
                 );
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, 18);
+                c.Emit(OpCodes.Ldloc, physicalObjectVar);
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
