@@ -376,8 +376,6 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
 
-                new OpLabel(120, 420, Translate("Anniversary Gift")),
-
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
