@@ -180,8 +180,31 @@ namespace RainMeadow
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
+            IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
         }
 
+        public void PlayerSpecificOnlineHud_Update(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+            if (c.TryGotoNext(MoveType.After,
+                i => i.MatchCallvirt<HUD.PlayerSpecificMultiplayerHud>("get_PlayerConsideredDead")))
+            {
+                // inject: (PlayerConsideredDead && !isArenaMode)
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate<Func<bool, HUD.PlayerSpecificMultiplayerHud, bool>>((isDead, self) =>
+                {
+                    if (isArenaMode(out _))
+                    {
+                        return false;
+                    }
+                    return isDead;
+                });
+            }
+            else
+            {
+                RainMeadow.Error("Could not find PlayerConsideredDead in PlayerSpecificMultiplayerHud.Update");
+            }
+        }
 
         public int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
         {
