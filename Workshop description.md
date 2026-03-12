@@ -29,7 +29,7 @@ Rain Meadow is a true online multiplayer engine for Rain World! It includes both
 ### Story
 * Uses its own set of save slots, so it won't mess with your regular story saves.
 * All vanilla campaigns are available by default, and all DLC campaigns are available with their respective DLCs enabled. Other campaigns can be accessed through the "Experimental Features" option in Meadow's remix settings.
-* The Survivor, Monk, Hunter, and Gourmand campaigns are all fully supported and should be stable. All other Downpour campaigns should mostly work, but you may run into quirks or the occasional desync. Most of Watcher is playable butexpect bugs. Any other campaigns are not explicitly supported and will likely desync or crash on any "special events".
+* The Survivor, Monk, Hunter, and Gourmand campaigns are all fully supported and should be stable. All other Downpour campaigns should mostly work, but you may run into quirks or the occasional desync. Most of Watcher is playable but expect bugs. Any other campaigns are not explicitly supported and will likely desync or crash on any "special events".
 * All players can play as any slugcat, though the host has an option to restrict everyone to the current campaign's slugcat. The host can also restart the cycle at any time from the pause menu.
 * Piggybacking is supported; jump next to a player's head and hold exclusively grab to climb onto their back. The piggybacker can press jump to dismount, or the piggybackee can drop them like an item.
 * Food is shared between all players, and stomach size is based on the selected campaign. Diet and food nourishment are determined by each individual player's selected slugcat.
