@@ -2537,9 +2537,9 @@ namespace RainMeadow
             {
                 var onlineCreature = player?.abstractCreature?.GetOnlineCreature();
 
-                if (onlineCreature == null || onlineCreature.owner == null)
+                if (onlineCreature == null || onlineCreature.owner == null || player == null)
                 {
-                    RainMeadow.Error("Abort: Player or OnlineOwner is null");
+                    RainMeadow.Trace("Abort: Player or OnlineOwner is null");
                     return 0;
                 }
                 var targetOwner = onlineCreature.owner;
