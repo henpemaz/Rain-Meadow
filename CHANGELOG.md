@@ -10,12 +10,12 @@
 - Synced round kills
 - Added configurable scoring
 - Added KillList & ScoreCounter HUDs from vanilla Arena
+- Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
+- Granted Saint a kill credit if using ascension to ascend others
 ### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
-- Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
-
-
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
