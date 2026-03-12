@@ -61,33 +61,19 @@ Meadow supports other mods adding custom gamemodes, as well as custom variations
 ---
 
 ## Credits
-| Name | Role / Contribution |
-| :--- | :--- |
-| **Henpemaz** | Lead Developer |
-| **Wolfycatt(Ana)** | Lead Artist |
-| **Intikus** | Lead Audio Designer |
-| **Noircatto** | Programming, Engine |
-| **HelloThere** | Programming, Sound |
-| **A1iex** | UI Design |
-| **FranklyGD** | Programming, Engine |
-| **MC41Games** | Programming, Menus |
-| **Silvyger** | Programming, Arena |
-| **Vigaro** | Programming, Menus |
-| **BitiLope** | Programming, Story |
-| **Pudgy Turtle** | Programming, Story |
-| **ddemile** | Programming, Modsync |
-| **UO** | Programming, Story, Arena |
-| **Saddest** | Programming, UI, Chat |
-| **notchoc** | Programming, Story |
-| **phanie_** | Illustration |
-| **Timbits** | Programming, UI, Menus |
-| **Zedreus** | Programming, UI, Story |
-| **Persondotexe** | Programming, Modsync |
-| **invalidunits** | Programming, UI, LAN |
-| **forthfora** | Programming, Modsync |
-| **WillowWisp** | Programming, Story |
-| **@None** | Programming, Gameplay |
-| **DustyLemmy** | Arena, Story, UI |
-| **Elizabeth** | Programming, Story, UI |
-| **niacdoial** | LAN |
-| **Capt. Redstone** | Meadow, Story |
+```
+Henpemaz.......Lead Developer   Persondotexe.......Modsync
+Wolfycatt......Lead Artist      invalidunits.......UI, LAN
+Intikus........Audio Designer   forthfora..........Modsync
+Noircatto......Engine           WillowWisp.........Story
+HelloThere.....Sound            @None..............Gameplay
+A1iex..........UI Design        DustyLemmy.........Arena, Story
+FranklyGD......Engine           Elizabeth..........Story, UI
+MC41Games......Menus            niacdoial..........LAN
+Silvyger.......Arena            Capt. Redstone.....Meadow, Story
+Vigaro.........Menus            BitiLope...........Story
+Pudgy Turtle...Story            ddemile............Modsync
+UO.............Story, Arena     Saddest............UI, Chat
+notchoc........Story            phanie_............Illustration
+Timbits........UI, Menus        Zedreus............UI, Story
+```
