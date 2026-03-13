@@ -1,6 +1,7 @@
 using Steamworks;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -111,7 +112,11 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby != null)
                             {
-
+                                if ((MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).IsSteamPlayerBanned(message.m_identityPeer.GetSteamID().m_SteamID))
+                                {
+                                    // Cut all communication with banned players.
+                                    continue;
+                                }
                                 var fromPlayer = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
                                 if (fromPlayer == null)
                                 {
@@ -148,7 +153,11 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby != null)
                             {
-
+                                if ((MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).IsSteamPlayerBanned(message.m_identityPeer.GetSteamID().m_SteamID))
+                                {
+                                    // Cut all communication with banned players.
+                                    continue;
+                                }
                                 var fromPlayer = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
                                 if (fromPlayer == null)
                                 {
