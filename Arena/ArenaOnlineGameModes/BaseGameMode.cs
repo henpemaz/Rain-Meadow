@@ -55,7 +55,7 @@ namespace RainMeadow
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 0;
+            self.foodScore = 1;
             self.survivalScore = arena.aliveScore;
             self.spearHitScore = arena.spearScore;
             self.repeatSingleLevelForever = false;
