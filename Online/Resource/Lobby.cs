@@ -85,11 +85,6 @@ namespace RainMeadow
         [RPCMethod(security = RPCSecurity.NoSecurity)]
         public void RequestedLobby(RPCEvent request, string? key)
         {
-            if (bannedUsers.list.Contains(request.from.id))
-            {
-                request.from.QueueEvent(new GenericResult.Fail(request));
-                return;
-            }
             if (this.hasPassword)
             {
                 if (this.password != key)
@@ -97,6 +92,11 @@ namespace RainMeadow
                     request.from.QueueEvent(new GenericResult.Fail(request));
                     return;
                 }
+            }
+            if (bannedUsers.list.Contains(request.from.id))
+            {
+                request.from.QueueEvent(new GenericResult.Fail(request));
+                return;
             }
             try
             {
