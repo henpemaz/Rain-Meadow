@@ -527,8 +527,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 
             playerBox.showRainbow =
                 Arena.externalArenaGameMode?.DidPlayerWinRainbow(Arena, playerBox.profileIdentifier)
-                    == true
-                || slugSlots;
+                    == true;
+            playerBox.showGold = slugSlots;
         }
         if (button is ArenaPlayerSmallBox smallPlayerBox)
             smallPlayerBox.slugcatButton.slug = ArenaHelpers

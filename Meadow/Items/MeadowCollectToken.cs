@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using DevInterface;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -28,6 +29,9 @@ namespace RainMeadow
             else if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
             {
                 TokenColor = MeadowProgression.TokenGoldColor;
+            }
+            if (SpecialEvents.IsSpecialEventInLobby) {
+                TokenColor = Color.yellow;
             }
 
             this.lines = new Vector2[4, 4];
@@ -170,10 +174,17 @@ namespace RainMeadow
                         int num3 = 0;
                         while (num3 < 20)
                         {
-                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode));
+                            this.room.AddObject(SpecialEvents.IsSpecialEventInLobby  ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode));
                             num3++;
                         }
-                        this.room.PlaySound(SoundID.Token_Collected_Sparks, this.pos);
+                        if (SpecialEvents.IsSpecialEventInLobby) {
+
+                        this.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pos: this.pos, vol: 2.0f, pitch: 2.0f);
+                        this.room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pos: this.pos, vol: 2.0f, pitch: 1.5f);
+                        } else
+                        {   
+                            this.room.PlaySound(SoundID.Token_Collected_Sparks, this.pos);
+                        }
 
                         // we want the collectible gone but the abstract must stay
                         RainMeadow.Debug("RemoveFromRoom: " + abstractCollectible.online);
@@ -197,7 +208,8 @@ namespace RainMeadow
                 float f = Mathf.Sin(Mathf.Clamp(this.glitch, 0f, 1f) * 3.1415927f);
                 if (Random.value < 0.05f + 0.35f * Mathf.Pow(f, 0.5f) && Random.value < this.power)
                 {
-                    this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+
+                    this.room.AddObject(SpecialEvents.IsSpecialEventInLobby ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
                 }
                 this.glitch = Custom.LerpAndTick(this.glitch, this.generalGlitch / 2f, 0.01f, 0.033333335f);
                 if (Random.value < 1f / Mathf.Lerp(360f, 10f, this.generalGlitch))
@@ -216,15 +228,15 @@ namespace RainMeadow
                     {
                         if (Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.pos, 18f) || Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.placePos, 18f))
                         {
-                            expandAroundCreature = avatarCreature;
-                            this.expand = 0.01f;
-                            this.room.PlaySound(SoundID.Token_Collect, this.pos);
-                            abstractCollectible.Collect();
-                            for (int num6 = 0; num6 < 10; num6++)
-                            {
-                                this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
-                            }
-                            break;
+                        expandAroundCreature = avatarCreature;
+                        this.expand = 0.01f;
+                        this.room.PlaySound(SoundID.Token_Collect, this.pos);
+                        abstractCollectible.Collect();
+                        for (int num6 = 0; num6 < 10; num6++)
+                        {
+                            this.room.AddObject(SpecialEvents.IsSpecialEventInLobby ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+                        }
+                        break;
                         }
                     }
                 }

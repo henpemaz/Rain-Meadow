@@ -59,7 +59,6 @@ namespace RainMeadow
         {
             this.player = player;
             this.owner = owner;
-
             this.color = customization.SlugcatColor();
             if (RainMeadow.isArenaMode(out var a))
             {
@@ -130,7 +129,7 @@ namespace RainMeadow
 
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
-
+        
             this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));
             owner.hud.fContainers[0].AddChild(this.username);
             this.username.alpha = 0f;
@@ -308,7 +307,7 @@ namespace RainMeadow
                 }
             }
             else
-                {
+            {
                 this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : UsernameGenerator.StreamerModeName(customization.nickname);
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
@@ -316,7 +315,7 @@ namespace RainMeadow
                     this.pingLabel.y = username.y;
                 }
                 pos.y += 20;   
-                }
+            }
 
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
                 {
@@ -328,7 +327,6 @@ namespace RainMeadow
                 {
                     this.pingLabel.alpha = 0;
                 }
-            
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
                 messageLabels[i].alpha = 0f;

@@ -1279,12 +1279,12 @@ public partial class RainMeadow
             (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
-                OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+                OnlineManager.lobby.eventGags && SpecialEvents.GetActiveEvent() is SpecialEvents.Anniversary)
         {
 
             if (self.IsLocal())
             {
-                if (CapeManager.HasCape(OnlineManager.mePlayer.id).HasValue && !self.isNPC)
+                if (CapeManager.HasCape(OnlineManager.mePlayer.id) is not null && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)

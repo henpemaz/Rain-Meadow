@@ -43,7 +43,18 @@ namespace MyNamespace
 
             try
             {
-                On.Menu.Menu.ctor += Menu_ctor;
+               // Option 1: Hook the Lobby ctor 
+               new Hook(typeof(Lobby).GetMethod("ActivateImpl", BindingFlags.NonPublic | BindingFlags.Instance), (Action<Lobby> orig, Lobby self) =>
+                {
+                    orig(self);
+                    OnlineManager.lobby.AddData(new myNewGamemode());
+                });
+                new Hook(typeof(ArenaOnlineGameMode).GetMethod("AddClientData", BindingFlags.Public | BindingFlags.Instance), (Action<ArenaOnlineGameMode> orig, ArenaOnlineGameMode self) =>
+                {
+                    orig(self);
+                    self.clientSettings.AddData(new myNewGamemodeClientSettings()); // optional if you have client settings
+                });
+                // On.Menu.ctor += Menu_ctor;
                 fullyInit = true;
             }
             catch (Exception e)
@@ -53,6 +64,8 @@ namespace MyNamespace
             }
         }
 
+
+        // Option 2: Hook after Menu_ctor
         private void Menu_ctor(On.Menu.Menu.orig_ctor orig, Menu.Menu self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
             orig(self, manager, ID);

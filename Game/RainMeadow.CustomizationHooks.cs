@@ -22,6 +22,7 @@ namespace RainMeadow
             On.PlayerGraphics.InitiateSprites += PlayerGraphicsOnInitiateSprites;
             On.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SlugcatCustomization;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites_SlugcatCustomization;
+            On.PlayerGraphics.Update += PlayerGraphics_Update_SlugcatCustomization;
             On.PlayerGraphics.CustomColorSafety += PlayerGraphics_CustomColorSafety_SlugcatCustomization;
             On.PlayerGraphics.CustomColorsEnabled += PlayerGraphics_CustomColorsEnabled_SlugcatCustomization;
 
@@ -186,6 +187,28 @@ namespace RainMeadow
                 }
 
                 orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            finally
+            {
+                hackySlugcatCustomization = null;
+                PlayerGraphics.customColors = cachedCustomColors;
+            }
+        }
+        private void PlayerGraphics_Update_SlugcatCustomization(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
+        {
+            var cachedCustomColors = PlayerGraphics.customColors;
+
+            try
+            {
+                creatureCustomizations.TryGetValue(self.player, out var customization);
+                hackySlugcatCustomization = customization as SlugcatCustomization;
+
+                if (hackySlugcatCustomization is not null)
+                {
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
+                }
+
+                orig(self); //Use correct glow color.
             }
             finally
             {

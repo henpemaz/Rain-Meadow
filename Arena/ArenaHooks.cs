@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -67,8 +66,8 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
 
-            On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots +=
-                ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
+            On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
+            IL.ShortcutHelper.Update += ShortcutHelper_Update;
 
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
@@ -177,6 +176,7 @@ namespace RainMeadow
                 typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
                 this.OverseerBodyColor
             );
+
         }
 
         private Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
@@ -511,7 +511,7 @@ namespace RainMeadow
                     x => x.MatchBneUn(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -551,7 +551,7 @@ namespace RainMeadow
                     x => x.MatchBrtrue(out label)
                 );
                 c.EmitDelegate(
-                    delegate()
+                    delegate ()
                     {
                         return isArenaMode(out _);
                     }
@@ -605,7 +605,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_3);
                 c.EmitDelegate(
-                    delegate(VoidSpawnGraphics self, float timeStacker)
+                    delegate (VoidSpawnGraphics self, float timeStacker)
                     {
                         if (isArenaMode(out _)) //keep it visible to creator
                             self.playerGlowVision = Mathf.Lerp(
@@ -791,30 +791,7 @@ namespace RainMeadow
                 );
                 if (pl != null)
                 {
-                    player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(
-                        arena,
-                        player.playerNumber
-                    );
-
-                    if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
-                    {
-                        player.deaths = d;
-                    }
-
-                    if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w))
-                    {
-                        player.wins = w;
-                    }
-
-                    if (arena.playerNumberWithScore.TryGetValue(pl.inLobbyId, out var s))
-                    {
-                        player.score = s;
-                    }
-
-                    if (arena.playerTotScore.TryGetValue(pl.inLobbyId, out var t))
-                    {
-                        player.totScore = s;
-                    }
+                    arena.ReadFromStats(player, pl);
                 }
             }
             orig(self, resultPage, owner, player, index);
@@ -947,10 +924,17 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                if (!OnlineManager.lobby.isOwner && arena.leaveForNextLevel && !self.nextLevelCall)
+                if (arena.leaveForNextLevel)
                 {
-                    self.ArenaSitting.NextLevel(self.manager);
-                    self.nextLevelCall = true;
+                    self.headingLabel.text = self.Translate("LOADING...");
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        if (!self.nextLevelCall)
+                        {
+                            self.ArenaSitting.NextLevel(self.manager);
+                            self.nextLevelCall = true;
+                        }
+                    }
                 }
             }
         }
@@ -1173,7 +1157,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(bool mscWatcher, ArenaSetup self)
+                    delegate (bool mscWatcher, ArenaSetup self)
                     {
                         return mscWatcher || self is ArenaOnlineSetup;
                     }
@@ -1195,7 +1179,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloca, 0);
                 cursor.EmitDelegate(
-                    delegate(ArenaSetup self, ref string text)
+                    delegate (ArenaSetup self, ref string text)
                     {
                         if (self is ArenaOnlineSetup onlineSetup)
                             text = onlineSetup.SetSaveStringFilter(text);
@@ -1459,16 +1443,22 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 ILLabel skip = il.DefineLabel();
+                int physicalObjectVar = 0;
+
+                c.GotoNext(MoveType.After, //Hardcoding this as 18 seemed like a bad idea.
+                    x => x.MatchCallvirt(typeof(List<PhysicalObject>).GetMethod("get_Item")),
+                    x => x.MatchStloc(out physicalObjectVar));
+
 
                 c.GotoNext(
                     MoveType.After,
-                    i => i.MatchLdloc(18), // physicalObject
+                    i => i.MatchLdloc(physicalObjectVar),
                     i => i.MatchLdarg(0),
                     i => i.MatchBeq(out skip)
                 );
 
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, 18);
+                c.Emit(OpCodes.Ldloc, physicalObjectVar);
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
@@ -1480,12 +1470,12 @@ namespace RainMeadow
                 c.Emit(OpCodes.Brtrue_S, skip);
 
                 c.GotoNext(
-                    i => i.MatchLdloc(18), //physicalObject
+                    i => i.MatchLdloc(physicalObjectVar),
                     i => i.MatchIsinst<Creature>(),
                     i => i.MatchCallvirt<Creature>("Die")
                 );
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, 18);
+                c.Emit(OpCodes.Ldloc, physicalObjectVar);
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
@@ -2280,29 +2270,32 @@ namespace RainMeadow
                     arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
                 }
 
-                for (int num2 = 0; num2 < list.Count; num2++)
+                for (int x = 0; x < list.Count; x++)
                 {
-                    if (list[num2].winner)
+                    if (list[x].winner)
                     {
-                        list[num2].wins++;
+                        list[x].wins++;
                     }
 
-                    if (!self.players[num2].alive)
+                    if (!self.players[x].alive)
                     {
-                        self.players[num2].deaths++;
+                        self.players[x].deaths++;
                     }
 
-                    self.players[num2].totScore += self.players[num2].score;
-
-                    if (OnlineManager.lobby.isOwner)
+                    self.players[x].totScore += self.players[x].score;
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arena,
+                        self.players[x].playerNumber
+                    );
+                    if (pl != null)
                     {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            self.players[num2].playerNumber
-                        );
-                        if (pl != null)
+                        if (OnlineManager.lobby.isOwner)
                         {
-                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
+                            arena.AddOrInsertPlayerStats(arena, self.players[x], pl);
+                        }
+                        else
+                        {
+                            arena.ReadFromStats(self.players[x], pl);
                         }
                     }
                 }
@@ -2454,118 +2447,113 @@ namespace RainMeadow
                 orig(self, toShelters);
             }
         }
+        private void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
+        {
+            //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+            //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
+                    x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));
+                cursor.EmitDelegate(delegate(bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
+            }
+            catch (Exception ex) { RainMeadow.Error(ex); }
+        }
 
         private void ArenaGameSession_Killing(
-            On.ArenaGameSession.orig_Killing orig,
-            ArenaGameSession self,
-            Player player,
-            Creature killedCrit
-        )
+    On.ArenaGameSession.orig_Killing orig,
+    ArenaGameSession self,
+    Player player,
+    Creature killedCrit)
         {
-            if (isArenaMode(out var arena))
+            if (!isArenaMode(out var arena))
             {
-                RainMeadow.Debug(this);
-                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                orig(self, player, killedCrit);
+                return;
+            }
+
+            RainMeadow.Debug(this);
+
+            if (!OnlineCreature.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
+            {
+                Error("Error getting abs Player Creature");
+                return;
+            }
+
+            if (!OnlineCreature.map.TryGetValue(killedCrit.abstractCreature, out var onlineKilledCreature))
+            {
+                Error("Error getting targetAbsCreature");
+                return;
+            }
+
+            if (self.sessionEnded || (ModManager.MSC && player.AI != null))
+            {
+                return;
+            }
+
+            IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+            bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
+
+            for (int i = 0; i < self.arenaSitting.players.Count; i++)
+            {
+                var sittingPlayer = self.arenaSitting.players[i];
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
+                if (onlinePlayer == null)
                 {
-                    Error("Error getting exit manager room");
+                    continue;
                 }
 
-                if (
-                    !OnlinePhysicalObject.map.TryGetValue(
-                        player.abstractCreature,
-                        out var absPlayerCreature
-                    )
-                )
+                // Skip until we find the matching player
+                if (absPlayerCreature.owner != onlinePlayer) continue;
+
+                if (earnsTrophy)
                 {
-                    Error("Error getting abs Player Creature");
-                }
-
-                if (
-                    !OnlinePhysicalObject.map.TryGetValue(
-                        killedCrit.abstractCreature,
-                        out var targetAbsCreature
-                    )
-                )
-                {
-                    Error("Error getting targetAbsCreature");
-                }
-
-                if (self.sessionEnded || (ModManager.MSC && player.AI != null))
-                {
-                    return;
-                }
-
-                if (!killedCrit.IsLocal())
-                    return;
-
-                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(
-                    killedCrit.abstractCreature
-                );
-
-                for (int i = 0; i < self.arenaSitting.players.Count; i++)
-                {
-                    if (
-                        absPlayerCreature.owner
-                        == ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            self.arenaSitting.players[i].playerNumber
-                        )
-                    )
+                    if (killedCrit.IsLocal())
                     {
-                        arena.externalArenaGameMode.Killing(
-                            arena,
-                            orig,
-                            self,
-                            player,
-                            killedCrit,
-                            i
-                        );
-
-                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        int unlockIndex = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        int scoreToAdd = unlockIndex >= 0 ? self.arenaSitting.gameTypeSetup.killScores[unlockIndex] : 0;
+                        if (OnlineManager.lobby.isOwner)
                         {
-                            self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                            self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            if (OnlineManager.lobby.isOwner)
-                            {
-                                arena
-                                    .playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId]
-                                    .Add(iconSymbolData.ToString());
-                            }
+                            string trophyString = iconSymbolData.ToString();
+                            ushort lobbyId = absPlayerCreature.owner.inLobbyId;
 
-                            if (!OnlineManager.lobby.isOwner)
-                            {
-                                OnlineManager.lobby.owner.InvokeRPC(
-                                    ArenaRPCs.Arena_AddTrophy,
-                                    targetAbsCreature,
-                                    self.arenaSitting.players[i].playerNumber
-                                );
-                            }
-                        }
-
-                        int index = MultiplayerUnlocks
-                            .SandboxUnlockForSymbolData(iconSymbolData)
-                            .Index;
-                        if (index >= 0)
-                        {
-                            self.arenaSitting.players[i]
-                                .AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
+                            arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
+                            arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                            arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                         }
                         else
                         {
-                            self.arenaSitting.players[i].AddSandboxScore(0);
+                            OnlineManager.lobby.owner.InvokeRPC(
+                                ArenaRPCs.Arena_AddTrophy,
+                                onlineKilledCreature,
+                                sittingPlayer.playerNumber, scoreToAdd
+                            );
                         }
 
-                        break;
+                        // notify the killer about the trophy
+                        if (!player.IsLocal())
+                        {
+                            player.abstractCreature.GetOnlineCreature().owner.InvokeOnceRPC(ArenaRPCs.AddKilledCreatureToHUD, onlineKilledCreature);
+                        }
+                        // player is local AND killed creature is local
+                        else
+                        {
+                            for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
+                            {
+                                if (self.game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
+                                {
+                                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature));
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
-                if (!CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
-                {
-                    return;
-                }
-            }
-            else
-            {
-                orig(self, player, killedCrit);
+                break; // We found the player and processed everything, exit the loop
             }
         }
 
@@ -2784,7 +2772,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color whiteCol, Menu.PlayerResultBox self)
+                    delegate (Color whiteCol, Menu.PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
@@ -2815,7 +2803,7 @@ namespace RainMeadow
                 );
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
-                    delegate(Color defaultSlugColor, PlayerResultBox self)
+                    delegate (Color defaultSlugColor, PlayerResultBox self)
                     {
                         if (isArenaMode(out ArenaOnlineGameMode arena))
                         {
@@ -3245,7 +3233,7 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out _))
             {
                 if (self == null)
                 {
@@ -3307,3 +3295,4 @@ namespace RainMeadow
         }
     }
 }
+

@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Menu.Remix.MixedUI;
+using Menu.Remix.MixedUI.ValueTypes;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -75,12 +76,19 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
     public readonly Configurable<bool> DevNightskySkin;
-
     public readonly Configurable<bool> EnableAchievementsOnline;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
     private readonly Configurable<string> LobbyMusic;
-    public readonly Configurable<bool> AnniversaryCape;
+    public readonly Configurable<int> MeadowCoins;
+
+    public readonly Configurable<bool> boughtSilverCape;
+    public readonly Configurable<bool> boughtGoldenCape;
+
+    public readonly Configurable<bool> boughtRainbowCape;
+    public readonly Configurable<bool> wantsDefaultCapeColor;
+    public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<bool> ArenaWonTheSlots;
 
     public enum IntroRoll
     {
@@ -89,6 +97,7 @@ public class RainMeadowOptions : OptionInterface
         Downpour,
         Watcher
     }
+
 
     public enum StreamMode
     {
@@ -193,11 +202,24 @@ public class RainMeadowOptions : OptionInterface
         StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
-
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
-        AnniversaryCape = config.Bind("AnniversaryCape", true);
+        MeadowCoins = config.Bind("MeadowCoins", 0);
+
+        boughtSilverCape = config.Bind("BoughtSilverCape", false);
+        boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
+        boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
+        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
+        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
+
+        ArenaWonTheSlots = config.Bind("ArenaWonTheSlots", false);
 
     }
+    List<ListItem> capeList = new List<ListItem>
+{
+    new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
+    new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
+    new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold), "Gold")
+};
 
     public override void Initialize()
     {
@@ -244,7 +266,7 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(310, 400f, Translate("Pointing Key")),
             new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
-            
+
             new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
             new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
@@ -315,6 +337,8 @@ public class RainMeadowOptions : OptionInterface
             meadowTab.AddItems(OnlineMeadowSettings);
 
             OpComboBox2 introroll;
+            OpComboBox2 capeColor;
+
             OpComboBox2 music;
             OpLabel downpourWarning;
             OpLabel watcherWarning;
@@ -332,7 +356,6 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(440f, 535f, Translate("Nightsky Skin")),
 
 
-
                 new OpLabel(10f, 490f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
                 editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 450f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),
                 editBannedModsButton = new OpSimpleButton(new Vector2(185f, 450f), new Vector2(150f, 30f), Translate("Edit Banned Mods")),
@@ -341,22 +364,46 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
 
-                new OpLabel(120, 420, Translate("Anniversary Gift")),
-                new OpCheckBox(AnniversaryCape, new Vector2(120, 390f)),
-                
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                 watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
-                new OpLabel(10, 310, Translate("Lobby Music")),
-                music = new OpComboBox2(LobbyMusic, new Vector2(10, 280f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-            };
+                new OpLabel(10, 250, Translate("Lobby Music")),
+                music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
+                // --- New Cape Options Section ---
+                new OpLabel(10f, 180f, Translate("Cape Colors")),
+
+            capeColor = new OpComboBox2(
+                currentlyActiveCapeColor,
+                new Vector2(10f, 150f),
+                160f,
+                capeList.Where(i =>
+                    (i.displayName == Translate("Default")) ||
+                    (i.displayName == Translate("Silver") && boughtSilverCape.Value) ||
+                    (i.displayName == Translate("Gold") && boughtGoldenCape.Value)
+                ).ToList()
+            )
+            {
+                colorEdge = Menu.MenuColorEffect.rgbWhite
+            }
+
+        };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
             }
+            capeColor.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                var selectedItem = capeList.FirstOrDefault(i => i.name == value);
 
+                if (selectedItem != null)
+                {
+                    currentlyActiveCapeColor.Value = Menu.MenuColorEffect.HexToColor(value);
+                    wantsDefaultCapeColor.Value = selectedItem.displayName == "Default";
+                }
+            };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
                 if (value == "Downpour" && !ModManager.MSC)
