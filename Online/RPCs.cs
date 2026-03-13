@@ -100,6 +100,7 @@ namespace RainMeadow
         public static void KickToLobby(RPCEvent rpc)
         {
             RainMeadow.Debug($"{rpc.from} is trying to kick {rpc.to}");
+            return;
             if (OnlineManager.lobby.owner != rpc.from) return; // Only respond if its the host kicking the player
             if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
             {
