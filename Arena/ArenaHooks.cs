@@ -185,22 +185,21 @@ namespace RainMeadow
 
         public void PlayerSpecificOnlineHud_Update(ILContext il)
         {
-            ILCursor c = new ILCursor(il);
-            if (c.TryGotoNext(MoveType.After,
-                i => i.MatchCallvirt<HUD.PlayerSpecificMultiplayerHud>("get_PlayerConsideredDead")))
+            try
             {
-                // inject: (PlayerConsideredDead && !isArenaMode)
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate<Func<bool, HUD.PlayerSpecificMultiplayerHud, bool>>((isDead, self) =>
+                ILCursor c = new ILCursor(il);
+                if (c.TryGotoNext(MoveType.After,
+                    i => i.MatchCallvirt<ArenaGameSession>("get_SessionStillGoing")))
                 {
-                    if (isArenaMode(out _))
+                    //Old: if (deadCounter == 10 && session.SessionStillGoing)
+                    //New: if (deadCounter == 10 && session.SessionStillGoing && !isArenaMode)
+                    c.EmitDelegate(delegate (bool origResult)
                     {
-                        return false;
-                    }
-                    return isDead;
-                });
+                        return origResult && !isArenaMode(out _);
+                    });
+                }
             }
-            else
+            catch
             {
                 RainMeadow.Error("Could not find PlayerConsideredDead in PlayerSpecificMultiplayerHud.Update");
             }

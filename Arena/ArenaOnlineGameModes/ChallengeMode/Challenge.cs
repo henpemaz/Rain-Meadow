@@ -27,6 +27,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         {
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
+            self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
         }
 
         public static bool isChallengeMode(
