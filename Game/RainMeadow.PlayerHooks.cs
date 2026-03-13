@@ -1906,6 +1906,8 @@ public partial class RainMeadow
             self.slugOnBack.DropSlug();
         }
 
+        self.deaf = 0; //Doctors HATE this one simple trick!
+
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
         RainMeadow.Debug($"%%% DESTROY {oe}");
 
