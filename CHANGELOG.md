@@ -1,6 +1,3 @@
-## General
-- Fixed infinite tinnitus for real this time.
-
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
