@@ -960,12 +960,20 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     arena,
                     player.playerNumber
                 );
                 if (pl != null)
                 {
+                    if (pl != null)
+                    {
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            arena.SetPlayerStatsFromLocalPlayer(player, pl);
+                        }
+                    }
                     arena.ReadFromStats(player, pl);
                 }
             }

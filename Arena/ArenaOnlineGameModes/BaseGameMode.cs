@@ -901,6 +901,11 @@ namespace RainMeadow
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                }
+                arena.ReadFromStats(arenaPlayer, onlinePlayer);
             }
 
             for (int m = 0; m < self.players.Count; m++)
@@ -953,6 +958,7 @@ namespace RainMeadow
                 if (!sortedPlayer.alive)
                 {
                     sortedPlayer.deaths++;
+
                 }
 
                 sortedPlayer.totScore += sortedPlayer.score;

@@ -835,19 +835,15 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer player,
             OnlinePlayer pl)
         {
-            if (pl == OnlineManager.lobby.owner)
+            playerNumberWithWins[pl.inLobbyId] = player.wins;
+            playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
+            if (playerTotScore[pl.inLobbyId] < player.totScore)
             {
-                player.wins = playerNumberWithWins[pl.inLobbyId];
-                player.deaths = playerNumberWithDeaths[pl.inLobbyId];
-                player.totScore = playerTotScore[pl.inLobbyId];
-                player.score = playerNumberWithScore[pl.inLobbyId];
+                playerTotScore[pl.inLobbyId] = player.totScore;
             }
-            else
+            if (playerNumberWithScore[pl.inLobbyId] < player.score)
             {
-                playerNumberWithWins[pl.inLobbyId] = player.wins;
-                playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
-                playerTotScore[pl.inLobbyId] += player.totScore;
-                playerNumberWithScore[pl.inLobbyId] += player.score;
+                playerNumberWithScore[pl.inLobbyId] = player.score;
             }
         }
         public void AddOrInsertPlayerStats(
