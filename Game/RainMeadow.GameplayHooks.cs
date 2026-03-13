@@ -66,6 +66,7 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
+            On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
@@ -200,6 +201,19 @@ namespace RainMeadow
 
             }
             return orig(self, obj);
+        }
+
+        private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (!self.player.IsLocal()) {
+                    self.slatedForDeletetion = true;
+                    return;
+                }
+            }
+            orig(self, eu);
+
         }
 
         private void Centipede_Shock(ILContext il)
