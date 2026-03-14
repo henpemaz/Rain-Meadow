@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Menu;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -22,7 +23,6 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
-
         public bool registeredNewGameModes = false;
 
         public bool isInGame;
@@ -55,6 +55,12 @@ namespace RainMeadow
         public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
+
+        public int spearScore = RainMeadow.rainMeadowOptions.ArenaSpearScore.Value;
+        public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
+        public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
+        public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
+
 
         public string paincatName;
         public int lizardEvent;
@@ -90,10 +96,11 @@ namespace RainMeadow
             new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
+
         public Dictionary<int, List<string>> playerNumberWithTrophies =
             new Dictionary<int, List<string>>();
         public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound =
@@ -105,12 +112,14 @@ namespace RainMeadow
         public bool hasPermissionToRejoin;
         public bool initiateLobbyCountdown;
 
+        // host needs time to do scoring for everyone else before they load the overlay
+        public bool hostLoadedOverlay;
+
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int lobbyCountDown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
-
         public int arenaSaintAscendanceTimer = RainMeadow
             .rainMeadowOptions
             .ArenaSaintAscendanceTimer
@@ -129,6 +138,7 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public List<int> bannedSlugs = new List<int>();
+
 
         public ArenaOnlineGameMode(Lobby lobby)
             : base(lobby)
@@ -161,6 +171,10 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
+            spearScore = 0;
+            aliveScore = 0;
+            hostLoadedOverlay = false;
+
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },
@@ -392,6 +406,7 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+            this.AddExternalGameModes(ArenaChallengeMode.ChallengeMode, new ArenaChallengeMode());
         }
 
         public void ResetInvDetails()
@@ -485,6 +500,18 @@ namespace RainMeadow
             }
         }
 
+        public void ResetHostLoadedOverlayBool()
+        {
+            hostLoadedOverlay = false;
+        }
+
+        public void ResetClientRoundScore()
+        {
+            foreach (var key in playerNumberWithScore.Keys.ToList())
+            {
+                playerNumberWithScore[key] = 0;
+            }
+        }
         public void ResetScrollTimer()
         {
             this.scrollInitiatedTimer = 0;
@@ -496,6 +523,8 @@ namespace RainMeadow
             ResetInvDetails();
             ResetChampAddition();
             AllowJoinOrRejoin();
+            ResetHostLoadedOverlayBool();
+            ResetClientRoundScore();
         }
 
         public void ResetAtNextLevel()
@@ -729,10 +758,6 @@ namespace RainMeadow
 
         public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
         {
-            if (!playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
-            {
-                playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
-            }
             if (!playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
             {
                 playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
@@ -744,6 +769,10 @@ namespace RainMeadow
             if (!playerTotScore.ContainsKey(getPlayer.inLobbyId))
             {
                 playerTotScore.Add(getPlayer.inLobbyId, 0);
+            }
+            if (!playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
             }
             if (!playerNumberWithTrophies.ContainsKey(getPlayer.inLobbyId))
             {
@@ -757,32 +786,66 @@ namespace RainMeadow
 
         public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
+            RainMeadow.Debug(this);
+            // Wins
             if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
             {
                 player.wins = wins;
-                player.score = playerNumberWithScore[pl.inLobbyId];
-                player.deaths = playerNumberWithDeaths[pl.inLobbyId];
-                player.totScore = playerTotScore[pl.inLobbyId];
-                player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
-                player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
-
-                RainMeadow.Debug($"Read stats: {player} from online player: {pl}");
-                RainMeadow.Debug($"Read witih stats: {player.wins} from online player: {player}");
-                RainMeadow.Debug(
-                    $"Read witih score stats: {player.score} from online player: {player}"
-                );
-                RainMeadow.Debug(
-                    $"Read witih death stats: {player.deaths} from online player: {player}"
-                );
-                RainMeadow.Debug(
-                    $"Read witih totScore stats: {player.totScore} from online player: {player}"
-                );
-                RainMeadow.Debug(
-                    $"Client read stats with allKills stats: {player.allKills.Count} from online player: {player}"
-                );
             }
+
+            // Deaths
+            if (playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var deaths))
+            {
+                player.deaths = deaths;
+            }
+
+            // Total Score
+            if (playerTotScore.TryGetValue(pl.inLobbyId, out var totScore))
+            {
+                player.totScore = totScore;
+            }
+
+            // Current Score
+            if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out var score))
+            {
+                player.score = score;
+            }
+
+            // Trophies/Kills
+            player.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(this, player.playerNumber);
+            player.allKills = ArenaHelpers.GetAllOnlinePlayerTrophies(this, player.playerNumber);
+
+            RainMeadow.Debug($"Read witih stats: {player.wins} for online player: {player.playerNumber}");
+            RainMeadow.Debug(
+                $"Read witih score stats: {player.score} for online player: {player.playerNumber}: {playerNumberWithScore[pl.inLobbyId]}"
+            );
+            RainMeadow.Debug(
+                $"Read witih death stats: {player.deaths} for online player: {player.playerNumber}"
+            );
+            RainMeadow.Debug(
+                $"Read witih totScore stats: {player.totScore} for online player: {player.playerNumber}"
+            );
+            RainMeadow.Debug(
+                $"Client read stats with allKills stats: {player.allKills.Count} for online player: {player.playerNumber}"
+            );
+
         }
 
+        public void SetPlayerStatsFromLocalPlayer(
+            ArenaSitting.ArenaPlayer player,
+            OnlinePlayer pl)
+        {
+            playerNumberWithWins[pl.inLobbyId] = player.wins;
+            playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
+            if (playerTotScore[pl.inLobbyId] < player.totScore)
+            {
+                playerTotScore[pl.inLobbyId] = player.totScore;
+            }
+            if (playerNumberWithScore[pl.inLobbyId] < player.score)
+            {
+                playerNumberWithScore[pl.inLobbyId] = player.score;
+            }
+        }
         public void AddOrInsertPlayerStats(
             ArenaOnlineGameMode arena,
             ArenaSitting.ArenaPlayer newArenaPlayer,
@@ -794,9 +857,10 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
-                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
                     arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
                     arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
+                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
+
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
                         < ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer).Count
@@ -837,9 +901,9 @@ namespace RainMeadow
                 else
                 {
                     newArenaPlayer.wins = wins;
-                    newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
                     newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
                     newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
+                    newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
                     newArenaPlayer.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(
     arena,
     newArenaPlayer.playerNumber
@@ -873,10 +937,10 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithScore.Add(pl.inLobbyId, newArenaPlayer.score);
                     arena.playerNumberWithDeaths.Add(pl.inLobbyId, newArenaPlayer.deaths);
                     arena.playerNumberWithWins.Add(pl.inLobbyId, newArenaPlayer.wins);
                     arena.playerTotScore.Add(pl.inLobbyId, newArenaPlayer.totScore);
+                    arena.playerNumberWithScore.Add(pl.inLobbyId, newArenaPlayer.score);
                     arena.playerNumberWithTrophies.Add(
                         pl.inLobbyId,
                         ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer)
@@ -943,8 +1007,8 @@ namespace RainMeadow
             arenaSittingOnlineOrder.Clear();
             playerNumberWithWins.Clear();
             playerNumberWithDeaths.Clear();
-            playerNumberWithScore.Clear();
             playerTotScore.Clear();
+            playerNumberWithScore.Clear();
             playerNumberWithTrophies.Clear();
             playerNumberWithTrophiesPerRound.Clear();
         }
@@ -1089,7 +1153,10 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            if (item.type == PlacedObject.Type.StuckDaddy || item.type == DLCSharedEnums.PlacedObjectType.Stowaway)
+            if (
+                item.type == PlacedObject.Type.StuckDaddy
+                || item.type == DLCSharedEnums.PlacedObjectType.Stowaway
+            )
             {
                 return OnlineManager.lobby.isOwner;
             }
@@ -1164,6 +1231,7 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
+                lobby.AddData(new ChallengeLobbyData());
             }
         }
 

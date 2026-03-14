@@ -88,6 +88,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> boughtRainbowCape;
     public readonly Configurable<bool> wantsDefaultCapeColor;
     public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<int> ChallengeID;
+
+    public readonly Configurable<int> ArenaSpearScore;
+    public readonly Configurable<int> ArenaAliveScore;
+    public readonly Configurable<int> ArenaDenScore;
+    public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
     public readonly Configurable<bool> ArenaWonTheSlots;
 
     public enum IntroRoll
@@ -209,6 +215,12 @@ public class RainMeadowOptions : OptionInterface
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
+        ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
+        ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
+        ArenaDenScore = config.Bind("ArenaDenScore", 0);
+
+        ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
+        ChallengeID = config.Bind("ChallengeID", 1);
         wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
 
         ArenaWonTheSlots = config.Bind("ArenaWonTheSlots", false);

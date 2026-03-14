@@ -350,7 +350,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 .Value;
         }
 
-        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(this.Arena, GetGameTypeSetup);
     }
 
     public override void ShutDownProcess()

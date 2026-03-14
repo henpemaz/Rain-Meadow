@@ -52,6 +52,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaBehaviors.ExitManager self
         )
         {
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
+            {
+                // idk why orig ignores this when 2 player exists
+                return true;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
+            {
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
+            }
+
             int playersStillStanding =
                 self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null && player.realizedCreature.State.alive
@@ -356,10 +367,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
-            ArenaGameSession session,
-            List<ArenaSitting.ArenaPlayer> list
+            ArenaGameSession session
         )
         {
+            base.ArenaSessionEnded(arena, orig, self, session);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;

@@ -6,10 +6,18 @@
 - Fixed neuron glow not using players' selected body color.
 - Fixed infinite tinnitus for real this time.
 ## Arena
-- Synced round kills
-- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
-- Granted Saint a kill credit if using ascension to ascend others  
+- Added More Slugcat's "Challenges" to Arena! 
+- Synced round kills
+- Added configurable scoring
+- Added KillList & ScoreCounter HUDs from vanilla Arena
+- Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
+- Granted Saint a kill credit if using ascension to ascend others
+- Fixed Spears Hit toggle not actually working during that current game session
+### Modders 
+- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+- ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
