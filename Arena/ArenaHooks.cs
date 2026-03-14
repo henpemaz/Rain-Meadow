@@ -95,6 +95,8 @@ namespace RainMeadow
             On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
             On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
+            IL.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
+
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
             On.CreatureCommunities.LikeOfPlayer += CreatureCommunities_LikeOfPlayer;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
@@ -1841,6 +1843,27 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
+        }
+        private void RainWorldGame_RawUpdate(ILContext il)
+        {
+            //Always allow dev tools in online challenge mode.
+            //Old: if (ModManager.MSC && IsArenaSession && GetArenaGameSession.chMeta != null && GetArenaGameSession.chMeta.challengeNumber <= MultiplayerUnlocks.TOTAL_CHALLENGES)
+            //New: if (ModManager.MSC && IsArenaSession && GetArenaGameSession.chMeta != null && (isArenaMode || GetArenaGameSession.chMeta.challengeNumber <= MultiplayerUnlocks.TOTAL_CHALLENGES))
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel enableDevTools = cursor.DefineLabel();
+
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchLdarg(0),
+                    x => x.MatchCall(typeof(RainWorldGame), "get_GetArenaGameSession"),
+                    x => x.MatchLdfld(typeof(ArenaGameSession), nameof(ArenaGameSession.chMeta)),
+                    x => x.MatchBrfalse(out enableDevTools));
+
+                cursor.EmitDelegate(delegate() { return isArenaMode(out _); });
+                cursor.Emit(OpCodes.Brtrue, enableDevTools);
+            }
+            catch (Exception ex) { RainMeadow.Error(ex); }
         }
 
         public bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(

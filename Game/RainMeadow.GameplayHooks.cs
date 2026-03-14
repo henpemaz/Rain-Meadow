@@ -211,9 +211,6 @@ namespace RainMeadow
                     self.slatedForDeletetion = true;
                     return;
                 }
-                if (self.player.abstractCreature.state.dead || self.player.State.dead || self.player == null) {
-                    self.slatedForDeletetion = true;
-                }
             }
             orig(self, eu);
 
