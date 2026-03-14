@@ -93,6 +93,11 @@ namespace RainMeadow
                     return;
                 }
             }
+            if (bannedUsers.list.Contains(request.from.id))
+            {
+                request.from.QueueEvent(new GenericResult.Fail(request));
+                return;
+            }
             try
             {
                 lobbyRequestable = true;

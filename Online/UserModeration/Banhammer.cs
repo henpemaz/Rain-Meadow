@@ -42,7 +42,9 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.bannedUsers.list.Add(steamUser.id);
             }
-
+            // Remove player from lobby resource so they can't stick around
+            OnlineManager.lobby.UpdateParticipants(OnlineManager.players);
+            OnlineManager.RemoveSubscriptions(steamUser);
         }
 
     }
