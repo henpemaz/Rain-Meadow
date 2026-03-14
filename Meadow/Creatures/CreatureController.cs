@@ -41,6 +41,10 @@ namespace RainMeadow
             {
                 new LanternMouseController(mouse, oc, 0, customization);
             }
+            else if (creature is Overseer overseer)
+            {
+                new OverseerController(overseer, oc, 0, customization);
+            }
             else
             {
                 throw new InvalidProgrammerException("You need to implement " + creature.ToString());
@@ -54,28 +58,30 @@ namespace RainMeadow
         public MeadowVoice voice;
         public MeadowAvatarData customization;
 
-
-        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization)
+        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
         {
             this.creature = creature;
             this.template = creature.Template;
-            this.onlineCreature = oc;
-            this.mcd = oc.GetData<MeadowCreatureData>();
             this.playerNumber = playerNumber;
+            this.onlineCreature = oc;
+            creatureControllers.Add(creature, this);
+        }
+        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) :
+            this(creature, oc, playerNumber)
+        {
+            this.mcd = oc.GetData<MeadowCreatureData>();
             this.customization = customization;
 
             this.voice = new(this);
             this.effectColor = creature.ShortCutColor();
             this.needsLight = true;
 
-            creatureControllers.Add(creature, this);
-
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
             RainMeadow.Debug(this + " added!");
 
-            if (oc.isMine && template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
+            if (oc.isMine && template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null && creature.abstractCreature.abstractAI.RealAI.pathFinder is not null)
             {
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
                 debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);

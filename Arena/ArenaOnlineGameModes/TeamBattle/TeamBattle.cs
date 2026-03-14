@@ -578,12 +578,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     RainMeadow.Debug("Player spawned as Overseer");
                     if (arena.enableOverseer)
                     {
-                        SpawnTransferableCreature(
+                        SpawnPlayerOverseer(
                             arena,
                             self,
                             room,
-                            randomExitIndex,
-                            CreatureTemplate.Type.Overseer
+                            randomExitIndex
                         );
                     }
                 }
