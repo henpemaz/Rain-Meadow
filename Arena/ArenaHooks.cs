@@ -1718,6 +1718,7 @@ namespace RainMeadow
         }
         private void RainWorldGame_RawUpdate(ILContext il)
         {
+            //Always allow dev tools in online challenge mode.
             //Old: if (ModManager.MSC && IsArenaSession && GetArenaGameSession.chMeta != null && GetArenaGameSession.chMeta.challengeNumber <= MultiplayerUnlocks.TOTAL_CHALLENGES)
             //New: if (ModManager.MSC && IsArenaSession && GetArenaGameSession.chMeta != null && (isArenaMode || GetArenaGameSession.chMeta.challengeNumber <= MultiplayerUnlocks.TOTAL_CHALLENGES))
             try
