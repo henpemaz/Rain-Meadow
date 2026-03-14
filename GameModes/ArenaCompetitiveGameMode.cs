@@ -1337,7 +1337,16 @@ namespace RainMeadow
             {
                 RainMeadow.Debug(oc);
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
+                if (creature is Overseer overseer)
+                {
+                    new OverseerController(overseer, oc, data.playerIndex);
+                    creature.abstractCreature.tentacleImmune = true;
+                    creature.abstractCreature.lavaImmune = true;
+                    creature.abstractCreature.HypothermiaImmune = true;
+                }
             }
+
+            
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
