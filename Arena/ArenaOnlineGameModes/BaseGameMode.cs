@@ -787,12 +787,11 @@ namespace RainMeadow
                 // maybr add toggle later
                 if (arena.enableOverseer)
                 {
-                    SpawnTransferableCreature(
+                    SpawnPlayerOverseer(
                         arena,
                         self,
                         room,
-                        randomExitIndex,
-                        CreatureTemplate.Type.Overseer
+                        randomExitIndex
                     );
                 }
             }
@@ -845,6 +844,27 @@ namespace RainMeadow
                 );
                 room.AddObject(obj);
             }
+        }
+
+        public void SpawnPlayerOverseer(ArenaOnlineGameMode arena,
+            ArenaGameSession self,
+            Room room,
+            int randomExitIndex)
+        {
+            bool spawningAvatars = RainMeadow.sSpawningAvatar;
+            RainMeadow.sSpawningAvatar = true;
+            AbstractCreature abstractCreature = new AbstractCreature(self.game.world,
+                StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Overseer),
+                null,
+                new WorldCoordinate(0, -1, -1, -1),
+                new EntityID(-1, 0)
+            );
+
+            Vector2 pos = room.cameraPositions[room.CameraViewingNode(room.ShortcutLeadingToNode(randomExitIndex).destNode)];
+            abstractCreature.pos = room.GetWorldCoordinate(pos);
+            abstractCreature.Room.AddEntity(abstractCreature);
+            abstractCreature.RealizeInRoom();
+            RainMeadow.sSpawningAvatar = spawningAvatars;
         }
 
         public virtual void ArenaSessionUpdate(

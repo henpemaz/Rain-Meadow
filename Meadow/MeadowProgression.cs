@@ -136,6 +136,16 @@ namespace RainMeadow
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
+            public static Character Overseer = new("Overseer", true, new()
+            {
+                displayName = "OVERSEER",
+                emotePrefix = "sc_",
+                emoteAtlas = "emotes_slugcat",
+                emoteColor = Extensions.ColorFromHex(0x79635f),
+                voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate("SU_C04", 7, 28, -1),
+            });
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
@@ -584,6 +594,15 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.LanternMouse,
                 randomSeed = 9834,
                 baseColor = Extensions.ColorFromHex(0x272020),
+            });
+
+            public static Skin Overseer_Moon = new("Overseer_Moon", true, new()
+            {
+                character = Character.Overseer,
+                displayName = "Moon",
+                creatureType = CreatureTemplate.Type.Overseer,
+                randomSeed = 9834,
+                baseColor = new Color(1f, 0.8f, 0.3f),
             });
         }
 
