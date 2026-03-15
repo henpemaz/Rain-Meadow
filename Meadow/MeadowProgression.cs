@@ -681,6 +681,11 @@ namespace RainMeadow
 
         public static List<Emote> AllAvailableEmotes(Character character)
         {
+            if (character == Character.Overseer)
+            {
+                return [];    
+            }
+
             return emoteEmotes.Intersect(progressionData.characterProgress[character].unlockedEmotes).ToList();
         }
 

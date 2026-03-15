@@ -2,13 +2,112 @@ using System;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using OverseerHolograms;
 using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
+    public class EmoteHologram : OverseerHologram, IOwnAHoloImage
+    {
+        public EmoteDisplayer displayer;
+        public MeadowProgression.Emote emote;
+        public class EmoteHoloImage : OverseerImage.HoloImage
+        {
+            EmoteHologram Emotehologram;
+            public EmoteHoloImage(EmoteHologram hologram, int firstSprite, IOwnAHoloImage imageOwner) : base(hologram, firstSprite, imageOwner)
+            {
+                Emotehologram = hologram;
+            }
 
-    public class OverseerController : CreatureController
+            public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos, Vector2 partPos, Vector2 headPos, float useFade, float popOut, Color useColor)
+            {
+                if (useFade == 0f)
+                {
+                    sLeaser.sprites[firstSprite].isVisible = false;
+                    sLeaser.sprites[firstSprite + 1].isVisible = false;
+                    return;
+                }
+
+                sLeaser.sprites[firstSprite].isVisible = true;
+                sLeaser.sprites[firstSprite + 1].isVisible = true;
+                partPos = Vector3.Lerp(headPos, partPos, popOut);
+                sLeaser.sprites[firstSprite].x = partPos.x - camPos.x;
+                sLeaser.sprites[firstSprite].y = partPos.y - camPos.y;
+                if (showRandomFlickerImage)
+                {
+                    sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["HologramImage"];
+                    sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(showRandomFlickerImage ? "RND_PROJ" : "STR_PROJ");
+                    sLeaser.sprites[firstSprite].color = new Color(0.5f + 0.5f * Mathf.Lerp(lastPanPos.x, panPos.x, timeStacker), 0.5f + 0.5f * Mathf.Lerp(lastPanPos.y, panPos.y, timeStacker), (float)randomImage / 25f);
+                }
+                else
+                {
+                    sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["Hologram"];
+                    sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote));
+                }
+
+                float imagefade = useFade;
+                
+                float num2 = Custom.SCurve(Mathf.Pow(imagefade, 2f) * Mathf.Lerp(lastMyAlpha, myAlpha, timeStacker), 0.4f);
+                sLeaser.sprites[firstSprite].alpha = num2;
+
+                sLeaser.sprites[firstSprite].rotation = 0f;
+                sLeaser.sprites[firstSprite].scaleY = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
+                sLeaser.sprites[firstSprite].scaleX = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
+
+                sLeaser.sprites[firstSprite + 1].shader = rCam.game.rainWorld.Shaders["FlatLight"];
+                sLeaser.sprites[firstSprite + 1].x = partPos.x - camPos.x;
+                sLeaser.sprites[firstSprite + 1].y = partPos.y - camPos.y;
+                num2 = Mathf.Lerp(Mathf.Min(num2, imagefade), num2, 0.5f);
+                sLeaser.sprites[firstSprite + 1].scale = 15f * Mathf.Lerp(0.5f, 1f, num2);
+                sLeaser.sprites[firstSprite + 1].alpha = Mathf.Lerp(1.0f, 0.8f, num2);
+                sLeaser.sprites[firstSprite + 1].color = useColor;
+            }
+        }
+
+        public EmoteHologram(Overseer overseer, Creature communicateWith, float importance, EmoteDisplayer displayer, MeadowProgression.Emote emote) : base(overseer, 
+            RainMeadow.Ext_OverseerHologram_Message.OverseerEmote, communicateWith, importance)
+        {
+            this.displayer = displayer;
+            this.emote = emote;
+            this.AddPart(new EmoteHoloImage(this, totalSprites, this));
+            this.AddPart(new OverseerImage.Frame(this, totalSprites));
+            lifetime = 0;
+        }
+
+        public int lifetime = 0;
+        public override void Update(bool eu)
+        {
+            base.Update(eu);
+            lifetime++;
+            if (lifetime > ShowTime)
+            {
+                stillRelevant = false;
+            }
+
+            if (stillRelevant && overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping)
+            {
+                this.lastFade = 1.0f;
+                this.fade = 1.0f;
+            }
+            
+            if (CreatureController.creatureControllers.TryGetValue(overseer, out var p) && p is OverseerController controller)
+            {
+                if (controller.cursor != null)
+                {
+                    pos = Vector2.MoveTowards(overseer.mainBodyChunk.pos, controller.cursor.pos, 250);
+                    pos = Vector2.MoveTowards(pos, controller.cursor.pos, Mathf.Log(Custom.Dist(pos, controller.cursor.pos))/Mathf.Log(2));
+                }
+            }
+        }
+
+        public int CurrImageIndex => 0;
+        public int ShowTime => 40*5;
+        public OverseerImage.ImageID CurrImage => OverseerImage.ImageID.Dead_Slugcat_B;
+        public float ImmediatelyToContent => 1.0f;
+    }
+
+    public class OverseerController : CreatureController, ICustomEmoteDisplayer
     {
         public Overseer overseer;
         public SpectateCursor? cursor;
@@ -115,14 +214,18 @@ namespace RainMeadow
         public static void Overseer_PlaceInRoom(On.Overseer.orig_PlaceInRoom orig, Overseer self, Room room)
         {
             orig(self, room);
-            if (creatureControllers.TryGetValue(self, out var p) && p is OverseerController controller)
+            if (self.IsLocal())
             {
-                if (controller.cursor is null || controller.cursor.room != room)
+                if (creatureControllers.TryGetValue(self, out var p) && p is OverseerController controller)
                 {
-                    room.game.cameras[0].MoveCamera(room, -1);
-                    controller.AddCursor();
+                    if (controller.cursor is null || controller.cursor.room != room)
+                    {
+                        room.game.cameras[0].MoveCamera(room, -1);
+                        controller.AddCursor();
+                    }
                 }
             }
+           
         }
 
         public void AddCursor()
@@ -147,10 +250,42 @@ namespace RainMeadow
         protected override void OnCall() => throw new System.NotImplementedException();
         protected override void Resting() => throw new System.NotImplementedException();
 
+        public EmoteDisplayer latestEmoteDisplayer;    
+        public MeadowProgression.Emote latestEmote;
+        public void AddEmoteRemote(EmoteDisplayer d, MeadowProgression.Emote e)
+        {
+            latestEmoteDisplayer = d;
+            latestEmote = e;
+        }
+
+        public bool AddEmoteLocal(EmoteDisplayer d,  MeadowProgression.Emote e)
+        {
+            latestEmoteDisplayer = d;
+            latestEmote = e;
+            if (overseer.hologram is not null)
+            {
+                if (overseer.hologram is EmoteHologram emoteHologram && emoteHologram.stillRelevant)
+                {
+                    emoteHologram.emote = e;
+                    emoteHologram.displayer = d;
+                    emoteHologram.lifetime = 0;
+                    return true;
+                }
+
+                overseer.hologram.stillRelevant = false;
+                overseer.hologram = null;
+            }
+
+            overseer.hologram = new EmoteHologram(overseer, null, float.MaxValue, d, e);
+            overseer.room.AddObject(overseer.hologram);
+            return true;
+        }
+
 
         // Token: 0x02000C0F RID: 3087
         public class SpectateCursor : UpdatableAndDeletable, IDrawable
         {
+            public bool Visible => overseer.hologram is null;
             public readonly Overseer overseer;
             public Vector2 ScreenPos => this.pos - this.room.game.cameras[0].pos;
             public bool OverseerActive => overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping;
@@ -491,6 +626,8 @@ namespace RainMeadow
 
             public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
             {
+                for (int i = 0; i < sLeaser.sprites.Length; i++) sLeaser.sprites[i].isVisible = Visible;
+
                 Vector2 vector = this.OverseerEyePos(timeStacker);
                 Vector2 a = Vector2.Lerp(this.lastPushAroundPos, this.pushAroundPos, timeStacker);
                 float num = Mathf.Pow(1f - Mathf.Lerp(this.lastQuality, this.quality, timeStacker), 1.5f);

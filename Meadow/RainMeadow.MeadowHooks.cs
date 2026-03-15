@@ -18,6 +18,7 @@ namespace RainMeadow
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
+            _ = Ext_OverseerHologram_Message.OverseerEmote;
 
             byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_base.png"));
             nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
