@@ -1,4 +1,5 @@
 ﻿using Menu;
+using OverseerHolograms;
 using System.Collections.Generic;
 namespace RainMeadow
 {
@@ -69,6 +70,11 @@ namespace RainMeadow
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
             internal static SoundID Fartificer = new("Fartificer", true);
+        }
+
+        public static class Ext_OverseerHologram_Message
+        {
+            internal static OverseerHologram.Message OverseerEmote = new("Meadow_OverseerEmote", true);
         }
     }
 }
