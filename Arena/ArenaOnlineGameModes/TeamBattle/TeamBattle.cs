@@ -359,10 +359,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                                 return A.allKills.Count > B.allKills.Count;
                             }
                             
-                            if (A.deaths != B.deaths)
-                            {
-                                return A.deaths < B.deaths;
-                            }
+                            
+                            return A.deaths < B.deaths;
+                            
                         }
                     }
                 }
