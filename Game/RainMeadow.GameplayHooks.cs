@@ -79,7 +79,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
             {
                 SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
-            } 
+            }
             else
             {
                 orig(self, sLeaser, rCam);
@@ -710,13 +710,13 @@ namespace RainMeadow
                         for (int i = entities.Count - 1; i >= 0; i--)
                         {
                             if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                            {
+                                if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                 {
-                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
-                                    {
-                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
-                                        coinCount++;
-                                    }
+                                    pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                    coinCount++;
                                 }
+                            }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
                     }
@@ -740,7 +740,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-    }
+        }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
@@ -803,7 +803,10 @@ namespace RainMeadow
                             num = Mathf.Max(num, -500f);
                         }
                     }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    if (self?.bodyChunks != null && self.bodyChunks.Length > 0 && self.bodyChunks[0].pos.y < num &&
+                        self.room != null && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) &&
+                        (self.Template == null || !self.Template.canFly || self.Stunned || self.dead) &&
+                        (self is Player || self.room.game?.GetArenaGameSession?.chMeta?.oobProtect != true))
                     {
 
                         //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
