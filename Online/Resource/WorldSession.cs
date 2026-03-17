@@ -39,6 +39,7 @@ namespace RainMeadow
 
                 // In Meadow, we only care about the extra condition.
                 // In Story/Arena, we wait for participants to be 0 AND the condition to be met.
+
                 bool isDoneWaiting = isMeadow
                     ? conditionMet
                     : (participants.Count == 0 && conditionMet);
