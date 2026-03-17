@@ -346,6 +346,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                         if (aIsWinningTeam && bIsWinningTeam)
                         {
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // If both are on winning team, sort by kill value
+
+                            }
                             if (A.allKills.Count != B.allKills.Count)
                             {
                                 return A.allKills.Count > B.allKills.Count;
@@ -354,7 +359,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             {
                                 return A.deaths < B.deaths;
                             }
-                            return A.score > B.score; // If both are on winning team, sort by kill value
                         }
                     }
                 }
