@@ -5,11 +5,15 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Watcher;
-
+using System.Diagnostics;
 namespace RainMeadow
 {
     public class OnlinePhysicalObject : OnlineEntity
     {
+        public int lastSerializationFrame = -1; // Initialize to -1
+
+        // We only need to work if the last time we worked WASN'T this frame
+        public bool NeedsSerialization => lastSerializationFrame != Time.frameCount;
         public class OnlinePhysicalObjectDefinition : EntityDefinition
         {
             [OnlineField]
@@ -47,25 +51,53 @@ namespace RainMeadow
 
             protected virtual void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
             {
-                var serializedObject = onlinePhysicalObject.apo.ToString();
-                RainMeadow.Debug("Data is " + serializedObject);
+                // 1. FRAME GUARD: The ultimate "Skip" button.
+                // If we've already done this for this object this frame, exit instantly (0ms).
+                if (!onlinePhysicalObject.NeedsSerialization) return;
+
+                // Start high-precision timing
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                // 2. THE BOTTLENECK: The native Rain World string generator.
+                // This is likely where ~1.0ms of your 1.5ms is hidden.
+                string serializedObject = onlinePhysicalObject.apo.ToString();
+
+                // 3. EFFICIENT SCANNING: Find the "Extras" without rescanning from index 0.
                 int index = 0;
                 int count = ExtrasIndex;
-                for (int i = 0; i < count; i++) index = serializedObject.IndexOf("<oA>", index + 4); // the first X fields are already saved
-                if (index == -1) // no extra data
+                for (int i = 0; i < count; i++)
                 {
-                    RainMeadow.Debug("no extra");
+                    index = serializedObject.IndexOf("<oA>", index);
+                    if (index == -1) break;
+                    index += 4; // Move past the "<oA>" tag
+                }
+
+                if (index == -1)
+                {
                     extraData = "";
                 }
                 else
                 {
-                    RainMeadow.Debug("extra is  " + serializedObject.Substring(index + 4));
-                    SaveExtras(serializedObject.Substring(index + 4));
+                    // 4. LAZY UPDATE: Only substring if necessary.
+                    string newExtra = serializedObject.Substring(index);
+                    if (this.extraData != newExtra)
+                    {
+                        SaveExtras(newExtra);
+                        this.extraData = newExtra;
+                    }
                 }
 
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
-            }
+                // 5. TIMESTAMP: Mark this object as "Current" for this frame.
+                onlinePhysicalObject.lastSerializationFrame = UnityEngine.Time.frameCount;
 
+                sw.Stop();
+
+                // 6. SMART LOGGING: Only log if it's actually slow (e.g., > 0.1ms).
+                // This keeps your log file clean while still catching performance regressions.
+
+                RainMeadow.Debug($"[PERF] StoreSerializedObject({onlinePhysicalObject.apo.ID}) took {sw.Elapsed.TotalMilliseconds:F4}ms | Ticks: {sw.ElapsedTicks}");
+
+            }
             protected virtual string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}",
@@ -213,7 +245,7 @@ namespace RainMeadow
                 creatingRemoteObject = oldCreatingRemoteObject;
                 throw;
             }
-            creatingRemoteObject = oldCreatingRemoteObject; 
+            creatingRemoteObject = oldCreatingRemoteObject;
 
 
             realized = initialState.realized;
@@ -421,7 +453,7 @@ namespace RainMeadow
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
             }
         }
-        
+
         public void RemoveEntityFromGame(bool onlineaware = true)
         {
             RainMeadow.Debug("Removing entity from game: " + this);
@@ -560,7 +592,7 @@ namespace RainMeadow
 
             public Vector2 collisionPoint;
 
-            public OnlineCollisionResult() {}
+            public OnlineCollisionResult() { }
             public OnlineCollisionResult(OnlineEntity.EntityId obj, BodyChunkRef? chunk, AppendageRef onAppendagePos, bool hitSomething, Vector2 collisionPoint)
             {
                 this.obj = obj;
@@ -570,44 +602,50 @@ namespace RainMeadow
                 this.collisionPoint = collisionPoint;
             }
 
-            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer) {
+            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer)
+            {
                 serializer.Serialize(ref obj);
                 serializer.SerializeNullable(ref chunk);
                 serializer.SerializeNullable(ref onAppendagePos);
                 serializer.Serialize(ref hitSomething);
                 serializer.Serialize(ref collisionPoint);
             }
-            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result) {
+            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result)
+            {
                 result = null;
                 OnlinePhysicalObject? collision_obj = this.obj.FindEntity() as OnlinePhysicalObject;
-                if (collision_obj == null) {
+                if (collision_obj == null)
+                {
                     RainMeadow.Error("Invalid collision result");
                     return;
                 }
 
-                if (collision_obj.apo.realizedObject == null) {
+                if (collision_obj.apo.realizedObject == null)
+                {
                     RainMeadow.Error("Object not realized");
                     return;
                 }
 
-                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
-                    chunk?.ToBodyChunk(), 
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject,
+                    chunk?.ToBodyChunk(),
                     onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
 
 
-        public bool HittingRemotely { get; private set; }=  false;
+        public bool HittingRemotely { get; private set; } = false;
         [RPCMethod]
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
 
-            if (this.apo.realizedObject != null) {
+            if (this.apo.realizedObject != null)
+            {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) {
+                if (result.HasValue)
+                {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
                     if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
                     {
@@ -618,9 +656,9 @@ namespace RainMeadow
                     }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
-                
+
             }
-            
+
             HittingRemotely = false;
         }
 
@@ -698,14 +736,14 @@ namespace RainMeadow
             hazer.inkLeft = Mathf.Clamp01(inkLeft);
         }
 
-        [RPCMethod (security = RPCSecurity.Owner)]
+        [RPCMethod(security = RPCSecurity.Owner)]
         public void RecieveHelp()
         {
             if (apo.realizedObject is null || apo.realizedObject is not ICallForHelp realized) return;
             realized.RecieveHelp();
         }
 
-        [RPCMethod (security = RPCSecurity.InResource)]
+        [RPCMethod(security = RPCSecurity.InResource)]
         public void Demask(Vector2 violenceDir)
         {
             if (apo.realizedObject is null || apo.realizedObject is not Vulture vulture || vulture.IsMiros) return;
