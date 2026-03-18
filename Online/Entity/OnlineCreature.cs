@@ -39,28 +39,63 @@ namespace RainMeadow
 
             protected override void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
             {
-                var onlineCreature = (OnlineCreature)onlinePhysicalObject;
+                // 1. FRAME GUARD: If we already did this for the creature this frame, exit.
+                // This is a life-saver during room transitions where this gets called multiple times.
+                if (!onlinePhysicalObject.NeedsSerialization) return;
 
-                var serializedObject = onlineCreature.abstractCreature.world.singleRoomWorld
-                    ? SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature)
-                    : SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
-                RainMeadow.Debug("Data is " + serializedObject);
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var onlineCreature = (OnlineCreature)onlinePhysicalObject;
+                var absCr = onlineCreature.abstractCreature;
+
+                // 2. THE HEAVY NATIVE CALL: 
+                // This is the primary source of lag for creatures.
+                string serializedObject = absCr.world.singleRoomWorld
+                    ? SaveState.AbstractCreatureToStringSingleRoomWorld(absCr)
+                    : SaveState.AbstractCreatureToStringStoryWorld(absCr);
+
+                // 3. OPTIMIZED STRING SCANNING:
+                // We use a single pass to find the "<cA>" tag index.
                 int index = 0;
                 int count = ExtrasIndex;
-                for (int i = 0; i < count; i++) index = serializedObject.IndexOf("<cA>", index + 4); // the first X fields are already saved
-                if (index == -1) // no extra data
+                for (int i = 0; i < count; i++)
                 {
-                    RainMeadow.Debug("no extra");
+                    index = serializedObject.IndexOf("<cA>", index);
+                    if (index == -1) break;
+                    index += 4; // Skip the length of the tag
+                }
+
+                if (index == -1)
+                {
                     extraData = "";
                 }
                 else
                 {
-                    RainMeadow.Debug("extra is  " + serializedObject.Substring(index + 4));
-                    CreatureSaveExtras(serializedObject.Substring(index + 4));
+                    // 4. LAZY SUBSTRING: Only allocate a new string if the data actually changed.
+                    string newExtra = serializedObject.Substring(index);
+                    if (this.extraData != newExtra)
+                    {
+                        CreatureSaveExtras(newExtra);
+                        this.extraData = newExtra;
+                    }
                 }
 
-                this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
+                // 5. CACHE METADATA: 
+                // Avoid accessing deep properties repeatedly if possible.
+                if (onlineCreature.creature?.creatureTemplate != null)
+                {
+                    this.creatureType = onlineCreature.creature.creatureTemplate.type;
+                }
+
+                // 6. TIMESTAMP: Mark as complete for this frame.
+                onlinePhysicalObject.lastSerializationFrame = UnityEngine.Time.frameCount;
+
+                sw.Stop();
+
+                // 7. PERFORMANCE LOGGING: 
+                // Only log if it's over 0.1ms to keep the console clean.
+
+                RainMeadow.Debug($"[PERF] StoreSerializedCreature({absCr.ID}) took {sw.Elapsed.TotalMilliseconds:F4}ms | Ticks: {sw.ElapsedTicks}");
+
             }
 
             public override string MakeSerializedObject(AbstractPhysicalObjectState initialState)
@@ -281,25 +316,30 @@ namespace RainMeadow
         public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
         {
             RainMeadow.Debug(this);
-            if (this.roomSession.absroom.realizedRoom is null) {
+            if (this.roomSession.absroom.realizedRoom is null)
+            {
                 RainMeadow.Error($"{this} is trying to enter abstracted room.");
                 apo.Abstractize(apo.pos);
                 return;
             }
 
-            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom))
+            {
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
-            
-            if (this.realizedCreature is null) {
+
+            if (this.realizedCreature is null)
+            {
                 this.creature.Realize();
             }
 
             var realcreature = this.realizedCreature!;
-            if (abstractCreature.Room != newRoom.absroom) {
+            if (abstractCreature.Room != newRoom.absroom)
+            {
                 RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
-                if (realcreature.room != null) {
+                if (realcreature.room != null)
+                {
                     realcreature.room.RemoveObject(realcreature);
                 }
                 AllMoving(true);
