@@ -18,12 +18,12 @@ namespace RainMeadow.UI
         public AlignedMenuLabel postGameStatsLabel;
         public ArenaOnlineGameMode arenaMode;
         public float spacing = 20;
-        public ArenaPostGameStatsDialog(ProcessManager manager, ArenaOnlineGameMode arena) : base("", new(800, 460), manager)
+        public ArenaPostGameStatsDialog(ProcessManager manager, ArenaOnlineGameMode arena) : base("", new(1000, 460), manager)
         {
             arenaMode = arena;
             postGameStatsLabel = new(this, pages[0], Translate("POST-GAME STATS"), new(pos.x + size.x * 0.5f, pos.y + size.y + 10), new(0, 0), true);
             postGameStatsLabel.label.anchorY = 0;
-            closeButton = new(this, pages[0], Translate("BACK"), new(roundedRect.pos.x + roundedRect.size.x - 80, roundedRect .pos.y - 40), new(80, 30));
+            closeButton = new(this, pages[0], Translate("BACK"), new(roundedRect.pos.x + roundedRect.size.x - 80, roundedRect.pos.y - 40), new(80, 30));
             closeButton.OnClick += _ =>
             {
                 manager.StopSideProcess(this);
@@ -35,13 +35,13 @@ namespace RainMeadow.UI
         }
         public void SetUpStoredResults()
         {
-            storedResults = new StoredResults[3];
-            float totalOccupiedXSize = size.x - (storedResults.Length + 1) * spacing, totalOccupiedYSize = size.y - spacing * 2, 
+            storedResults = new StoredResults[4];
+            float totalOccupiedXSize = size.x - (storedResults.Length + 1) * spacing, totalOccupiedYSize = size.y - spacing * 2,
                 storedResultXSize = totalOccupiedXSize / storedResults.Length;
             for (int i = 0; i < storedResults.Length; i++)
             {
                 float posX = spacing * (i + 1) + storedResultXSize * i;
-                string name = i == 0? Translate("WINS") : i == 1? Translate("KILLS") : Translate("DEATHS");
+                string name = i == 0 ? Translate("WINS") : i == 1 ? Translate("KILLS") : i == 2 ? Translate("DEATHS") : Translate("SCORE");
                 storedResults[i] = new(this, roundedRect, new(posX, spacing), new(storedResultXSize, totalOccupiedYSize), name);
             }
             roundedRect.SafeAddSubobjects(storedResults);
@@ -58,9 +58,11 @@ namespace RainMeadow.UI
             if (i == 0)
                 return [.. arenaMode.playerNumberWithWins.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 1)
-                return [.. arenaMode.playerNumberWithTrophies.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x =>  x.Value.Count).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
+                return [.. arenaMode.playerNumberWithTrophies.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
             if (i == 2)
                 return [.. arenaMode.playerNumberWithDeaths.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+            if (i == 3)
+                return [.. arenaMode.playerTotScore.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             return [];
         }
         public void UpdateStoredResults(StoredResults storedResults, string[] strings)
@@ -68,7 +70,7 @@ namespace RainMeadow.UI
             List<AlignedMenuLabel> menulabels = storedResults.scroller.GetSpecificButtons<AlignedMenuLabel>();
             for (int i = 0; i < menulabels.Count; i++)
             {
-                if (strings.Length<= i)
+                if (strings.Length <= i)
                 {
                     storedResults.scroller.RemoveButton(menulabels[i], true);
                     continue;
