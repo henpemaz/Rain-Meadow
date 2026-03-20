@@ -248,8 +248,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 arenaSlugcatSelectPage.SwitchSelectedSlugcat(
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
-                if (RainMeadow.isArenaMode(out _) && !RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value)
-                    Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+                if (RainMeadow.isArenaMode(out _))
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value;
             }
         );
         manager.ShowDialog(selector);
