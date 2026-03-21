@@ -11,32 +11,29 @@ namespace RainMeadow
         [OnlineFieldHalf]
         public Vector2 pos;
 
-        [OnlineField]
-        public OverseerHologram.Message message;
+        [OnlineField(group = "message")]
+        public string message;
         
         [OnlineField(nullable: true)] 
         public OnlineEntity.EntityId? communicateWith;
-
-        [OnlineField] 
-        public float importance;
 
         public OverseerHologramState() { }
         public OverseerHologramState(OverseerHologram hologram)
         {
             pos = hologram.pos;
-            message = hologram.message;
+            message = hologram.message.value;
             communicateWith = hologram.communicateWith?.abstractCreature?.GetOnlineCreature()?.id;
-            importance = hologram.importance;
         }
 
         public void MakeHologram(Overseer overseer) 
         {
+            RainMeadow.DebugMe();
             if (overseer.hologram is not null)
             {
                 overseer.hologram.stillRelevant = false;
                 overseer.hologram = null;
             }
-            if (message == RainMeadow.Ext_OverseerHologram_Message.OverseerEmote)
+            if (message == RainMeadow.Ext_OverseerHologram_Message.OverseerEmote.value)
             {
                 if (CreatureController.creatureControllers.TryGetValue(overseer, out var controller) 
                         && controller is OverseerController overseerController && overseerController.latestEmoteDisplayer is not null && overseerController.latestEmote is not null)
@@ -44,14 +41,11 @@ namespace RainMeadow
                     overseerController.AddEmoteLocal(overseerController.latestEmoteDisplayer, overseerController.latestEmote);
                 }
             }
-            else
-            {
-                overseer.TryAddHologram(message, (communicateWith?.FindEntity() as OnlineCreature)?.abstractCreature?.realizedCreature, float.MaxValue);
-            }
         }
 
         public void ReadToHologram(OverseerHologram hologram)
         {
+            hologram.stillRelevant = true;
             hologram.pos = pos;
         }
     }
@@ -66,7 +60,7 @@ namespace RainMeadow
     //          this leads to an overseer being fake killed on remote.
     public class RealizedOverseerState : RealizedCreatureState
     {
-        [OnlineField]
+        [OnlineField(group = "owner_iterator")]
         private int ownerIterator;  // our guide is 1, vanilla goes from 0-5, sandbox uses 10+
         [OnlineField]
         private IntVector2 rootTile;
@@ -79,8 +73,8 @@ namespace RainMeadow
         [OnlineField(nullable = true)]
         private OnlinePhysicalObject? conversationPartner;
 
-        [OnlineField(nullable: true)]
-        private OverseerHologramState? hologram;
+        [OnlineField(nullable: true, group = "hologram")]
+        private OverseerHologramState? hologramstate;
 
         public RealizedOverseerState() { }
         public RealizedOverseerState(OnlineCreature entity) : base(entity)
@@ -93,13 +87,14 @@ namespace RainMeadow
             mode = o.mode;
             lookAt = o.AI.lookAt;
             conversationPartner = o.conversationPartner?.abstractCreature.GetOnlineObject();
-            if (o.hologram is not null && o.hologram.message is not null)
+            if (o.hologram is not null && !o.hologram.slatedForDeletetion)
             {
-                hologram = new OverseerHologramState(o.hologram);
+                hologramstate = new OverseerHologramState(o.hologram);
+                RainMeadow.Debug("Hologram State");
             }
             else
             {
-                hologram = null;
+                hologramstate = null;
             }
         }
         public override bool ShouldPosBeLenient(PhysicalObject po)
@@ -143,29 +138,37 @@ namespace RainMeadow
                     if (overseer.mode == Overseer.Mode.SittingInWall)
                     {
                         overseer.SwitchModes(Overseer.Mode.Zipping);
-                        return;
                     }
-
-                    overseer.nextHoverTile = hoverTile;
-                    overseer.afterWithdrawMode = Overseer.Mode.Zipping;
-                    overseer.SwitchModes(Overseer.Mode.Withdrawing);
+                    else
+                    {
+                        overseer.nextHoverTile = hoverTile;
+                        overseer.afterWithdrawMode = Overseer.Mode.Zipping;
+                        overseer.SwitchModes(Overseer.Mode.Withdrawing);
+                    }
                 }
                 else
                 {
                     overseer.hoverTile = hoverTile;
                 }
             }
+            
+            
+            overseer.conversationPartner = conversationPartner?.apo?.realizedObject as Overseer;
 
-            if (hologram is not null)
+            if (hologramstate is not null)
             {
-                if (overseer.hologram is null || overseer.hologram.message != hologram.message) hologram.MakeHologram(overseer);
-                if (overseer.hologram is not null) hologram.ReadToHologram(overseer.hologram);
+                if (overseer.hologram is not null && overseer.hologram.message.value != hologramstate.message)
+                {
+                    overseer.hologram.stillRelevant = false;
+                    overseer.hologram = null;
+                } 
+
+                if (overseer.hologram is null) hologramstate.MakeHologram(overseer);
+                if (overseer.hologram is not null) hologramstate.ReadToHologram(overseer.hologram);
             }
             else
             {
                 overseer.AI.lookAt = lookAt;
-                overseer.conversationPartner = conversationPartner?.apo?.realizedObject as Overseer;
-
                 if (overseer.hologram is not null)
                 {
                     overseer.hologram.stillRelevant = false;
