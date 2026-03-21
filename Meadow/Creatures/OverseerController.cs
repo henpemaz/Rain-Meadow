@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -65,8 +66,8 @@ namespace RainMeadow
             }
         }
 
-        public EmoteHologram(Overseer overseer, Creature communicateWith, float importance, EmoteDisplayer displayer, MeadowProgression.Emote emote) : base(overseer, 
-            RainMeadow.Ext_OverseerHologram_Message.OverseerEmote, communicateWith, importance)
+        public EmoteHologram(Overseer overseer, Creature communicateWith, float importance, EmoteDisplayer displayer, MeadowProgression.Emote emote) : 
+            base(overseer, RainMeadow.Ext_OverseerHologram_Message.OverseerEmote, communicateWith, importance)
         {
             this.displayer = displayer;
             this.emote = emote;
@@ -109,6 +110,67 @@ namespace RainMeadow
 
     public class OverseerController : CreatureController, ICustomEmoteDisplayer
     {
+        public interface ISpectatable
+        {
+            Vector2 pos { get; }
+            bool SpectateAction(Overseer overseer);
+            public void StopSpectating(Overseer overseer);
+            public bool IsViableForOverseer(Overseer overseer);
+        }
+
+        public class SpectatableCreature(SpectateCursor cursor, AbstractCreature creature) : ISpectatable
+        {
+            public Vector2 pos => creature.realizedCreature is not null? creature.realizedCreature.mainBodyChunk.pos : cursor.room.MiddleOfTile(creature.pos);
+            public bool SpectateAction(Overseer overseer)
+            {
+                ((OverseerAbstractAI)overseer.abstractCreature.abstractAI).targetCreature = creature;
+                return true;
+            }
+
+            public void StopSpectating(Overseer overseer)
+            {
+                var abstractAI = (OverseerAbstractAI)overseer.abstractCreature.abstractAI;
+                if (abstractAI.followCreature == creature)
+                {
+                    abstractAI.followCreature = null;   
+                }
+            }
+
+
+            public bool IsViableForOverseer(Overseer overseer)
+            {
+                if (creature.InDen) return false;
+                if (creature.realizedCreature is null) return false;
+                return overseer.room.abstractRoom == creature.Room;
+            }
+        }
+
+
+        public class SpectatbleShortcut(ShortcutData data) : ISpectatable
+        {            
+            public Vector2 pos => data.room.MiddleOfTile(data.StartTile);
+            public bool SpectateAction(Overseer overseer)
+            {
+                RainMeadow.DebugMe();
+                AbstractRoom? room = overseer.room.world.GetAbstractRoom(data.destinationCoord.room);
+                overseer.room.game.roomRealizer.RealizeAndTrackRoom(room, true);
+                overseer.ZipOutOfRoom(data.destinationCoord);
+                return false;
+            }
+
+            public void StopSpectating(Overseer overseer) { }
+
+            public bool IsViableForOverseer(Overseer overseer)
+            {
+                return data.room == overseer.room;
+            }
+
+        }
+
+
+
+
+
         public Overseer overseer;
         public SpectateCursor? cursor;
         public OverseerController(Overseer creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
@@ -234,7 +296,7 @@ namespace RainMeadow
             Vector2 targetPos = overseer.mainBodyChunk.pos;
             // int camerapos = room.CameraViewingPoint(targetPos);
             // if (camerapos != -1) targetPos = room.cameraPositions[camerapos];
-            cursor = new SpectateCursor(overseer, playerNumber, targetPos); 
+            cursor = new SpectateCursor(overseer, this, playerNumber, targetPos); 
             cursor.mouseMode = true;
             overseer.room.AddObject(cursor);
         }
@@ -285,8 +347,11 @@ namespace RainMeadow
         // Token: 0x02000C0F RID: 3087
         public class SpectateCursor : UpdatableAndDeletable, IDrawable
         {
+            public ISpectatable? spectatingCandidate = null;
+            public ISpectatable? currentlySpectating = null;
             public bool Visible => overseer.hologram is null;
             public readonly Overseer overseer;
+            public readonly OverseerController controller;
             public Vector2 ScreenPos => this.pos - this.room.game.cameras[0].pos;
             public bool OverseerActive => overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping;
 
@@ -296,8 +361,9 @@ namespace RainMeadow
                 return Vector2.Lerp(overseer.mainBodyChunk.lastPos, overseer.mainBodyChunk.pos, timeStacker);
             }
 
-            public SpectateCursor(Overseer overseer, int playerNumber, Vector2 initPos)
+            public SpectateCursor(Overseer overseer, OverseerController controller, int playerNumber, Vector2 initPos)
             {
+                this.controller = controller;
                 this.playerNumber = playerNumber;
                 this.overseer = overseer;
                 this.pos = initPos;
@@ -331,6 +397,20 @@ namespace RainMeadow
             {
                 this.bump = 1f;
                 this.red = redBump;
+            }
+
+            public void PromoteCandidate(ISpectatable spectatable)
+            {
+                if (spectatingCandidate is null)
+                {
+                    spectatingCandidate = spectatable;
+                    return;
+                }
+
+                if (Custom.DistNoSqrt(spectatable.pos, pos) < Custom.DistNoSqrt(spectatingCandidate.pos, pos))
+                {
+                    spectatingCandidate = spectatable;
+                }
             }
 
             public override void Update(bool eu)
@@ -388,8 +468,6 @@ namespace RainMeadow
                     Vector2 diff = targetpos - pos;
                     this.vel += Vector2.ClampMagnitude(diff, 5f) * 2f;
                     this.pos += Vector2.ClampMagnitude(diff, 5f);
-
-                    
                 }
                 else
                 {
@@ -411,30 +489,81 @@ namespace RainMeadow
                 {
                     this.input[i] = this.input[i - 1];
                 }
+
+                var gameInput = RWInput.PlayerInput(this.playerNumber);
+                if (gameInput.AnyInput) this.mouseMode = false;
+                if (Input.GetKeyDown(KeyCode.Mouse0)) mouseMode = true;
                 if (this.mouseMode)
                 {
                     this.input[0] = new Player.InputPackage(false, Options.ControlSetup.Preset.KeyboardSinglePlayer, 0, 0, false, Input.GetKey(KeyCode.Mouse0), Input.GetKey(KeyCode.Mouse1), false, false);
                 }
                 else
                 {
-                    this.input[0] = RWInput.PlayerInput(this.playerNumber);
+                    this.input[0] = gameInput;
                 }
 
 
-                float num = 0f;
+
                 bool clickedSomething = false;
 
-                // if (this.input[0].pckp && !this.input[1].pckp)
-                // {
-                //     //TODO: Selectables.
-                //     this.menuMode = !this.menuMode;
-                //     clickedSomething = true;
-                //     // this.room.PlaySound(this.menuMode ? SoundID.SANDBOX_Overseer_Switch_To_Menu_Mode : SoundID.SANDBOX_Overseer_Switch_Out_Of_Menu_Mode, 0f, 1f, 1f);
-                //     // if (this.menuMode && this.mouseMode)
-                //     // {
-                //     //     this.editor.overlay.sandboxEditorSelector.MouseCursorEnterMenuMode(this);
-                //     // }
-                // }
+                if (currentlySpectating is null)
+                {
+                    const float candidate_distance = 40f;
+                    if (spectatingCandidate is not null && 
+                        (!Custom.DistLess(spectatingCandidate.pos, pos, candidate_distance) || !spectatingCandidate.IsViableForOverseer(overseer)))
+                    {
+                        spectatingCandidate = null;
+                    }
+
+                    Creature closestCreature = this.room.physicalObjects.SelectMany(x => x).OfType<Creature>().Where(x => !x.slatedForDeletetion).DefaultIfEmpty().Aggregate((a, b) => 
+                        Custom.DistNoSqrt(a.mainBodyChunk.pos, pos) < Custom.DistNoSqrt(b.mainBodyChunk.pos, pos)? a : b);
+                    if (closestCreature is not null && Custom.DistLess(closestCreature.mainBodyChunk.pos, pos, candidate_distance)) PromoteCandidate(new SpectatableCreature(this, closestCreature.abstractCreature));
+
+                    ShortcutData closestShortCut = this.room.shortcuts.Where(x => x.shortCutType == ShortcutData.Type.RoomExit).DefaultIfEmpty().Aggregate((a, b) => 
+                        Custom.DistNoSqrt(room.MiddleOfTile(a.StartTile), pos) < Custom.DistNoSqrt(room.MiddleOfTile(b.StartTile),pos)? a : b);
+                    if (closestShortCut.shortCutType == ShortcutData.Type.RoomExit && Custom.DistLess(room.MiddleOfTile(closestShortCut.StartTile), pos, candidate_distance)) PromoteCandidate(new SpectatbleShortcut(closestShortCut));
+        
+
+                    if (spectatingCandidate is not null)
+                    {
+                        this.homeIn = Custom.LerpAndTick(this.homeIn, 1f, 0.03f, 1f / (30f));
+                        this.homePos = spectatingCandidate.pos;
+                    }
+                    else
+                    {
+                        this.homeIn = Mathf.Max(0f, this.homeIn - 0.033333335f);
+                    }
+                }
+                
+
+                if (this.input[0].jmp && !this.input[1].jmp)
+                {
+                    //TODO: Selectables.
+                    // this.menuMode = !this.menuMode;
+                    if (currentlySpectating is not null)
+                    {
+                        clickedSomething = true;
+                        currentlySpectating.StopSpectating(overseer);
+                        currentlySpectating = null;
+                    }
+                    else if (spectatingCandidate is not null)
+                    {
+                        if (spectatingCandidate.SpectateAction(overseer))
+                        {
+                            currentlySpectating = spectatingCandidate;
+                            
+                        }
+                    }
+
+                    spectatingCandidate = null;
+                    clickedSomething = true;
+                    this.room.PlaySound(SoundID.SANDBOX_Overseer_Switch_To_Menu_Mode, 0f, 1f, 1f);
+                }
+
+
+
+
+
                 // if (this.menuMode)
                 // {
                 //     if (this.input[0].x != 0 && this.input[0].x != this.input[1].x)
@@ -594,10 +723,10 @@ namespace RainMeadow
                 //     }
                 // }
                 // this.lingerFac = Mathf.Max(0f, this.lingerFac - 0.05f);
-                // if (!this.menuMode && !clickedSomething && ((this.input[0].thrw && !this.input[1].thrw) || (this.input[0].jmp && !this.input[1].jmp)))
-                // {
-                //     this.room.PlaySound(SoundID.SANDBOX_Nothing_Click, this.pos, 1f, 1f);
-                // }
+                if (!clickedSomething && ((this.input[0].thrw && !this.input[1].thrw) || (this.input[0].jmp && !this.input[1].jmp)))
+                {
+                    this.room.PlaySound(SoundID.SANDBOX_Nothing_Click, this.pos, 1f, 1f);
+                }
             }
 
             public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)

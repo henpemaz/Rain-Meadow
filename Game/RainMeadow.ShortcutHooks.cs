@@ -92,11 +92,11 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null) {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
-                            creature.MoveMovable(cord);
                             try
                             {
-                                if (creature.GetAllConnectedObjects().Contains(handler.game.cameras[0].followAbstractCreature))
+                                if (creature.FollowedByCamera(0))
                                 {
+                                    handler.game.world.ActivateRoom(handler.betweenRoomsWaitingLobby[inbetween_room_index].room);
                                     handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
                                 }
                             }
@@ -104,6 +104,8 @@ namespace RainMeadow
                             {
                                 RainMeadow.Debug(except);
                             }
+
+                            creature.MoveMovable(cord);
                             
                             return true;
                         }
