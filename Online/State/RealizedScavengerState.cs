@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    
+
     public class RealizedScavengerState : RealizedCreatureState
     {
 
@@ -141,7 +141,7 @@ namespace RainMeadow
 
         public abstract class AttentiveAnimationState : AnimationState
         {
-            
+
             [OnlineField(group = "attentiveAnim", nullable = true)]
             public OnlineEntity.EntityId? creature;
 
@@ -175,7 +175,7 @@ namespace RainMeadow
                 {
                     anim.creatureRep = scavenger.AI.tracker.RepresentationForCreature(critter.abstractCreature, true);
                 }
-                
+
             }
         }
 
@@ -198,7 +198,7 @@ namespace RainMeadow
                 {
                     rep = scavenger.AI.tracker.RepresentationForCreature(critter.creature, true);
                 }
-                
+
                 return new Scavenger.LookAnimation(scavenger, rep, point, prio, stop);
             }
 
@@ -252,7 +252,7 @@ namespace RainMeadow
                 {
                     rep = scavenger.AI.tracker.RepresentationForCreature(critter.creature, true);
                 }
-                
+
                 List<Tracker.CreatureRepresentation> groupRep = new(group.list.Select(x => x.FindEntity()).OfType<OnlineCreature>().Select(x => scavenger.AI.tracker.RepresentationForCreature(x.creature, true)));
                 return new Scavenger.GeneralPointAnimation(scavenger, rep, point, groupRep);
             }
@@ -301,7 +301,7 @@ namespace RainMeadow
                 {
                     rep = scavenger.AI.tracker.RepresentationForCreature(critter.creature, true);
                 }
-                
+
                 return new Scavenger.BackOffAnimation(scavenger, rep, point);
             }
 
@@ -343,7 +343,7 @@ namespace RainMeadow
             {
                 wantID = animation.desiredItem?.abstractPhysicalObject.GetOnlineObject()?.id;
             }
-            
+
 
             public override Scavenger.ScavengerAnimation.ID GetAnimationID() => Scavenger.ScavengerAnimation.ID.WantToTrade;
             public override Scavenger.ScavengerAnimation? ConstructAnimation(Scavenger scavenger)
@@ -369,7 +369,7 @@ namespace RainMeadow
         public class PrepareToJumpAnimationState : AnimationState
         {
             [OnlineField]
-            byte filler = 0; 
+            byte filler = 0;
 
             public PrepareToJumpAnimationState() { }
             public PrepareToJumpAnimationState(Scavenger.PrepareToJumpAnimation animation) : base(animation) { }
@@ -386,7 +386,7 @@ namespace RainMeadow
         public class JumpingAnimationState : AnimationState
         {
             [OnlineField]
-            byte filler = 0; 
+            byte filler = 0;
 
             public JumpingAnimationState() { }
             public JumpingAnimationState(Scavenger.JumpingAnimation animation) : base(animation)
@@ -424,8 +424,8 @@ namespace RainMeadow
         private Scavenger.MovementMode? movementMode;
 
 
-        [OnlineField(polymorphic = true, nullable = true)]
-        private AnimationState? animationState;
+        // [OnlineField(polymorphic = true, nullable = true)]
+        // private AnimationState? animationState;
 
         [OnlineField(group = "look")]
         Vector2 lookPoint;
@@ -442,7 +442,7 @@ namespace RainMeadow
             this.flip = scav.flip;
             this.kingWaiting = scav.kingWaiting;
             this.movementMode = scav.movMode;
-            this.animationState = AnimationState.GetAnimationState(scav.animation);
+            //this.animationState = AnimationState.GetAnimationState(scav.animation);
             this.swingClimbCounter = (byte)scav.swingClimbCounter;
             this.swingArm = (byte)scav.swingArm;
 
@@ -452,7 +452,7 @@ namespace RainMeadow
             {
                 this.lookAtEntity = critter.id;
             }
-            
+
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -470,25 +470,25 @@ namespace RainMeadow
 
                 // for some reason king's direct away from throne animation uses the Back off id despite being a different animation
                 // thanks MSC
-                if (animationState != null)
-                {
-                    if (!kingWaiting)
-                    {
-                        if (scav.animation is null || (scav.animation?.id != animationState.GetAnimationID()))
-                        {
-                            scav.animation = animationState.ConstructAnimation(scav);
-                        }
+                // if (animationState != null)
+                // {
+                //     if (!kingWaiting)
+                //     {
+                //         if (scav.animation is null || (scav.animation?.id != animationState.GetAnimationID()))
+                //         {
+                //             scav.animation = animationState.ConstructAnimation(scav);
+                //         }
 
-                        if (scav.animation is not null)
-                        {
-                            animationState.ReadTo(scav, scav.animation);
-                        }
-                    }
-                }
-                else
-                {
-                    scav.animation = null;
-                }
+                //         if (scav.animation is not null)
+                //         {
+                //             animationState.ReadTo(scav, scav.animation);
+                //         }
+                //     }
+                // }
+                // else
+                // {
+                //     scav.animation = null;
+                // }
 
                 if (scav.critLooker is not null)
                 {
