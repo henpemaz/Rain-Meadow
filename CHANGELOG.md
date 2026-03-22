@@ -20,6 +20,7 @@
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+- Rolled back Scavenger animation sync to prevent major desync scenarios
 ### Watcher
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
