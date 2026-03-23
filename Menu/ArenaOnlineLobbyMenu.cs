@@ -121,7 +121,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
         if (RainMeadow.isArenaMode(out _))
-            Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value;
+            Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
     }
 
     public void ChangeScene()
@@ -249,7 +249,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
                 if (RainMeadow.isArenaMode(out _))
-                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value;
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
             }
         );
         manager.ShowDialog(selector);
