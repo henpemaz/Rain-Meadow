@@ -5,6 +5,7 @@
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 - Fixed neuron glow not using players' selected body color.
 - Fixed infinite tinnitus for real this time.
+- Inv eggs no longer duplicate per player per Inv.
 ## Arena
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
