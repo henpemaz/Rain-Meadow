@@ -179,6 +179,7 @@ namespace RainMeadow
             );
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
+
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
@@ -323,6 +324,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
             {
+
                 return; // Clients ignore adding local entities
             }
 
@@ -967,17 +969,17 @@ namespace RainMeadow
                     arena,
                     player.playerNumber
                 );
+
                 if (pl != null)
                 {
-                    if (pl != null)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            arena.SetPlayerStatsFromLocalPlayer(player, pl);
-                        }
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
                     }
                     arena.ReadFromStats(player, pl);
+
                 }
+
             }
             orig(self, resultPage, owner, player, index);
         }
@@ -1860,7 +1862,7 @@ namespace RainMeadow
                     x => x.MatchLdfld(typeof(ArenaGameSession), nameof(ArenaGameSession.chMeta)),
                     x => x.MatchBrfalse(out enableDevTools));
 
-                cursor.EmitDelegate(delegate() { return isArenaMode(out _); });
+                cursor.EmitDelegate(delegate () { return isArenaMode(out _); });
                 cursor.Emit(OpCodes.Brtrue, enableDevTools);
             }
             catch (Exception ex) { RainMeadow.Error(ex); }

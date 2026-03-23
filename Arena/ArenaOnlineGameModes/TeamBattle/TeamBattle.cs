@@ -528,6 +528,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player

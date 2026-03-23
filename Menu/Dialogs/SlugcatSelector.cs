@@ -53,9 +53,9 @@ namespace RainMeadow.UI
         public bool FinishedShowingResults =>
             slugcatRandomizers.All(x => !x.rolling && x.desiredResultPosY == x.resultPosY);
         public bool IsMatching =>
-            slugcatRandomizers.All(x =>
-                x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat
-            );
+        slugcatRandomizers.All(x =>
+            x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat
+        );
         public bool IsCloseMatching =>
             slugcatRandomizers
                 .GroupBy(x => x.slugcatButton.slugcat)
@@ -212,7 +212,7 @@ namespace RainMeadow.UI
                     return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
 
                 }
-                RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value = true;
+                RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
                 RainMeadow.rainMeadowOptions.config.Save();
                 return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
             }

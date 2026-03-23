@@ -60,10 +60,6 @@ namespace RainMeadow
 
         public static void LoadElement(string elementName)
         {
-            if (!SpecialEvents.IsSpecialEventInLobby)
-            {
-                return;
-            }
             if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;

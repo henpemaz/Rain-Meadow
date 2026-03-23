@@ -835,8 +835,14 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer player,
             OnlinePlayer pl)
         {
-            playerNumberWithWins[pl.inLobbyId] = player.wins;
-            playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
+            if (playerNumberWithWins[pl.inLobbyId] < player.wins)
+            {
+                playerNumberWithWins[pl.inLobbyId] = player.wins;
+            }
+            if (playerNumberWithDeaths[pl.inLobbyId] < player.deaths)
+            {
+                playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
+            }
             if (playerTotScore[pl.inLobbyId] < player.totScore)
             {
                 playerTotScore[pl.inLobbyId] = player.totScore;
