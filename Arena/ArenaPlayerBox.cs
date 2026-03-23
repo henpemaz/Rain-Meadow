@@ -163,7 +163,7 @@ namespace RainMeadow.UI.Components
 
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = showGold ? Color.Lerp(basecolor.rgb, gold, gold.a) : Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            slugcatButton.secondaryColor = showRainbow ? rainbow : showGold ? goldColor : desiredSlugcatButtonSecondaryColor;
+            slugcatButton.secondaryColor = showRainbow ? rainbow : showGoldTemporarily ? goldColor : desiredSlugcatButtonSecondaryColor;
             if (!RainMeadow.isArenaMode(out var arena))
             {
                 return;
