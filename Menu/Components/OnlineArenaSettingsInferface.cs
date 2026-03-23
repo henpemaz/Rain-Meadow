@@ -60,9 +60,9 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 this,
-                new(evilAICheckBox.pos.x - 135, spearsHitCheckbox.pos.y),
+                new((settingsWidth - 24) / 2f, spearsHitCheckbox.pos.y),
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Overseer:"),
+                menu.Translate("Overseers Show:"),
                 "OVERSEER",
                 false
             );
