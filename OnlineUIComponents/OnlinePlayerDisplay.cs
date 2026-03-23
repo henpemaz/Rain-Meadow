@@ -115,9 +115,9 @@ namespace RainMeadow
                 {
                     this.iconString = "Multiplayer_Star";
                 }
-                else if (arena.externalArenaGameMode.AddIcon(arena, owner, customization, player) != "")
+                else if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
                 {
-                    this.iconString = arena.externalArenaGameMode.AddIcon(arena, owner, customization, player);
+                    this.iconString = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
                 }
             }
 
@@ -198,15 +198,9 @@ namespace RainMeadow
                         {
                             slugIcon.SetElementByName("Multiplayer_Star");
                         }
-                        else if (SpecialEvents.IsSpecialEventInLobby)
+                        else if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
                         {
-                            SpecialEvents.LoadElement("meadowcoin");
-                            this.slugIcon.SetElementByName("meadowcoin");
-                            this.slugIcon.scale = 0.08f;
-                        }
-                        else if (arena.externalArenaGameMode.AddIcon(arena, owner, customization, player) != "")
-                        {
-                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, owner, customization, player));
+                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player));
                         }
                         else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                         slugIcon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);

@@ -292,6 +292,7 @@ namespace RainMeadow
 
         public virtual string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player
