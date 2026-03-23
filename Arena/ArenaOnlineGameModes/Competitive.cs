@@ -127,7 +127,7 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (SpecialEvents.IsSpecialEventInLobby)
+            if (SpecialEvents.IsSpecialEventInLobby || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 display.slugIcon?.scale = 0.08f;
