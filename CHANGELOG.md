@@ -25,7 +25,10 @@
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
 ## Meadow
-- Fixed slugcats being unable to pass SB_D03 (depths guardian room) if remix's "Vanilla Exploits" is disabled.
+- Fixed a number of story-related handlers loading into meadow mode when they shouldn't:
+	- The pounce tutorial barrier in SU_A43 no longer loads in.
+	- The jetfish tutorial (and its jetfish) in SL_C12 no longer load in.
+	- Slugcats can now pass SB_D03 (depths guardian room) even if remix's "Vanilla Exploits" is disabled.
 
 # Release 1.12.0
 ## Arena

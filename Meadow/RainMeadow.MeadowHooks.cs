@@ -82,7 +82,7 @@ namespace RainMeadow
 
             On.ShortcutHandler.ShortCutVessel.ctor += ShortCutVessel_ctor; // faster vessels
 
-            On.RoomSpecificScript.SB_D03ShortcutLock.Update += RoomSpecificScript_SB_D03ShortcutLock_Update;
+            On.RoomSpecificScript.AddRoomSpecificScript += Meadow_RoomSpecificScript_AddRoomSpecificScript;
         }
 
         private void ShortCutVessel_ctor(On.ShortcutHandler.ShortCutVessel.orig_ctor orig, ShortcutHandler.ShortCutVessel self, RWCustom.IntVector2 pos, Creature creature, AbstractRoom room, int wait)
@@ -430,15 +430,18 @@ namespace RainMeadow
             }
             orig(self);
         }
-        
-        private void RoomSpecificScript_SB_D03ShortcutLock_Update(On.RoomSpecificScript.SB_D03ShortcutLock.orig_Update orig, RoomSpecificScript.SB_D03ShortcutLock self, bool eu)
+        private void Meadow_RoomSpecificScript_AddRoomSpecificScript(On.RoomSpecificScript.orig_AddRoomSpecificScript orig, Room room)
         {
-            orig(self, eu);
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                self.room?.lockedShortcuts.Clear();
-                self.Destroy();
+                switch (room.abstractRoom.name)
+                {
+                    case "SL_C12": return;
+                    case "SB_D03": return;
+                    case "SU_A43": return;
+                }
             }
+            orig(room);
         }
     }
 }
