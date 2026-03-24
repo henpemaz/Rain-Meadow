@@ -831,26 +831,26 @@ namespace RainMeadow
 
         }
 
-        public void SetPlayerStatsFromLocalPlayer(
-            ArenaSitting.ArenaPlayer player,
-            OnlinePlayer pl)
+        public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
-            if (playerNumberWithWins[pl.inLobbyId] < player.wins)
-            {
-                playerNumberWithWins[pl.inLobbyId] = player.wins;
-            }
-            if (playerNumberWithDeaths[pl.inLobbyId] < player.deaths)
-            {
-                playerNumberWithDeaths[pl.inLobbyId] = player.deaths;
-            }
-            if (playerTotScore[pl.inLobbyId] < player.totScore)
-            {
-                playerTotScore[pl.inLobbyId] = player.totScore;
-            }
-            if (playerNumberWithScore[pl.inLobbyId] < player.score)
-            {
-                playerNumberWithScore[pl.inLobbyId] = player.score;
-            }
+            if (pl == null) return;
+            int id = pl.inLobbyId;
+
+            // Wins
+            if (playerNumberWithWins.TryGetValue(id, out int currentWins) && currentWins < player.wins)
+                playerNumberWithWins[id] = player.wins;
+
+            // Deaths
+            if (playerNumberWithDeaths.TryGetValue(id, out int currentDeaths) && currentDeaths < player.deaths)
+                playerNumberWithDeaths[id] = player.deaths;
+
+            // Total Score
+            if (playerTotScore.TryGetValue(id, out int currentTot) && currentTot < player.totScore)
+                playerTotScore[id] = player.totScore;
+
+            // Round Score
+            if (playerNumberWithScore.TryGetValue(id, out int currentScore) && currentScore < player.score)
+                playerNumberWithScore[id] = player.score;
         }
         public void AddOrInsertPlayerStats(
             ArenaOnlineGameMode arena,
