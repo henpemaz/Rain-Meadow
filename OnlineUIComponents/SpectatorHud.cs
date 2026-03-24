@@ -165,7 +165,6 @@ namespace RainMeadow
             }
 
             OnlineManager.mePlayer.isActuallySpectating = spectatee != null && !spectatee.IsLocal();
-            RainMeadow.Warn((spectatorOverlay == null ? "null" : spectatorOverlay.spectatee) + " " + (spectatee == null ? "null" : spectatee));
             if (spectatee != null)
             {
                 camera.followAbstractCreature = spectatee;
