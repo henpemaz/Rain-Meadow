@@ -432,15 +432,40 @@ namespace RainMeadow
         }
         private void Meadow_RoomSpecificScript_AddRoomSpecificScript(On.RoomSpecificScript.orig_AddRoomSpecificScript orig, Room room)
         {
-            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            if (OnlineManager.lobby.gameMode is MeadowGameMode) //Blacklist problematic scripts
             {
                 switch (room.abstractRoom.name)
                 {
-                    case "SL_C12": return;
-                    case "SB_D03": return;
-                    case "SU_A43": return;
+                    case "SU_A43": return; //Pounce tutorial
+                    case "SL_C12": return; //Jetfish tutorial
+                    case "SB_D03": return; //Depths guardian room exit lock
+
+                    case "LF_A03": return; //Hunter mechanics tutorial
+                }
+                if (ModManager.MSC)
+                {
+                    switch (room.abstractRoom.name)
+                    {
+                        case "SU_PMPSTATION01": return; //One-way water tunnel blocking SU to OE
+                        case "MS_CORE":         return; //Submerged Superstructure rarefaction cell cutscene
+
+                        case "OE_FINAL03":      return; //Outer Expanse ending trigger
+
+                        case "GW_C05":          return; //Artificer explosive jump tooltip #1
+                        case "GW_EDGE02":       return; //Artificer explosive jump tooltip #2
+                        case "GW_EDGE03":       return; //Artificer guaranteed scav corpse #1
+                        case "GW_TOWER01":      return; //Artificer guaranteed scav corpse #2
+                        case "GW_PIPE02":       return; //Artificer guaranteed scav corpse #3
+
+                        case "SU_INTRO01":      return; //Spearmaster needle pull tooltip
+                        case "SU_CAVE_02":      return; //Spearmaster feeding tooltip
+
+                        case "SI_SAINTINTRO":   return; //Saint tongue tutorial
+                        case "SI_C02":          return; //Saint heat tutorial
+                    }
                 }
             }
+
             orig(room);
         }
     }

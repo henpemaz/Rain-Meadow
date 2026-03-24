@@ -25,10 +25,11 @@
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
 ## Meadow
-- Fixed a number of story-related handlers loading into meadow mode when they shouldn't:
-	- The pounce tutorial barrier in SU_A43 no longer loads in.
-	- The jetfish tutorial (and its jetfish) in SL_C12 no longer load in.
-	- Slugcats can now pass SB_D03 (depths guardian room) even if remix's "Vanilla Exploits" is disabled.
+- Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
+- MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
+- The pounce tutorial and SU_PMPSTATION01 barriers no longer load in.
+- The guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
+- Many different room-specific tooltips across all campaigns are now disabled.
 
 # Release 1.12.0
 ## Arena
