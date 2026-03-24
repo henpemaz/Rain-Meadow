@@ -158,10 +158,13 @@ namespace RainMeadow
                 {
                     continue;
                 }
-
+                // Tourney
+                if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
+                {
+                    RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName}");
+                }
                 if (killedCrit.IsLocal())
                 {
-
                     ushort lobbyId = absPlayerCreature.owner.inLobbyId;
                     if (earnsTrophy)
                     {
