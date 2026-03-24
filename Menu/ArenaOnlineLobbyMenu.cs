@@ -480,7 +480,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             bool check = checkBox.Checked;
             string idString = checkBox.IDString;
             if (idString == "OVERSEER")
-                return check ? Translate("Overseer Spectator spawn") : Translate("No overseers");
+                return check ? Translate("Overseer Spectators spawn in-game") : Translate("Overseer Spectators do not spawn in-game");
             if (idString == "SPEARSHIT")
                 return check
                     ? Translate("Player vs player deathmatch")
