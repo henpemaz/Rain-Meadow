@@ -120,8 +120,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
-        if (RainMeadow.isArenaMode(out _))
-            Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
+        if (RainMeadow.isArenaMode(out var arena))
+            arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
     }
 
     public void ChangeScene()
