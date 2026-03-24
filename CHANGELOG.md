@@ -6,6 +6,7 @@
 - Fixed neuron glow not using players' selected body color.
 - Fixed infinite tinnitus for real this time.
 - Inv eggs no longer duplicate per player per Inv.
+- Fixed your spectated scug resetting every time you opened the spectate menu.
 ## Arena
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
