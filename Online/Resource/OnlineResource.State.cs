@@ -46,7 +46,7 @@ namespace RainMeadow
                 return;
             }
             RainMeadow.Trace($"processing received state {newState} in resource {this}");
-            if (newState.isDelta)
+            if (newState.IsDelta)
             {
                 RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
                 while (incomingState.Count > 0 && EventMath.IsNewer(newState.baseline, incomingState.Peek().tick))
