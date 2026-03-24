@@ -835,6 +835,7 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer player,
             OnlinePlayer pl)
         {
+            if (pl == null) return;
             if (playerNumberWithWins[pl.inLobbyId] < player.wins)
             {
                 playerNumberWithWins[pl.inLobbyId] = player.wins;
