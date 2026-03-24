@@ -1,13 +1,14 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using System;
-using System.Linq;
 using MonoMod.RuntimeDetour;
-using System.Runtime.CompilerServices;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
-using System.Collections.Generic;
 
 namespace RainMeadow;
 
@@ -1168,7 +1169,8 @@ public partial class RainMeadow
 
         if (isArenaMode(out var arena) && !self.inShortcut)
         {
-            if (arena.countdownInitiatedHoldFire)
+            int[] disabledCollisionChallenges = [68];
+            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
             {
                 if (self.collisionLayer != 0)
                 {
