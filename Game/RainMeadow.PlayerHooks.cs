@@ -19,6 +19,7 @@ public partial class RainMeadow
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
 
         On.Player.ctor += Player_ctor;
+        IL.Player.ctor += Player_ctor3;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStatsGourmandBack);
@@ -1768,6 +1769,31 @@ public partial class RainMeadow
                 self.glowing = storyGameSession.saveState.theGlow || self.room.game.setupValues.playerGlowing;
             }
         }
+    }
+    private void Player_ctor3(ILContext il)
+    {
+        //Don't dupe Inv eggs/singularity bombs per player.
+        //Old: if (ModManager.MSC && SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && abstractCreature.Room.world.game.IsStorySession)
+        //New: if (ModManager.MSC && SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && abstractCreature.Room.world.game.IsStorySession && isLocal())
+        try
+        {
+            ILCursor cursor = new(il);
+            ILLabel breakTo = cursor.DefineLabel();
+
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName), nameof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)));
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchCallvirt(typeof(RainWorldGame), "get_IsStorySession"),
+                x => x.MatchBrfalse(out breakTo));
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate(delegate(Player self)
+            {
+                return self.IsLocal(out _);
+            });
+            cursor.Emit(OpCodes.Brfalse, breakTo);
+        }
+        catch (Exception ex) { RainMeadow.Error(ex); }
     }
 
     private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
