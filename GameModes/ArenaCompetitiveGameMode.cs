@@ -786,6 +786,11 @@ namespace RainMeadow
 
         public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
+            if (player == null || pl == null) 
+            {
+                RainMeadow.Debug("ReadFromStats failed: player or pl is null!");
+                return; 
+            }
             RainMeadow.Debug(this);
             // Wins
             if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
