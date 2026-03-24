@@ -24,6 +24,9 @@
 ### Watcher
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
 
+## Meadow
+- Fixed slugcats being unable to pass SB_D03 (depths guardian room) if remix's "Vanilla Exploits" is disabled.
+
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession
