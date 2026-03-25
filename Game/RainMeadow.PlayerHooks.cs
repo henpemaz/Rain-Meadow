@@ -1169,7 +1169,7 @@ public partial class RainMeadow
 
         if (isArenaMode(out var arena) && !self.inShortcut)
         {
-            int[] disabledCollisionChallenges = [68];
+            int[] disabledCollisionChallenges = [27, 44, 45, 55, 58, 60, 68]; //Mostly stuff that spawns you on a tiny platform above a death pit, or time sensitive stuff with only one way forward.
             if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
             {
                 if (self.collisionLayer != 0)
