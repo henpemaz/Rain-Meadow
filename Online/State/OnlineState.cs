@@ -113,9 +113,8 @@ namespace RainMeadow
             if (baseline.IsDelta) throw new InvalidProgrammerException("baseline is delta");
             if (IsDelta) throw new InvalidProgrammerException("self is delta");
 
-            if (baseline.handler != this.handler)
+            if (this.handler.deltaSupport == StateHandler.DeltaSupport.None || baseline.handler != this.handler)
             {
-                RainMeadow.Debug("polymorphic delta woohoo sent");
                 return this.Clone();
             }
 
@@ -136,11 +135,13 @@ namespace RainMeadow
         public virtual OnlineState ApplyDelta(OnlineState incoming)
         {
             if (incoming == null) throw new ArgumentNullException();
-            if (incoming.handler != this.handler) throw new InvalidProgrammerException("Incoming changed types but sent a delta");
-
-            if (!incoming.IsDelta)
+            
+            if (incoming.IsDelta)
             {
-                RainMeadow.Debug("polymorphic delta woohoo recieved ");
+                if (incoming.handler != this.handler) throw new InvalidProgrammerException("Incoming changed types but sent a delta");
+            }
+            else
+            {
                 return incoming.Clone();
             }
 
