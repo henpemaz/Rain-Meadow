@@ -33,7 +33,7 @@ namespace RainMeadow.UI.Components
 
         public ChallengeInformation.ChallengeMeta meta;
 
-        public List<int> unstableChallenges = new List<int> { 70, 68 };
+        public List<int> unstableChallenges = new List<int> { 70 };
 
         public bool changedChallenge;
 
@@ -95,7 +95,7 @@ namespace RainMeadow.UI.Components
             challengeNameLabel = new MenuLabel(
                 menu,
                 this,
-                $"{this.menu.Translate(meta.arena)}: {this.menu.Translate(meta.GetMetaDescription(this.menu))}",
+                $"{this.menu.Translate(meta.name)}: {this.menu.Translate(meta.GetMetaDescription(this.menu))}",
                 new Vector2(size.x * 0.5f, dividerY + 80f),
                 new Vector2(0, 0),
                 true
@@ -255,7 +255,7 @@ namespace RainMeadow.UI.Components
                         m.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
                         m.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(meta.arena);
                     }
-                    challengeNameLabel.text = $"{meta.arena}: {meta.GetMetaDescription(this.menu)}";
+                    challengeNameLabel.text = $"{meta.name}: {meta.GetMetaDescription(this.menu)}";
                     if (unstableChallenges.Contains(challengeMode.challengeID))
                     {
                         challengeNameLabel.label.color = Color.red;

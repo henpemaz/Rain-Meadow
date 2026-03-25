@@ -120,8 +120,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
-        if (RainMeadow.isArenaMode(out _))
-            Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
+        if (RainMeadow.isArenaMode(out var arena))
+            arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
     }
 
     public void ChangeScene()
@@ -480,7 +480,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             bool check = checkBox.Checked;
             string idString = checkBox.IDString;
             if (idString == "OVERSEER")
-                return check ? Translate("Overseer Spectator spawn") : Translate("No overseers");
+                return check ? Translate("Overseer Spectators spawn in-game") : Translate("Overseer Spectators do not spawn in-game");
             if (idString == "SPEARSHIT")
                 return check
                     ? Translate("Player vs player deathmatch")
