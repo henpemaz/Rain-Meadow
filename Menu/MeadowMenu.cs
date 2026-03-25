@@ -31,7 +31,6 @@ namespace RainMeadow
         float tintAmount;
         FSprite tintPreview;
 
-        //FSprite eyeColorPreview;
         MeadowAvatarData personaSettings;
         OpTinyColorPicker colorpicker;
 
