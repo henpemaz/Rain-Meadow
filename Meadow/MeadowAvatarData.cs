@@ -40,7 +40,14 @@ namespace RainMeadow
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
-            originalEyeColor = meadowEyeColor;
+            if (skinData.eyeColor.HasValue)
+            {
+                originalEyeColor = skinData.eyeColor.Value;
+            }
+            else
+            {
+                originalEyeColor = meadowEyeColor;
+            }
         }
 
         internal string GetEmote(Emote emote)
