@@ -1169,7 +1169,8 @@ public partial class RainMeadow
 
         if (isArenaMode(out var arena) && !self.inShortcut)
         {
-            int[] disabledCollisionChallenges = [27, 44, 45, 55, 58, 60, 68]; //Mostly stuff that spawns you on a tiny platform above a death pit, or time sensitive stuff with only one way forward.
+            int[] disabledCollisionChallenges = [60, 68]; //27, 44, 45, 55, and 58 all also have problems with player spawns bumping each other into death pits, but they also include creatures, which we still want to collide with.
+                                                          //60 also has danglefruit that we don't collide with but that matters less. Ideally we'd set up a "just don't collide with players" collision layer, but this works for now.
             if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
             {
                 if (self.collisionLayer != 0)
