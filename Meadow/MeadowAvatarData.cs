@@ -40,7 +40,7 @@ namespace RainMeadow
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
-            if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
+            originalEyeColor = meadowEyeColor;
         }
 
         internal string GetEmote(Emote emote)
@@ -122,7 +122,7 @@ namespace RainMeadow
         internal void Updated()
         {
             this.skinData = MeadowProgression.skinData[skin];
-            this.skinData.eyeColor = new(meadowEyeColor.r, meadowEyeColor.g, meadowEyeColor.b);
+            this.meadowEyeColor = new(meadowEyeColor.r, meadowEyeColor.g, meadowEyeColor.b);
             this.character = skinData.character;
             this.characterData = MeadowProgression.characterData[skinData.character];
 
