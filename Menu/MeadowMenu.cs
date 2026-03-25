@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using System;
 using System.Collections.Generic;
@@ -24,8 +24,6 @@ namespace RainMeadow
 
         List<MeadowProgression.Character> playableCharacters;
         Dictionary<MeadowProgression.Character, List<MeadowProgression.Skin>> characterSkins;
-
-        private CheckBox toggleWhiteEyes;
 
         int skinIndex;
         float tintAmount;
