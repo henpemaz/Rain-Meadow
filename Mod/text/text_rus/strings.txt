@@ -696,7 +696,7 @@ Rain Meadow definitely failed to start|Rain Meadow точно не смог за
 Rain Meadow servers will go offline soon for maintenance|Сервера Rain Meadow скоро отключатся для технического обслуживания
 Would you like to erase all save progress?|Хотите ли вы удалить весь прогресс сохранений?
 Take ¤10 Meadow Coins|Получите ¤10 Meadow Монет
-Coins remaining:|Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}
+Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}|Монет осталось: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}
 wawa|wawa
 Good.|Неплохо.
 It was.|Было.
