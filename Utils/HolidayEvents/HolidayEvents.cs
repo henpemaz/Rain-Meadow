@@ -130,5 +130,17 @@ namespace RainMeadow
             menu.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pan: 0f, vol: 2.0f, pitch: 2.0f);
             menu.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pan: 0f, vol: 2.0f, pitch: 1.5f);
         }
+
+        public static void PlayMeadowCoinSound(Room room)
+        {
+            room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pan: 0f, vol: 2.0f, pitch: 2.0f);
+            room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pan: 0f, vol: 2.0f, pitch: 1.5f);
+        }
+
+        public static void PlayMeadowCoinSound(Room room, MeadowCollectToken token)
+        {
+            room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pos: token.pos, vol: 2.0f, pitch: 2.0f);
+            room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pos: token.pos, vol: 2.0f, pitch: 1.5f);
+        }
     }
 }

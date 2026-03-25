@@ -719,8 +719,8 @@ namespace RainMeadow
                             }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
-                        self.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pan: 0f, vol: 2.0f, pitch: 2.0f);
-                        self.room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pan: 0f, vol: 2.0f, pitch: 1.5f);
+                        SpecialEvents.PlayMeadowCoinSound(self.room);
+
                     }
 
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
