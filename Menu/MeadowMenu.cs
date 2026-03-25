@@ -306,7 +306,7 @@ namespace RainMeadow
                 MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][0];
             }
             colorpicker.valuecolor = MeadowProgression.progressionData.currentCharacterProgress.tintColor;
-            eyeColorPicker.valuecolor = Color.black;
+            eyeColorPicker.valuecolor = personaSettings.meadowEyeColor;
             tintAmount = MeadowProgression.progressionData.currentCharacterProgress.tintAmount;
 
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
@@ -409,7 +409,10 @@ namespace RainMeadow
         private void EyeColorpicker_OnValueChangedEvent()
         {
             var eyeColor = eyeColorPicker.valuecolor;
-            personaSettings.skinData.eyeColor = eyeColor;
+            personaSettings.meadowEyeColor = eyeColor;
+            personaSettings.Updated();
+
+
         }
 
         private void UpdateTintPreview()
