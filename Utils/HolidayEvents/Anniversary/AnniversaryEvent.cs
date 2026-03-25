@@ -28,7 +28,10 @@ namespace RainMeadow
                 DateTime startDate = new DateTime(2024, 12, 20);
                 DateTime today = DateTime.UtcNow;
                 int yearsSince = today.Year - startDate.Year;
-                string message = Regex.Replace(self.Translate($"Special event: {Name} number {yearsSince}!<LINE>Event days remaining: {AnniversaryEvent.DaysRemaining}"), "<LINE>", "\r\n");
+                string m0 = self.Translate("Special event:");
+                string m1 = self.Translate("number");
+                string m2 = self.Translate("Event days remaining:");
+                string message = Regex.Replace($"{m0} {Name} {m1} {yearsSince}!<LINE>>{m2} {AnniversaryEvent.DaysRemaining}", "<LINE>", "\r\n");
 
                 DialogNotify dialog = new DialogNotify(message, self.manager, null);
                 dialog.okButton.size = new Vector2(100f, 30f);
