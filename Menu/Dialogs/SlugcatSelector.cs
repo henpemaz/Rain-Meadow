@@ -240,9 +240,12 @@ namespace RainMeadow.UI
         {
             continueButton.buttonBehav.greyedOut = true;
             if (SpecialEvents.IsSpecialEventInLobby)
+            {
+                string m0 = Translate("COINS:");
                 continueButton.menuLabel.text = Translate(
-                    $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
+                    $"{m0} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                 );
+            }
             hasAlreadyRolled = true;
             if (myRollingCounter % startEndRollingOrderCounter == 0)
             {
