@@ -79,7 +79,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
             {
                 SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
-            } 
+            }
             else
             {
                 orig(self, sLeaser, rCam);
@@ -710,15 +710,17 @@ namespace RainMeadow
                         for (int i = entities.Count - 1; i >= 0; i--)
                         {
                             if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                            {
+                                if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                 {
-                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
-                                    {
-                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
-                                        coinCount++;
-                                    }
+                                    pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                    coinCount++;
                                 }
+                            }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
+                        self.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pan: 0f, vol: 2.0f, pitch: 2.0f);
+                        self.room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pan: 0f, vol: 2.0f, pitch: 1.5f);
                     }
 
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
@@ -740,7 +742,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-    }
+        }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {

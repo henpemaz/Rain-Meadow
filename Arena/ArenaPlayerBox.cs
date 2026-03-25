@@ -80,6 +80,7 @@ namespace RainMeadow.UI.Components
             if (showRainbow && SpecialEvents.IsSpecialEventInLobby && player == OnlineManager.mePlayer)
             {
                 SpecialEvents.GainedMeadowCoin(3);
+                SpecialEvents.PlayMeadowCoinSound(this.menu);
             }
 
         }

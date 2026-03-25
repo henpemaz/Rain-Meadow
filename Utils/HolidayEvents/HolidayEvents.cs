@@ -124,5 +124,11 @@ namespace RainMeadow
 
             return false;
         }
+
+        public static void PlayMeadowCoinSound(Menu.Menu menu)
+        {
+            menu.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pan: 0f, vol: 2.0f, pitch: 2.0f);
+            menu.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pan: 0f, vol: 2.0f, pitch: 1.5f);
+        }
     }
 }
