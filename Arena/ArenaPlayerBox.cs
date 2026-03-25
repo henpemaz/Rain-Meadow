@@ -77,7 +77,7 @@ namespace RainMeadow.UI.Components
             InitButtons(canKick);
             this.SafeAddSubobjects(slugcatButton, nameLabel, textOverlayLabel, colorInfoButton, infoKickButton, hostIdentifierButton);
             subObjects.AddRange(lines);
-            if (SpecialEvents.IsSpecialEvent && player == OnlineManager.mePlayer)
+            if (showRainbow && SpecialEvents.IsSpecialEventInLobby && player == OnlineManager.mePlayer)
             {
                 SpecialEvents.GainedMeadowCoin(3);
             }
