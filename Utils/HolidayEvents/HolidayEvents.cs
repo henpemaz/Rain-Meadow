@@ -27,10 +27,10 @@ namespace RainMeadow
                 {
                     return;
                 }
+                string m1 = self.Translate("Special event");
+                string m2 = self.Translate("Days remaining");
 
-                string message = self.Translate(
-                    $"Special event: {Name}. Days remaining: {DaysRemaining}"
-                );
+                string message = $"{m1} {Name} {m2} {DaysRemaining}";
 
                 self.manager.ShowDialog(CreateDialogNotify(self, message));
 
