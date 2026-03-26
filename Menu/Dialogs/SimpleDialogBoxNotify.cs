@@ -2,8 +2,8 @@
 namespace RainMeadow
 {
     /// <summary>
-    /// A simple, self-contained dialog box that destroys itself upon pressing Continue.
-    /// Merely displays text and can be cleared, it does NOT block interaction with other UI elements.
+    /// A simple, self-contained dialog box that destroys itself upon pressing Continue. Automatically translates input.
+    /// Merely displays text and can be cleared, it does NOT block mouse interaction with other UI elements.
     /// </summary>
     public class SimpleDialogBoxNotify : DialogBoxNotify
     {
