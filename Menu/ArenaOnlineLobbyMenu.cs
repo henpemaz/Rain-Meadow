@@ -120,8 +120,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
-        if (RainMeadow.isArenaMode(out _))
-            Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value;
+        if (RainMeadow.isArenaMode(out var arena))
+            arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
     }
 
     public void ChangeScene()
@@ -248,8 +248,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 arenaSlugcatSelectPage.SwitchSelectedSlugcat(
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
-                if (RainMeadow.isArenaMode(out _) && !RainMeadow.rainMeadowOptions.ArenaWonTheSlots.Value)
-                    Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+                if (RainMeadow.isArenaMode(out _))
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
             }
         );
         manager.ShowDialog(selector);
@@ -350,7 +350,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 .Value;
         }
 
-        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(this.Arena, GetGameTypeSetup);
     }
 
     public override void ShutDownProcess()
@@ -480,7 +480,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             bool check = checkBox.Checked;
             string idString = checkBox.IDString;
             if (idString == "OVERSEER")
-                return check ? Translate("Overseer Spectator spawn") : Translate("No overseers");
+                return check ? Translate("Overseer Spectators spawn in-game") : Translate("Overseer Spectators do not spawn in-game");
             if (idString == "SPEARSHIT")
                 return check
                     ? Translate("Player vs player deathmatch")

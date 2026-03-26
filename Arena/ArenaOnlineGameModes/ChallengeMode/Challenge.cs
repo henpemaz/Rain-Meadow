@@ -1,34 +1,47 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using RainMeadow;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
-namespace RainMeadow
+namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 {
-    public class FFA : ExternalArenaGameMode
+    public partial class ArenaChallengeMode : ExternalArenaGameMode
     {
-        public static ArenaSetup.GameTypeID FFAMode = new ArenaSetup.GameTypeID(
-            "Free For All",
+        public static ArenaSetup.GameTypeID ChallengeMode = new ArenaSetup.GameTypeID(
+            "Challenge",
             register: false
         );
+
+        public int challengeID = RainMeadow.rainMeadowOptions.ChallengeID.Value;
 
         private int _timerDuration;
         public override ArenaSetup.GameTypeID GetGameModeId
         {
-            get { return FFA.FFAMode; }
+            get { return ArenaChallengeMode.ChallengeMode; }
             set { GetGameModeId = value; }
         }
 
-        public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
+        public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
-            ffa = null;
-            if (arena.currentGameMode == FFAMode.value)
+            self.challengeID = challengeID;
+            self.gameType = DLCSharedEnums.GameTypeID.Challenge;
+            self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
+        }
+
+        public static bool isChallengeMode(
+            ArenaOnlineGameMode arena,
+            out ArenaChallengeMode challenge
+        )
+        {
+            challenge = null;
+            if (arena.currentGameMode == ChallengeMode.value)
             {
-                ffa = (
-                    arena.registeredGameModes.FirstOrDefault(x => x.Key == FFAMode.value).Value
-                    as FFA
+                challenge = (
+                    arena
+                        .registeredGameModes.FirstOrDefault(x => x.Key == ChallengeMode.value)
+                        .Value as ArenaChallengeMode
                 );
                 return true;
             }
@@ -41,33 +54,12 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
-            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
+            if (self.challengeCompleted)
             {
-                // idk why orig ignores this when 2 player exists
-                return true;
+                return self.gameSession.Players.Any(x => x.state.alive);
             }
 
-            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
-            {
-                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
-            }
-
-            int playersStillStanding =
-                self.gameSession.Players?.Count(player =>
-                    player.realizedCreature != null && (player.realizedCreature.State.alive)
-                ) ?? 0;
-
-            if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1 && !arena.countdownInitiatedHoldFire)
-            {
-                return true;
-            }
-
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
-
-            return orig(self);
+            return false;
         }
 
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
@@ -98,14 +90,7 @@ namespace RainMeadow
 
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
-            if (arena.setupTime > 0)
-            {
-                return arena.countdownInitiatedHoldFire = true;
-            }
-            else
-            {
-                return arena.countdownInitiatedHoldFire = false;
-            }
+            return arena.countdownInitiatedHoldFire = false;
         }
 
         public override void LandSpear(
@@ -127,13 +112,7 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (SpecialEvents.IsSpecialEventInLobby || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
-            {
-                SpecialEvents.LoadElement("meadowcoin");
-                display.slugIcon?.scale = 0.08f;
-                return "meadowcoin";
-            }
-            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
             }
@@ -167,7 +146,7 @@ namespace RainMeadow
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(
-                menu.LongTranslate("Trust no one. Last scug standing wins"),
+                menu.LongTranslate("Pit yourself against a series of challenges"),
                 new Vector2(500f, 400f),
                 menu.manager,
                 () =>

@@ -36,6 +36,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
+                    spectatorOverlay.spectatee = spectatee;
                     if (SpecialEvents.IsSpecialEventInLobby)
                     {
                         holidayStoreOverlay = new HolidayStoreOverlay(game.manager, game);

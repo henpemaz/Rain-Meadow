@@ -60,9 +60,9 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 this,
-                new(evilAICheckBox.pos.x - 135, spearsHitCheckbox.pos.y),
+                new((settingsWidth - 24) / 2f, spearsHitCheckbox.pos.y),
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Overseer:"),
+                menu.Translate("Overseers Show:"),
                 "OVERSEER",
                 false
             );
@@ -339,12 +339,16 @@ namespace RainMeadow.UI.Components
         public void SetChecked(CheckBox box, bool c)
         {
             string id = box.IDString;
-            if (id == "SPEARSHIT")
-                GetGameTypeSetup.spearsHitPlayers = c;
-            if (id == "EVILAI")
-                GetGameTypeSetup.evilAI = c;
             if (RainMeadow.isArenaMode(out var arena))
             {
+                if (id == "SPEARSHIT")
+                {
+                    arena.onlineArenaSettingsInterfaceeBool[id] = c;
+                    GetGameTypeSetup.spearsHitPlayers = c;
+                }
+                if (id == "EVILAI")
+                    GetGameTypeSetup.evilAI = c;
+
                 if (id == "OVERSEER")
                 {
                     arena.enableOverseer = c;

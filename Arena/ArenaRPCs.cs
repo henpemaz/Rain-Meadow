@@ -1,4 +1,5 @@
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 
@@ -258,7 +259,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum, int score)
+        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -288,14 +289,28 @@ namespace RainMeadow
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                             if (pl != null)
                             {
-
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithScore[pl.inLobbyId] += score;
-
                             }
                         }
 
+                        int scoreToAdd = 0;
+                        if (arena.externalArenaGameMode is ArenaChallengeMode)
+                        {
+                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                            if (index >= 0)
+                            {
+                                scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
+                            }
+                        }
+                        else
+                        {
+                            scoreToAdd = arena.spearScore;
+                        }
+                        if (pl != null)
+                        {
+                            arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
+                        }
                     }
 
                 }

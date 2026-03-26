@@ -211,14 +211,14 @@ namespace RainMeadow
 
             var storeItems = new List<(string, int, Configurable<bool>?)>
             {
-                (SilverCape, 75, RainMeadow.rainMeadowOptions.boughtSilverCape),
-                (GoldenCape, 100, RainMeadow.rainMeadowOptions.boughtGoldenCape),
-                (RainbowCape, 150, RainMeadow.rainMeadowOptions.boughtRainbowCape),
-                (Rock, 1, null),
-                (Spear, 5, null),
-                (ExplosiveSpear, 10, null),
-                (ScavengerBomb, 15, null),
-                (MeadowCoin, 1, null),
+                (Translate(SilverCape), 75, RainMeadow.rainMeadowOptions.boughtSilverCape),
+                (Translate(GoldenCape), 100, RainMeadow.rainMeadowOptions.boughtGoldenCape),
+                (Translate(RainbowCape), 150, RainMeadow.rainMeadowOptions.boughtRainbowCape),
+                (Translate(Rock), 1, null),
+                (Translate(Spear), 5, null),
+                (Translate(ExplosiveSpear), 10, null),
+                (Translate(ScavengerBomb), 15, null),
+                (Translate(MeadowCoin), 1, null),
             };
 
             if (ModManager.MSC) storeItems.Add((JokerRifle, 50, null));

@@ -33,12 +33,12 @@ namespace RainMeadow
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldIn(self);
             return orig(self);
         }
-                private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(
-            On.ArenaSitting.orig_NextLevel orig,
-            ArenaSitting self,
-            ProcessManager manager,
-            WorldSession oldWorldSession
-        )
+        private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(
+    On.ArenaSitting.orig_NextLevel orig,
+    ArenaSitting self,
+    ProcessManager manager,
+    WorldSession oldWorldSession
+)
         {
 
             return WorldSession.WaitAndExecuteSession(

@@ -106,15 +106,26 @@ namespace RainMeadow.UI.Components
             }
 
         }
+
         public override void Update()
         {
             base.Update();
+            showGoldTemporarily = timeToShowGoldBeforeFade > 0 && showGold;
+            if (timeToShowGoldBeforeFade <= 0)
+            {
+                timeToShowGoldBeforeFade = 0;
+            }
+            else
+            {
+                if (showGoldTemporarily)
+                    timeToShowGoldBeforeFade--;
+            }
             rainbowColor.hue = GetLerped();
             slugcatButton.portraitSecondaryLerpFactor = showRainbow
                     ? GetLerped(0.75f)
-                    : showGold
-                        ? GetLerped(0.75f)
-                        : desiredPortraitSecondaryLerpFactor; realPing = Math.Max(1, profileIdentifier.ping - 16);
+                    : showGoldTemporarily ? GetLerped(0.75f)
+                        : desiredPortraitSecondaryLerpFactor;
+            realPing = Math.Max(1, profileIdentifier.ping - 16);
             lastTextOverlayFade = textOverlayFade;
             textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
             slugcatButton.isBlackPortrait = enabledTextOverlay;
@@ -152,7 +163,7 @@ namespace RainMeadow.UI.Components
 
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = showGold ? Color.Lerp(basecolor.rgb, gold, gold.a) : Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            slugcatButton.secondaryColor = showRainbow ? rainbow : showGold ? goldColor : desiredSlugcatButtonSecondaryColor;
+            slugcatButton.secondaryColor = showRainbow ? rainbow : showGoldTemporarily ? goldColor : desiredSlugcatButtonSecondaryColor;
             if (!RainMeadow.isArenaMode(out var arena))
             {
                 return;
@@ -247,5 +258,7 @@ namespace RainMeadow.UI.Components
         public ProperlyAlignedMenuLabel nameLabel;
         public SlugcatColorableButton slugcatButton;
         public OnlinePlayer profileIdentifier;
+        public int timeToShowGoldBeforeFade = 400;
+        public bool showGoldTemporarily;
     }
 }

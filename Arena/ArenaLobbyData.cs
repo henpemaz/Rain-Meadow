@@ -131,6 +131,17 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool enableOverseer;
 
+            [OnlineField(group = "arenaSetup")]
+            public int spearScore;
+
+            [OnlineField(group = "arenaSetup")]
+            public int aliveScore;
+            [OnlineField(group = "arenaSetup")]
+            public int denScore;
+
+            [OnlineField(group = "arenaSetup", nullable = true)]
+            public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
+
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -145,9 +156,6 @@ namespace RainMeadow
             public int currentLevel;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerNumberWithScore;
-
-            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithDeaths;
 
             [OnlineField(group = "arenaScore")]
@@ -158,6 +166,8 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophies;
+            [OnlineField(group = "arenaScore")]
+            public Dictionary<int, int> playerNumberWithScore;
 
 
             [OnlineField(group = "arenaScore")]
@@ -175,6 +185,9 @@ namespace RainMeadow
             [OnlineField]
             public bool playersEqualToOnlineSitting;
 
+
+            [OnlineField]
+            public bool hostLoadedOverlay;
             public State() { }
 
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -189,16 +202,16 @@ namespace RainMeadow
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice =
-                    arena.onlineArenaSettingsInterfaceMultiChoice;
-                onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
+                    new(arena.onlineArenaSettingsInterfaceMultiChoice);
+                onlineArenaSettingsInterfaceBool = new(arena.onlineArenaSettingsInterfaceeBool);
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
-                playerNumberWithScore = new(arena.playerNumberWithScore);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
                 playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playerNumberWithTrophies = new(arena.playerNumberWithTrophies);
                 playerNumberWithTrophiesPerRound = new(arena.playerNumberWithTrophiesPerRound);
+                playerNumberWithScore = new(arena.playerNumberWithScore);
 
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
@@ -239,6 +252,13 @@ namespace RainMeadow
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
+
+                spearScore = arena.spearScore;
+                aliveScore = arena.aliveScore;
+                denRule = arena.denEntryRule;
+                denScore = arena.denScore;
+                hostLoadedOverlay = arena.hostLoadedOverlay;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -260,8 +280,7 @@ namespace RainMeadow
                     playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore =
-                    playerNumberWithScore;
+
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths =
                     playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
@@ -272,7 +291,8 @@ namespace RainMeadow
 playerNumberWithTrophiesPerRound;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
-
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore =
+                    playerNumberWithScore;
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound =
                     playersLateWaitingInLobby;
 
@@ -318,6 +338,13 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
+
+                (lobby.gameMode as ArenaOnlineGameMode).spearScore = spearScore;
+                (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
+                (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
+                (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
+                (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
+
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
