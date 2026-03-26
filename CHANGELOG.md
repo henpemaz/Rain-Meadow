@@ -4,7 +4,7 @@
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 - Fixed neuron glow not using players' selected body color.
-- Fixed infinite tinnitus for real this time.
+- Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
 ## Arena
 - Synced round kills
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
