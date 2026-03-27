@@ -4,6 +4,7 @@
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 - Fixed neuron glow not using players' selected body color.
+- Added customizable logging level to Remix in General tab
 - Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
 - Inv eggs no longer duplicate per player per Inv.
 - Fixed your spectated scug resetting every time you opened the spectate menu.

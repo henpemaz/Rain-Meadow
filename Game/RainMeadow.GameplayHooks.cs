@@ -808,7 +808,10 @@ namespace RainMeadow
                             num = Mathf.Max(num, -500f);
                         }
                     }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    if (self?.bodyChunks != null && self.bodyChunks.Length > 0 && self.bodyChunks[0].pos.y < num &&
+                        self.room != null && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) &&
+                        (self.Template == null || !self.Template.canFly || self.Stunned || self.dead) &&
+                        (self is Player || self.room.game?.GetArenaGameSession?.chMeta?.oobProtect != true))
                     {
 
                         //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
