@@ -978,7 +978,6 @@ namespace RainMeadow
                         arena.SetPlayerStatsFromLocalPlayer(player, pl);
                     }
                     arena.ReadFromStats(player, pl);
-
                 }
 
             }
@@ -1600,6 +1599,10 @@ namespace RainMeadow
                                     if (!arena.reigningChamps.list.Contains(onlinePlayer.id))
                                     {
                                         arena.reigningChamps.list.Add(onlinePlayer.id);
+                                        if (SpecialEvents.IsSpecialEventInLobby && onlinePlayer == OnlineManager.mePlayer)
+                                        {
+                                            SpecialEvents.GainedMeadowCoin(3);
+                                        }
                                     }
                                 }
                                 else

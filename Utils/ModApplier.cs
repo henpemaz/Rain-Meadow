@@ -117,7 +117,7 @@ namespace RainMeadow
             if (unknownMods.Count > 0)
                 modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be installed: ") + string.Join(", ", unknownMods);
             else
-                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?" + Environment.NewLine + menu.Translate("A restart may take place to sync game objects"));
+                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?") + Environment.NewLine + menu.Translate("A restart may take place to sync game objects");
 
             //modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
 
