@@ -57,13 +57,15 @@ namespace RainMeadow
 
                 };
 
+
+                string m0 = self.Translate("Coins remaining:");
                 Dictionary<int, string> okMessage = new Dictionary<int, string>
                 {
                     {
                         0,
                         RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
                             ? "Take ¤10 Meadow Coins"
-                            : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
+                            : $"{m0} {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
                     },
                     { 1, "wawa" },
                     { 2, "Good." },
@@ -85,9 +87,12 @@ namespace RainMeadow
                     result = 0;
                     GainedMeadowCoin(10);
                 }
-                string selectedMessage = Regex.Replace(self.Translate($"Event days remaining: {this.DaysRemaining}<LINE>{aprilMessages[result]}"), "<LINE>", "\r\n");
+                string m1 = self.Translate("Event days remaining:");
+                string m2 = self.Translate(aprilMessages[result]);
+                string m3 = self.Translate(okMessage[result]);
+                string selectedMessage = Regex.Replace($"{m1} {this.DaysRemaining}" + $"<LINE>{m2}", "<LINE>", "\r\n");
                 self.manager.ShowDialog(
-                    CreateDialogNotify(self, selectedMessage, okMessage[result])
+                    CreateDialogNotify(self, selectedMessage, m3)
                 );
             }
 
@@ -118,10 +123,11 @@ namespace RainMeadow
                 {
                     continueButton.buttonBehav.greyedOut = true;
                 }
+                string m0 = continueButton.menu.Translate("COINS:");
                 continueButton.menuLabel.text =
                     RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0
                         ? continueButton.menu.Translate(
-                            $"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
+                            $"{m0} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                         )
                         : continueButton.menu.Translate("YOU ARE POOR");
             }

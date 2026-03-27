@@ -10,6 +10,7 @@ public static class DeathMessage
 {
     public static void EnvironmentalRPC(Player player, DeathType cause)
     {
+        if (player == null) return;
         var opo = player.abstractPhysicalObject.GetOnlineObject();
         if (opo == null) return;
         OnlinePhysicalObject? blame = null;
@@ -24,6 +25,7 @@ public static class DeathMessage
     }
     public static void PvPRPC(Player killer, Creature target, int context)
     {
+        if (killer == null) return;
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
         var topo = target.abstractPhysicalObject.GetOnlineObject();
         if (kopo == null || topo == null) return;
@@ -35,6 +37,7 @@ public static class DeathMessage
     }
     public static void CvPRPC(Creature killer, Player target)
     {
+        if (killer == null) return;
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
         var topo = target.abstractPhysicalObject.GetOnlineObject();
         if (kopo == null || topo == null) return;

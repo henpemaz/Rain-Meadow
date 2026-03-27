@@ -4,7 +4,11 @@
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 - Fixed neuron glow not using players' selected body color.
-- Fixed infinite tinnitus for real this time.
+- Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
+- Inv eggs no longer duplicate per player per Inv.
+- Fixed your spectated scug resetting every time you opened the spectate menu.
+- Updated Chinease Translation (Thanks HapiFive)
+- Fixed translation code for mod applier (Thanks HapiFive)
 ## Arena
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
@@ -12,12 +16,13 @@
 - Added configurable scoring
 - Added KillList & ScoreCounter HUDs from vanilla Arena
 - Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
-- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Granted Saint a kill credit if using ascension to ascend others
 - Fixed Spears Hit toggle not actually working during that current game session
+- Added "Loading x%" message in Arena Overlay to notify of remaining users waiting to leave active resource
 ### Modders 
 - ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
+- ⚠️ BREAKING: Updated `ExternalGameMode.AddIcon` to include OnlinePlayerDisplay to access all UI elements used in the in-game overhead UI
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher

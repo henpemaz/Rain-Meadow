@@ -121,16 +121,23 @@ namespace RainMeadow
 
         public override string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player
         )
         {
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (SpecialEvents.IsSpecialEventInLobby || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
+            {
+                SpecialEvents.LoadElement("meadowcoin");
+                display.slugIcon?.scale = 0.08f;
+                return "meadowcoin";
+            }
+            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, owner, customization, player);
+            return base.AddIcon(arena, display, owner, customization, player);
         }
 
         public override Color IconColor(

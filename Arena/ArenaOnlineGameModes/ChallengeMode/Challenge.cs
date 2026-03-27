@@ -106,6 +106,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player
@@ -115,7 +116,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, owner, customization, player);
+            return base.AddIcon(arena, display, owner, customization, player);
         }
 
         public override Color IconColor(

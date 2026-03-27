@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -179,6 +178,7 @@ namespace RainMeadow
             );
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
+
             IL.ArenaBehaviors.ExitManager.Update += IL_ExitManager_Update;
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
@@ -263,66 +263,69 @@ namespace RainMeadow
 
         public void IL_ExitManager_Update(ILContext il)
         {
-            var cursor = new ILCursor(il);
-
-            // --- TARGET 1: PARRY CONDITION ---
-            if (cursor.TryGotoNext(MoveType.Before,
-                i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
-                i => i.MatchLdcI4(0),
-                i => i.MatchCallvirt<List<ArenaSitting.ArenaPlayer>>("get_Item"),
-                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.parries))
-            ))
+            try
             {
-                cursor.Index++;
-                cursor.RemoveRange(3);
-                cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
+                var cursor = new ILCursor(il);
+                while (cursor.TryGotoNext(MoveType.Before,
+                    i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
+                    i => i.MatchLdcI4(0),
+                    // Safer callvirt match for generic lists
+                    i => i.MatchCallvirt(out var m) && m.Name == "get_Item",
+                    i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.parries))
+                ))
                 {
-                    if (players == null || players.Count == 0) return 0;
-
-                    // If offline or not challenge mode, maintain vanilla behavior (Player 0 only)
-                    if (OnlineManager.lobby == null) return players[0].parries;
-
-                    // Online behavior: check if ANY player met the goal by taking the Max
-                    int maxParries = 0;
-                    for (int i = 0; i < players.Count; i++)
+                    cursor.Index++;
+                    cursor.RemoveRange(3); // Removes ldc.i4.0, get_Item, and ldfld parries
+                    cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
                     {
-                        if (players[i].parries > maxParries) maxParries = players[i].parries;
-                    }
-                    return maxParries;
-                });
+                        if (players == null || players.Count == 0) return 0;
+                        if (OnlineManager.lobby == null) return players[0].parries;
+
+                        int maxParries = 0;
+                        for (int i = 0; i < players.Count; i++)
+                        {
+                            if (players[i].parries > maxParries) maxParries = players[i].parries;
+                        }
+                        return maxParries;
+                    });
+                }
+
+                cursor.Index = 0; // Reset for the next search
+                while (cursor.TryGotoNext(MoveType.Before,
+                    i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
+                    i => i.MatchLdcI4(0),
+                    i => i.MatchCallvirt(out var m) && m.Name == "get_Item",
+                    i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.timeAlive))
+                ))
+                {
+                    cursor.Index++;
+                    cursor.RemoveRange(3);
+                    cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
+                    {
+                        if (players == null || players.Count == 0) return 0;
+                        if (OnlineManager.lobby == null) return players[0].timeAlive;
+
+                        int maxTime = 0;
+                        for (int i = 0; i < players.Count; i++)
+                        {
+                            if (players[i].timeAlive > maxTime) maxTime = players[i].timeAlive;
+                        }
+                        return maxTime;
+                    });
+                }
+
             }
-
-            // --- TARGET 2: SURVIVAL TIME CONDITION ---
-            cursor.Index = 0; // Reset cursor to search from the top again
-            if (cursor.TryGotoNext(MoveType.Before,
-                i => i.MatchLdfld<ArenaSitting>(nameof(ArenaSitting.players)),
-                i => i.MatchLdcI4(0),
-                i => i.MatchCallvirt<List<ArenaSitting.ArenaPlayer>>("get_Item"),
-                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>(nameof(ArenaSitting.ArenaPlayer.timeAlive))
-            ))
+            catch (Exception e)
             {
-                cursor.Index++;
-                cursor.RemoveRange(3);
 
-                cursor.EmitDelegate<Func<List<ArenaSitting.ArenaPlayer>, int>>(players =>
-                {
-                    if (players == null || players.Count == 0) return 0;
-
-                    if (OnlineManager.lobby == null) return players[0].timeAlive;
-
-                    int maxTime = 0;
-                    for (int i = 0; i < players.Count; i++)
-                    {
-                        if (players[i].timeAlive > maxTime) maxTime = players[i].timeAlive;
-                    }
-                    return maxTime;
-                });
+                RainMeadow.Error($"IL_ExitManager_Update missed a patch!: {e}");
             }
         }
         public void SandboxGameSession_SpawnEntity(On.SandboxGameSession.orig_SpawnEntity orig, SandboxGameSession self, ArenaBehaviors.SandboxEditor.PlacedIconData placedIconData)
         {
             if (isArenaMode(out var arena) && arena.externalArenaGameMode is ArenaChallengeMode && !OnlineManager.lobby.isOwner)
             {
+
                 return; // Clients ignore adding local entities
             }
 
@@ -967,17 +970,16 @@ namespace RainMeadow
                     arena,
                     player.playerNumber
                 );
+
                 if (pl != null)
                 {
-                    if (pl != null)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            arena.SetPlayerStatsFromLocalPlayer(player, pl);
-                        }
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
                     }
                     arena.ReadFromStats(player, pl);
                 }
+
             }
             orig(self, resultPage, owner, player, index);
         }
@@ -1597,6 +1599,10 @@ namespace RainMeadow
                                     if (!arena.reigningChamps.list.Contains(onlinePlayer.id))
                                     {
                                         arena.reigningChamps.list.Add(onlinePlayer.id);
+                                        if (SpecialEvents.IsSpecialEventInLobby && onlinePlayer == OnlineManager.mePlayer)
+                                        {
+                                            SpecialEvents.GainedMeadowCoin(3);
+                                        }
                                     }
                                 }
                                 else
@@ -1860,7 +1866,7 @@ namespace RainMeadow
                     x => x.MatchLdfld(typeof(ArenaGameSession), nameof(ArenaGameSession.chMeta)),
                     x => x.MatchBrfalse(out enableDevTools));
 
-                cursor.EmitDelegate(delegate() { return isArenaMode(out _); });
+                cursor.EmitDelegate(delegate () { return isArenaMode(out _); });
                 cursor.Emit(OpCodes.Brtrue, enableDevTools);
             }
             catch (Exception ex) { RainMeadow.Error(ex); }
