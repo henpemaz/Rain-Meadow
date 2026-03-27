@@ -719,6 +719,11 @@ namespace RainMeadow
                             }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
+                        if (coinCount > 0)
+                        {
+                            SpecialEvents.PlayMeadowCoinSound(self.room);
+                        }
+
                     }
 
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;

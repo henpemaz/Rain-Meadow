@@ -4,6 +4,7 @@
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
 - Fixed neuron glow not using players' selected body color.
+- Added customizable logging level to Remix in General tab
 - Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
 - Inv eggs no longer duplicate per player per Inv.
 - Fixed your spectated scug resetting every time you opened the spectate menu.
@@ -27,6 +28,13 @@
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
+
+## Meadow
+- Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
+- MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
+- The pounce tutorial and SU_PMPSTATION01 barriers no longer load in.
+- The guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
+- Many different room-specific tooltips across all campaigns are now disabled.
 
 # Release 1.12.0
 ## Arena

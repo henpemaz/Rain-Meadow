@@ -443,7 +443,7 @@ namespace RainMeadow
             }
             RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
             var stateQueue = incomingState[inResource];
-            if (newState.isDelta)
+            if (newState.IsDelta)
             {
                 RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
                 while (stateQueue.Count > 0 && EventMath.IsNewer(newState.baseline, stateQueue.Peek().tick))
