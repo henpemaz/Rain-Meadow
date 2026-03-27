@@ -60,7 +60,7 @@ Lobby Password|Пароль лобби.
 Player max:|Игроки:
 Maximum number of players that can be in the lobby (up to 32)|Максимальное количество игроков, которые могут находиться в лобби (до 32).
 Creating lobby...|Создание лобби...
-Timeline:
+Timeline:|Хронология:
 Spear|Мастер Копья
 
 ///Создатели
