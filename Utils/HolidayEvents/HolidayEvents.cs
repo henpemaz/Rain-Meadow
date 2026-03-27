@@ -110,7 +110,7 @@ namespace RainMeadow
 
         public static bool CanSpendMeadowCoin(int coinsSpent)
         {
-            return RainMeadow.rainMeadowOptions.MeadowCoins.Value > coinsSpent;
+            return RainMeadow.rainMeadowOptions.MeadowCoins.Value >= coinsSpent;
         }
 
         public static bool SpendMeadowCoin(int coinsSpent)
