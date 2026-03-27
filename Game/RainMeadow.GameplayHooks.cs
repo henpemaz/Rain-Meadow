@@ -79,7 +79,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
             {
                 SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
-            } 
+            }
             else
             {
                 orig(self, sLeaser, rCam);
@@ -710,15 +710,20 @@ namespace RainMeadow
                         for (int i = entities.Count - 1; i >= 0; i--)
                         {
                             if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                            {
+                                if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                 {
-                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
-                                    {
-                                        pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
-                                        coinCount++;
-                                    }
+                                    pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                    coinCount++;
                                 }
+                            }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
+                        if (coinCount > 0)
+                        {
+                            SpecialEvents.PlayMeadowCoinSound(self.room);
+                        }
+
                     }
 
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
@@ -740,7 +745,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
             orig(self);
-    }
+        }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {

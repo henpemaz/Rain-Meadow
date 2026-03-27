@@ -77,6 +77,11 @@ namespace RainMeadow.UI.Components
             InitButtons(canKick);
             this.SafeAddSubobjects(slugcatButton, nameLabel, textOverlayLabel, colorInfoButton, infoKickButton, hostIdentifierButton);
             subObjects.AddRange(lines);
+            if (showRainbow && SpecialEvents.IsSpecialEventInLobby && player == OnlineManager.mePlayer)
+            {
+                SpecialEvents.GainedMeadowCoin(3);
+                SpecialEvents.PlayMeadowCoinSound(this.menu);
+            }
 
         }
         public override void RemoveSprites()
