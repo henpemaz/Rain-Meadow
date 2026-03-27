@@ -688,24 +688,24 @@ April Fool's!|Первое апреля!
 COINS:|МОНЕТ:
 YOU ARE POOR|ТЫ НИЩИЙ
 You need more Meadow Coins to play this game|Вам нужно больше Meadow Монет чтобы сыграть в эту игру
-Game Over! Try again?|Игра окончена! Попробуй ещё раз?
+Game Over! Try again?|Игра окончена! Попробовать ещё раз?
 What's the secret password?|Какой секретный пароль?
 I heard they were removing capes|Я слышал они удаляют плащи
 That crash was probably your fault|Тот вылет скорее всего был из-за тебя
-Rain Meadow definitely failed to start|Rain Meadow точно не смог запуститься
+Rain Meadow definitely failed to start|Rain Meadow определённо не смог запуститься
 Rain Meadow servers will go offline soon for maintenance|Сервера Rain Meadow скоро отключатся для технического обслуживания
 Would you like to erase all save progress?|Хотите ли вы удалить весь прогресс сохранений?
 Take ¤10 Meadow Coins|Получите ¤10 Meadow Монет
-Coins remaining:|Монет осталось
+Coins remaining:|Монет осталось:
 wawa|wawa
-Good.|Неплохо.
-It was.|Было.
-Please work|Пожалуйста сработай
+Good.|Хорошо.
+It was.|Он был.
+Please work|Пожалуйста работай
 Ok|Ок
 Yep|Угу
 Special event:|Особое событие: 
-number:номер
-Event days remaining:|Дней до конца осталось:
+number:|номер:
+Event days remaining:|Дней осталось до конца:
 Spear|Копьё
 Explosive Spear|Взрывное Копьё
 Scavenger Bomb|Бомба Мусорщиков
