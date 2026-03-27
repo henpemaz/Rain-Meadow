@@ -719,7 +719,10 @@ namespace RainMeadow
                             }
                         }
                         SpecialEvents.GainedMeadowCoin(coinCount);
-                        SpecialEvents.PlayMeadowCoinSound(self.room);
+                        if (coinCount > 0)
+                        {
+                            SpecialEvents.PlayMeadowCoinSound(self.room);
+                        }
 
                     }
 
