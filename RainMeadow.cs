@@ -48,6 +48,23 @@ namespace RainMeadow
             On.RWCustom.Custom.Log += Custom_Log;
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+            On.AbstractRoom.AddEntity += (orig, self, entity) => // Please check this code! It might have errors.
+            {
+                orig(self, entity);
+
+                if (self.realizedRoom != null && OnlineManager.lobby != null)
+                {
+                    foreach (var res in OnlineManager.lobby.subresources)
+                    {
+                        if (!res.isActive) return;
+                        if (res is RoomSession rs && rs.absroom == self)
+                        {
+                            rs.GetData<MeadowRoomData>()?.Invalidate(rs.absroom);
+                            break;
+                        }
+                    }
+                }
+            };
 
             DeathContextualizer.CreateBindings();
 
