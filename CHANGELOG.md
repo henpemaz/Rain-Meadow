@@ -7,6 +7,8 @@
 - Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
 - Inv eggs no longer duplicate per player per Inv.
 - Fixed your spectated scug resetting every time you opened the spectate menu.
+- Updated Chinease Translation (Thanks HapiFive)
+- Fixed translation code for mod applier (Thanks HapiFive)
 ## Arena
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
 - Added More Slugcat's "Challenges" to Arena! 
