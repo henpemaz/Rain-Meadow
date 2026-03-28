@@ -103,7 +103,7 @@ namespace RainMeadow
             colorpicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(800, 60), Color.white);
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
 
-            eyeColorPicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(450, 60), Color.white);
+            eyeColorPicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(450, 60), Color.black);
             var eyeColorWrapper = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
 
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
@@ -141,8 +141,9 @@ namespace RainMeadow
 
             this.personaSettings = mgm.avatarData;
             ReadCharacterSettings();
-
             UpdateCharacterUI();
+            // null until set
+            personaSettings.meadowEyeColor = null;
         }
 
         private void UpdateCharacterUI()
@@ -304,7 +305,10 @@ namespace RainMeadow
                 MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][0];
             }
             colorpicker.valuecolor = MeadowProgression.progressionData.currentCharacterProgress.tintColor;
-            eyeColorPicker.valuecolor = personaSettings.meadowEyeColor;
+            if (personaSettings.meadowEyeColor.HasValue)
+            {
+                eyeColorPicker.valuecolor = personaSettings.meadowEyeColor.Value;
+            }
             tintAmount = MeadowProgression.progressionData.currentCharacterProgress.tintAmount;
 
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];

@@ -12,7 +12,7 @@ namespace RainMeadow
         public CharacterData characterData;
         public Color tint;
 
-        public Color meadowEyeColor;
+        public Color? meadowEyeColor;
         public float tintAmount;
         public float effectiveTintAmount;
 
@@ -40,13 +40,14 @@ namespace RainMeadow
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
+            // keep this in case a skin is decided to have a perma override
             if (skinData.eyeColor.HasValue)
             {
                 originalEyeColor = skinData.eyeColor.Value;
             }
-            else
+            else if (meadowEyeColor.HasValue)
             {
-                originalEyeColor = meadowEyeColor;
+                originalEyeColor = meadowEyeColor.Value;
             }
         }
 
@@ -87,7 +88,7 @@ namespace RainMeadow
             public byte tintAmount;
             [OnlineFieldColorRgb]
             public Color tint;
-            [OnlineFieldColorRgb]
+            [OnlineFieldColorRgb(nullable = true)]
             public Color eyeColor;
 
             public State() : base() { }
@@ -96,7 +97,10 @@ namespace RainMeadow
                 skin = onlineEntity.skin;
                 tintAmount = (byte)(onlineEntity.tintAmount * 255f);
                 tint = onlineEntity.tint;
-                eyeColor = onlineEntity.meadowEyeColor;
+                if (onlineEntity.meadowEyeColor.HasValue)
+                {
+                    eyeColor = onlineEntity.meadowEyeColor.Value;
+                }
             }
 
             public override Type GetDataType()
@@ -129,7 +133,10 @@ namespace RainMeadow
         internal void Updated()
         {
             this.skinData = MeadowProgression.skinData[skin];
-            this.meadowEyeColor = new(meadowEyeColor.r, meadowEyeColor.g, meadowEyeColor.b);
+            if (meadowEyeColor.HasValue)
+            {
+                this.meadowEyeColor = new(meadowEyeColor.Value.r, meadowEyeColor.Value.g, meadowEyeColor.Value.b);
+            }
             this.character = skinData.character;
             this.characterData = MeadowProgression.characterData[skinData.character];
 
