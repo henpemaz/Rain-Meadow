@@ -1799,13 +1799,16 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
+            if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.myLastWarp = self.currentSaveState.warpPointTargetAfterWarpPointSave;
             }
             else
             {
-                self.currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                if (storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
+                {
+                    self.currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
             }
 
             RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition}");
