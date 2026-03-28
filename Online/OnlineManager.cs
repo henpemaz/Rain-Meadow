@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.LowLevel;
 
 namespace RainMeadow
 {
@@ -334,6 +335,11 @@ namespace RainMeadow
         public static void RemoveSubscriptions(OnlineResource onlineResource)
         {
             subscriptions.RemoveAll(s => s.resource == onlineResource);
+        }
+
+        public static void RemoveSubscriptions(OnlinePlayer player)
+        {
+            subscriptions.RemoveAll(s => s.player == player);
         }
 
         public static void AddFeed(OnlineResource resource, OnlineEntity oe)

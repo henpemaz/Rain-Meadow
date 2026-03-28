@@ -27,7 +27,9 @@
 ## Story
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
-- Impossibly high ripple levels (6+) no longer crash the game when viewed.
+- Impossibly high ripple levels (6+) no longer crash the game when viewed
+## Engine
+- Security Improvements.
 
 ## Meadow
 - Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".

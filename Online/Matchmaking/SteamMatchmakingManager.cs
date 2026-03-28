@@ -577,6 +577,11 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => (p.id as SteamPlayerId).steamID.m_SteamID == steamID);
         }
 
+        public bool IsSteamPlayerBanned(ulong steamID)
+        {
+            return OnlineManager.lobby.bannedUsers.list.Any(p => (p as SteamPlayerId).steamID.m_SteamID == steamID);
+        }
+
         public override string GetLobbyID()
         {
             return lobbyID.ToString();
