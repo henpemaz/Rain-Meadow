@@ -94,6 +94,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaAliveScore;
     public readonly Configurable<int> ArenaDenScore;
     public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
+    public Configurable<RainMeadow.LogLevel> CurrentLogLevel;
     public readonly Configurable<bool> ArenaUnhandledOptimizations;
 
     public enum IntroRoll
@@ -222,7 +223,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
         wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
-
+        CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
 
     }
@@ -378,8 +379,8 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 370, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
-                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+                downpourWarning = new OpLabel(introroll.pos.x + 170, 340, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+                watcherWarning = new OpLabel(introroll.pos.x + 170, 340, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
                 new OpLabel(10, 250, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
@@ -399,7 +400,18 @@ public class RainMeadowOptions : OptionInterface
             )
             {
                 colorEdge = Menu.MenuColorEffect.rgbWhite
-            }
+            },
+            new OpLabel(10f, 100f, Translate("Log Level")),
+
+        new OpComboBox2(
+        CurrentLogLevel,
+        new Vector2(10f, 70f),
+        160f,
+        OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
+    )
+    {
+        colorEdge = Menu.MenuColorEffect.rgbWhite
+    }
 
         };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))

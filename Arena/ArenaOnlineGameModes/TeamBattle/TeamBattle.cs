@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
@@ -345,16 +345,23 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
 
                         if (aIsWinningTeam && bIsWinningTeam)
-                        {
+                        { 
+                            if (A.alive != B.alive) {
+                                return A.alive;
+                            }
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // If both are on winning team, sort by kill value
+
+                            }
                             if (A.allKills.Count != B.allKills.Count)
                             {
                                 return A.allKills.Count > B.allKills.Count;
                             }
-                            else if (A.deaths != B.deaths)
-                            {
-                                return A.deaths < B.deaths;
-                            }
-                            return A.score > B.score; // If both are on winning team, sort by kill value
+                            
+                            
+                            return A.deaths < B.deaths;
+                            
                         }
                     }
                 }

@@ -175,12 +175,13 @@ namespace RainMeadow
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdfld<Menu.SlugcatSelectMenu>("slugcatPageIndex"),
                 x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"),
-                x => x.MatchCallvirt(out var m) && m.Name == "get_Item" 
+                x => x.MatchCallvirt(out var m) && m.Name == "get_Item"
             ))
             {
-                c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData => 
+                c.EmitDelegate<Func<Menu.SlugcatSelectMenu.SaveGameData, bool>>(saveData =>
                 {
-                    if (OnlineManager.lobby != null) {
+                    if (OnlineManager.lobby != null)
+                    {
                         return saveData != null || !OnlineManager.lobby.isOwner;
                     }
                     return saveData != null;
@@ -472,7 +473,7 @@ namespace RainMeadow
                     //If two way echo warp is saved as host, it is saved as oneway and you cant seal the portal
                     //thus softlocking you from 3rd ending
                     //Although two way is added now, i guess we give a chance to hosts having existing saves and replace the saved echo warp data to spinning top's warp data
-                    roomWarpPoint.placedObject.data = data; 
+                    roomWarpPoint.placedObject.data = data;
                 });
 
             }
@@ -974,10 +975,10 @@ namespace RainMeadow
                     {
                         // If we aren't in an online lobby, stick to the vanilla result
                         if (OnlineManager.lobby == null) return vanillaValue;
-                        
+
                         // realized is too fast, make it apo to link to the room session
                         return self.oracle.abstractPhysicalObject == null;
-                        
+
                     });
                 }
             }
@@ -1474,7 +1475,6 @@ namespace RainMeadow
                     storyGameMode.changedRegions = false;
                     storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
                 }
-            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self, malnourished, fromWarpPoint);
         }
@@ -1496,7 +1496,6 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
                     return;
                 }
-            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self);
         }
@@ -1518,7 +1517,6 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToGhostScreen, ghostID);
                     return;
                 }
-            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self, ghostID);
         }
@@ -1540,7 +1538,6 @@ namespace RainMeadow
                     //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
                     return;
                 }
-            if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self);
         }
@@ -1562,7 +1559,6 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
                     return;
                 }
-               if (WorldSession.map.TryGetValue(self.world, out var ws)) ws.transitionInProgress = true;
             }
             orig(self);
         }
@@ -1581,7 +1577,7 @@ namespace RainMeadow
                 {
                     if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToPassageScreen, endGameID);
                 }
-            }            
+            }
             orig(self, endGameID);
         }
 
@@ -1641,17 +1637,17 @@ namespace RainMeadow
                 if (hostCurrentRegion != -1 && hostCurrentRegion != self.currentRegion && hostCurrentRegion != self.upcomingRegion)
                     self.InitiateRegionSwitch(hostCurrentRegion);
             }
-            
+
             orig(self);
 
             if (storyGameMode is not null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (self.currentRegion >= 0 && self.currentRegion < self.accessibleRegions.Count) 
+                    if (self.currentRegion >= 0 && self.currentRegion < self.accessibleRegions.Count)
                     {
                         int realRegionIndex = self.accessibleRegions[self.currentRegion];
-                        
+
                         if (realRegionIndex >= 0 && realRegionIndex < self.allRegions.Count())
                         {
                             storyGameMode.region = self.allRegions[realRegionIndex].name;
@@ -1790,13 +1786,14 @@ namespace RainMeadow
                 storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
                 storyGameMode.defaultDenPos = self.currentSaveState.denPosition;
             }
-            else 
+            else
             {
                 if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
                 {
                     // user is freshly joining the game
                     storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
-                } else
+                }
+                else
                 {
                     self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
@@ -2055,7 +2052,7 @@ namespace RainMeadow
                     {
                         story.storyClientData.readyForTransition = false;
                         return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
-                       
+
                     }
                     return false;
                 });
@@ -2070,10 +2067,10 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-                        
+
                     }
                     return true;
-                    
+
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
@@ -2114,7 +2111,7 @@ namespace RainMeadow
                     }
                 }
             }
-            
+
             if (OnlineManager.lobby != null)
             {
                 // if active cameras are not looking at the region gate that's very bad....

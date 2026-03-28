@@ -315,7 +315,7 @@ namespace RainMeadow
 
             var apo = ent as AbstractPhysicalObject;
             if (OnlineManager.lobby != null && apo is not null && !apo.CanMove()) return;
-            
+
             ent.IsEnteringDen(ent.pos);
             self.entities.Remove(ent);
             if (ent is AbstractCreature)
@@ -497,7 +497,7 @@ namespace RainMeadow
                 { // once again, force camera
                     newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
                 }
-                var isEchoWarp = sourceRoomName == null ||newRoom.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()); //null room = loaded from first world as a host
+                var isEchoWarp = sourceRoomName == null || newRoom.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()); //null room = loaded from first world as a host
                 if (OnlineManager.lobby.isOwner && !isEchoWarp)
                 {
                     foreach (var player in OnlineManager.players)
@@ -527,7 +527,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null)
                         //prevent readyForWarp to call WorldLoaded when warpWorldLoader is queued and Regions has not fully loaded, this is quick fix for now
-                        return origBool && !overWorld.warpingPreload; 
+                        return origBool && !overWorld.warpingPreload;
                     return origBool;
                 });
             }
@@ -541,15 +541,15 @@ namespace RainMeadow
         {
             System.Func<bool> waitCondition = null;
 
-            if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner) || OnlineManager.lobby.gameMode is MeadowGameMode)
+            if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner))
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
-                waitCondition, 
-                () => self.WorldLoaded(warpUsed) 
+                waitCondition,
+                () => self.WorldLoaded(warpUsed)
             );
         }
 
@@ -566,7 +566,7 @@ namespace RainMeadow
 
             self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
             oldWorldSession.transitionInProgress = true;
-            return; 
+            return;
         }
         // world transition at gatesactiveEntities
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
@@ -597,20 +597,20 @@ namespace RainMeadow
                     // we go over all APOs in the room
                     Debug("Gate switchery 1");
                     Room room = self.reportBackToGate.room;
-                        var entities = room.abstractRoom.entities;
-                        for (int i = entities.Count - 1; i >= 0; i--)
+                    var entities = room.abstractRoom.entities;
+                    for (int i = entities.Count - 1; i >= 0; i--)
+                    {
+                        if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
                         {
-                            if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
+                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                            // if they're the overseer and it isn't the host moving it, that's bad as well
+                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
-                                // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                                // if they're the overseer and it isn't the host moving it, that's bad as well
-                                if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
-                                {
-                                    // not-online-aware removal
-                                    opo.RemoveEntityFromGame(false);
-                                }
+                                // not-online-aware removal
+                                opo.RemoveEntityFromGame(false);
                             }
                         }
+                    }
 
 
 
@@ -623,7 +623,7 @@ namespace RainMeadow
                         roomSession2.Activate();
                     }
 
-                        DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
 
                 }
                 else if (warpUsed)
@@ -658,7 +658,7 @@ namespace RainMeadow
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
 
-                        DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
                 else
                 {
@@ -720,7 +720,7 @@ namespace RainMeadow
                     }
                 }
 
-                
+
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

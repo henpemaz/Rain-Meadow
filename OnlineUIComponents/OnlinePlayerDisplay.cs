@@ -97,18 +97,23 @@ namespace RainMeadow
                 label.x = -1000f;
             }
 
-
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (SpecialEvents.IsSpecialEventInLobby)
             {
-                this.iconString = "ChieftainA";
+                SpecialEvents.LoadElement("meadowcoin");
+                this.iconString = "meadowcoin";
             }
-
-
             else
             {
-                this.iconString = "Kill_Slugcat";
-            }
+                if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+                {
+                    this.iconString = "ChieftainA";
+                }
+                else
+                {
+                    this.iconString = "Kill_Slugcat";
+                }
 
+            }
             if (RainMeadow.isArenaMode(out var arena))
             {
                 if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
@@ -191,7 +196,10 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
+                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine)
+                    {
+                        slugIcon.SetElementByName("Kill_Slugcat");
+                    }
                     else if (RainMeadow.isArenaMode(out var arena))
                     {
                         if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
@@ -210,14 +218,16 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                    else if (SpecialEvents.IsSpecialEventInLobby)
-                    {
-                        SpecialEvents.LoadElement("meadowcoin");
-                        this.slugIcon.SetElementByName("meadowcoin");
-                        this.slugIcon.scale = 0.08f;
-                    }
 
                     else slugIcon.SetElementByName(iconString);
+                    if (SpecialEvents.IsSpecialEventInLobby && slugIcon.element.name == "meadowcoin")
+                    {
+                        this.slugIcon.scale = 0.08f;
+                    }
+                    else
+                    {
+                        this.slugIcon.scale = 1f;
+                    }
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
                     else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;

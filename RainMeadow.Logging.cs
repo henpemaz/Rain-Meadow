@@ -15,24 +15,43 @@ namespace RainMeadow
 
     public partial class RainMeadow
     {
+        public enum LogLevel
+        {
+            Debug = 0,
+            Info = 1,
+            Warn = 2,
+            Error = 3
+        }
         private static string TrimCaller(string callerFile) { return (callerFile = callerFile.Substring(Mathf.Max(callerFile.LastIndexOf(Path.DirectorySeparatorChar), callerFile.LastIndexOf(Path.AltDirectorySeparatorChar)) + 1)).Substring(0, callerFile.LastIndexOf('.')); }
         private static string LogTime() { return ((int)(Time.time * 1000)).ToString(); }
         private static string LogDOT() { return DateTime.Now.ToUniversalTime().TimeOfDay.ToString().Substring(0, 8); }
         public static void Debug(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
-            instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
+            if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Debug)
+                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
         public static void DebugMe([CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
-            instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}");
+            if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Debug)
+
+                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}");
+        }
+
+        public static void Info(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
+        {
+            if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Info)
+                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
         public static void Warn(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
-            instance.Logger.LogWarning($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
+            if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Warn)
+                instance.Logger.LogWarning($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
         public static void Error(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
-            instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
+            if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Error)
+
+                instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
 
         [Conditional("TRACING")]
