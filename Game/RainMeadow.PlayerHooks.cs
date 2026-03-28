@@ -1283,7 +1283,7 @@ public partial class RainMeadow
             (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
-                OnlineManager.lobby.eventGags && SpecialEvents.GetActiveEvent() is SpecialEvents.Anniversary)
+                SpecialEvents.GetActiveEventInLobby<SpecialEvents.Anniversary>() is not null)
         {
 
             if (self.IsLocal())

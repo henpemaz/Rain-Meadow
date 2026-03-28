@@ -47,19 +47,36 @@ namespace RainMeadow
                 dialog.pos = new Vector2(dialog.size.x * 0.5f, 0);
                 return dialog;
             }
+
+            public bool IsActiveInLobby => OnlineManager.lobby != null && OnlineManager.lobby.eventGags && IsActive;
         }
 
         private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
         public static bool IsSpecialEvent => AllEvents.Any(e => e.IsActive);
-        public static bool IsSpecialEventInLobby => OnlineManager.lobby != null && OnlineManager.lobby.eventGags && AllEvents.Any(e => e.IsActive);
 
         public static Event? GetActiveEvent()
         {
             return AllEvents.FirstOrDefault(e => e.IsActive);
         }
 
+        public static T? GetActiveEvent<T>() where T : Event
+        {
+            return AllEvents.OfType<T>().FirstOrDefault(e => e.IsActive);
+        }
+
+        public static T? GetActiveEventInLobby<T>() where T : Event
+        {
+            return AllEvents.OfType<T>().FirstOrDefault(e => e.IsActive && e.IsActiveInLobby);
+        }
+
+
         public static void LoadElement(string elementName)
         {
+            if (!SpecialEvents.IsSpecialEvent)
+            {
+                return;
+            }
+            
             if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;

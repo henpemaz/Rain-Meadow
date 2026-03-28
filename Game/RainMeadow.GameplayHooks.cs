@@ -76,7 +76,7 @@ namespace RainMeadow
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            if (OnlineManager.lobby != null && SpecialEvents.IsSpecialEventInLobby)
+            if (OnlineManager.lobby != null && SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>() is not null)
             {
                 SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
             }
@@ -703,7 +703,7 @@ namespace RainMeadow
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
 
-                    if (SpecialEvents.IsSpecialEventInLobby && !storyGameMode.hasSheltered)
+                    if (SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>() is not null && !storyGameMode.hasSheltered)
                     {
                         var entities = self.room.abstractRoom.entities;
                         int coinCount = 0;
@@ -713,8 +713,18 @@ namespace RainMeadow
                             {
                                 if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
                                 {
-                                    pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
-                                    coinCount++;
+                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                                    {
+                                        if (pearl.realizedObject is PhysicalObject obj && obj.room == self.room)
+                                        {
+                                            for (int j = 0; j < 20; j++)
+                                            {
+                                                self.room.AddObject(new MeadowTokenCoin.MeadowCoin(obj.bodyChunks.OfType<BodyChunk>().First().pos + Custom.RNV() * 2f, Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                                            }
+                                            pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                            coinCount++;
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -597,10 +597,8 @@ namespace RainMeadow
                 self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
-            if (SpecialEvents.IsSpecialEvent)
-            {
-                SpecialEvents.GetActiveEvent().UpdateLoginMessage(self);
-            }
+            
+            SpecialEvents.GetActiveEvent()?.UpdateLoginMessage(self);
 
             // we might get here from quitting out of game
             OnlineManager.LeaveLobby();
