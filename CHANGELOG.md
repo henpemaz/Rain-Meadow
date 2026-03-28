@@ -28,7 +28,7 @@
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
 ### Watcher
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
-
+- Fixed a crash where clients would load into the wrong regions
 ## Meadow
 - Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
 - MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
