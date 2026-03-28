@@ -27,8 +27,7 @@
 ## Meadow
 - Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
 - MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
-- The pounce tutorial and SU_PMPSTATION01 barriers no longer load in.
-- The guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
+- The pounce tutorial barrier, the guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
 - Many different room-specific tooltips across all campaigns are now disabled.
 
 # Release 1.12.0
