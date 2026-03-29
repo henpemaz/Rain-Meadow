@@ -64,7 +64,7 @@ namespace RainMeadow
             {
                 if (data is AvatarData avatarData)
                 {
-                    if (avatarData.overlaySkin != overlay)
+                    if (avatarData.overlaySkin?.GetType() != overlay?.GetType())
                     {
                         avatarData.overlaySkin = overlay;
                         if (onlineEntity is OnlinePhysicalObject obj)
