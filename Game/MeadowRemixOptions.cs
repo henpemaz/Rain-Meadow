@@ -84,7 +84,7 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> boughtSilverCape;
     public readonly Configurable<bool> boughtGoldenCape;
-
+    public readonly Configurable<bool> boughtGoldenSkin;
     public readonly Configurable<bool> boughtRainbowCape;
     public readonly Configurable<bool> wantsDefaultCapeColor;
     public readonly Configurable<Color> currentlyActiveCapeColor;
@@ -212,6 +212,7 @@ public class RainMeadowOptions : OptionInterface
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         MeadowCoins = config.Bind("MeadowCoins", 0);
 
+        boughtGoldenSkin = config.Bind("BoughtGoldenSkin", false);
         boughtSilverCape = config.Bind("BoughtSilverCape", false);
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);

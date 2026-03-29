@@ -10,9 +10,9 @@ namespace RainMeadow
         public static AprilFools AprilFoolsEvent = new AprilFools()
         {
             Name = Utils.Translate("April Fool's!"),
-            StartMonth = 4,
+            StartMonth = 3,
             StartDay = 1,
-            EndDay = 7,
+            EndDay = 31,
         };
 
         public class AprilFools : Event

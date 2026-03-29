@@ -228,7 +228,7 @@ namespace RainMeadow
                     }
 
 
-                    if (SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>() is not null && UnityEngine.Random.Range(0, 100) == 1)
+                    if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() && UnityEngine.Random.Range(0, 100) == 1)
                     {
                         string coinBoast = "";
                         int coins = RainMeadow.rainMeadowOptions.MeadowCoins.Value;

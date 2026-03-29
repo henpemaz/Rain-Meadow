@@ -3,35 +3,78 @@ using static RainMeadow.OnlineEntity;
 
 namespace RainMeadow
 {
+
+    // onlinestate for polymorphism
+    [OnlineState.DeltaSupport(level = StateHandler.DeltaSupport.None)]
+    public abstract class OverlaySkin : OnlineState
+    {
+        [OnlineField] 
+        public int _unused;
+        abstract public Texture2D texture { get; }
+        abstract public Texture2D glowtexture { get; }
+        virtual public bool Available(OnlineEntity entity) => true;
+    }
+
+    public class NightSkySkin : OverlaySkin
+    {
+        override public Texture2D texture => RainMeadow.nightsky;
+        override public Texture2D glowtexture => RainMeadow.nightskyGlow;
+        override public bool Available(OnlineEntity entity) => MatchmakingManager.currentInstance.IsDev(entity.owner.id);
+    }
+
+    public class CoinSkin : OverlaySkin
+    {
+        override public Texture2D texture => RainMeadow.coin_tile;
+        override public Texture2D glowtexture => RainMeadow.nightskyGlow;
+    }
+
     public abstract class AvatarData : EntityData
     {
         internal abstract void ModifyBodyColor(ref Color bodyColor);
-
         internal abstract void ModifyEyeColor(ref Color eyeColor);
 
-        private bool nightSkySkin { get; set; } = RainMeadow.rainMeadowOptions.DevNightskySkin.Value;
-        internal bool IsNightSkySkin(OnlineEntity onlineEntity)
+        public OverlaySkin? overlaySkin;
+        public static OverlaySkin ConfigureOverlay(OnlineEntity entity)
         {
-            if (!nightSkySkin) return false;
-            return MatchmakingManager.currentInstance.IsDev(onlineEntity.owner.id);
+            if (RainMeadow.rainMeadowOptions.boughtGoldenSkin.Value && SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                return new CoinSkin();
+            }
+
+            if (MatchmakingManager.currentInstance.IsDev(entity.owner.id))
+            {
+                return new NightSkySkin();
+            }
+
+            return null;
         }
 
         public abstract class AvatarDataState : EntityDataState
         {
-            [OnlineField]
-            bool nightSkySkin;
+            [OnlineField(nullable = true, polymorphic = true)]
+            OverlaySkin? overlay;
 
             public AvatarDataState() { }
             public AvatarDataState(AvatarData avatarData)
             {
-                nightSkySkin = avatarData.nightSkySkin;
+                overlay = avatarData.overlaySkin;
             }
 
             public override void ReadTo(EntityData data, OnlineEntity onlineEntity)
             {
                 if (data is AvatarData avatarData)
                 {
-                    avatarData.nightSkySkin = nightSkySkin;
+                    if (avatarData.overlaySkin != overlay)
+                    {
+                        avatarData.overlaySkin = overlay;
+                        if (onlineEntity is OnlinePhysicalObject obj)
+                        {
+                            if (obj.apo.realizedObject is PhysicalObject realobj)
+                            {
+                                CapeManager.RefreshGraphicalModule(realobj);
+                            }
+                        }
+                    }
                 }
             }
         }

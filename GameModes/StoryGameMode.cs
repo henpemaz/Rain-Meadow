@@ -309,6 +309,7 @@ namespace RainMeadow
             else RainMeadow.Error("No Player State for playerNumber?");
 
             onlineCreature.AddData(avatarSettings[avatarsettings_index]);
+            avatarSettings[avatarsettings_index].overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)

@@ -34,19 +34,19 @@ namespace RainMeadow
             rootPos = new Vector2(22f + Mathf.Max(55.01f, hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
             this.progressionContainer = new FContainer();
 
-            var aprilfools = SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>();
+            var aprilfools = SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>();
 
-            emotesIcon = aprilfools is not null ? new MeadowCoinIcon(progressionContainer, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 0.05f, 1f)  : new TokenSparkIcon(progressionContainer, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f, 1f);
+            emotesIcon = aprilfools? new MeadowCoinIcon(progressionContainer, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 0.05f, 1f)  : new TokenSparkIcon(progressionContainer, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f, 1f);
             emotesLabel = new FLabel(Custom.GetFont(), EmoteCountText);
             emotesLabel.SetPosition(DrawPos(1f, 0) + new Vector2(0, 20f));
             progressionContainer.AddChild(emotesLabel);
 
-            skinsIcon = aprilfools is not null ? new MeadowCoinIcon(progressionContainer, MeadowProgression.TokenBlueColor, DrawPos(1f, 1),  0.05f, 1f)  :  new TokenSparkIcon(progressionContainer, MeadowProgression.TokenBlueColor, DrawPos(1f, 1), 1.5f, 1f);
+            skinsIcon = aprilfools? new MeadowCoinIcon(progressionContainer, MeadowProgression.TokenBlueColor, DrawPos(1f, 1),  0.05f, 1f)  :  new TokenSparkIcon(progressionContainer, MeadowProgression.TokenBlueColor, DrawPos(1f, 1), 1.5f, 1f);
             skinsLabel = new FLabel(Custom.GetFont(), SkinCountText);
             skinsLabel.SetPosition(DrawPos(1f, 1) + new Vector2(0, 20f));
             progressionContainer.AddChild(skinsLabel);
 
-            characterIcon = aprilfools is not null ? new MeadowCoinIcon(progressionContainer,MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 0.05f, 1f) :  new TokenSparkIcon(progressionContainer, MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 1.5f, 1f);
+            characterIcon = aprilfools? new MeadowCoinIcon(progressionContainer,MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 0.05f, 1f) :  new TokenSparkIcon(progressionContainer, MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 1.5f, 1f);
             characterLabel = new FLabel(Custom.GetFont(), CharacterCountText);
             characterLabel.SetPosition(DrawPos(1f, 2) + new Vector2(0, 20f));
             progressionContainer.AddChild(characterLabel);

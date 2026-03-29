@@ -12,20 +12,27 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-        private Texture2D nightsky;
-        private Texture2D nightskyGlow;
+        public static Texture2D nightsky;
+        public static Texture2D nightskyGlow;
+        public static Texture2D coin_tile;
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
 
             byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_base.png"));
-            this.nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
             nightsky.LoadImage(array);
             nightsky.wrapMode = TextureWrapMode.Repeat;
             nightsky.filterMode = FilterMode.Bilinear;
-            Shader.SetGlobalTexture("_RM_NightSky", nightsky);
+
+            array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "coin_tile.png"));
+            coin_tile = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            coin_tile.LoadImage(array);
+            coin_tile.wrapMode = TextureWrapMode.Repeat;
+            coin_tile.filterMode = FilterMode.Bilinear;
+            
             array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_glow.png"));
-            this.nightskyGlow = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightskyGlow = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
             nightskyGlow.LoadImage(array);
             nightskyGlow.wrapMode = TextureWrapMode.Repeat;
             nightskyGlow.filterMode = FilterMode.Bilinear;

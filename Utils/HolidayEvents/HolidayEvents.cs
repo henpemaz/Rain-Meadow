@@ -48,11 +48,12 @@ namespace RainMeadow
                 return dialog;
             }
 
-            public bool IsActiveInLobby => OnlineManager.lobby != null && OnlineManager.lobby.eventGags && IsActive;
+            
         }
 
         private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
         public static bool IsSpecialEvent => AllEvents.Any(e => e.IsActive);
+        public static bool EventsActiveInLobby => OnlineManager.lobby != null && OnlineManager.lobby.eventGags;
 
         public static Event? GetActiveEvent()
         {
@@ -64,9 +65,17 @@ namespace RainMeadow
             return AllEvents.OfType<T>().FirstOrDefault(e => e.IsActive);
         }
 
-        public static T? GetActiveEventInLobby<T>() where T : Event
+
+        public static bool EventActiveInLobby<T>() where T : Event
         {
-            return AllEvents.OfType<T>().FirstOrDefault(e => e.IsActive && e.IsActiveInLobby);
+            return EventActiveInLobby<T>(out _);
+        }
+
+
+        public static bool EventActiveInLobby<T>(out T? activeevent) where T : Event
+        {
+            activeevent = GetActiveEvent<T>();
+            return activeevent is not null && EventsActiveInLobby;
         }
 
 

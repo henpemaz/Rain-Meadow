@@ -172,14 +172,14 @@ namespace RainMeadow
                     if (this.expand < 0f)
                     {
                         int num3 = 0;
-                        SpecialEvents.AprilFools? aprilfools = SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>();
+                        var aprilfools = SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>();
                         while (num3 < 20)
                         {
-                            this.room.AddObject(aprilfools is not null  ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode));
+                            this.room.AddObject(aprilfools  ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 16f * Random.value, Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.5f + 0.5f * Random.value), this.underWaterMode));
                             num3++;
                         }
                         
-                        if (aprilfools is not null) 
+                        if (aprilfools) 
                         {
                             this.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pos: this.pos, vol: 2.0f, pitch: 2.0f);
                             this.room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pos: this.pos, vol: 2.0f, pitch: 1.5f);
@@ -212,7 +212,7 @@ namespace RainMeadow
                 if (Random.value < 0.05f + 0.35f * Mathf.Pow(f, 0.5f) && Random.value < this.power)
                 {
 
-                    this.room.AddObject(SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>() is not null ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+                    this.room.AddObject(SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 6f * this.glitch, Custom.RNV() * Mathf.Lerp(2f, 9f, Mathf.Pow(f, 2f)) * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
                 }
                 this.glitch = Custom.LerpAndTick(this.glitch, this.generalGlitch / 2f, 0.01f, 0.033333335f);
                 if (Random.value < 1f / Mathf.Lerp(360f, 10f, this.generalGlitch))
@@ -237,7 +237,7 @@ namespace RainMeadow
                             abstractCollectible.Collect();
                             for (int num6 = 0; num6 < 10; num6++)
                             {
-                                this.room.AddObject(SpecialEvents.GetActiveEventInLobby<SpecialEvents.AprilFools>() is not null ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+                                this.room.AddObject(SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() ? new MeadowTokenCoin.MeadowCoin(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode): new TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
                             }
                             break;
                         }
