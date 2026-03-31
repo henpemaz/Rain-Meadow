@@ -410,11 +410,13 @@ namespace RainMeadow
         }
         private void EyeColorpicker_OnValueChangedEvent()
         {
-            var eyeColor = eyeColorPicker.valuecolor;
+            Color? eyeColor = eyeColorPicker.valuecolor;
+            if (eyeColor.Value == Color.black)
+            {
+                eyeColor = null;
+            }
             personaSettings.meadowEyeColor = eyeColor;
             personaSettings.Updated();
-
-
         }
 
         private void UpdateTintPreview()
