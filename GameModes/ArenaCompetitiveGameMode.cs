@@ -406,7 +406,10 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
-            this.AddExternalGameModes(ArenaChallengeMode.ChallengeMode, new ArenaChallengeMode());
+            if (ModManager.MSC)
+            {
+                this.AddExternalGameModes(ArenaChallengeMode.ChallengeMode, new ArenaChallengeMode());
+            }
         }
 
         public void ResetInvDetails()
@@ -786,10 +789,10 @@ namespace RainMeadow
 
         public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
-            if (player == null || pl == null) 
+            if (player == null || pl == null)
             {
                 RainMeadow.Debug("ReadFromStats failed: player or pl is null!");
-                return; 
+                return;
             }
             RainMeadow.Debug(this);
             // Wins
