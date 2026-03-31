@@ -35,7 +35,7 @@
 - The pounce tutorial and SU_PMPSTATION01 barriers no longer load in.
 - The guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
 - Many different room-specific tooltips across all campaigns are now disabled.
-
+- Added configurable eye color
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession

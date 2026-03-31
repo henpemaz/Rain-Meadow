@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using System;
 using System.Collections.Generic;
@@ -28,11 +28,18 @@ namespace RainMeadow
         int skinIndex;
         float tintAmount;
         FSprite tintPreview;
+
         MeadowAvatarData personaSettings;
         OpTinyColorPicker colorpicker;
+
+        OpTinyColorPicker eyeColorPicker;
+
         TokenMenuDisplayer skinProgressIcon;
         private SubtleSlider2 tintSlider;
         private MenuLabel tintLabel;
+
+        private MenuLabel eyeColorLabel;
+
         public NullLobbyError nullLobbyError;
 
         public override MenuScene.SceneID GetScene => null;
@@ -96,11 +103,20 @@ namespace RainMeadow
             colorpicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(800, 60), Color.white);
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
 
+            eyeColorPicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(450, 60), Color.black);
+            var eyeColorWrapper = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
+
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+            eyeColorPicker.OnValueChangedEvent += EyeColorpicker_OnValueChangedEvent;
+
 
             tintLabel = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
             tintLabel.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(tintLabel);
+
+            eyeColorLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(495, 60), new(0, 30), false);
+            eyeColorLabel.label.alignment = FLabelAlignment.Left;
+            this.pages[0].subObjects.Add(eyeColorLabel);
 
             tintSlider = new SubtleSlider2(this, mainPage, Utils.Translate("Tint amount"), new Vector2(800, 30), new Vector2(100, 30));
             this.pages[0].subObjects.Add(tintSlider);
@@ -125,8 +141,9 @@ namespace RainMeadow
 
             this.personaSettings = mgm.avatarData;
             ReadCharacterSettings();
-
             UpdateCharacterUI();
+            // null until set
+            personaSettings.meadowEyeColor = null;
         }
 
         private void UpdateCharacterUI()
@@ -141,7 +158,6 @@ namespace RainMeadow
                     mainPage.RemoveSubObject(btn);
                 }
             }
-
             var skins = ssm.slugcatPageIndex < playableCharacters.Count ? characterSkins[playableCharacters[ssm.slugcatPageIndex]] : new List<MeadowProgression.Skin>();
             skinButtons = new EventfulSelectOneButton[skins.Count];
             for (int i = 0; i < skins.Count; i++)
@@ -160,7 +176,10 @@ namespace RainMeadow
                 skinProgressIcon.text = $"{MeadowProgression.progressionData.currentCharacterProgress.skinUnlockProgress}/{MeadowProgression.skinProgressTreshold}";
 
                 colorpicker.Show();
+                eyeColorPicker.Show();
                 tintLabel.label.alpha = 1f;
+                eyeColorLabel.label.alpha = 1f;
+
                 tintSlider.Hidden = false;
                 UpdateTintPreview();
             }
@@ -170,7 +189,10 @@ namespace RainMeadow
                 skinProgressIcon.alpha = 0f;
 
                 colorpicker.Hide();
+                eyeColorPicker.Hide();
                 tintLabel.label.alpha = 0f;
+                eyeColorLabel.label.alpha = 0f;
+
                 tintSlider.Hidden = true;
                 tintPreview.isVisible = false;
             }
@@ -179,7 +201,7 @@ namespace RainMeadow
         public void UpdateElementBindings()
         {
             //Group up elements
-            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, nextButton };
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, eyeColorPicker.wrapper, nextButton };
             List<MenuObject> SkinColumnElements = skinButtons.Cast<MenuObject>().ToList();
             //Enforce row/column element order
             Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
@@ -192,7 +214,11 @@ namespace RainMeadow
             //Tweaks and cleanup
             Extensions.TryBind(SkinColumnElements.Last(), backObject, bottom: true);
             Extensions.TryMutualBind(this, tintSlider, colorpicker.wrapper, bottomTop: true);
-            Extensions.TryBind(tintSlider, colorpicker.wrapper, bottom:true);
+            Extensions.TryMutualBind(this, tintSlider, eyeColorPicker.wrapper, bottomTop: true);
+
+            Extensions.TryBind(tintSlider, colorpicker.wrapper, bottom: true);
+            Extensions.TryBind(tintSlider, eyeColorPicker.wrapper, bottom: true);
+
         }
         public override void Init()
         {
@@ -265,6 +291,8 @@ namespace RainMeadow
                 RainMeadow.Debug("personaSettings.skin: " + personaSettings.skin);
                 RainMeadow.Debug("personaSettings.tint: " + personaSettings.tint);
                 RainMeadow.Debug("personaSettings.tintAmount: " + personaSettings.tintAmount);
+                RainMeadow.Debug("personaSettings.eyeColor: " + eyeColorPicker.valuecolor);
+
             }
         }
 
@@ -277,6 +305,10 @@ namespace RainMeadow
                 MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][0];
             }
             colorpicker.valuecolor = MeadowProgression.progressionData.currentCharacterProgress.tintColor;
+            if (personaSettings.meadowEyeColor.HasValue)
+            {
+                eyeColorPicker.valuecolor = personaSettings.meadowEyeColor.Value;
+            }
             tintAmount = MeadowProgression.progressionData.currentCharacterProgress.tintAmount;
 
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
@@ -350,7 +382,6 @@ namespace RainMeadow
             personaSettings.tintAmount = f;
             personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintAmount = f;
-
             UpdateTintPreview();
         }
 
@@ -375,8 +406,15 @@ namespace RainMeadow
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintColor = personaSettings.tint;
-
             UpdateTintPreview();
+        }
+        private void EyeColorpicker_OnValueChangedEvent()
+        {
+            var eyeColor = eyeColorPicker.valuecolor;
+            personaSettings.meadowEyeColor = eyeColor;
+            personaSettings.Updated();
+
+
         }
 
         private void UpdateTintPreview()
