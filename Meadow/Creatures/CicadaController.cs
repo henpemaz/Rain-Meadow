@@ -46,9 +46,9 @@ namespace RainMeadow
 
             if (creatureControllers.TryGetValue(self.cicada, out var p))
             {
-                var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
-                if (p.customization.overlaySkin is OverlaySkin skin)
+                if (p.customization.overlaySkin is OverlaySkin skin && skin.Available(p.onlineCreature))
                 {
+                    var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
                     for (int i = 0; i < sLeaser.sprites.Length; i++)
                     {
                         sLeaser.sprites[i].shader = nightsky;

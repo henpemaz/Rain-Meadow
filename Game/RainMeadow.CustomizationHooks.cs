@@ -172,8 +172,7 @@ namespace RainMeadow
                 // dev nightsky skin
                 if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
-                    
-                    if (customization.overlaySkin is OverlaySkin skin)
+                    if (customization.overlaySkin is OverlaySkin skin && skin.Available(entity))
                     {
                         var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
                         for (int i = 0; i < 10; i++) // 9 is face, 10 is Mark light

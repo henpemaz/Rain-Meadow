@@ -26,6 +26,7 @@ namespace RainMeadow
     {
         override public Texture2D texture => RainMeadow.coin_tile;
         override public Texture2D glowtexture => RainMeadow.nightskyGlow;
+        override public bool Available(OnlineEntity entity) => SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>();
     }
 
     public abstract class AvatarData : EntityData
