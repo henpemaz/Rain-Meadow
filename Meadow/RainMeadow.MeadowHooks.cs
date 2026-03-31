@@ -453,7 +453,6 @@ namespace RainMeadow
                 {
                     switch (room.abstractRoom.name)
                     {
-                        case "SU_PMPSTATION01": return; //One-way water tunnel blocking SU to OE
                         case "MS_CORE":         return; //Submerged Superstructure rarefaction cell cutscene
 
                         case "OE_FINAL03":      return; //Outer Expanse ending trigger
