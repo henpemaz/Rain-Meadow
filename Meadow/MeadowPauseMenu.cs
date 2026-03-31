@@ -113,7 +113,7 @@ namespace RainMeadow
             timelineLabel.label.alignment = FLabelAlignment.Left;
             timelineLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
             pages[0].subObjects.Add(timelineLabel);
-            if (SpecialEvents.IsSpecialEventInLobby)
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
             {
                 pos.y -= 40f;
                 SpecialEvents.LoadElement("meadowcoin");

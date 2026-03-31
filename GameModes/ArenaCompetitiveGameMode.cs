@@ -1244,6 +1244,7 @@ namespace RainMeadow
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             onlineCreature.AddData(avatarSettings);
+            avatarSettings.overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)

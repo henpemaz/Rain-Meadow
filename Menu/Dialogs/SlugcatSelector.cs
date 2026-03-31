@@ -110,12 +110,9 @@ namespace RainMeadow.UI
                 Alpha = 0,
                 signalText = "ROLL",
             };
-            if (
-                SpecialEvents.IsSpecialEventInLobby
-                && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools a
-            )
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var aprilfools))
             {
-                a.UpdateSlotsButton(continueButton, manager);
+                aprilfools.UpdateSlotsButton(continueButton, manager);
             }
             selectPage.SafeAddSubobjects(continueButton);
         }
@@ -205,7 +202,7 @@ namespace RainMeadow.UI
             System.Random random = new();
             if (IsMatching)
             {
-                if (SpecialEvents.IsSpecialEventInLobby)
+                if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                 {
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
                     SpecialEvents.GainedMeadowCoin(1000);
@@ -239,13 +236,11 @@ namespace RainMeadow.UI
         public void RollingUpdate()
         {
             continueButton.buttonBehav.greyedOut = true;
-            if (SpecialEvents.IsSpecialEventInLobby)
-            {
-                string m0 = Translate("COINS:");
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                 continueButton.menuLabel.text = Translate(
-                    $"{m0} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
+                    $"{Translate("COINS:")} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                 );
-            }
+            
             hasAlreadyRolled = true;
             if (myRollingCounter % startEndRollingOrderCounter == 0)
             {

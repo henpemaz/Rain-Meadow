@@ -17,6 +17,9 @@ namespace RainMeadow
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+            On.FFacetNode.PopulateRenderLayer += FFacetNode_PopulateRenderLayer;
+            On.FSprite.PopulateRenderLayer += FSprite_PopulateRenderLayer;
+            On.TriangleMesh.PopulateRenderLayer += TriangleMesh_PopulateRenderLayer;
 
             // SlugcatCustomization stuff
             On.PlayerGraphics.InitiateSprites += PlayerGraphicsOnInitiateSprites;
@@ -28,6 +31,54 @@ namespace RainMeadow
 
             // for cosmetics such as the capes.
             CosmeticHooks();
+        }
+
+
+
+        public class OnPopulateRenderLayer
+        {
+            public static OnPopulateRenderLayer Get(FFacetNode node)
+            {
+                return OnPopulateRenderLayer.table.GetOrCreateValue(node);
+            }
+
+            public static ConditionalWeakTable<FFacetNode, OnPopulateRenderLayer> table = new();
+            public event Action<FFacetNode> onEvent = delegate { };
+
+            public void OnEvent(FFacetNode fFacetNode)
+            {
+                onEvent(fFacetNode);
+            }
+        }
+
+        public void FFacetNode_PopulateRenderLayer(On.FFacetNode.orig_PopulateRenderLayer orig, FFacetNode self)
+        {
+            orig(self);
+            
+            if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
+            {
+                onevent.OnEvent(self);
+            }
+        }
+
+        public void FSprite_PopulateRenderLayer(On.FSprite.orig_PopulateRenderLayer orig, FSprite self)
+        {
+            orig(self);
+            
+            if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
+            {
+                onevent.OnEvent(self);
+            }
+        }
+
+        public void TriangleMesh_PopulateRenderLayer(On.TriangleMesh.orig_PopulateRenderLayer orig, TriangleMesh self)
+        {
+            orig(self);
+            
+            if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
+            {
+                onevent.OnEvent(self);
+            }
         }
 
         // eyecolor is overwritten every frame for some stupid reason
@@ -121,22 +172,35 @@ namespace RainMeadow
                 // dev nightsky skin
                 if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
-                    if (customization.IsNightSkySkin(entity))
+                    
+                    if (customization.overlaySkin is OverlaySkin skin)
                     {
                         var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
                         for (int i = 0; i < 10; i++) // 9 is face, 10 is Mark light
                         {
                             sLeaser.sprites[i].shader = nightsky;
+                            OnPopulateRenderLayer.Get(sLeaser.sprites[i]).onEvent += (FFacetNode node) =>
+                            {
+                                node._renderLayer._material.SetTexture("_RM_NightSky", skin.texture);
+                            };
                         }
                         if (ModManager.MSC)
                         {
                             if (self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && sLeaser.sprites.Length > 12)
                             {
                                 sLeaser.sprites[12].shader = nightsky;
+                                OnPopulateRenderLayer.Get(sLeaser.sprites[12]).onEvent += (FFacetNode node) =>
+                                {
+                                    node._renderLayer._material.SetTexture("_RM_NightSky", skin.texture);
+                                };
                             }
                             if (self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                             {
                                 sLeaser.sprites[12].shader = nightsky;
+                                OnPopulateRenderLayer.Get(sLeaser.sprites[12]).onEvent += (FFacetNode node) =>
+                                {
+                                    node._renderLayer._material.SetTexture("_RM_NightSky", skin.texture);
+                                };
                             }
                         }
                     }

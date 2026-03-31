@@ -228,23 +228,23 @@ namespace RainMeadow
                     }
 
 
-                    if (SpecialEvents.IsSpecialEventInLobby && UnityEngine.Random.Range(0, 100) == 1)
+                    if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() && UnityEngine.Random.Range(0, 100) == 1)
                     {
                         string coinBoast = "";
                         int coins = RainMeadow.rainMeadowOptions.MeadowCoins.Value;
                         switch (coins)
                         {
                             case > 1000:
-                                coinBoast = " i hacked to get all my meadow coins";
+                                coinBoast = $" i hacked to get all my meadow coins ({coins} coins)";
                                 break;
                             case > 500:
-                                coinBoast = " (i beat meadow)";
+                                coinBoast = $" i beat meadow ({coins} coins)";
                                 break;
                             case > 100:
                                 coinBoast = $" btw I have {coins} coins";
                                 break;
                             case < 50:
-                                coinBoast = " im poor";
+                                coinBoast = $" im poor ({coins} coins)";
                                 break;
                             default:
                                 break;

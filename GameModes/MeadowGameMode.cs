@@ -100,6 +100,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(onlineCreature);
             onlineCreature.AddData(avatarData);
+            avatarData.overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
 
         public override void ResourceAvailable(OnlineResource res)

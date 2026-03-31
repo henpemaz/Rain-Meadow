@@ -32,7 +32,7 @@ namespace RainMeadow
 
             public override void UpdateLoginMessage(Menu.Menu self)
             {
-                int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
+                int chanceToShowMessage = new System.Random().Next(0, 11); // time dependent seed.
                 if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
                 {
                     return;

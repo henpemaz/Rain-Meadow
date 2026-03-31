@@ -321,7 +321,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (SpecialEvents.IsSpecialEventInLobby && SpecialEvents.GetActiveEvent() is SpecialEvents.AprilFools)
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
             {
                 if (playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
                 {
