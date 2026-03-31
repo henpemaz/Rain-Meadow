@@ -41,7 +41,7 @@ namespace RainMeadow
                 return new CoinSkin();
             }
 
-            if (MatchmakingManager.currentInstance.IsDev(entity.owner.id))
+            if (RainMeadow.rainMeadowOptions.DevNightskySkin.Value && MatchmakingManager.currentInstance.IsDev(entity.owner.id))
             {
                 return new NightSkySkin();
             }
