@@ -34,7 +34,7 @@ namespace RainMeadow
             public string name;
             public bool RequiresWatcher => ModManager.Watcher;
             public bool RequiresMSC => ModManager.MSC;
-
+            public Color chosenColor;
             public ItemButton(
                 HolidayStoreOverlay menu,
                 MenuObject menuObject,
@@ -120,10 +120,12 @@ namespace RainMeadow
                             );
                             break;
                         case SilverCape:
-                            desiredCape = new SolidCapeColor(new Color(0.863f, 0.918f, 0.941f)); ;
+                            chosenColor = new Color(0.863f, 0.918f, 0.941f);
+                            desiredCape = new SolidCapeColor(chosenColor);
                             break;
                         case GoldenCape:
-                            desiredCape = new SolidCapeColor(RainWorld.SaturatedGold);
+                            chosenColor = RainWorld.SaturatedGold;
+                            desiredCape = new SolidCapeColor(chosenColor);
                             break;
                         case RainbowCape: desiredCape = new RainbowCapeColor(); break;
                     }
@@ -165,6 +167,7 @@ namespace RainMeadow
                             }
 
                             if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
+                            RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = chosenColor;
                         }
 
                         if (permanentPurchase is not null) permanentPurchase.Value = true;

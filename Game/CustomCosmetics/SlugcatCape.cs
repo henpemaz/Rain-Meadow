@@ -321,17 +321,6 @@ namespace RainMeadow
                 return;
             }
 
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
-            {
-                if (playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
-                {
-                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && (customization.eventCape is null || !customization.wearingCape))
-                    {
-                        return;
-                    }
-                }
-            }
-
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             BodyChunk bodyChunk = playerGFX.player.bodyChunks[1];
             Vector2 normalized = GetBodyNormalized();
