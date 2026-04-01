@@ -159,6 +159,12 @@ namespace RainMeadow
                 {
                     // activate
                     abstractGhost.Activated();
+                    var aprilfools = SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>();
+                    if (aprilfools)
+                    {
+                        this.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, pos: this.pos, vol: 2.0f, pitch: 2.0f);
+                        this.room.PlaySound(SoundID.SS_AI_Marble_Hit_Floor, pos: this.pos, vol: 2.0f, pitch: 1.5f);
+                    }
                 }
             }
 
@@ -177,7 +183,7 @@ namespace RainMeadow
                             //              collect
                             abstractCollectible.Collect();
                             //              start animating
-                            if(fadeOut == 0)
+                            if (fadeOut == 0)
                             {
                                 room.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker, pos, 0.8f, 1f);
                                 fadeOut = 0.01f;
@@ -437,7 +443,7 @@ namespace RainMeadow
             sLeaser.sprites[this.FadeSprite].isVisible = num4 > 0f;
             float num5 = Custom.SCurve(num4, 0.3f);
             float num52 = Mathf.Clamp01(4 * -Mathf.Pow(0.5f - num5, 2f) + 1f); // up and down
-            
+
             this.rags.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             this.chains.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             Vector2 vector = Vector2.Lerp(this.spine[this.spine.Length - 1].lastPos, this.spine[this.spine.Length - 1].pos, timeStacker);
