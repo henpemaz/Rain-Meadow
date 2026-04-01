@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
+using Newtonsoft.Json.Linq;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -394,9 +395,9 @@ public class RainMeadowOptions : OptionInterface
                 new Vector2(10f, 150f),
                 160f,
                 capeList.Where(i =>
-                    (i.displayName == Translate("Default")) ||
-                    (i.displayName == Translate("Silver") && boughtSilverCape.Value) ||
-                    (i.displayName == Translate("Gold") && boughtGoldenCape.Value)
+                    (i.displayName == "Default") ||
+                    (i.displayName == "Silver" && boughtSilverCape.Value) ||
+                    (i.displayName == "Gold" && boughtGoldenCape.Value)
                 ).ToList()
             )
             {
@@ -442,25 +443,15 @@ public class RainMeadowOptions : OptionInterface
                 }
                 else watcherWarning.Hide();
             };
+            downpourWarning.Hidden = true;
+            watcherWarning.Hidden = true;
             if (!ModManager.MSC && introroll.value == "Downpour")
             {
                 downpourWarning.Hidden = false;
-                watcherWarning.Hidden = true;
             }
-            else
-            {
-                downpourWarning.Hidden = ModManager.MSC;
-            }
-
-
-            if (!ModManager.Watcher && introroll.value == "Watcher")
+            else if (!ModManager.Watcher && introroll.value == "Watcher")
             {
                 watcherWarning.Hidden = false;
-                downpourWarning.Hidden = true;
-            }
-            else
-            {
-                watcherWarning.Hidden = ModManager.Watcher;
             }
 
             editSyncRequiredModsButton.OnClick += _ =>
