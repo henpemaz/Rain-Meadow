@@ -1,3 +1,13 @@
+# Release 1.13.1
+## General
+- Fixed Hunter_Illness IL Hook
+- Updated target game version
+- Fixed empty Remix menu when playing with non-English translation settings 
+## Arena
+- Fixed a bug where you might spawn multiple times during special events
+## Meadow
+- Granted more event progress when meeting a Meadow Echo
+  
 # Release 1.13.0
 ## General
 - The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
