@@ -1267,7 +1267,7 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 c.GotoNext(moveType: MoveType.After,
-                        i => i.MatchLdfld<SaveState>("redExtraCycles"),
+                        i => i.MatchCallOrCallvirt<SaveState>("get_RedExtraCycles"),
                         i => i.MatchCall<RedsIllness>("RedsCycles"),
                         i => i.MatchBlt(out _),
                         i => i.MatchLdsfld<ModManager>("CoopAvailable")
