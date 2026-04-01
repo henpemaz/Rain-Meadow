@@ -17,12 +17,17 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        private void EssentialMenuHooks()
+        {
+            On.Menu.MainMenu.ctor += MainMenu_ctor;
+        }
+
         private void MenuHooks()
         {
             IntroRollReplacement.OnEnable();
             IL.Menu.Menu.Update += IL_Menu_Update;
             On.Menu.Menu.SelectNewObject += On_Menu_SelectNewObject;
-            On.Menu.MainMenu.ctor += MainMenu_ctor;
+            
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
             On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;

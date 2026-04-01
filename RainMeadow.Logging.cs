@@ -25,6 +25,7 @@ namespace RainMeadow
         private static string TrimCaller(string callerFile) { return (callerFile = callerFile.Substring(Mathf.Max(callerFile.LastIndexOf(Path.DirectorySeparatorChar), callerFile.LastIndexOf(Path.AltDirectorySeparatorChar)) + 1)).Substring(0, callerFile.LastIndexOf('.')); }
         private static string LogTime() { return ((int)(Time.time * 1000)).ToString(); }
         private static string LogDOT() { return DateTime.Now.ToUniversalTime().TimeOfDay.ToString().Substring(0, 8); }
+        // Note: we use Logger.Info because Bepinex ships with logging level info by default. We are promoting our debugs to infos here so they get through.
         public static void Debug(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Debug)
@@ -33,7 +34,6 @@ namespace RainMeadow
         public static void DebugMe([CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Debug)
-
                 instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}");
         }
 
