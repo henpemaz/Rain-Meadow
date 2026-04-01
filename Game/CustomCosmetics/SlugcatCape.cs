@@ -325,9 +325,10 @@ namespace RainMeadow
             {
                 if (playerGFX.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
                 {
-                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && (customization.eventCape is null || !customization.wearingCape))
+                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && (customization.eventCape is null))
                     {
-                        return;
+                        if (customization.eventCape == null && !RainMeadow.rainMeadowOptions.WearingCape.Value)
+                            return;
                     }
                 }
             }
