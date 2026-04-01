@@ -2,7 +2,8 @@
 ## General
 - Fixed Hunter_Illness IL Hook
 - Updated target game version
-- Fixed empty Remix menu when playing with non-English translation settings 
+- Fixed empty Remix menu when playing with non-English translation settings
+- Fixed persistent purchases from being greyed out unless you met the store's value
 ## Arena
 - Fixed a bug where you might spawn multiple times during special events
 ## Meadow
