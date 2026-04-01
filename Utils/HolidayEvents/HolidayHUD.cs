@@ -154,7 +154,7 @@ namespace RainMeadow
                             }
 
                             if (!purchased) SpecialEvents.SpendMeadowCoin(cost);
-                            
+
                         }
                         else if (desiredCape != null)
                         {
@@ -273,7 +273,7 @@ namespace RainMeadow
             {
                 storeItemList[i].buttonBehav.greyedOut =
                     me != null
-                        ? RainMeadow.rainMeadowOptions.MeadowCoins.Value < storeItemList[i].cost
+                        ? storeItemList[i].permanentPurchase?.Value == true ? false : RainMeadow.rainMeadowOptions.MeadowCoins.Value < storeItemList[i].cost
                         : me == null;
             }
         }
