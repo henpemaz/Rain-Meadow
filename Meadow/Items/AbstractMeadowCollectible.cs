@@ -64,7 +64,10 @@ namespace RainMeadow
                 {
                     coinsEarned = 5;
                 }
-
+                else if (this.type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+                {
+                    coinsEarned = 10;
+                }
                 SpecialEvents.GainedMeadowCoin(coinsEarned);
 
             }
