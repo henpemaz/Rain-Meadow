@@ -224,8 +224,8 @@ namespace RainMeadow
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => 
-                nullable ? m.Name == nameof(Serializer.SerializeHalfNullable) : m.Name == nameof(Serializer.SerializeHalf)
-                && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
+                nullable ? m.Name == nameof(Serializer.SerializeHalfNullable)
+                : m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
         }
         /// <summary>
@@ -236,7 +236,9 @@ namespace RainMeadow
             public OnlineFieldColorRgbAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeRGB) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m =>
+                nullable ? m.Name == nameof(Serializer.SerializeRGBNullable)
+                : m.Name == nameof(Serializer.SerializeRGB) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
         }
 

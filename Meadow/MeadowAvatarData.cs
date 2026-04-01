@@ -89,7 +89,7 @@ namespace RainMeadow
             [OnlineFieldColorRgb]
             public Color tint;
             [OnlineFieldColorRgb(nullable = true)]
-            public Color eyeColor;
+            public Color? eyeColor;
 
             public State() : base() { }
             public State(MeadowAvatarData onlineEntity) : base(onlineEntity)

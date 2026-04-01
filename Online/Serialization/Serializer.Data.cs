@@ -1128,6 +1128,33 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeRGBNullable(ref Color? data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(data.HasValue);
+                if (data.HasValue)
+                {
+                    writer.Write((byte)(data.Value.r * 255));
+                    writer.Write((byte)(data.Value.g * 255));
+                    writer.Write((byte)(data.Value.b * 255));
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    data = new Color(reader.ReadByte() / 255f, reader.ReadByte() / 255f, reader.ReadByte() / 255f);
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void SerializeRGB(ref Color[] data)
         {
 #if TRACING
