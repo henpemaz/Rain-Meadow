@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -436,10 +436,10 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var a))
-            {
-                a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
-            }
+            //if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var a))
+            //{
+                //a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
+            //}
             if (abstractCreature.realizedCreature is not Player)
             {
                 return;
