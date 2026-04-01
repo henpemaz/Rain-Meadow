@@ -233,7 +233,7 @@ public class RainMeadowOptions : OptionInterface
 {
     new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
     new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
-    new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold), "Gold")
+    new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold.SafeColorRange()), "Gold")
 };
 
     public override void Initialize()
