@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -177,7 +177,7 @@ namespace RainMeadow
                 {
                     scoreToAdd = arena.spearScore;
                 }
-                self.arenaSitting.players[i].score += scoreToAdd;
+            
 
                 RainMeadow.Info("_Killing Added score " + scoreToAdd);
                 if (killedCrit.IsLocal())
@@ -227,7 +227,7 @@ namespace RainMeadow
                         }
                     }
                 }
-
+                self.game.arenaSitting.players[i].score = arena.playerNumberWithScore[lobbyId];
                 break; // We found the player and processed everything, exit the loop
             }
         }
