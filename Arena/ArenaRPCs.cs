@@ -294,23 +294,23 @@ namespace RainMeadow
                             }
                         }
 
-                        int scoreToAdd = 0;
-                        if (arena.externalArenaGameMode is ArenaChallengeMode)
-                        {
-                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                            if (index >= 0)
-                            {
-                                scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
-                            }
-                        }
-                        else
-                        {
-                            scoreToAdd = arena.spearScore;
-                        }
-                        if (pl != null)
-                        {
-                            arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
-                        }
+                        // int scoreToAdd = 0;
+                        // if (arena.externalArenaGameMode is ArenaChallengeMode)
+                        // {
+                        //     int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        //     if (index >= 0)
+                        //     {
+                        //         scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
+                        //     }
+                        // }
+                        // else
+                        // {
+                        //     scoreToAdd = arena.spearScore;
+                        // }
+                        // if (pl != null)
+                        // {
+                        //     arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
+                        // }
                     }
 
                 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -163,6 +163,23 @@ namespace RainMeadow
                 {
                     RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName}");
                 }
+                // Everyone can see the score and assign in-game, host will store it persistenly
+                int scoreToAdd = 0;
+                if (arena.externalArenaGameMode is ArenaChallengeMode)
+                {
+                    int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                    if (index >= 0)
+                    {
+                        scoreToAdd = self.arenaSitting.gameTypeSetup.killScores[index];
+                    }
+                }
+                else
+                {
+                    scoreToAdd = arena.spearScore;
+                }
+                self.arenaSitting.players[i].score += scoreToAdd;
+
+                RainMeadow.Info("_Killing Added score " + scoreToAdd);
                 if (killedCrit.IsLocal())
                 {
                     ushort lobbyId = absPlayerCreature.owner.inLobbyId;
@@ -186,22 +203,9 @@ namespace RainMeadow
                             }
                         }
                     }
-                    // im the one dying
+
                     if (OnlineManager.lobby.isOwner)
                     {
-                        int scoreToAdd = 0;
-                        if (arena.externalArenaGameMode is ArenaChallengeMode)
-                        {
-                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                            if (index >= 0)
-                            {
-                                scoreToAdd = self.arenaSitting.gameTypeSetup.killScores[index];
-                            }
-                        }
-                        else
-                        {
-                            scoreToAdd = arena.spearScore;
-                        }
                         arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                     }
 
@@ -438,7 +442,7 @@ namespace RainMeadow
             self.AddPlayer(abstractCreature);
             //if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var a))
             //{
-                //a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
+            //a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
             //}
             if (abstractCreature.realizedCreature is not Player)
             {
