@@ -1044,7 +1044,6 @@ namespace RainMeadow
 
         public virtual void OnUIUpdate(ArenaOnlineLobbyMenu menu)
         {
-            arenaBaseGameModeTab?.Update();
         }
 
         public virtual void OnUIShutDown(ArenaOnlineLobbyMenu menu)
