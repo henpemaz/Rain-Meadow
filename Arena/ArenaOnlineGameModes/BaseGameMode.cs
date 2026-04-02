@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -147,90 +147,95 @@ namespace RainMeadow
             IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
             bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
 
-            for (int i = 0; i < self.arenaSitting.players.Count; i++)
+            // 1. Find the target player first (Separating the search from the action)
+            int targetPlayerNumber = -1;
+            bool playerFound = false;
+
+            foreach (var sittingPlayer in self.arenaSitting.players)
             {
-                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber);
-                if (onlinePlayer == null)
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
+                if (onlinePlayer != null && onlinePlayer == absPlayerCreature.owner)
                 {
-                    continue;
+                    targetPlayerNumber = sittingPlayer.playerNumber;
+                    playerFound = true;
+                    break;
                 }
-                if (absPlayerCreature.owner != onlinePlayer)
-                {
-                    continue;
-                }
-                // Tourney
-                if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
-                {
-                    RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName}");
-                }
-                // Everyone can see the score and assign in-game, host will store it persistenly
-                int scoreToAdd = 0;
+            }
+
+            // 2. Early Exit: If the player isn't relevant to this execution, stop here.
+            if (!playerFound) return;
+
+            // 3. Tourney Logging
+            if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
+            {
+                RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName}");
+            }
+
+            // 4. Early Exit: Stop processing if the killed creature isn't local.
+            // (This replaces the massive 'if (killedCrit.IsLocal())' block that indented the rest of the code)
+            //if (!killedCrit.IsLocal()) return;
+
+            ushort lobbyId = absPlayerCreature.owner.inLobbyId;
+            bool isLobbyOwner = OnlineManager.lobby.isOwner;
+
+            // 5. Handle Trophies
+            if (earnsTrophy && isLobbyOwner)
+            {
+                string trophyString = iconSymbolData.ToString();
+                arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
+                arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+
+            }
+
+            // 6. Handle Scoring (Host Only)
+            if (isLobbyOwner)
+            {
+                int scoreToAdd = arena.spearScore; // Default fallback
+
                 if (arena.externalArenaGameMode is ArenaChallengeMode)
                 {
                     int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                    if (index >= 0)
-                    {
-                        scoreToAdd = self.arenaSitting.gameTypeSetup.killScores[index];
-                    }
+                    scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
                 }
-                else
-                {
-                    scoreToAdd = arena.spearScore;
-                }
-            
 
-                RainMeadow.Info("_Killing Added score " + scoreToAdd);
-                if (killedCrit.IsLocal())
+                arena.playerNumberWithScore[lobbyId] += scoreToAdd;
+                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var ws))
                 {
-                    ushort lobbyId = absPlayerCreature.owner.inLobbyId;
-                    if (earnsTrophy)
+                    for (int x = 0; x < ws.participants.Count; x++)
                     {
-                        if (OnlineManager.lobby.isOwner)
+                        if (ws.participants[x].isMe)
                         {
-                            string trophyString = iconSymbolData.ToString();
+                            RainMeadow.Info($"Was score for player {targetPlayerNumber}: {self.arenaSitting.players[targetPlayerNumber].score}");
 
-                            arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
-                            arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                            self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
+                            RainMeadow.Info($"Added score to player {targetPlayerNumber}: {scoreToAdd}, now at {self.arenaSitting.players[targetPlayerNumber].score}");
                         }
                         else
                         {
-                            {
-                                OnlineManager.lobby.owner.InvokeRPC(
-                                    ArenaRPCs.Arena_AddTrophy,
-                                    onlineKilledCreature,
-                                    self.arenaSitting.players[i].playerNumber
-                                );
-                            }
+                            ws.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, scoreToAdd);
                         }
                     }
 
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                    }
+                }
+            }
 
-                    // notify the killer about the trophy
-                    if (!player.IsLocal())
+            // 7. Handle HUD Updates
+            if (player.IsLocal())
+            {
+                // Local player & local creature: Update HUD directly
+                foreach (var hudPart in self.game.cameras[0].hud.parts)
+                {
+                    if (hudPart is HUD.PlayerSpecificMultiplayerHud multiHud)
                     {
-                        player.abstractCreature.GetOnlineCreature().owner.InvokeOnceRPC(ArenaRPCs.AddKilledCreatureToHUD, onlineKilledCreature);
-                    }
-                    // player is local AND killed creature is local
-                    else
-                    {
-                        for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
-                        {
-                            if (self.game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
-                            {
-                                multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature));
-                                break;
-                            }
-                        }
+                        var apoSymbolData = CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature);
+                        multiHud.killsList.Killing(apoSymbolData);
+                        break;
                     }
                 }
-                self.game.arenaSitting.players[i].score = arena.playerNumberWithScore[lobbyId];
-                break; // We found the player and processed everything, exit the loop
             }
+
         }
+
 
         public virtual void LandSpear(
             ArenaOnlineGameMode arena,
@@ -827,6 +832,7 @@ namespace RainMeadow
                 foreach (var s in self.arenaSitting.players)
                 {
                     var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
+                    if (os != null)
                     {
                         for (int i = 0; i < self.Players.Count; i++)
                         {

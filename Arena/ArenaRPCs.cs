@@ -9,8 +9,24 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void UpdatePlayerScore(int playerNumber, int score)
+        {
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+            if (game.session is ArenaGameSession a)
+            {
+                a.arenaSitting.players[playerNumber].score += score;
+            }
+        }
+
+        [RPCMethod]
         public static void AddKilledCreatureToHUD(OnlineCreature onlineKilledCreature)
         {
+
             var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
             if (game == null)
             {
@@ -258,7 +274,10 @@ namespace RainMeadow
             }
         }
 
+
         [RPCMethod]
+
+        // TODO: May be unused now since I updated _Killing
         public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
             if (RainMeadow.isArenaMode(out var arena))
@@ -278,6 +297,19 @@ namespace RainMeadow
                     return;
                 }
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
+                int scoreToAdd = 0;
+                if (arena.externalArenaGameMode is ArenaChallengeMode)
+                {
+                    int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature)).Index;
+                    if (index >= 0)
+                    {
+                        scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
+                    }
+                }
+                else
+                {
+                    scoreToAdd = arena.spearScore;
+                }
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
                     OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
@@ -291,26 +323,9 @@ namespace RainMeadow
                             {
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                                arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
                             }
                         }
-
-                        // int scoreToAdd = 0;
-                        // if (arena.externalArenaGameMode is ArenaChallengeMode)
-                        // {
-                        //     int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                        //     if (index >= 0)
-                        //     {
-                        //         scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
-                        //     }
-                        // }
-                        // else
-                        // {
-                        //     scoreToAdd = arena.spearScore;
-                        // }
-                        // if (pl != null)
-                        // {
-                        //     arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
-                        // }
                     }
 
                 }
