@@ -234,7 +234,7 @@ namespace RainMeadow
                 this,
                 owner,
                 // "aoao",
-                new Vector2(coinSprite.x + coinSize.x, coinSprite.y - coinSize.y),
+                new Vector2(coinSprite.x + coinSize.x, coinSprite.y - coinSize.y + 15),
                 new Vector2(coinSprite.width, coinSprite.height)
             );
             test.OnClick += (b) =>
