@@ -44,4 +44,11 @@ namespace RainMeadow
 
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
     }
+
+    public class NothingButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size)
+        : ButtonTemplate(menu, owner, pos, size), ISimplerButton<NothingButton>
+    {
+        public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
+        public event Action<NothingButton>? OnClick;
+    }
 }

@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using Menu;
-using MoreSlugcats;
-using RainMeadow;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -205,24 +203,44 @@ namespace RainMeadow
             this.selectedObject = null;
             this.storeItemList = new();
             this.pos = new Vector2(180, 553);
-            this.container.AddChild(
-                new FSprite("meadowcoin")
-                {
-                    x = pos.x + 30,
-                    y = pos.y + 15,
-                    scale = 0.10f,
-                    color = Color.yellow,
-                }
-            );
+
+            var owner = this.pages[0];
+
+            var coinSprite = new FSprite("meadowcoin")
+            {
+                x = pos.x + 30,
+                y = pos.y + 15,
+                scale = 0.10f,
+                color = Color.yellow,
+            };
+            this.container.AddChild(coinSprite);
+
             meadowCoinValue = new Menu.MenuLabel(
                 this,
-                this.pages[0],
+                owner,
                 this.Translate($"¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"),
                 new Vector2(pos.x + 15, pos.y),
                 new Vector2(110, 30),
                 true
             );
-            this.pages[0].subObjects.Add(meadowCoinValue);
+            owner.subObjects.Add(meadowCoinValue);
+
+            var coinSize = new Vector2(coinSprite.width, coinSprite.height);
+            var decreaseButton = new NothingButton(this, owner, new Vector2(coinSprite.x + coinSize.x, coinSprite.y - coinSize.y + 15), new Vector2(coinSprite.width, coinSprite.height));
+            decreaseButton.OnClick += (b) =>
+            {
+                if (SpecialEvents.SpendMeadowCoin(1) == true)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(this);
+
+                    var mouse = Input.mousePosition;
+                    var camera = game.cameras[0];
+                    if (camera is not null)
+                        camera.room?.AddObject(new MeadowTokenCoin.MeadowCoin(camera.pos + new Vector2(mouse.x, mouse.y), Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+
+                }
+            };
+            owner.subObjects.Add(decreaseButton);
 
             var storeItems = new List<(string, int, Configurable<bool>?)>
             {
@@ -244,8 +262,8 @@ namespace RainMeadow
             {
                 // Pass the calculated position to the button
                 Vector2 buttonPos = new Vector2(pos.x, this.pos.y - 38 - (index * 40));
-                var newItemButton = new ItemButton(this, this.pages[0], buttonPos, me, game, item.Item1, item.Item2, item.Item3);
-                this.pages[0].subObjects.Add(newItemButton);
+                var newItemButton = new ItemButton(this, owner, buttonPos, me, game, item.Item1, item.Item2, item.Item3);
+                owner.subObjects.Add(newItemButton);
                 this.storeItemList.Add(newItemButton);
                 index++;
             }
