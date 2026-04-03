@@ -215,6 +215,8 @@ namespace RainMeadow
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
             }
+
+            // this is set locally because we return if the victim is not ours, so we need to notify everyone of this update
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
 
             if (isLobbyOwner) // host creature was killed
@@ -231,7 +233,7 @@ namespace RainMeadow
                     rs.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
                 }
             }
-            else // someone else's creature was killed, tell the room
+            else // my creature, not host - tell the room
             {
                 onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
