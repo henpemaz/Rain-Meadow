@@ -5,12 +5,20 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class SimplerButton : SimpleButton, IHaveADescription, IRestorableMenuObject
+    public interface ISimplerButton<B>
+    {
+        public event Action<B>? OnClick;
+    }
+
+    public class SimplerButton : SimpleButton, ISimplerButton<SimplerButton>, IHaveADescription, IRestorableMenuObject
     {
         public SimplerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : base(menu, owner, displayText, "", pos, size)
         {
             this.description = description;
         }
+
+        public event Action<SimplerButton>? OnClick;
+
         public void RestoreSprites()
         {
             foreach (FSprite sprite in roundedRect.sprites)
@@ -35,6 +43,5 @@ namespace RainMeadow
         }
 
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
-        public event Action<SimplerButton> OnClick;
     }
 }
