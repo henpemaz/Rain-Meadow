@@ -548,7 +548,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 restartCheckbox.IDString = "RESTART";
-                restartCheckbox.label.text = "Restart game";
+                restartCheckbox.label.text = Translate("Restart game");
 
                 pages.RemoveRange(1, slugcatPages.Count);
                 for (int i = 0; i < slugcatPages.Count; i++)
@@ -584,7 +584,7 @@ namespace RainMeadow
                     slugcatPages.Insert(pageindex - 1, page);
                 }
                 restartCheckbox.IDString = "CLIENTSAVERESET";
-                restartCheckbox.label.text = "Sync Save";
+                restartCheckbox.label.text = Translate("Sync Save");
 
             }
 
@@ -670,8 +670,7 @@ namespace RainMeadow
         private void SetupClientOptions()
         {
             //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Sync Save"), "CLIENTSAVERESET", false);
-            restartCheckbox.displayText = "Sync Save";
-            restartCheckbox.label.text = "Sync Save";
+            restartCheckbox.label.text = Translate("Sync Save");
             restartCheckbox.IDString = "CLIENTSAVERESET";
             //pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
