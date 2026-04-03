@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
@@ -11,15 +12,27 @@ namespace RainMeadow
         [RPCMethod]
         public static void UpdatePlayerScore(int playerNumber, int newScore)
         {
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null)
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                RainMeadow.Error("Arena: RainWorldGame is null!");
-                return;
-            }
-            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
-            {
-                a.arenaSitting.players[playerNumber].score = newScore;
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+                if (onlinePlayer == null)
+                {
+                    return;
+                }
+                var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+                if (game == null)
+                {
+                    RainMeadow.Error("Arena: RainWorldGame is null!");
+                    return;
+                }
+                if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
+                {
+                    a.arenaSitting.players[playerNumber].score = newScore;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    }
+                }
             }
         }
 

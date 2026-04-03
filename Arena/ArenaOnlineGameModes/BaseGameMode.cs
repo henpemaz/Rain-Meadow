@@ -163,9 +163,8 @@ namespace RainMeadow
             }
 
             // 2. Early Exit: If the player isn't relevant to this execution, stop here.
-            if (!playerFound) return;
+            if (!playerFound || (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) || !killedCrit.abstractCreature.IsLocal()) return;
 
-            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             // 3. Early Exit: Stop processing if the killed creature isn't local.
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
@@ -209,11 +208,11 @@ namespace RainMeadow
                 }
 
             }
+            int scoreToAdd = arena.spearScore; // Default fallback
 
-            // 5. Handle Scoring (Host Only)
-            if (isLobbyOwner)
+            // 5. Handle Scoring 
+            if (isLobbyOwner) // host creature was killed
             {
-                int scoreToAdd = arena.spearScore; // Default fallback
 
                 if (arena.externalArenaGameMode is ArenaChallengeMode)
                 {
@@ -222,20 +221,21 @@ namespace RainMeadow
                 }
 
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
+                self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
 
                 for (int x = 0; x < rs.participants.Count; x++)
                 {
                     if (rs.participants[x].isMe)
                     {
-                        self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
+                        continue;
                     }
-                    else
-                    {
-                        rs.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
-                    }
-
-
+                    rs.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
                 }
+            }
+            else // someone else's creature was killed, tell the room
+            {
+                self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
 
             // 7
