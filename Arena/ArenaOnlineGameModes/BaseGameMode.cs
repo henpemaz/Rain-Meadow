@@ -165,20 +165,12 @@ namespace RainMeadow
             // 2. Early Exit: If the player isn't relevant to this execution, stop here.
             if (!playerFound) return;
 
-            // 3. Tourney Logging
-            if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
-            {
-                RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName}");
-            }
-
-            // 4. Early Exit: Stop processing if the killed creature isn't local.
-            // (This replaces the massive 'if (killedCrit.IsLocal())' block that indented the rest of the code)
-            //if (!killedCrit.IsLocal()) return;
+            // 3. Early Exit: Stop processing if the killed creature isn't local.
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
 
-            // 5. Handle Trophies
+            // 4. Handle Trophies
             if (earnsTrophy && isLobbyOwner)
             {
                 string trophyString = iconSymbolData.ToString();
@@ -187,7 +179,7 @@ namespace RainMeadow
 
             }
 
-            // 6. Handle Scoring (Host Only)
+            // 5. Handle Scoring (Host Only)
             if (isLobbyOwner)
             {
                 int scoreToAdd = arena.spearScore; // Default fallback
@@ -205,21 +197,18 @@ namespace RainMeadow
                     {
                         if (ws.participants[x].isMe)
                         {
-                            RainMeadow.Info($"Was score for player {targetPlayerNumber}: {self.arenaSitting.players[targetPlayerNumber].score}");
-
                             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-                            RainMeadow.Info($"Added score to player {targetPlayerNumber}: {scoreToAdd}, now at {self.arenaSitting.players[targetPlayerNumber].score}");
                         }
                         else
                         {
-                            ws.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, scoreToAdd);
+                            ws.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
                         }
                     }
 
                 }
             }
 
-            // 7. Handle HUD Updates
+            // 6. Handle HUD Updates
             if (player.IsLocal())
             {
                 // Local player & local creature: Update HUD directly
@@ -227,11 +216,15 @@ namespace RainMeadow
                 {
                     if (hudPart is HUD.PlayerSpecificMultiplayerHud multiHud)
                     {
-                        var apoSymbolData = CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature);
-                        multiHud.killsList.Killing(apoSymbolData);
+                        multiHud.killsList.Killing(iconSymbolData);
                         break;
                     }
                 }
+            }
+            // 7
+            if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
+            {
+                RainMeadow.Debug($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
             }
 
         }
