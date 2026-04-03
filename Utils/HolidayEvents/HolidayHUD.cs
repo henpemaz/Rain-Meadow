@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using Menu;
 using MoreSlugcats;
 using RainMeadow;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -206,15 +207,15 @@ namespace RainMeadow
             this.selectedObject = null;
             this.storeItemList = new();
             this.pos = new Vector2(180, 553);
-            this.container.AddChild(
-                new FSprite("meadowcoin")
-                {
-                    x = pos.x + 30,
-                    y = pos.y + 15,
-                    scale = 0.10f,
-                    color = Color.yellow,
-                }
-            );
+
+            var coinSprite = new FSprite("meadowcoin")
+            {
+                x = pos.x + 30,
+                y = pos.y + 15,
+                scale = 0.10f,
+                color = Color.yellow,
+            };
+            this.container.AddChild(coinSprite);
 
             var owner = this.pages[0];
             meadowCoinValue = new Menu.MenuLabel(
@@ -227,16 +228,36 @@ namespace RainMeadow
             );
             owner.subObjects.Add(meadowCoinValue);
 
+            var coinSize = new Vector2(coinSprite.width, coinSprite.height);
             var test = new NothingButton(
+            // var test = new SimplerButton(
                 this,
                 owner,
-                new Vector2(pos.x + 60, pos.y),
-                new Vector2(110, 30)
+                // "aoao",
+                new Vector2(coinSprite.x + coinSize.x, coinSprite.y - coinSize.y),
+                new Vector2(coinSprite.width, coinSprite.height)
             );
             test.OnClick += (b) =>
             {
-                SpecialEvents.PlayMeadowCoinSound(this);
+                if (SpecialEvents.SpendMeadowCoin(1) == true)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(this);
+
+                    var mouse = Input.mousePosition;
+                    var camera = game.cameras[0];
+                    if (camera is not null)
+                        camera.room?.AddObject(new MeadowTokenCoin.MeadowCoin(camera.pos + new Vector2(mouse.x, mouse.y), Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+
+                }
             };
+            // {
+            //     if (SpecialEvents.SpendMeadowCoin(1))
+            //     {
+            //         // obj.bodyChunks.OfType<BodyChunk>().First().pos + Custom.RNV() * 2f, Custom.RNV() * 16f * UnityEngine.Random.value
+            //         // var mouse = Input.mousePosition;
+            //         // SpecialEvents.PlayMeadowCoinSound(this);
+            //     }
+            // };
             owner.subObjects.Add(test);
 
             var storeItems = new List<(string, int, Configurable<bool>?)>
