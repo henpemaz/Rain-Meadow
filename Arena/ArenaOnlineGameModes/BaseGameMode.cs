@@ -172,6 +172,7 @@ namespace RainMeadow
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
 
             // 4. Handle Trophies
+            // TOOD: Client can sometimes get wrong amount of trophies from one kill
             if (earnsTrophy)
             {
                 if (isLobbyOwner)
@@ -191,7 +192,7 @@ namespace RainMeadow
 
                 }
                 // 6. Handle HUD Updates
-                if (player.IsLocal() && killedCrit.abstractCreature.IsLocal()) // if the player is local then we are seeing this method from a locally killed creature
+                if (player.IsLocal()) // if the player is local then we are seeing this method from a locally killed creature
                 {
                     for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
                     {
