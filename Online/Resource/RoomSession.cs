@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Watcher;
@@ -82,6 +83,9 @@ namespace RainMeadow
         {
             [OnlineFieldHalf]
             float FlameJetTime;
+
+            [OnlineField]
+            Generics.DynamicOrderedStates<PearlStringState> strungPearls;
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
@@ -109,6 +113,34 @@ namespace RainMeadow
                         {
                             flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
                         }
+                    }
+                }
+            }
+        }
+
+        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+        public class PearlStringState : OnlineState
+        {
+            [OnlineFieldHalf]
+            Vector2 pos;
+            [OnlineField]
+            Generics.DynamicOrderedEntityIDs pearls;
+
+            public PearlStringState() { }
+
+            public PearlStringState(ScavengerOutpost.PearlString pearlString)
+            {
+                pos = pearlString.outpost.placedObj.pos;
+                pearls = new(pearlString.pearls.Select(x => x.GetOnlineObject().id).ToList());
+            }
+
+            public void ReadTo(Room room)
+            {
+                foreach(var pearlString in room.updateList.OfType<ScavengerOutpost.PearlString>())
+                {
+                    if (pearlString.outpost.placedObj.pos.CloseEnough(pos, 1/4f))
+                    {
+                        pearlString.pearls = pearls.list.Select(x => (x.FindEntity() as OnlineConsumable)?.Consumable).ToList();
                     }
                 }
             }
