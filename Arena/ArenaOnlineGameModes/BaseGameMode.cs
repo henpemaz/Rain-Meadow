@@ -208,20 +208,19 @@ namespace RainMeadow
                 }
 
             }
-            int scoreToAdd = arena.spearScore; // Default fallback
-
             // 5. Handle Scoring 
+            int scoreToAdd = arena.spearScore; // Default fallback
+            if (arena.externalArenaGameMode is ArenaChallengeMode)
+            {
+                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
+            }
+            self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
+
             if (isLobbyOwner) // host creature was killed
             {
 
-                if (arena.externalArenaGameMode is ArenaChallengeMode)
-                {
-                    int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                    scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
-                }
-
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
 
                 for (int x = 0; x < rs.participants.Count; x++)
                 {
@@ -234,7 +233,6 @@ namespace RainMeadow
             }
             else // someone else's creature was killed, tell the room
             {
-                self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
                 onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
 
