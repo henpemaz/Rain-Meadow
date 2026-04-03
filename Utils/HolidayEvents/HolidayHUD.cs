@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -214,15 +215,29 @@ namespace RainMeadow
                     color = Color.yellow,
                 }
             );
+
+            var owner = this.pages[0];
             meadowCoinValue = new Menu.MenuLabel(
                 this,
-                this.pages[0],
+                owner,
                 this.Translate($"¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"),
                 new Vector2(pos.x + 15, pos.y),
                 new Vector2(110, 30),
                 true
             );
-            this.pages[0].subObjects.Add(meadowCoinValue);
+            owner.subObjects.Add(meadowCoinValue);
+
+            var test = new NothingButton(
+                this,
+                owner,
+                new Vector2(pos.x + 60, pos.y),
+                new Vector2(110, 30)
+            );
+            test.OnClick += (b) =>
+            {
+                SpecialEvents.PlayMeadowCoinSound(this);
+            };
+            owner.subObjects.Add(test);
 
             var storeItems = new List<(string, int, Configurable<bool>?)>
             {
@@ -244,8 +259,8 @@ namespace RainMeadow
             {
                 // Pass the calculated position to the button
                 Vector2 buttonPos = new Vector2(pos.x, this.pos.y - 38 - (index * 40));
-                var newItemButton = new ItemButton(this, this.pages[0], buttonPos, me, game, item.Item1, item.Item2, item.Item3);
-                this.pages[0].subObjects.Add(newItemButton);
+                var newItemButton = new ItemButton(this, owner, buttonPos, me, game, item.Item1, item.Item2, item.Item3);
+                owner.subObjects.Add(newItemButton);
                 this.storeItemList.Add(newItemButton);
                 index++;
             }
@@ -280,5 +295,16 @@ namespace RainMeadow
                         : me == null;
             }
         }
+    }
+
+    internal class NothingButton : ButtonTemplate, ISimplerButton<NothingButton>
+    {
+        public NothingButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size)
+            : base(menu, owner, pos, size)
+        {
+            RainMeadow.Debug("NothingSimplerButton");
+        }
+        public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
+        public event Action<NothingButton>? OnClick;
     }
 }
