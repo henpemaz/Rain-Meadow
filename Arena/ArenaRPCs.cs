@@ -312,22 +312,29 @@ namespace RainMeadow
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
-                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
+                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber != playerNum)
                     {
-                        if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
+                        continue;
+                    }
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
+                    if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
+                    {
+                        game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        if (pl != null)
                         {
-                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            if (pl != null)
+                            arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            // 7
+                            if (crit.abstractCreature.realizedCreature.Template.type == CreatureTemplate.Type.Slugcat)
                             {
-                                arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                                RainMeadow.Debug($"RMEL;{pl.id.DisplayName};KILLED;{creatureKilled.owner.id.DisplayName};SCORE;{game.GetArenaGameSession.arenaSitting.players[i]}");
                             }
                         }
-                    }
 
+                    }
                 }
+
             }
         }
         [RPCMethod]
