@@ -91,73 +91,32 @@ namespace RainMeadow
                 i => i.MatchLdfld<JokeRifle>(nameof(JokeRifle.scareObj)),
                 i => i.MatchBrtrue(out _));
 
-            // Noodle
-
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<JokeRifle>("get_abstractRifle"),
-                i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
-                i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(nameof(JokeRifle.AbstractRifle.AmmoType.Noodle)),
-                i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
-                i => i.MatchBrfalse(out skip));
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((JokeRifle self) =>
+            string[] ammoTypes =
             {
-                return !self.IsLocal();
-            });
-            c.Emit(OpCodes.Brtrue, skip);
+                // order matters
+                nameof(JokeRifle.AbstractRifle.AmmoType.Noodle),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Singularity),
+                nameof(JokeRifle.AbstractRifle.AmmoType.FireEgg),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Grenade)
+            };
 
-            // Singularity
-
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<JokeRifle>("get_abstractRifle"),
-                i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
-                i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(nameof(JokeRifle.AbstractRifle.AmmoType.Singularity)),
-                i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
-                i => i.MatchBrfalse(out skip));
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((JokeRifle self) =>
+            foreach (var ammoType in ammoTypes)
             {
-                return !self.IsLocal();
-            });
-            c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<JokeRifle>("get_abstractRifle"),
+                    i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
+                    i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(ammoType),
+                    i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip));
 
-            // FireEgg
-
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<JokeRifle>("get_abstractRifle"),
-                i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
-                i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(nameof(JokeRifle.AbstractRifle.AmmoType.FireEgg)),
-                i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
-                i => i.MatchBrfalse(out skip));
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((JokeRifle self) =>
-            {
-                return !self.IsLocal();
-            });
-            c.Emit(OpCodes.Brtrue, skip);
-
-            // Grenade
-
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<JokeRifle>("get_abstractRifle"),
-                i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
-                i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(nameof(JokeRifle.AbstractRifle.AmmoType.Grenade)),
-                i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
-                i => i.MatchBrfalse(out skip));
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((JokeRifle self) =>
-            {
-                return !self.IsLocal();
-            });
-            c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((JokeRifle self) =>
+                {
+                    return !self.IsLocal();
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
         }
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
