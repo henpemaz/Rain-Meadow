@@ -297,19 +297,6 @@ namespace RainMeadow
                     return;
                 }
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
-                int scoreToAdd = 0;
-                if (arena.externalArenaGameMode is ArenaChallengeMode)
-                {
-                    int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature)).Index;
-                    if (index >= 0)
-                    {
-                        scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
-                    }
-                }
-                else
-                {
-                    scoreToAdd = arena.spearScore;
-                }
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
                     OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
@@ -323,7 +310,6 @@ namespace RainMeadow
                             {
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                                 arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
                             }
                         }
                     }

@@ -165,17 +165,47 @@ namespace RainMeadow
             // 2. Early Exit: If the player isn't relevant to this execution, stop here.
             if (!playerFound) return;
 
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             // 3. Early Exit: Stop processing if the killed creature isn't local.
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
 
             // 4. Handle Trophies
-            if (earnsTrophy && isLobbyOwner)
+            if (earnsTrophy)
             {
-                string trophyString = iconSymbolData.ToString();
-                arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
-                arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                if (isLobbyOwner)
+                {
+                    string trophyString = iconSymbolData.ToString();
+                    arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
+                    arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                }
+                else
+                {
+
+                    OnlineManager.lobby.owner.InvokeRPC(
+                        ArenaRPCs.Arena_AddTrophy,
+                        onlineKilledCreature,
+                        self.arenaSitting.players[targetPlayerNumber].playerNumber
+                    );
+
+                }
+                // 6. Handle HUD Updates
+                if (player.IsLocal() && killedCrit.abstractCreature.IsLocal()) // if the player is local then we are seeing this method from a locally killed creature
+                {
+                    for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
+                    {
+                        if (self.game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
+                        {
+                            multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.apo as AbstractCreature));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    player.abstractCreature.GetOnlineCreature()?.owner.InvokeOnceRPC(ArenaRPCs.AddKilledCreatureToHUD, onlineKilledCreature);
+                }
 
             }
 
@@ -191,36 +221,22 @@ namespace RainMeadow
                 }
 
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var ws))
+
+                for (int x = 0; x < rs.participants.Count; x++)
                 {
-                    for (int x = 0; x < ws.participants.Count; x++)
+                    if (rs.participants[x].isMe)
                     {
-                        if (ws.participants[x].isMe)
-                        {
-                            self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-                        }
-                        else
-                        {
-                            ws.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
-                        }
+                        self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
                     }
+                    else
+                    {
+                        rs.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
+                    }
+
 
                 }
             }
 
-            // 6. Handle HUD Updates
-            if (player.IsLocal())
-            {
-                // Local player & local creature: Update HUD directly
-                foreach (var hudPart in self.game.cameras[0].hud.parts)
-                {
-                    if (hudPart is HUD.PlayerSpecificMultiplayerHud multiHud)
-                    {
-                        multiHud.killsList.Killing(iconSymbolData);
-                        break;
-                    }
-                }
-            }
             // 7
             if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
             {
