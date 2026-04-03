@@ -1,4 +1,5 @@
 using Menu;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
@@ -136,6 +137,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            MoreSlugcatsEnums.AbstractObjectType.Bullet, // Too many spawned objects
             Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //Causes issues, plus its per player thing
         };
 
