@@ -1,4 +1,5 @@
 ﻿using MoreSlugcats;
+using RainMeadow.Generics;
 using RWCustom;
 using System;
 using System.Linq;
@@ -115,6 +116,8 @@ namespace RainMeadow
         {
             [OnlineFieldHalf]
             float FlameJetTime;
+            [OnlineField(nullable = true)]
+            private DynamicOrderedStates<PlacedObjectRef> placedObjects;
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
@@ -124,6 +127,13 @@ namespace RainMeadow
                     if (firstJet != null)
                     {
                         FlameJetTime = firstJet.time;
+                    }
+                    // Track these on a need by need basis (Severe dupes, etc)
+                    placedObjects = new();
+                    foreach(var placedObject in resource.absroom.realizedRoom.roomSettings.placedObjects
+                        .Where(p => p.type == PlacedObject.Type.HangingPearls || p.type == PlacedObject.Type.ScavengerOutpost))
+                    {
+                        placedObjects.list.Add(PlacedObjectRef.FromPlacedObject(placedObject, resource.absroom.realizedRoom));
                     }
                 }
             }
@@ -138,9 +148,19 @@ namespace RainMeadow
 
                     if (rs.absroom.realizedRoom != null)
                     {
-                        foreach (FlameJet flameJet in rs.absroom.realizedRoom.updateList.OfType<FlameJet>())
+                        var room = rs.absroom.realizedRoom;
+                        foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
                         {
                             flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                        }
+
+                        foreach(var placedObject in placedObjects.list)
+                        {
+                            var po = placedObject.ToPlacedObject(rs);
+                            if (po != null && !PlacedObjectRef.map.TryGetValue(po, out _))
+                            {
+                                PlacedObjectRef.map.Add(po, placedObject);
+                            }
                         }
                     }
                 }
