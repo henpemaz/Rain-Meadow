@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -14,6 +16,12 @@ namespace RainMeadow
         Vector2 pos;
 
         // TODO: Handle PlacedObject.Data in some capacity when we need to
+
+        public static List<PlacedObject.Type> TrackedTypes = new()
+        {
+            PlacedObject.Type.HangingPearls,
+            PlacedObject.Type.ScavengerOutpost
+        };
 
         public PlacedObjectRef() { }
 
@@ -34,7 +42,7 @@ namespace RainMeadow
         {
             if (session.absroom?.realizedRoom == null) return null;
 
-            foreach(var placedObject in session.absroom.realizedRoom.roomSettings.placedObjects)
+            foreach(var placedObject in session.absroom.realizedRoom.roomSettings.placedObjects.Where(p => TrackedTypes.Contains(p.type)))
             {
                 if (EqualsPlacedObject(placedObject))
                 {

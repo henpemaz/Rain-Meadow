@@ -117,7 +117,8 @@ namespace RainMeadow
             [OnlineFieldHalf]
             float FlameJetTime;
             [OnlineField(nullable = true)]
-            private DynamicOrderedStates<PlacedObjectRef> placedObjects;
+            DynamicOrderedStates<PlacedObjectRef> placedObjects;
+
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
@@ -130,8 +131,8 @@ namespace RainMeadow
                     }
                     // Track these on a need by need basis (Severe dupes, etc)
                     placedObjects = new();
-                    foreach(var placedObject in resource.absroom.realizedRoom.roomSettings.placedObjects
-                        .Where(p => p.type == PlacedObject.Type.HangingPearls || p.type == PlacedObject.Type.ScavengerOutpost))
+                    foreach (var placedObject in resource.absroom.realizedRoom.roomSettings.placedObjects
+                        .Where(p => PlacedObjectRef.TrackedTypes.Contains(p.type)))
                     {
                         placedObjects.list.Add(PlacedObjectRef.FromPlacedObject(placedObject, resource.absroom.realizedRoom));
                     }
@@ -154,7 +155,7 @@ namespace RainMeadow
                             flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
                         }
 
-                        foreach(var placedObject in placedObjects.list)
+                        foreach (var placedObject in placedObjects.list)
                         {
                             var po = placedObject.ToPlacedObject(rs);
                             if (po != null && !PlacedObjectRef.map.TryGetValue(po, out _))
