@@ -714,12 +714,6 @@ namespace RainMeadow
                 // Skip spawning HangingPearls if RoomSession doesn't yet exist.
 
                 c.GotoNext(MoveType.After,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<Room>(nameof(Room.roomSettings)),
-                    i => i.MatchLdfld<RoomSettings>(nameof(RoomSettings.placedObjects)),
-                    i => i.MatchLdloc(29),
-                    i => i.MatchCallvirt<List<PlacedObject>>("get_item"),
-                    i => i.MatchLdfld<PlacedObject>(nameof(PlacedObject.type)),
                     i => i.MatchLdsfld<PlacedObject.Type>(nameof(PlacedObject.Type.HangingPearls)),
                     i => i.MatchCall("ExtEnum`1<PlacedObject/Type>", "op_Equality"),
                     i => i.MatchBrfalse(out skip));
