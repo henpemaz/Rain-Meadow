@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -14,45 +15,6 @@ namespace RainMeadow
             IL.Room.Update += Room_Update;
 
             IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1;
-            IL.ScavengerOutpost.Update += ScavengerOutpost_Update;
-
-            //IL.MoreSlugcats.HangingPearlString.ctor += HangingPearlString_ctor;
-        }
-
-        //private void HangingPearlString_ctor(ILContext il)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        private void ScavengerOutpost_Update(ILContext il)
-        {
-            var c = new ILCursor(il);
-
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchLdarg(1),
-                i => i.MatchCall<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.Update)));
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((ScavengerOutpost self) =>
-            {
-                if (OnlineManager.lobby != null && self.pearlStrings.Count == 0 && RoomSession.map.TryGetValue(self.room.abstractRoom, out var session) && session.isOwner)
-                {
-                    // late Spawn and initiate pearl strings
-                    Random.State state = Random.state;
-                    Random.InitState((self.placedObj.data as PlacedObject.ScavengerOutpostData).pearlsSeed);
-                    int length = Random.Range(5, 15);
-                    for (int i = 0; i < length; i++)
-                    {
-                        var pearlString = new ScavengerOutpost.PearlString(self.room, self, 20f + Mathf.Lerp(20f, 150f, UnityEngine.Random.value) * Custom.LerpMap(length, 5f, 15f, 1f, 0.1f));
-                        self.room.AddObject(pearlString);
-                        self.pearlStrings.Add(pearlString);
-
-                        pearlString.Initiate();
-                    }
-                    Random.state = state;
-                }
-            });
         }
 
         private void ScavengerOutpost_ctor1(ILContext il)
