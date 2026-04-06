@@ -132,8 +132,10 @@ namespace RainMeadow
             {
                 // Don't kill our friends!
                 if ((saint.apo as AbstractCreature).realizedCreature.FriendlyFireSafetyCandidate((opo.apo as AbstractCreature).realizedCreature)) return;
+
+                (opo.apo.realizedObject as Creature).SetKillTag(saint.apo as AbstractCreature);
+
             }
-            (opo.apo.realizedObject as Creature).SetKillTag(saint.apo as AbstractCreature);
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)
             {
