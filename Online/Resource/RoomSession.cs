@@ -116,8 +116,8 @@ namespace RainMeadow
         {
             [OnlineFieldHalf]
             float FlameJetTime;
-            [OnlineField(nullable = true)]
-            DynamicOrderedStates<PlacedObjectRef> placedObjects;
+            //[OnlineField(nullable = true)]
+            //DynamicOrderedStates<PlacedObjectRef> placedObjects;
 
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
@@ -130,12 +130,12 @@ namespace RainMeadow
                         FlameJetTime = firstJet.time;
                     }
                     // Track these on a need by need basis (Severe dupes, etc)
-                    placedObjects = new();
-                    foreach (var placedObject in resource.absroom.realizedRoom.roomSettings.placedObjects
-                        .Where(p => PlacedObjectRef.TrackedTypes.Contains(p.type)))
-                    {
-                        placedObjects.list.Add(PlacedObjectRef.FromPlacedObject(placedObject, resource.absroom.realizedRoom));
-                    }
+                    //placedObjects = new();
+                    //foreach (var placedObject in resource.absroom.realizedRoom.roomSettings.placedObjects
+                    //    .Where(p => PlacedObjectRef.TrackedTypes.Contains(p.type)))
+                    //{
+                    //    placedObjects.list.Add(PlacedObjectRef.FromPlacedObject(placedObject, resource.absroom.realizedRoom));
+                    //}
                 }
             }
 
@@ -155,14 +155,14 @@ namespace RainMeadow
                             flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
                         }
 
-                        foreach (var placedObject in placedObjects.list)
-                        {
-                            var po = placedObject.ToPlacedObject(rs);
-                            if (po != null && !PlacedObjectRef.map.TryGetValue(po, out _))
-                            {
-                                PlacedObjectRef.map.Add(po, placedObject);
-                            }
-                        }
+                        //foreach (var placedObject in placedObjects.list)
+                        //{
+                        //    var po = placedObject.ToPlacedObject(rs);
+                        //    if (po != null && !PlacedObjectRef.map.TryGetValue(po, out _))
+                        //    {
+                        //        PlacedObjectRef.map.Add(po, placedObject);
+                        //    }
+                        //}
                     }
                 }
             }
