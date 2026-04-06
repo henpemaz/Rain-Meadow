@@ -124,7 +124,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Creature_Die(OnlinePhysicalObject opo, OnlinePhysicalObject? saint)
+        public static void Creature_Die(OnlinePhysicalObject opo, OnlinePhysicalObject saint)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
