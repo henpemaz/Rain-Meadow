@@ -21,7 +21,11 @@ namespace RainMeadow.UI.Components
         public OpTextBox denScoreTextBox;
         public MenuLabel denScoreLabel;
         public OpComboBox2 denEntryRule;
+
+        public MenuLabel emptyKillTagScoreLabel;
+        public OpTextBox emptyKillTagScore;
         public EventfulScrollButton? prevButton,
+
             nextButton;
         public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
 
@@ -129,17 +133,34 @@ namespace RainMeadow.UI.Components
                 arena.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(value); ;
             };
 
+
+            emptyKillTagScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
+                new(leftMargin, topOffset - rowHeight * 4), new(labelWidth, 20f), false);
+            emptyKillTagScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            emptyKillTagScore = new(RainMeadow.rainMeadowOptions.ArenaEmptyKillTagScore,
+            new(boxMargin, topOffset - (rowHeight * 4)), 60)
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points for other players if someone dies without a killer"), accept = OpTextBox.Accept.Int };
+
+            emptyKillTagScore.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (emptyKillTagScore.valueInt < 0) emptyKillTagScore.valueInt = 0;
+                arena.emptyKillTagScore = emptyKillTagScore.valueInt;
+            };
+
             this.SafeAddSubobjects(
                 tabWrapper,
                 spearScoreLabel,
                 aliveScoreLabel,
                 denEntryRuleLabel,
-                denScoreLabel
+                denScoreLabel,
+                emptyKillTagScoreLabel
             );
             new PatchedUIelementWrapper(tabWrapper, spearScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
             new PatchedUIelementWrapper(tabWrapper, aliveScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, emptyKillTagScore);
 
         }
         public void PopulatePage(int offset)
@@ -175,6 +196,8 @@ namespace RainMeadow.UI.Components
             RainMeadow.rainMeadowOptions.ArenaAliveScore.Value = arena.aliveScore;
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
             RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
+            RainMeadow.rainMeadowOptions.ArenaEmptyKillTagScore.Value = arena.emptyKillTagScore;
+
             RainMeadow.rainMeadowOptions.config.Save();
 
         }
@@ -234,6 +257,18 @@ namespace RainMeadow.UI.Components
                     denScoreTextBox.valueInt = arena.denScore;
 
                 }
+            }
+
+            if (emptyKillTagScore != null)
+            {
+                emptyKillTagScore.greyedOut = OwnerSettingsDisabled;
+                emptyKillTagScore.held = emptyKillTagScore._KeyboardOn;
+                if (!emptyKillTagScore.held)
+                {
+                    emptyKillTagScore.valueInt = arena.emptyKillTagScore;
+
+                }
+
             }
         }
     }

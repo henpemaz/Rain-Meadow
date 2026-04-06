@@ -163,9 +163,10 @@ namespace RainMeadow
             }
 
             // 2. Early Exit: If the player isn't relevant to this execution, stop here.
+            // 3. Early Exit: Stop processing if the killed creature isn't local.
+
             if (!playerFound || (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) || !killedCrit.abstractCreature.IsLocal()) return;
 
-            // 3. Early Exit: Stop processing if the killed creature isn't local.
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
@@ -190,7 +191,7 @@ namespace RainMeadow
                     );
 
                 }
-                // 6. Handle HUD Updates
+                // 5. Handle HUD Updates
                 if (player.IsLocal()) // if the player is local then we are seeing this method from a locally killed creature
                 {
                     for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
@@ -208,7 +209,7 @@ namespace RainMeadow
                 }
 
             }
-            // 5. Handle Scoring 
+            // 6. Handle Scoring 
             int scoreToAdd = arena.spearScore; // Default fallback
             if (arena.externalArenaGameMode is ArenaChallengeMode)
             {
@@ -238,7 +239,7 @@ namespace RainMeadow
                 onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
 
-            // 7
+            // 7.
             if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
             {
                 RainMeadow.Debug($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
@@ -925,11 +926,13 @@ namespace RainMeadow
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
                 }
                 arena.ReadFromStats(arenaPlayer, onlinePlayer);
+
             }
 
             for (int m = 0; m < self.players.Count; m++)
