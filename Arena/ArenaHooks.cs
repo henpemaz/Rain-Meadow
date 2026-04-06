@@ -2537,7 +2537,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After,
                     x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
                     x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));
-                cursor.EmitDelegate(delegate (bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
+                cursor.EmitDelegate(delegate (bool origIsChallenge) { return origIsChallenge || isArenaMode(out var arena) && arena.challengeDenEjection; });
             }
             catch (Exception ex) { RainMeadow.Error(ex); }
         }

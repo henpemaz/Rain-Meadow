@@ -62,6 +62,7 @@ namespace RainMeadow
         public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
+        public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
         public int lizardEvent;

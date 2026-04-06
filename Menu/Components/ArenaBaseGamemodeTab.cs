@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
+using Menu.Remix.MixedUI.ValueTypes;
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -24,6 +25,9 @@ namespace RainMeadow.UI.Components
 
         public MenuLabel emptyKillTagScoreLabel;
         public OpTextBox emptyKillTagScore;
+
+        public MenuLabel challengeDenEjectionLabel;
+        public OpCheckBox challengeDenEjectionCheckbox;
         public EventfulScrollButton? prevButton,
 
             nextButton;
@@ -148,19 +152,40 @@ namespace RainMeadow.UI.Components
                 arena.emptyKillTagScore = emptyKillTagScore.valueInt;
             };
 
+
+
+            challengeDenEjectionLabel = new(menu, this, menu.Translate("Den Ejection:"),
+                new(leftMargin, topOffset - rowHeight * 5), new(labelWidth, 20f), false);
+            challengeDenEjectionLabel.label.alignment = FLabelAlignment.Left;
+
+            challengeDenEjectionCheckbox = new(RainMeadow.rainMeadowOptions.ChallengeDenEjection, boxMargin, topOffset - (rowHeight * 5));
+
+            challengeDenEjectionCheckbox.OnValueUpdate += (config, value, oldValue) =>
+            {
+            };
+            challengeDenEjectionCheckbox.OnChange += () =>
+            {
+                challengeDenEjectionCheckbox.description = challengeDenEjectionCheckbox.GetValueBool() ? menu.Translate("Dens eject and block players after some time") : menu.Translate("Normal den behavior");
+                arena.challengeDenEjection = challengeDenEjectionCheckbox.GetValueBool();
+            };
+            challengeDenEjectionCheckbox.Change();
+
+
             this.SafeAddSubobjects(
                 tabWrapper,
                 spearScoreLabel,
                 aliveScoreLabel,
                 denEntryRuleLabel,
                 denScoreLabel,
-                emptyKillTagScoreLabel
+                emptyKillTagScoreLabel,
+                challengeDenEjectionLabel
             );
             new PatchedUIelementWrapper(tabWrapper, spearScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
             new PatchedUIelementWrapper(tabWrapper, aliveScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, emptyKillTagScore);
+            new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
 
         }
         public void PopulatePage(int offset)
@@ -197,6 +222,7 @@ namespace RainMeadow.UI.Components
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
             RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
             RainMeadow.rainMeadowOptions.ArenaEmptyKillTagScore.Value = arena.emptyKillTagScore;
+            RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value = arena.challengeDenEjection;
 
             RainMeadow.rainMeadowOptions.config.Save();
 
@@ -269,6 +295,15 @@ namespace RainMeadow.UI.Components
 
                 }
 
+            }
+
+            if (challengeDenEjectionCheckbox != null)
+            {
+                challengeDenEjectionCheckbox.greyedOut = OwnerSettingsDisabled;
+                if (!challengeDenEjectionCheckbox.held)
+                {
+                    challengeDenEjectionCheckbox.SetValueBool(arena.challengeDenEjection);
+                }
             }
         }
     }

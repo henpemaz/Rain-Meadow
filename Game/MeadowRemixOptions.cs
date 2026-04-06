@@ -95,6 +95,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaAliveScore;
     public readonly Configurable<int> ArenaDenScore;
 
+    public readonly Configurable<bool> ChallengeDenEjection;
+
+
     public readonly Configurable<int> ArenaEmptyKillTagScore;
 
     public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
@@ -231,6 +234,7 @@ public class RainMeadowOptions : OptionInterface
         CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
         ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
+        ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
 
     }
     List<ListItem> capeList = new List<ListItem>

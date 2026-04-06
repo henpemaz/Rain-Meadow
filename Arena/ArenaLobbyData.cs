@@ -146,6 +146,10 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int emptyKillScore;
 
+
+            [OnlineField(group = "arenaSetup")]
+            public bool challengeDenEjection;
+
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -263,6 +267,8 @@ namespace RainMeadow
                 denScore = arena.denScore;
                 hostLoadedOverlay = arena.hostLoadedOverlay;
                 emptyKillScore = arena.emptyKillTagScore;
+                challengeDenEjection = arena.challengeDenEjection;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -349,6 +355,7 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
                 (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
                 (lobby.gameMode as ArenaOnlineGameMode).emptyKillTagScore = emptyKillScore;
+                (lobby.gameMode as ArenaOnlineGameMode).challengeDenEjection = challengeDenEjection;
 
             }
 
