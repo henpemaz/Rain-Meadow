@@ -1,3 +1,9 @@
+# Release 1.13.2
+- Fixed Meadow crashing in single-player
+- Fixed Meadow initialization logs being lost
+- Fixed some arena menus running at twice the tickrate
+- Fixed an issue with the password resetting when a lobby's host changes
+
 # Release 1.13.1
 ## General
 - Fixed Hunter_Illness IL Hook
