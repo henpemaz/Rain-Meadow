@@ -1922,7 +1922,6 @@ public partial class RainMeadow
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         if (isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && self.room.game.session is ArenaGameSession s)
         {
-            int excludeMyScoreUpdate = 0;
             for (int x = 0; x < s.arenaSitting.players.Count; x++)
             {
                 OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[x].playerNumber);
@@ -1932,7 +1931,6 @@ public partial class RainMeadow
                 }
                 if (onlinePlayer == OnlineManager.mePlayer)
                 {
-                    excludeMyScoreUpdate = s.arenaSitting.players[x].playerNumber;
                     continue;
                 }
                 if (OnlineManager.lobby.isOwner)
@@ -1940,7 +1938,7 @@ public partial class RainMeadow
                     arena.playerNumberWithScore[onlinePlayer.inLobbyId] += arena.emptyKillTagScore;
                 }
                 s.arenaSitting.players[x].score += arena.emptyKillTagScore;
-                onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdateAllOtherPlayerScore, excludeMyScoreUpdate, s.arenaSitting.players[x].score);
+                onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, s.arenaSitting.players[x].playerNumber, s.arenaSitting.players[x].score);
             }
         }
         orig(self);
