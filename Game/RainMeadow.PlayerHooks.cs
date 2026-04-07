@@ -1920,7 +1920,7 @@ public partial class RainMeadow
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
-        if (isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && self.room.game.session is ArenaGameSession s)
+        if (isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && self.room.game.session is ArenaGameSession s && !self.dead)
         {
             for (int x = 0; x < s.arenaSitting.players.Count; x++)
             {
