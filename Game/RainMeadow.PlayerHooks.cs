@@ -1935,7 +1935,12 @@ public partial class RainMeadow
                     excludeMyScoreUpdate = s.arenaSitting.players[x].playerNumber;
                     continue;
                 }
-                onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdateAllOtherPlayerScore, excludeMyScoreUpdate, arena.playerNumberWithScore[onlinePlayer.inLobbyId] + arena.emptyKillTagScore);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += arena.emptyKillTagScore;
+                }
+                s.arenaSitting.players[x].score += arena.emptyKillTagScore;
+                onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdateAllOtherPlayerScore, excludeMyScoreUpdate, s.arenaSitting.players[x].score);
             }
         }
         orig(self);
