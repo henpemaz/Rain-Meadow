@@ -7,30 +7,65 @@ namespace RainMeadow
     {
 
         [RPCMethod]
-        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        public static void DistributeEmptyKillScores(int excludedPlayerNumber)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (!OnlineManager.lobby.isOwner) return;
+
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame g ? g.session as ArenaGameSession : null;
+            if (game == null) return;
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            if (game is ArenaGameSession session)
             {
-                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-                if (onlinePlayer == null)
+                foreach (var playerSlot in session.arenaSitting.players)
                 {
-                    return;
-                }
-                var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-                if (game == null)
-                {
-                    RainMeadow.Error("Arena: RainWorldGame is null!");
-                    return;
-                }
-                if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
-                {
-                    a.arenaSitting.players[playerNumber].score = newScore;
-                    if (OnlineManager.lobby.isOwner)
+                    // EXCLUSION: If this is the player who died, skip them.
+                    if (playerSlot.playerNumber == excludedPlayerNumber) continue;
+
+                    OnlinePlayer? op = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
+                    if (op == null) continue;
+
+                    if (arena.playerNumberWithScore.ContainsKey(op.inLobbyId))
                     {
-                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                        arena.playerNumberWithScore[op.inLobbyId] += arena.emptyKillTagScore;
+                        playerSlot.score = arena.playerNumberWithScore[op.inLobbyId];
+
+                        if (op == OnlineManager.mePlayer)
+                        {
+                            continue;
+                        }
+                        op.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, playerSlot.playerNumber, playerSlot.score);
+
                     }
                 }
             }
+        }
+
+        [RPCMethod]
+        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        {
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                return;
+            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
+            {
+                a.arenaSitting.players[playerNumber].score = newScore;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                }
+            }
+
         }
 
         [RPCMethod]

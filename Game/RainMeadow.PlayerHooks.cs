@@ -1920,25 +1920,28 @@ public partial class RainMeadow
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
-        if (isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && self.room.game.session is ArenaGameSession s && !self.dead)
+        // Inside player_die hook
+        if (isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
         {
-            for (int x = 0; x < s.arenaSitting.players.Count; x++)
+            var deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
+
+            int dyingPlayerNumber = -1;
+            if (self.room.game.session is ArenaGameSession s)
             {
-                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[x].playerNumber);
-                if (onlinePlayer == null || !arena.playerNumberWithScore.TryGetValue(onlinePlayer.inLobbyId, out _))
-                {
-                    continue;
-                }
-                if (onlinePlayer == OnlineManager.mePlayer)
-                {
-                    continue;
-                }
+                dyingPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
+            }
+
+            if (dyingPlayerNumber != -1)
+            {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += arena.emptyKillTagScore;
+                    ArenaRPCs.DistributeEmptyKillScores(dyingPlayerNumber);
                 }
-                s.arenaSitting.players[x].score += arena.emptyKillTagScore;
-                onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, s.arenaSitting.players[x].playerNumber, s.arenaSitting.players[x].score);
+                else
+                {
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, dyingPlayerNumber);
+                }
             }
         }
         orig(self);
