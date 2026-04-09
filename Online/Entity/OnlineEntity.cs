@@ -252,8 +252,16 @@ namespace RainMeadow
             }
             if (primaryResource == null && !isPending)
             {
-                // let those last state packets come in first
-                OnlineManager.RunDeferred(() => Deregister());
+                if (inResource is WorldSession or RoomSession)
+                {
+                    // let those last state packets come in first
+                    OnlineManager.RunDeferred(() => Deregister());
+                }
+                else
+                {
+                    Deregister();
+                }
+
             }
         }
 
