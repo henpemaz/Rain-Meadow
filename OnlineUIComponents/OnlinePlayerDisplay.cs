@@ -96,8 +96,7 @@ namespace RainMeadow
                 label.alpha = 0f;
                 label.x = -1000f;
             }
-
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() )
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 this.iconString = "meadowcoin";
@@ -220,7 +219,7 @@ namespace RainMeadow
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
 
                     else slugIcon.SetElementByName(iconString);
-                    if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>()  && slugIcon.element.name == "meadowcoin")
+                    if (slugIcon.element.name == "meadowcoin")
                     {
                         this.slugIcon.scale = 0.08f;
                     }

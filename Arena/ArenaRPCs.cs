@@ -1,6 +1,8 @@
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-
+using UnityEngine;
+using RWCustom;
+using System.Linq;
 namespace RainMeadow
 {
     public static class ArenaRPCs
@@ -77,6 +79,22 @@ namespace RainMeadow
             {
                 RainMeadow.Error("Arena: RainWorldGame is null!");
                 return;
+            }
+            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer);
+            if (playerClient != null && playerClient.gotSlugcat)
+            {
+                Room? room = game.cameras[0].followAbstractCreature.Room.realizedRoom;
+                if (room == null)
+                {
+                    return;
+                }
+                if (onlineKilledCreature.realizedCreature != null && onlineKilledCreature.realizedCreature != null && onlineKilledCreature.realizedCreature is PhysicalObject p)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(room: room);
+                    RainMeadow.rainMeadowOptions.MeadowCoins.Value += 1;
+                    // new MeadowTokenCoin.MeadowCoin(p.bodyChunks.OfType<BodyChunk>().First().pos + Custom.RNV() * 2f, Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false);
+                }
+
             }
             for (int j = 0; j < game.cameras[0].hud.parts.Count; j++)
             {

@@ -127,10 +127,14 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
+            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon is not null) display.slugIcon.scale = 0.08f;
+                if (display.slugIcon is not null)
+                {
+                    display.slugIcon.scale = 0.08f;
+                }
                 return "meadowcoin";
             }
             else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
