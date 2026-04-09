@@ -2908,11 +2908,14 @@ namespace RainMeadow
                 );
                 self.pages[0].subObjects.Add(exitButton);
 
-                var winningResult = self.result.FirstOrDefault(x => x.winner);
-                if (winningResult != null)
+                if (FFA.isFFA(arena, out _))
                 {
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
-                    self.headingLabel.text = self.Translate("<USERNAME> WON!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
+                    var winningResult = self.result.FirstOrDefault(x => x.winner);
+                    if (winningResult != null)
+                    {
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
+                        self.headingLabel.text = self.Translate("<USERNAME> WON!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
+                    }
                 }
 
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
