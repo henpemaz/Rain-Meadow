@@ -28,6 +28,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
             self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
+            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
         public static bool isChallengeMode(
@@ -58,7 +59,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             {
                 return self.gameSession.Players.Any(x => x.state.alive);
             }
-
             return false;
         }
 
