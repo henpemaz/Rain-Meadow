@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 namespace RainMeadow
 {
     public partial class WorldSession : OnlineResource
@@ -10,8 +11,6 @@ namespace RainMeadow
         public WorldLoader worldLoader;
         public static ConditionalWeakTable<World, WorldSession> map = new();
 
-        
-        
         /// <summary>
         /// A centralized coroutine helper that waits for a WorldSession's participants to clear before proceeding.
         /// It enforces a 5-second safety timeout to prevent softlocks (deadlocks) if entities fail to remove.
@@ -20,44 +19,66 @@ namespace RainMeadow
         /// <param name="extraWaitCondition">Optional: An additional condition that must remain true to keep waiting (e.g., !newWorldSession.isAvailable). Pass null if not needed.</param>
         /// <param name="onComplete">The action/method to execute once the wait finishes or times out (e.g., orig(self, ...)).</param>
         public static System.Collections.IEnumerator WaitAndExecuteSession(
-            WorldSession session, 
-            System.Func<bool> extraWaitCondition, 
-            System.Action onComplete)
+            WorldSession session,
+            System.Func<bool> extraWaitCondition,
+            System.Action onComplete
+        )
         {
             float startTime = UnityEngine.Time.time;
             float timeoutSeconds = 5f;
+            bool cleanupTriggered = false;
+
             session.transitionInProgress = true;
+            bool isMeadow = OnlineManager.lobby.gameMode is MeadowGameMode;
 
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
-                while (session.participants.Count > 0 && 
-                    (extraWaitCondition == null || extraWaitCondition()) && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+            while (true)
+            {
+                var participants = session.participants.ToList();
+                float elapsed = UnityEngine.Time.time - startTime;
+                bool conditionMet = extraWaitCondition == null || !extraWaitCondition();
+
+                // In Meadow, we only care about the extra condition.
+                // In Story/Arena, we wait for participants to be 0 AND the condition to be met.
+
+                bool isDoneWaiting = isMeadow
+                    ? conditionMet
+                    : (participants.Count == 0 && conditionMet);
+
+                if (isDoneWaiting)
+                    break;
+
+                if (!isMeadow && elapsed > timeoutSeconds && !cleanupTriggered)
                 {
-                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
+                    cleanupTriggered = true; // Only do this once
+                    RainMeadow.Debug(
+                        "WaitLoop: Timeout reached. Forcing participant cleanup, but continuing to wait for conditions..."
+                    );
+                    foreach (var player in participants)
+                    {
+                        RainMeadow.Debug($"WaitLoop: Force-removing {player} from session.");
+                        var remainingPlayers = session
+                            .participants.Where(x => x != player)
+                            .ToList();
+                        if (session.overworldSession != null)
+                        {
+                            session.overworldSession.UpdateParticipants(remainingPlayers);
+                            OnlineManager.RemoveSubscription(session.overworldSession, player);
+                        }
+                        session.UpdateParticipants(remainingPlayers);
+                        OnlineManager.RemoveSubscription(session, player);
+                    }
+
+                    // After removing, let the loop check isDoneWaiting again.
                 }
-            } else
-            {
-                 while ((extraWaitCondition == null || extraWaitCondition()) && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
-                {
-                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
-                }
+
+                yield return null;
             }
 
-            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
-            {
-                RainMeadow.Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
-            }
-            else
-            {
-                RainMeadow.Debug("Entities removed. Proceeding...");
-            }
-
+            RainMeadow.Debug("WaitLoop: Proceeding to execution.");
             session.transitionInProgress = false;
             onComplete?.Invoke();
         }
+
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
         public OverworldSession overworldSession => (OverworldSession)super;
@@ -65,7 +86,8 @@ namespace RainMeadow
         public string worldID;
         public ushort shortWorldID;
 
-        public WorldSession(string worldID, ushort shortWorldID, OverworldSession overworld) : base(overworld)
+        public WorldSession(string worldID, ushort shortWorldID, OverworldSession overworld)
+            : base(overworld)
         {
             this.worldID = worldID;
             this.shortWorldID = shortWorldID;
@@ -82,14 +104,17 @@ namespace RainMeadow
         {
             if (worldLoader != null)
             {
-                worldLoader.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(worldLoader.game, this);
+                worldLoader.setupValues.worldCreaturesSpawn =
+                    OnlineManager.lobby.gameMode.ShouldLoadCreatures(worldLoader.game, this);
             }
         }
 
         protected override void ActivateImpl()
         {
-            if (world == null) throw new InvalidOperationException("world not set");
-            if (world.abstractRooms == null) throw new InvalidOperationException("world.abstractRooms is null");
+            if (world == null)
+                throw new InvalidOperationException("world not set");
+            if (world.abstractRooms == null)
+                throw new InvalidOperationException("world.abstractRooms is null");
             foreach (var room in world.abstractRooms)
             {
                 var rs = new RoomSession(this, room);
@@ -101,7 +126,8 @@ namespace RainMeadow
                 {
                     RainMeadow.Error($"duplicate room {room.name} for rs {rs}");
                     var name = "";
-                    for (var i = 0; roomSessions.Keys.Contains((name = room.name + "." + i)); i++) ;
+                    for (var i = 0; roomSessions.Keys.Contains((name = room.name + "." + i)); i++)
+                        ;
                     RainMeadow.Error($"adding as {name}");
                     roomSessions.Add(name, rs);
                 }
@@ -119,14 +145,12 @@ namespace RainMeadow
         protected override void DeactivateImpl()
         {
             this.roomSessions.Clear();
-            if (world != null && map.TryGetValue(world, out var ws) && ws == this) map.Remove(world);
+            if (world != null && map.TryGetValue(world, out var ws) && ws == this)
+                map.Remove(world);
             world = null;
         }
 
-        protected override void UnavailableImpl()
-        {
-
-        }
+        protected override void UnavailableImpl() { }
 
         protected override ResourceState MakeState(uint ts)
         {
@@ -152,6 +176,7 @@ namespace RainMeadow
         {
             [OnlineField]
             public RainCycleData rainCycleData;
+
             [OnlineField(nullable: true)]
             public Generics.DynamicOrderedUshorts realizedRooms;
 
@@ -159,8 +184,12 @@ namespace RainMeadow
             // other functions in the game. Should be safe to update this way but I would keep a watch on it for a little bit.
             [OnlineField]
             public int clock;
-            public WorldState() : base() { }
-            public WorldState(WorldSession resource, uint ts) : base(resource, ts)
+
+            public WorldState()
+                : base() { }
+
+            public WorldState(WorldSession resource, uint ts)
+                : base(resource, ts)
             {
                 if (resource.world != null)
                 {
@@ -172,10 +201,16 @@ namespace RainMeadow
                         rainCycle.brokenAntiGrav = new AntiGravity.BrokenAntiGravity(
                             resource.world.game.setupValues.gravityFlickerCycleMin,
                             resource.world.game.setupValues.gravityFlickerCycleMax,
-                            resource.world.game);
+                            resource.world.game
+                        );
                     }
                     rainCycleData = new RainCycleData(rainCycle);
-                    realizedRooms = new(resource.world.abstractRooms.Where(s => s.firstTimeRealized == false).Select(r => (ushort)r.index).ToList());
+                    realizedRooms = new(
+                        resource
+                            .world.abstractRooms.Where(s => s.firstTimeRealized == false)
+                            .Select(r => (ushort)r.index)
+                            .ToList()
+                    );
                 }
             }
 
@@ -210,7 +245,9 @@ namespace RainMeadow
                                 if (!ws.alreadyLogged.Contains(index))
                                 {
                                     RainMeadow.Error($"Room not found in region: {index} in {ws}");
-                                    RainMeadow.Error($"Region spans indexes: {ws.world.firstRoomIndex} to {ws.world.firstRoomIndex + ws.world.NumberOfRooms}");
+                                    RainMeadow.Error(
+                                        $"Region spans indexes: {ws.world.firstRoomIndex} to {ws.world.firstRoomIndex + ws.world.NumberOfRooms}"
+                                    );
 
                                     ws.alreadyLogged.Add(index);
                                 }
@@ -222,6 +259,7 @@ namespace RainMeadow
                 base.ReadTo(resource);
             }
         }
+
         HashSet<int> alreadyLogged = new();
 
         public override string ToString()

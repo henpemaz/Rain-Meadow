@@ -7,7 +7,7 @@ namespace RainMeadow
     public static class RPCs
     {
         [RPCMethod]
-        public static void DeathRain(RPCEvent rpc, GlobalRain.DeathRain.DeathRainMode deathRainMode, 
+        public static void DeathRain(RPCEvent rpc, GlobalRain.DeathRain.DeathRainMode deathRainMode,
             float timeInThisMode, float calmBeforeStornSunlight)
         {
             if (rpc.from != OnlineManager.lobby.owner) return; // Only allow DeathRain from the host.
@@ -76,7 +76,7 @@ namespace RainMeadow
         public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
         {
             string incomingUsername = rpc.from.id.name;
-            
+
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
@@ -132,8 +132,10 @@ namespace RainMeadow
             {
                 // Don't kill our friends!
                 if ((saint.apo as AbstractCreature).realizedCreature.FriendlyFireSafetyCandidate((opo.apo as AbstractCreature).realizedCreature)) return;
-            }
 
+                (opo.apo.realizedObject as Creature).SetKillTag(saint.apo as AbstractCreature);
+
+            }
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)
             {

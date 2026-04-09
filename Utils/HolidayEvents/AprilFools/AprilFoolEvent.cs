@@ -1,0 +1,136 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Menu;
+using UnityEngine;
+
+namespace RainMeadow
+{
+    public static partial class SpecialEvents
+    {
+        public static AprilFools AprilFoolsEvent = new AprilFools()
+        {
+            Name = Utils.Translate("April Fool's!"),
+            StartMonth = 4,
+            StartDay = 1,
+            EndDay = 7,
+        };
+
+        public class AprilFools : Event
+        {
+            public override DialogNotify CreateDialogNotify(
+                Menu.Menu self,
+                string message,
+                string okText
+            )
+            {
+                DialogNotify dialog = new DialogNotify(message, self.manager, null);
+                dialog.okButton.size = new Vector2(100f, 30f);
+                dialog.okButton.menuLabel.text = okText;
+                dialog.pos = new Vector2(dialog.size.x * 0.5f, 0);
+                return dialog;
+            }
+
+            public override void UpdateLoginMessage(Menu.Menu self)
+            {
+                int chanceToShowMessage = new System.Random().Next(0, 11); // time dependent seed.
+                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                {
+                    return;
+                }
+
+                Dictionary<int, string> aprilMessages = new Dictionary<int, string>
+                {
+                    {
+                        0,
+                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
+                            ? "You need more Meadow Coins to play this game"
+                            : "Game Over! Try again?"
+                    },
+                    { 1, "What's the secret password?" },
+                    { 2, "I heard they were removing capes" },
+                    { 3, "That crash was probably your fault" },
+                    { 4, "Rain Meadow definitely failed to start" },
+                    { 5, "Rain Meadow servers will go offline soon for maintenance"},
+                    { 6, "Would you like to erase all save progress?"},
+                    { 7, "Resist the greed"},
+                    { 8, "Let the greed consume you"}
+
+                };
+
+
+                string m0 = self.Translate("Coins remaining:");
+                Dictionary<int, string> okMessage = new Dictionary<int, string>
+                {
+                    {
+                        0,
+                        RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0
+                            ? "Take ¤10 Meadow Coins"
+                            : $"{m0} {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}"
+                    },
+                    { 1, "wawa" },
+                    { 2, "Good." },
+                    { 3, "It was." },
+                    { 4, "Please work" },
+                    {5 , "Ok"},
+                    { 6, "Yep"},
+                    {7, "Ok"},
+                    {8, "Ok"}
+                };
+
+                int result = new System.Random().Next(aprilMessages.Count);
+                if (result == 0)
+                {
+                    RainMeadow.rainMeadowOptions.MeadowCoins.Value--;
+                }
+                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
+                {
+                    result = 0;
+                    GainedMeadowCoin(10);
+                }
+                string m1 = self.Translate("Event days remaining:");
+                string m2 = self.Translate(aprilMessages[result]);
+                string m3 = self.Translate(okMessage[result]);
+                string selectedMessage = Regex.Replace($"{m1} {this.DaysRemaining}" + $"<LINE>{m2}", "<LINE>", "\r\n");
+                self.manager.ShowDialog(
+                    CreateDialogNotify(self, selectedMessage, m3)
+                );
+            }
+
+            public void SpawnSnails(Room room, ShortcutHandler.ShortCutVessel shortCutVessel)
+            {
+                AbstractCreature bringTheSnails = new AbstractCreature(
+                    room.world,
+                    StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Snail),
+                    null,
+                    room.GetWorldCoordinate(shortCutVessel.pos),
+                    shortCutVessel.room.world.game.GetNewID()
+                );
+                room.abstractRoom.AddEntity(bringTheSnails);
+                bringTheSnails.Realize();
+                bringTheSnails.realizedCreature.PlaceInRoom(room);
+
+                room.world.GetResource().ApoEnteringWorld(bringTheSnails);
+                room.abstractRoom.GetResource()
+                    ?.ApoEnteringRoom(bringTheSnails, bringTheSnails.pos);
+            }
+
+            public void UpdateSlotsButton(
+                ButtonScroller.ScrollerButton continueButton,
+                ProcessManager manager
+            )
+            {
+                if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
+                {
+                    continueButton.buttonBehav.greyedOut = true;
+                }
+                string m0 = continueButton.menu.Translate("COINS:");
+                continueButton.menuLabel.text =
+                    RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0
+                        ? continueButton.menu.Translate(
+                            $"{m0} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
+                        )
+                        : continueButton.menu.Translate("YOU ARE POOR");
+            }
+        }
+    }
+}

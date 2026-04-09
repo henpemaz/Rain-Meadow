@@ -30,9 +30,11 @@ namespace RainMeadow
         public Dictionary<string, float> configurableFloats;
         public Dictionary<string, int> configurableInts;
 
+        public string? enteredPassword;
         public string? password;
         public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
+        public bool eventGags = false;
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
@@ -82,6 +84,7 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("Requesting lobby");
+                this.enteredPassword = password;
                 RequestLobby(password);
             }
 
@@ -128,6 +131,7 @@ namespace RainMeadow
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.currentInstance.JoinLobby(true);
+                if (string.IsNullOrEmpty(password)) password = enteredPassword; // Keep the password we've entered on hand in case lobby gets transfered to us.
                 if (!isAvailable) // this was transfered to me because the previous owner left
                 {
                     WaitingForState();
@@ -223,6 +227,8 @@ namespace RainMeadow
             public Dictionary<string, float> onlineFloatRemixSettings;
             [OnlineField]
             public Dictionary<string, int> onlineIntRemixSettings;
+            [OnlineField]
+            public bool eventGags;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -236,6 +242,7 @@ namespace RainMeadow
                 onlineFloatRemixSettings = lobby.configurableFloats;
                 onlineIntRemixSettings = lobby.configurableInts;
                 timeline = lobby.meadowTimeline;
+                eventGags = lobby.eventGags;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -297,7 +304,8 @@ namespace RainMeadow
 
                     lobby.modsChecked = true;
                 }
-
+                
+                lobby.eventGags = eventGags;
                 base.ReadTo(resource);
             }
         }

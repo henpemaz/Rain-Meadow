@@ -66,12 +66,24 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
-            On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+            On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
+        }
+
+        private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            if (OnlineManager.lobby != null && SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                SpecialEvents.DataPearl_InitiateSprites(orig, self, sLeaser, rCam);
+            }
+            else
+            {
+                orig(self, sLeaser, rCam);
+            }
         }
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
@@ -188,22 +200,6 @@ namespace RainMeadow
 
             }
             return orig(self, obj);
-        }
-
-        private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (!self.player.IsLocal()) {
-                    self.slatedForDeletetion = true;
-                    return;
-                }
-                if (self.player.abstractCreature.state.dead || self.player.State.dead || self.player == null) {
-                    self.slatedForDeletetion = true;
-                }
-            }
-            orig(self, eu);
-
         }
 
         private void Centipede_Shock(ILContext il)
@@ -706,6 +702,40 @@ namespace RainMeadow
             {
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
+
+                    if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() && !storyGameMode.hasSheltered)
+                    {
+                        var entities = self.room.abstractRoom.entities;
+                        int coinCount = 0;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is DataPearl.AbstractDataPearl pearl)
+                            {
+                                if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                                {
+                                    if (pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc || pearl.dataPearlType == DataPearl.AbstractDataPearl.DataPearlType.Misc2)
+                                    {
+                                        if (pearl.realizedObject is PhysicalObject obj && obj.room == self.room)
+                                        {
+                                            for (int j = 0; j < 20; j++)
+                                            {
+                                                self.room.AddObject(new MeadowTokenCoin.MeadowCoin(obj.bodyChunks.OfType<BodyChunk>().First().pos + Custom.RNV() * 2f, Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                                            }
+                                            pearl.GetOnlineObject()?.RemoveEntityFromRoom(); // ugly: since pearls are destroyed after door closing it's very noticeable when are they destroyed
+                                            coinCount++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        SpecialEvents.GainedMeadowCoin(coinCount);
+                        if (coinCount > 0)
+                        {
+                            SpecialEvents.PlayMeadowCoinSound(self.room);
+                        }
+
+                    }
+
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
@@ -719,9 +749,6 @@ namespace RainMeadow
                     }
                 }
             }
-            else
-            {
-            }
         }
 
         private void ShelterDoor_DoorClosed(On.ShelterDoor.orig_DoorClosed orig, ShelterDoor self)
@@ -732,22 +759,20 @@ namespace RainMeadow
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
-            orig(self, eu);
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, eu);
+                return;
+            }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature))
             {
                 Trace($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                orig(self, eu);
                 return;
             }
+
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
-                {
-                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
-                }
-
-                if (self is AirBreatherCreature breather) breather.lungs = 1f;
-
                 if (self.room != null)
                 {
                     // fall out of world handling
@@ -793,7 +818,10 @@ namespace RainMeadow
                             num = Mathf.Max(num, -500f);
                         }
                     }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    if (self?.bodyChunks != null && self.bodyChunks.Length > 0 && self.bodyChunks[0].pos.y < num &&
+                        self.room != null && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) &&
+                        (self.Template == null || !self.Template.canFly || self.Stunned || self.dead) &&
+                        (self is Player || self.room.game?.GetArenaGameSession?.chMeta?.oobProtect != true))
                     {
 
                         //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
@@ -803,6 +831,18 @@ namespace RainMeadow
                         self.State.alive = false;
                     }
                 }
+            }
+
+            orig(self, eu); //Need to run our fall out of world handling BEFORE orig, otherwise entering WallClimb below -250y will run orig's kill code before we have a chance to detect and abort it.
+
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
             }
 
             // this is here as a safegard because we don't transfer full detail grasp data

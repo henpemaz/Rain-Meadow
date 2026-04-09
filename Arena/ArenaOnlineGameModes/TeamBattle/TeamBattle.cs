@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
@@ -52,6 +52,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaBehaviors.ExitManager self
         )
         {
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
+            {
+                // idk why orig ignores this when 2 player exists
+                return true;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
+            {
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
+            }
+
             int playersStillStanding =
                 self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null && player.realizedCreature.State.alive
@@ -334,16 +345,23 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
 
                         if (aIsWinningTeam && bIsWinningTeam)
-                        {
+                        { 
+                            if (A.alive != B.alive) {
+                                return A.alive;
+                            }
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // If both are on winning team, sort by kill value
+
+                            }
                             if (A.allKills.Count != B.allKills.Count)
                             {
                                 return A.allKills.Count > B.allKills.Count;
                             }
-                            else if (A.deaths != B.deaths)
-                            {
-                                return A.deaths < B.deaths;
-                            }
-                            return A.score > B.score; // If both are on winning team, sort by kill value
+                            
+                            
+                            return A.deaths < B.deaths;
+                            
                         }
                     }
                 }
@@ -356,10 +374,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
-            ArenaGameSession session,
-            List<ArenaSitting.ArenaPlayer> list
+            ArenaGameSession session
         )
         {
+            base.ArenaSessionEnded(arena, orig, self, session);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
@@ -517,6 +535,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player

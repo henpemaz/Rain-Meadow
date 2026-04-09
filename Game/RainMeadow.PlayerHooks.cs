@@ -1,13 +1,14 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using System;
-using System.Linq;
 using MonoMod.RuntimeDetour;
-using System.Runtime.CompilerServices;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
-using System.Collections.Generic;
 
 namespace RainMeadow;
 
@@ -19,6 +20,7 @@ public partial class RainMeadow
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
 
         On.Player.ctor += Player_ctor;
+        IL.Player.ctor += Player_ctor3;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStatsGourmandBack);
@@ -1168,7 +1170,9 @@ public partial class RainMeadow
 
         if (isArenaMode(out var arena) && !self.inShortcut)
         {
-            if (arena.countdownInitiatedHoldFire)
+            int[] disabledCollisionChallenges = [60, 68]; //27, 44, 45, 55, and 58 all also have problems with player spawns bumping each other into death pits, but they also include creatures, which we still want to collide with.
+                                                          //60 also has danglefruit that we don't collide with but that matters less. Ideally we'd set up a "just don't collide with players" collision layer, but this works for now.
+            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
             {
                 if (self.collisionLayer != 0)
                 {
@@ -1279,12 +1283,12 @@ public partial class RainMeadow
             (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
-                OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+                SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>())
         {
 
             if (self.IsLocal())
             {
-                if (CapeManager.HasCape(OnlineManager.mePlayer.id).HasValue && !self.isNPC)
+                if (CapeManager.HasCape(OnlineManager.mePlayer.id) is not null && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)
@@ -1769,6 +1773,31 @@ public partial class RainMeadow
             }
         }
     }
+    private void Player_ctor3(ILContext il)
+    {
+        //Don't dupe Inv eggs/singularity bombs per player.
+        //Old: if (ModManager.MSC && SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && abstractCreature.Room.world.game.IsStorySession)
+        //New: if (ModManager.MSC && SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && abstractCreature.Room.world.game.IsStorySession && isLocal())
+        try
+        {
+            ILCursor cursor = new(il);
+            ILLabel breakTo = cursor.DefineLabel();
+
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName), nameof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)));
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchCallvirt(typeof(RainWorldGame), "get_IsStorySession"),
+                x => x.MatchBrfalse(out breakTo));
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate(delegate(Player self)
+            {
+                return self.IsLocal(out _);
+            });
+            cursor.Emit(OpCodes.Brfalse, breakTo);
+        }
+        catch (Exception ex) { RainMeadow.Error(ex); }
+    }
 
     private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
     {
@@ -1905,6 +1934,8 @@ public partial class RainMeadow
         {
             self.slugOnBack.DropSlug();
         }
+
+        self.deaf = 0; //Doctors HATE this one simple trick!
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
         RainMeadow.Debug($"%%% DESTROY {oe}");

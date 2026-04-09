@@ -93,7 +93,6 @@ namespace RainMeadow
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
             }
-
             game.GoToStarveScreen();
         }
 
@@ -101,7 +100,6 @@ namespace RainMeadow
         public static void GoToGhostScreen(GhostWorldPresence.GhostID ghostID)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-
             game.GhostShutDown(ghostID);
         }
 
@@ -109,7 +107,6 @@ namespace RainMeadow
         public static void GoToDeathScreen()
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-
             game.GoToDeathScreen();
         }
 
@@ -125,7 +122,6 @@ namespace RainMeadow
         public static void GoToRedsGameOver()
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-
             game.GoToRedsGameOver();
         }
 
@@ -268,7 +264,8 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             var script = game.FirstAnyPlayer.Room.realizedRoom.updateList.OfType<MoreSlugcats.MSCRoomSpecificScript.LC_FINAL>().FirstOrDefault();
-            if (script is null) { RainMeadow.Error($"trigger not found in room {game.FirstAnyPlayer.Room}"); return; };
+            if (script is null) { RainMeadow.Error($"trigger not found in room {game.FirstAnyPlayer.Room}"); return; }
+            ;
 
             script.TriggerFadeToEnding();
         }
@@ -314,11 +311,13 @@ namespace RainMeadow
                 {
                     RainMeadow.Error("Denied closing shelter because sender is not host");
                 }
-            } finally {
+            }
+            finally
+            {
                 RPCcloseShelter = false;
             }
-                        
-            
+
+
         }
     }
 }

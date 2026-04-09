@@ -8,7 +8,7 @@ namespace RainMeadow
 
         public void ResetOverWorld()
         {
-            if (OnlineManager.lobby.overworld.isAvailable)
+            if (OnlineManager.lobby.overworld != null && OnlineManager.lobby.overworld.isAvailable)
             {
                 OnlineManager.lobby.overworld.Deactivate();
                 OnlineManager.lobby.overworld.NotNeeded();

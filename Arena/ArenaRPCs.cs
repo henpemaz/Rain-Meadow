@@ -1,13 +1,31 @@
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
-using System.Net;
-using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void AddKilledCreatureToHUD(OnlineCreature onlineKilledCreature)
+        {
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+            for (int j = 0; j < game.cameras[0].hud.parts.Count; j++)
+            {
+                if (game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
+                {
+                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.abstractCreature));
+                    break;
+                }
+            }
+        }
         [RPCMethod]
         public static void Arena_ForceReady()
         {
@@ -233,7 +251,7 @@ namespace RainMeadow
         [RPCMethod(runDeferred = true)]
         public static void Arena_RestartGame(RPCEvent rpcEvent)
         {
-            
+
             if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
             {
                 arena.leaveToRestart = true;
@@ -271,12 +289,28 @@ namespace RainMeadow
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                             if (pl != null)
                             {
-
                                 arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
-
+                                arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
                             }
                         }
 
+                        int scoreToAdd = 0;
+                        if (arena.externalArenaGameMode is ArenaChallengeMode)
+                        {
+                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                            if (index >= 0)
+                            {
+                                scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
+                            }
+                        }
+                        else
+                        {
+                            scoreToAdd = arena.spearScore;
+                        }
+                        if (pl != null)
+                        {
+                            arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
+                        }
                     }
 
                 }

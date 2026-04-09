@@ -18,40 +18,45 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.12.0";
+        public const string MeadowVersionStr = "0.1.13.2";
         public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
+        public bool fullyEnabled;
         public static RainMeadowOptions rainMeadowOptions;
         private PlopMachine PlopMachine;
 
         public void OnEnable()
         {
-            instance = this;
-            rainMeadowOptions = new RainMeadowOptions(this);
-
-            if (AdvancedProfilingEnabled())
+            try
             {
-                MeadowProfiler.FullPatch();
+                instance = this;
+                rainMeadowOptions = new RainMeadowOptions(this);
+
+                On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+                On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
+                On.RainWorld.Update += RainWorld_Update;
+                On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
+                On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
+                On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
+                On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
+
+                On.RWCustom.Custom.Log += Custom_Log;
+                On.RWCustom.Custom.LogImportant += Custom_LogImportant;
+                On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+
+                // Do not add more hooks here unless they are related to logging
+                // Also note that RainMeadow.log* has the wrong settings until OnModsInit
+
+                fullyEnabled = true;
             }
-
-            On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-            On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
-            On.RainWorld.Update += RainWorld_Update;
-            On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
-            On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
-            On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
-            On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
-
-            On.RWCustom.Custom.Log += Custom_Log;
-            On.RWCustom.Custom.LogImportant += Custom_LogImportant;
-            On.RWCustom.Custom.LogWarning += Custom_LogWarning;
-
-            DeathContextualizer.CreateBindings();
-
-            StartCoroutine(CheckForUpdates());
+            catch(Exception e)
+            {
+                fullyEnabled = false;
+                Logger.LogError(e);
+            }
         }
 
         private bool AdvancedProfilingEnabled()
@@ -169,9 +174,19 @@ namespace RainMeadow
 
             try
             {
-                MenuHooks(); //  sets the error message fallback
+                EssentialMenuHooks(); //  sets the error message fallback
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
+                rainMeadowOptions._LoadConfigFile(); // We need the logging settings
+
+                if (AdvancedProfilingEnabled())
+                {
+                    MeadowProfiler.FullPatch();
+                }
+
+                DeathContextualizer.CreateBindings();
+
+                StartCoroutine(CheckForUpdates());
 
                 UsernameGenerator.Timestamp = DateTime.Now.Ticks;
 
@@ -218,6 +233,7 @@ namespace RainMeadow
                     }
                 }
 
+                MenuHooks();
                 GameHooks();
                 CreatureHooks();
                 EntityHooks();
@@ -242,7 +258,7 @@ namespace RainMeadow
                 MeadowProgression.LoadProgression();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-                fullyInit = true;
+                fullyInit = fullyEnabled;
 
                 // // Useful for finding where a Translate() method is missing
                 // On.InGameTranslator.Translate += (origTranslate, translator, s) =>

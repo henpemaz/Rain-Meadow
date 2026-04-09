@@ -548,7 +548,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 restartCheckbox.IDString = "RESTART";
-                restartCheckbox.label.text = "Restart game";
+                restartCheckbox.label.text = Translate("Restart game");
 
                 pages.RemoveRange(1, slugcatPages.Count);
                 for (int i = 0; i < slugcatPages.Count; i++)
@@ -584,7 +584,7 @@ namespace RainMeadow
                     slugcatPages.Insert(pageindex - 1, page);
                 }
                 restartCheckbox.IDString = "CLIENTSAVERESET";
-                restartCheckbox.label.text = "Sync Save";
+                restartCheckbox.label.text = Translate("Sync Save");
 
             }
 
@@ -618,7 +618,11 @@ namespace RainMeadow
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
-            invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            invite.OnClick += (_) =>
+            {
+                SimpleDialogBoxNotify dialogBox = new(this, pages[0], "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
+                MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            };
             pages[0].subObjects.Add(invite);
 
             this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
@@ -666,8 +670,7 @@ namespace RainMeadow
         private void SetupClientOptions()
         {
             //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Sync Save"), "CLIENTSAVERESET", false);
-            restartCheckbox.displayText = "Sync Save";
-            restartCheckbox.label.text = "Sync Save";
+            restartCheckbox.label.text = Translate("Sync Save");
             restartCheckbox.IDString = "CLIENTSAVERESET";
             //pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }

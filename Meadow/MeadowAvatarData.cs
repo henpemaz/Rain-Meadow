@@ -11,6 +11,8 @@ namespace RainMeadow
         public Character character;
         public CharacterData characterData;
         public Color tint;
+
+        public Color? meadowEyeColor;
         public float tintAmount;
         public float effectiveTintAmount;
 
@@ -38,7 +40,15 @@ namespace RainMeadow
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
-            if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
+            // keep this in case a skin is decided to have a perma override
+            if (skinData.eyeColor.HasValue)
+            {
+                originalEyeColor = skinData.eyeColor.Value;
+            }
+            else if (meadowEyeColor.HasValue)
+            {
+                originalEyeColor = meadowEyeColor.Value;
+            }
         }
 
         internal string GetEmote(Emote emote)
@@ -78,6 +88,8 @@ namespace RainMeadow
             public byte tintAmount;
             [OnlineFieldColorRgb]
             public Color tint;
+            [OnlineFieldColorRgb(nullable = true)]
+            public Color? eyeColor;
 
             public State() : base() { }
             public State(MeadowAvatarData onlineEntity) : base(onlineEntity)
@@ -85,6 +97,10 @@ namespace RainMeadow
                 skin = onlineEntity.skin;
                 tintAmount = (byte)(onlineEntity.tintAmount * 255f);
                 tint = onlineEntity.tint;
+                if (onlineEntity.meadowEyeColor.HasValue)
+                {
+                    eyeColor = onlineEntity.meadowEyeColor.Value;
+                }
             }
 
             public override Type GetDataType()
@@ -99,6 +115,7 @@ namespace RainMeadow
                 meadowAvatarSettings.skin = skin;
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;
                 meadowAvatarSettings.tint = tint;
+                meadowAvatarSettings.meadowEyeColor = eyeColor;
 
                 meadowAvatarSettings.NewState(this);
             }
@@ -116,6 +133,10 @@ namespace RainMeadow
         internal void Updated()
         {
             this.skinData = MeadowProgression.skinData[skin];
+            if (meadowEyeColor.HasValue)
+            {
+                this.meadowEyeColor = new(meadowEyeColor.Value.r, meadowEyeColor.Value.g, meadowEyeColor.Value.b);
+            }
             this.character = skinData.character;
             this.characterData = MeadowProgression.characterData[skinData.character];
 

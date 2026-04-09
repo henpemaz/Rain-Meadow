@@ -22,7 +22,8 @@ namespace RainMeadow.UI.Components
             inviteFriends = this.AddSideButton("Meadow_Menu_InviteFriends", description: menu.Translate("Invite Friends"), signal: "INVITE_FRIENDS");
             inviteFriends.OnClick += (_) =>
             {
-                    MatchmakingManager.currentInstance.OpenInvitationOverlay();
+                SimpleDialogBoxNotify dialogBox = new(menu, owner, "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
+                MatchmakingManager.currentInstance.OpenInvitationOverlay();
             };
             moderationMenu = this.AddSideButton("Meadow_Menu_MutePlayerChat10", description: menu.Translate("Moderation Options"), signal: "MODERATION");
             moderationMenu.OnClick += (_) =>

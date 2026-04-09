@@ -231,7 +231,6 @@ namespace RainMeadow
 
         public virtual void AddClientData()
         {
-
         }
 
         public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)

@@ -12,20 +12,27 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-        private Texture2D nightsky;
-        private Texture2D nightskyGlow;
+        public static Texture2D nightsky;
+        public static Texture2D nightskyGlow;
+        public static Texture2D coin_tile;
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
 
             byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_base.png"));
-            this.nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
             nightsky.LoadImage(array);
             nightsky.wrapMode = TextureWrapMode.Repeat;
             nightsky.filterMode = FilterMode.Bilinear;
-            Shader.SetGlobalTexture("_RM_NightSky", nightsky);
+
+            array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "coin_tile.png"));
+            coin_tile = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            coin_tile.LoadImage(array);
+            coin_tile.wrapMode = TextureWrapMode.Repeat;
+            coin_tile.filterMode = FilterMode.Bilinear;
+            
             array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_glow.png"));
-            this.nightskyGlow = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightskyGlow = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
             nightskyGlow.LoadImage(array);
             nightskyGlow.wrapMode = TextureWrapMode.Repeat;
             nightskyGlow.filterMode = FilterMode.Bilinear;
@@ -81,6 +88,8 @@ namespace RainMeadow
             On.CreatureTemplate.CreatureRelationship_CreatureTemplate += CreatureTemplate_CreatureRelationship_CreatureTemplate;
 
             On.ShortcutHandler.ShortCutVessel.ctor += ShortCutVessel_ctor; // faster vessels
+
+            On.RoomSpecificScript.AddRoomSpecificScript += Meadow_RoomSpecificScript_AddRoomSpecificScript;
         }
 
         private void ShortCutVessel_ctor(On.ShortcutHandler.ShortCutVessel.orig_ctor orig, ShortcutHandler.ShortCutVessel self, RWCustom.IntVector2 pos, Creature creature, AbstractRoom room, int wait)
@@ -427,6 +436,42 @@ namespace RainMeadow
                 }
             }
             orig(self);
+        }
+        private void Meadow_RoomSpecificScript_AddRoomSpecificScript(On.RoomSpecificScript.orig_AddRoomSpecificScript orig, Room room)
+        {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode) //Blacklist problematic scripts
+            {
+                switch (room.abstractRoom.name)
+                {
+                    case "SU_A43": return; //Pounce tutorial
+                    case "SL_C12": return; //Jetfish tutorial
+                    case "SB_D03": return; //Depths guardian room exit lock
+
+                    case "LF_A03": return; //Hunter mechanics tutorial
+                }
+                if (ModManager.MSC)
+                {
+                    switch (room.abstractRoom.name)
+                    {
+                        case "MS_CORE":       return; //Submerged Superstructure rarefaction cell cutscene
+                        case "OE_FINAL03":    return; //Outer Expanse ending trigger
+
+                        case "GW_C05":        return; //Artificer explosive jump tooltip #1
+                        case "GW_EDGE02":     return; //Artificer explosive jump tooltip #2
+                        case "GW_EDGE03":     return; //Artificer guaranteed scav corpse #1
+                        case "GW_TOWER01":    return; //Artificer guaranteed scav corpse #2
+                        case "GW_PIPE02":     return; //Artificer guaranteed scav corpse #3
+
+                        case "SU_INTRO01":    return; //Spearmaster needle pull tooltip
+                        case "SU_CAVE_02":    return; //Spearmaster feeding tooltip
+
+                        case "SI_SAINTINTRO": return; //Saint tongue tutorial
+                        case "SI_C02":        return; //Saint heat tutorial
+                    }
+                }
+            }
+
+            orig(room);
         }
     }
 }

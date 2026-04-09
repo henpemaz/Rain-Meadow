@@ -1,3 +1,57 @@
+# Release 1.13.2
+- Fixed Meadow crashing in single-player
+- Fixed Meadow initialization logs being lost
+- Fixed some arena menus running at twice the tickrate
+- Fixed an issue with the password resetting when a lobby's host changes
+
+# Release 1.13.1
+## General
+- Fixed Hunter_Illness IL Hook
+- Updated target game version
+- Fixed empty Remix menu when playing with non-English translation settings
+- Fixed persistent purchases from being greyed out unless you met the store's value
+## Arena
+- Fixed a bug where you might spawn multiple times during special events
+## Meadow
+- Granted more event progress when meeting a Meadow Echo
+  
+# Release 1.13.0
+## General
+- The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
+- The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
+- Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
+- Fixed neuron glow not using players' selected body color.
+- Added customizable logging level to Remix in General tab
+- Infinite deafness, and _most_ causes of infinite tinnitus should be fixed.
+- Inv eggs no longer duplicate per player per Inv.
+- Fixed your spectated scug resetting every time you opened the spectate menu.
+- Updated Chinease Translation (Thanks HapiFive)
+- Fixed translation code for mod applier (Thanks HapiFive)
+## Arena
+- If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
+- Added More Slugcat's "Challenges" to Arena! 
+- Synced round kills
+- Added configurable scoring
+- Added KillList & ScoreCounter HUDs from vanilla Arena
+- Altered client Arena overlay loading logic to wait for host to construct first to ensure accurate scoring
+- Granted Saint a kill credit if using ascension to ascend others
+- Fixed Spears Hit toggle not actually working during that current game session
+- Added "Loading x%" message in Arena Overlay to notify of remaining users waiting to leave active resource
+### Modders 
+- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+- ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
+- ⚠️ BREAKING: Updated `ExternalGameMode.AddIcon` to include OnlinePlayerDisplay to access all UI elements used in the in-game overhead UI
+## Story
+- Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+### Watcher
+- Impossibly high ripple levels (6+) no longer crash the game when viewed.
+- Fixed a crash where clients would load into the wrong regions
+## Meadow
+- Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
+- MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
+- The pounce tutorial barrier, the guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
+- Many different room-specific tooltips across all campaigns are now disabled.
+- Added configurable eye color
 # Release 1.12.0
 ## Arena
 - Added `arena.session` to access the current ArenaGameSession

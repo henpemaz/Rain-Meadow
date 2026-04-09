@@ -499,7 +499,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     false
                 );
 
-            playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", slugSlots);
+            playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", playerBox.showGoldTemporarily);
             if (clientSettings?.ready == true)
                 playerBox.ToggleTextOverlay(
                     Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!",
@@ -527,8 +527,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 
             playerBox.showRainbow =
                 Arena.externalArenaGameMode?.DidPlayerWinRainbow(Arena, playerBox.profileIdentifier)
-                    == true
-                || slugSlots;
+                    == true;
+            playerBox.showGold = slugSlots;
         }
         if (button is ArenaPlayerSmallBox smallPlayerBox)
             smallPlayerBox.slugcatButton.slug = ArenaHelpers

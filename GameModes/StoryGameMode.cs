@@ -39,7 +39,6 @@ namespace RainMeadow
         public int avatarCount { get; set; } = 1;
 
         public StoryClientSettingsData storyClientData;
-
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
@@ -310,6 +309,7 @@ namespace RainMeadow
             else RainMeadow.Error("No Player State for playerNumber?");
 
             onlineCreature.AddData(avatarSettings[avatarsettings_index]);
+            avatarSettings[avatarsettings_index].overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)

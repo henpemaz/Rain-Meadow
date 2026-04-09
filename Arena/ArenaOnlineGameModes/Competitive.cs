@@ -41,6 +41,17 @@ namespace RainMeadow
             ArenaBehaviors.ExitManager self
         )
         {
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
+            {
+                // idk why orig ignores this when 2 player exists
+                return true;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
+            {
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
+            }
+
             int playersStillStanding =
                 self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
@@ -110,16 +121,23 @@ namespace RainMeadow
 
         public override string AddIcon(
             ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
             OnlinePlayer player
         )
         {
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
+            {
+                SpecialEvents.LoadElement("meadowcoin");
+                if (display.slugIcon is not null) display.slugIcon.scale = 0.08f;
+                return "meadowcoin";
+            }
+            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, owner, customization, player);
+            return base.AddIcon(arena, display, owner, customization, player);
         }
 
         public override Color IconColor(

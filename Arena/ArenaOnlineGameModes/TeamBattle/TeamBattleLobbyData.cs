@@ -38,13 +38,13 @@ namespace RainMeadow
             public string dragonslayersName;
             [OnlineField(nullable = true)]
             public string outlawsName;
-            [OnlineFieldColorRgb(nullable = true)]
+            [OnlineFieldColorRgb]
             public Color martyrColors;
-            [OnlineFieldColorRgb(nullable = true)]
+            [OnlineFieldColorRgb]
             public Color chieftainColors;
-            [OnlineFieldColorRgb(nullable = true)]
+            [OnlineFieldColorRgb]
             public Color dragonslayerColors;
-            [OnlineFieldColorRgb(nullable = true)]
+            [OnlineFieldColorRgb]
             public Color outlawColors;
 
 

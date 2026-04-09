@@ -13,6 +13,7 @@ namespace RainMeadow.Generics
     /// <typeparam name="T"></typeparam>
     public interface IPrimaryDelta<T>
     {
+        public bool IsDelta { get; }
         public bool IsEmptyDelta { get; }
         public T Delta(T other);
         public T ApplyDelta(T other);

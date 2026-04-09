@@ -41,11 +41,16 @@ namespace RainMeadow
 
             if (creatureControllers.TryGetValue(self.mouse, out var p))
             {
-                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                if (p.customization.overlaySkin is OverlaySkin skin && skin.Available(p.onlineCreature))
                 {
+                    var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
                     for (int i = 0; i < sLeaser.sprites.Length; i++)
                     {
-                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                        sLeaser.sprites[i].shader = nightsky;
+                        RainMeadow.OnPopulateRenderLayer.Get(sLeaser.sprites[i]).onEvent += (FFacetNode node) =>
+                        {
+                            node._renderLayer._material.SetTexture("_RM_NightSky", skin.texture);
+                        };
                     }
                 }
             }
