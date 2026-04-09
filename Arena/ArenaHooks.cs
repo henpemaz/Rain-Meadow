@@ -1010,17 +1010,17 @@ namespace RainMeadow
                         if (a.wins != b.wins)
                             return b.wins.CompareTo(a.wins); // Higher wins first
 
-                        return b.score.CompareTo(a.score); // Higher score first
+                        return b.totScore.CompareTo(a.totScore); // Higher score first
                     });
 
                     // Determine the winner 
                     var p1 = resultList[0];
                     var p2 = resultList[1];
-                    RainMeadow.Info($"Checking sc:{p1.score}, {p2.score} ");
+                    RainMeadow.Info($"Checking sc:{p1.totScore}, {p2.totScore} ");
 
 
                     bool winsStrictlyHigher = p1.wins > p2.wins;
-                    bool winsTiedButScoreHigher = p1.wins == p2.wins && p1.score > p2.score;
+                    bool winsTiedButScoreHigher = p1.wins == p2.wins && p1.totScore > p2.totScore;
                     RainMeadow.Info($"Checking wins:{winsStrictlyHigher}, {winsTiedButScoreHigher} ");
 
                     if (winsStrictlyHigher || winsTiedButScoreHigher)
