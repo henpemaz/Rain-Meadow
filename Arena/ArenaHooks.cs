@@ -2908,7 +2908,7 @@ namespace RainMeadow
                 );
                 self.pages[0].subObjects.Add(exitButton);
 
-                if (FFA.isFFA(arena, out _))
+                if (!TeamBattleMode.isTeamBattleMode(arena, out _))
                 {
                     var winningResult = self.result.FirstOrDefault(x => x.winner);
                     if (winningResult != null)
