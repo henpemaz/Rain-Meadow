@@ -2914,7 +2914,7 @@ namespace RainMeadow
                     if (winningResult != null)
                     {
                         OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
-                        self.headingLabel.text = self.Translate("<USERNAME> WON!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
+                        self.headingLabel.text = self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
                     }
                 }
 
@@ -2922,7 +2922,7 @@ namespace RainMeadow
                 {
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!")
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
                             .Replace(
                                 "<TEAMNAME>",
                                 MatchmakingManager.currentInstance.FilterTeamName(
