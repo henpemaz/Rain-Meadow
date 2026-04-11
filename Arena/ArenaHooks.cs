@@ -1004,13 +1004,15 @@ namespace RainMeadow
                         arena.ReadFromStats(player, pl);
                         player.winner = false;
                     }
-                    // Sort by wins, then by score if wins are equal.
+                    // Sort by score if spear score > 0
                     resultList.Sort((a, b) =>
                     {
-                        if (a.wins != b.wins)
-                            return b.wins.CompareTo(a.wins); // Higher wins first
+                        if (arena.spearScore > 0)
+                        {
+                            return b.totScore.CompareTo(a.totScore); // Higher score first
+                        }
 
-                        return b.totScore.CompareTo(a.totScore); // Higher score first
+                        return b.wins.CompareTo(a.wins); // Higher wins second
                     });
 
                     // Determine the winner 
@@ -1019,11 +1021,12 @@ namespace RainMeadow
                     RainMeadow.Info($"Checking sc:{p1.totScore}, {p2.totScore} ");
 
 
-                    bool winsStrictlyHigher = p1.wins > p2.wins;
-                    bool winsTiedButScoreHigher = p1.wins == p2.wins && p1.totScore > p2.totScore;
-                    RainMeadow.Info($"Checking wins:{winsStrictlyHigher}, {winsTiedButScoreHigher} ");
+                    bool winsStrictlyHigher = p1.wins > p2.wins && arena.spearScore == 0;
+                    bool scoreStrictlyHigher = p1.totScore > p2.totScore && arena.spearScore > 0;
+                    bool winsEqualScoreEqualDeathLower = p1.wins == p2.wins && p1.totScore == p2.totScore && p1.deaths < p2.deaths && arena.spearScore > 0;
+                    RainMeadow.Info($"Checking wins:{winsStrictlyHigher}, {scoreStrictlyHigher}, {winsEqualScoreEqualDeathLower} ");
 
-                    if (winsStrictlyHigher || winsTiedButScoreHigher)
+                    if (winsStrictlyHigher || scoreStrictlyHigher || winsEqualScoreEqualDeathLower)
                     {
                         p1.winner = true;
                     }
