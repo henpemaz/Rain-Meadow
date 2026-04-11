@@ -1029,6 +1029,53 @@ namespace RainMeadow
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
 
         }
+
+        public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaOnlineGameMode arena,
+            On.ArenaSitting.orig_FinalSittingResult orig,
+            ArenaSitting self)
+        {
+
+            var resultList = orig(self);
+            if (resultList.Count > 1)
+            {
+                foreach (var player in resultList)
+                {
+                    OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    if (pl == null)
+                    {
+                        continue;
+                    }
+                    arena.ReadFromStats(player, pl);
+                    player.winner = false;
+                }
+                // Sort by score if spear score > 0
+                resultList.Sort((a, b) =>
+                {
+                    if (arena.spearScore > 0 && a.totScore != b.totScore)
+                    {
+                        return b.totScore.CompareTo(a.totScore); // Higher score first
+                    }
+
+                    return b.wins.CompareTo(a.wins); // Higher wins second
+                });
+
+                // Determine the winner 
+                var p1 = resultList[0];
+                var p2 = resultList[1];
+                RainMeadow.Info($"Checking sc:{p1.totScore}, {p2.totScore} ");
+
+
+                bool winsStrictlyHigher = p1.wins > p2.wins && arena.spearScore == 0;
+                bool scoreStrictlyHigher = p1.totScore > p2.totScore && arena.spearScore > 0;
+                RainMeadow.Info($"Checking wins:{winsStrictlyHigher}, {scoreStrictlyHigher}");
+
+                if (winsStrictlyHigher || scoreStrictlyHigher)
+                {
+                    p1.winner = true;
+                }
+            }
+            return resultList;
+        }
         public virtual bool PlayerSessionResultSort(
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
