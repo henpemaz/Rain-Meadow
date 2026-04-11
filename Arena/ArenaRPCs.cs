@@ -1,10 +1,34 @@
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-
+using UnityEngine;
+using RWCustom;
+using System.Linq;
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
+        {
+            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(killer.owner);
+            if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                if (killer.owner.isMe)
+                {
+                    SpecialEvents.GainedMeadowCoin(1);
+                }
+                if (killedCreature.apo.realizedObject is Creature c && c != null)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(room: c.room);
+                    for (int x = 0; x < 20; x++)
+                    {
+                        c.room.AddObject(new MeadowTokenCoin.MeadowCoin(c.bodyChunks.OfType<BodyChunk>().First().pos + RWCustom.Custom.RNV() * 2f, RWCustom.Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                    }
+                }
+
+            }
+        }
 
         [RPCMethod]
         public static void DistributeEmptyKillScores(int excludedPlayerNumber)
