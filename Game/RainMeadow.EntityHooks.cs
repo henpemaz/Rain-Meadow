@@ -275,7 +275,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource().ApoEnteringWorld(apo);
+                self.world.GetResource()?.ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
@@ -657,6 +657,10 @@ namespace RainMeadow
                         }
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
+                    foreach (var absplayer in self.game.Players)
+                    {
+                        warpPoint.room.abstractRoom.AddEntity(absplayer);
+                    }
 
                     DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
@@ -679,6 +683,7 @@ namespace RainMeadow
                             {
                                 player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
                             }
+
                             player.slugOnBack?.DropSlug();
                             if (player.objectInStomach is AbstractPhysicalObject apo)
                             { // apo's in stomach (isn't realized but has to be "carried" over)
@@ -691,6 +696,7 @@ namespace RainMeadow
                                     newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
                                 }
                             }
+                            // oh boy 
                         }
                     }
                 }
