@@ -1,3 +1,9 @@
+# Release 1.14.0
+## Arena
+- Fixed scoring across all modes
+
+## Story
+- Fixed watcher warps not working correctly
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
