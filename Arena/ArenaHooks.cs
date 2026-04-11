@@ -1007,7 +1007,7 @@ namespace RainMeadow
                     // Sort by score if spear score > 0
                     resultList.Sort((a, b) =>
                     {
-                        if (arena.spearScore > 0)
+                        if (arena.spearScore > 0 && a.totScore != b.totScore)
                         {
                             return b.totScore.CompareTo(a.totScore); // Higher score first
                         }
