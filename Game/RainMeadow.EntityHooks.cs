@@ -683,7 +683,6 @@ namespace RainMeadow
                             {
                                 player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
                             }
-
                             player.slugOnBack?.DropSlug();
                             if (player.objectInStomach is AbstractPhysicalObject apo)
                             { // apo's in stomach (isn't realized but has to be "carried" over)
@@ -696,7 +695,6 @@ namespace RainMeadow
                                     newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
                                 }
                             }
-                            // oh boy 
                         }
                     }
                 }
