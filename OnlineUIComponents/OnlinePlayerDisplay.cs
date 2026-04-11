@@ -96,7 +96,7 @@ namespace RainMeadow
                 label.alpha = 0f;
                 label.x = -1000f;
             }
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat)
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || (RainMeadow.isArenaMode(out _) && ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat))
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 this.iconString = "meadowcoin";
