@@ -9,6 +9,28 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
+        {
+            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(killer.owner);
+            if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                if (killer.owner.isMe)
+                {
+                    SpecialEvents.GainedMeadowCoin(1);
+                }
+                if (killedCreature.apo.realizedObject is Creature c && c != null)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(room: c.room);
+                    for (int x = 0; x < 20; x++)
+                    {
+                        c.room.AddObject(new MeadowTokenCoin.MeadowCoin(c.bodyChunks.OfType<BodyChunk>().First().pos + RWCustom.Custom.RNV() * 2f, RWCustom.Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                    }
+                }
+
+            }
+        }
+
+        [RPCMethod]
         public static void DistributeEmptyKillScores(int excludedPlayerNumber)
         {
             if (!OnlineManager.lobby.isOwner) return;
@@ -79,22 +101,6 @@ namespace RainMeadow
             {
                 RainMeadow.Error("Arena: RainWorldGame is null!");
                 return;
-            }
-            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer);
-            if (playerClient != null && playerClient.gotSlugcat)
-            {
-                Room? room = game.cameras[0].followAbstractCreature.Room.realizedRoom;
-                if (room == null)
-                {
-                    return;
-                }
-                if (onlineKilledCreature.realizedCreature != null && onlineKilledCreature.realizedCreature != null && onlineKilledCreature.realizedCreature is PhysicalObject p)
-                {
-                    SpecialEvents.PlayMeadowCoinSound(room: room);
-                    RainMeadow.rainMeadowOptions.MeadowCoins.Value += 1;
-                    // new MeadowTokenCoin.MeadowCoin(p.bodyChunks.OfType<BodyChunk>().First().pos + Custom.RNV() * 2f, Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false);
-                }
-
             }
             for (int j = 0; j < game.cameras[0].hud.parts.Count; j++)
             {

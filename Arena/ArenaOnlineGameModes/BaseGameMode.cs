@@ -150,7 +150,6 @@ namespace RainMeadow
             // 1. Find the target player first (Separating the search from the action)
             int targetPlayerNumber = -1;
             bool playerFound = false;
-
             foreach (var sittingPlayer in self.arenaSitting.players)
             {
                 OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
@@ -165,7 +164,8 @@ namespace RainMeadow
             // 2. Early Exit: If the player isn't relevant to this execution, stop here.
             // 3. Early Exit: Stop processing if the killed creature isn't local.
 
-            if (!playerFound || (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) || !killedCrit.abstractCreature.IsLocal()) return;
+            if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
+            if (!killedCrit.abstractCreature.IsLocal()) return;
 
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
@@ -243,7 +243,28 @@ namespace RainMeadow
             if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
             {
                 RainMeadow.Debug($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
+                // Cash Money Slugs
+                ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(absPlayerCreature.owner);
+                if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+                {
+                    absPlayerCreature.BroadcastRPCInRoom(ArenaRPCs.ShowMeTheMoney, absPlayerCreature, onlineKilledCreature);
+                    if (killedCrit != null)
+                    {
+                        SpecialEvents.PlayMeadowCoinSound(room: self.room);
+                        if (absPlayerCreature.isMine)
+                        {
+                            SpecialEvents.GainedMeadowCoin(1);
+                        }
+                        for (int x = 0; x < 20; x++)
+                        {
+                            self.room.AddObject(new MeadowTokenCoin.MeadowCoin(killedCrit.bodyChunks.OfType<BodyChunk>().First().pos + RWCustom.Custom.RNV() * 2f, RWCustom.Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                        }
+                    }
+
+                }
             }
+
+
 
         }
 
