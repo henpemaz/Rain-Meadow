@@ -1644,7 +1644,7 @@ namespace RainMeadow
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
-                        if (self.IsLocal() && isArenaMode(out var arena))
+                        if (self.IsLocal())
                         {
                             if (
                                 OnlinePhysicalObject.map.TryGetValue(
