@@ -1,3 +1,7 @@
+# Release 1.14.0
+## General
+- Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
