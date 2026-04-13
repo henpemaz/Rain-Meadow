@@ -111,9 +111,15 @@ namespace RainMeadow
                 {
                     this.iconString = "Kill_Slugcat";
                 }
+
+
                 if (customization.globalMute)
                 {
-                    this.iconString = "Meadow_Menu_MutePlayerChat00";
+                    if (!Futile.atlasManager.DoesContainAtlas("arena_ui_elements"))
+                    {
+                        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
+                        this.iconString = "Meadow_Menu_MutePlayerChat00";
+                    }
                 }
 
             }
