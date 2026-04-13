@@ -1,5 +1,7 @@
 # Release 1.14.0
 ## Arena
+
+- Added import/export map playlists from clipboard
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
