@@ -15,11 +15,7 @@ namespace RainMeadow
         );
 
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return FFA.FFAMode; }
-            set { GetGameModeId = value; }
-        }
+        public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
 
         public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
         {
@@ -127,10 +123,14 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
+            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon is not null) display.slugIcon.scale = 0.08f;
+                if (display.slugIcon is not null)
+                {
+                    display.slugIcon.scale = 0.08f;
+                }
                 return "meadowcoin";
             }
             else if (owner.clientSettings.owner == OnlineManager.lobby.owner)

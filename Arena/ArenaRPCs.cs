@@ -1,10 +1,34 @@
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-
+using UnityEngine;
+using RWCustom;
+using System.Linq;
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
+        {
+            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(killer.owner);
+            if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                if (killer.owner.isMe)
+                {
+                    SpecialEvents.GainedMeadowCoin(1);
+                }
+                if (killedCreature.apo.realizedObject is Creature c && c != null)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(room: c.room);
+                    for (int x = 0; x < 20; x++)
+                    {
+                        c.room.AddObject(new MeadowTokenCoin.MeadowCoin(c.bodyChunks.OfType<BodyChunk>().First().pos + RWCustom.Custom.RNV() * 2f, RWCustom.Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                    }
+                }
+
+            }
+        }
 
         [RPCMethod]
         public static void DistributeEmptyKillScores(int excludedPlayerNumber)
@@ -19,6 +43,9 @@ namespace RainMeadow
             {
                 foreach (var playerSlot in session.arenaSitting.players)
                 {
+                    if (playerSlot == null) continue; // this should never happen :tm:
+
+                    if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
                     // EXCLUSION: If this is the player who died, skip them.
                     if (playerSlot.playerNumber == excludedPlayerNumber) continue;
 
@@ -57,12 +84,22 @@ namespace RainMeadow
                 RainMeadow.Error("Arena: RainWorldGame is null!");
                 return;
             }
-            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
             {
-                a.arenaSitting.players[playerNumber].score = newScore;
-                if (OnlineManager.lobby.isOwner)
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    return; // no points for you
+                }
+
+                if (a.arenaSitting.players[playerNumber].score < newScore)
+                {
+
+                    a.arenaSitting.players[playerNumber].score = newScore;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    }
                 }
             }
 

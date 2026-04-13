@@ -1,9 +1,17 @@
 # Release 1.14.0
 ## Arena
 - Fixed scoring across all modes
+- Added import/export map playlists from clipboard
+- Added configurable Artificer explosion capacity
+- Prevented Overseer from earning score
 
 ## Story
 - Fixed watcher warps not working correctly
+
+### Modders
+-  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
+- Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
+
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
