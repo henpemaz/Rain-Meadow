@@ -183,8 +183,8 @@ namespace RainMeadow.UI.Components
                 new(leftMargin, topOffset - rowHeight * 6), new(labelWidth, 20f), false);
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            // I guess copy and paste doesn't work for this
-            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(150f, 30f), this.menu.Translate("Export Playlist"));
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
+            // TODO: Write to a file, read from file, open file
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
@@ -195,7 +195,7 @@ namespace RainMeadow.UI.Components
                     // Copy the code to the user's clipboard
                     GUIUtility.systemCopyBuffer = result;
                     arenaImportExportLabel.text = menu.Translate("Copied to clipboard");
-
+                    arenaImportExportLabel.label.color = Color.green;
 
                 }
                 catch (Exception e)
@@ -205,7 +205,7 @@ namespace RainMeadow.UI.Components
                 }
             };
 
-            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(150f, 30f), this.menu.Translate("Import Playlist"));
+            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
             arenaPlaylistImportButton.OnClick += (_) =>
             {
                 try
@@ -217,6 +217,11 @@ namespace RainMeadow.UI.Components
                     {
                         arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
                         List<string> playlist = DecodePlaylist(clipboardText);
+                        if (playlist.Count == 0)
+                        {
+                            arenaImportExportLabel.text = "Failed";
+                            arenaImportExportLabel.label.color = Color.red;
+                        }
                         for (int i = 0; i < playlist.Count; i++)
                         {
                             arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
@@ -381,6 +386,8 @@ namespace RainMeadow.UI.Components
                 if (timeToClearMessage <= 0)
                 {
                     arenaImportExportLabel.text = "Playlist:";
+                    arenaImportExportLabel.label.color = Color.white;
+
                     timeToClearMessage = 120;
                 }
 
