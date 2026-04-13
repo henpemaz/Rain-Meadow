@@ -666,6 +666,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             OnlinePlayer player
         )
         {
+
+            if (base.AddIcon(arena, display, owner, customization, player) != "")
+            {
+                return base.AddIcon(arena, display, owner, customization, player);
+            }
+
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
             {
                 return "";

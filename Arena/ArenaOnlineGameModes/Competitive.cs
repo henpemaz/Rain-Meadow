@@ -127,6 +127,12 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+
+            if (base.AddIcon(arena, display, owner, customization, player) != "")
+            {
+                return base.AddIcon(arena, display, owner, customization, player);
+            }
+
             bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
@@ -141,7 +147,7 @@ namespace RainMeadow
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, display, owner, customization, player);
+            return "";
         }
 
         public override Color IconColor(

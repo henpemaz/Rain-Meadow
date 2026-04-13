@@ -111,6 +111,10 @@ namespace RainMeadow
                 {
                     this.iconString = "Kill_Slugcat";
                 }
+                if (customization.globalMute)
+                {
+                    this.iconString = "Meadow_Menu_MutePlayerChat00";
+                }
 
             }
             if (RainMeadow.isArenaMode(out var arena))
