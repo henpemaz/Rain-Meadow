@@ -120,16 +120,35 @@ namespace RainMeadow.UI.Components
             public MenuTabWrapper tabWrapper;
             public OpTextBox saintAscendDurationTimerTextBox;
             public MenuLabel saintAscendanceTimerLabel;
+
+
+            public OpTextBox artiExplosionTextBox;
+            public MenuLabel artiExplosionLabel;
+
             public RestorableCheckbox blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
             public override string Name => "MSC Settings";
             public MSCSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, string painCatName, float textSpacing = 300) : base(menu, owner)
             {
                 tabWrapper = new(menu, this);
-                Vector2 positioner = new(360, 380);
-                blockMaulCheckBox = new(menu, this, this, positioner, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
+                Vector2 positioner = new(360, 420);
+                artiExplosionTextBox = new(new Configurable<int>(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value), positioner + new Vector2(-7.5f, 0), 20)
+                {
+                    alignment = FLabelAlignment.Center,
+                    description = Translate("How many explosions Artificer can use before cooldown")
+                };
+                artiExplosionTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.artiExplosionCount = artiExplosionTextBox.valueInt;
+                };
+                artiExplosionLabel = new(menu, this, Translate("Artificer Explosion Capacity"), artiExplosionTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                artiExplosionLabel.label.alignment = FLabelAlignment.Left;
+                new PatchedUIelementWrapper(tabWrapper, artiExplosionTextBox);
+
+                blockMaulCheckBox = new(menu, this, this, positioner - spacing * 2, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
                 blockArtiStunCheckBox = new(menu, this, this, positioner - spacing, textSpacing, Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, Translate("Prevent Artificer from stunning other players"));
-                sainotCheckBox = new(menu, this, this, positioner - spacing * 2, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
-                saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 3 + new Vector2(-7.5f, 0), 40)
+                sainotCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
+                saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
                     description = Translate("How long Saint's ascendance ability lasts for. Default: 3s")
@@ -142,10 +161,10 @@ namespace RainMeadow.UI.Components
                 saintAscendanceTimerLabel = new(menu, this, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 saintAscendanceTimerLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
-                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 4, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
-                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 5, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
-                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 6, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
-                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox);
+                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 5, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
+                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 6, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
+                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 7, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
+                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox, artiExplosionLabel);
                 string Translate(string s) => menu.LongTranslate(s).Replace("<PAINCATNAME>", painCatName);
             }
             public void SyncMenuObjectStatus(MenuObject obj)
@@ -155,6 +174,7 @@ namespace RainMeadow.UI.Components
             }
             public override void SaveInterfaceOptions()
             {
+                MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value = artiExplosionTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.BlockMaul.Value = blockMaulCheckBox.Checked;
                 RainMeadow.rainMeadowOptions.BlockArtiStun.Value = blockArtiStunCheckBox.Checked;
                 RainMeadow.rainMeadowOptions.ArenaSAINOT.Value = sainotCheckBox.Checked;
@@ -193,13 +213,19 @@ namespace RainMeadow.UI.Components
                         btn.buttonBehav.greyedOut = greyoutAll;
                 }
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
+                {
                     ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
+                    ShowSyncInTextbox(artiExplosionTextBox, greyoutAll, arena.artiExplosionCount);
+                }
+
             }
             public override void GrafUpdate(float timeStacker)
             {
                 base.GrafUpdate(timeStacker);
                 if (IsActuallyHidden) return;
                 saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.rect.colorEdge;
+                artiExplosionLabel.label.color = artiExplosionTextBox.rect.colorEdge;
+
             }
             public bool GetChecked(CheckBox box)
             {
@@ -273,7 +299,7 @@ namespace RainMeadow.UI.Components
                 {
                     colorEdge = RainWorld.GoldRGB * 1.5f
                 };
-                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher has synced weaver cosmetics") : menu.Translate("Your watcher has synced normal cosmetics");
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool() ? menu.Translate("Your watcher has synced weaver cosmetics") : menu.Translate("Your watcher has synced normal cosmetics");
                 new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
                 weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
