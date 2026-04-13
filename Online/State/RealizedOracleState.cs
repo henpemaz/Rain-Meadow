@@ -9,6 +9,9 @@ namespace RainMeadow
         public MoreSlugcats.STOracleBehavior.Phase phase;
 
         [OnlineField]
+        public int activateTimer;
+
+        [OnlineField]
         public Vector2 lookPoint;
 
         [OnlineField(nullable = true)]
@@ -24,6 +27,8 @@ namespace RainMeadow
             if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
             {
                 phase = (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase;
+                activateTimer = (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).activateTimer;
+
             }
 
             mySwarmers = new(
@@ -43,8 +48,8 @@ namespace RainMeadow
                 return;
             if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
             {
-                (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase =
-                    phase;
+                (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase = phase;
+                (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).activateTimer = activateTimer;
             }
             oracle.oracleBehavior.lookPoint = this.lookPoint;
 
