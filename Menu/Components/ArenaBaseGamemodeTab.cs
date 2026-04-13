@@ -35,10 +35,7 @@ namespace RainMeadow.UI.Components
 
             nextButton;
         public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
-
         public MenuLabel arenaImportExportLabel;
-        public OpTextBox arenaPlaylistExportTextBox;
-
         public OpSimpleButton arenaPlaylistImportButton;
         public OpSimpleButton arenaPlaylistExportButton;
 
@@ -186,13 +183,8 @@ namespace RainMeadow.UI.Components
                 new(leftMargin, topOffset - rowHeight * 6), new(labelWidth, 20f), false);
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            arenaPlaylistExportTextBox = new(new Configurable<string>(""),
-                new(boxMargin, topOffset - (rowHeight * 6) - 2f), 120)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Arena playlist import/export, copies to/from clipboard"), accept = OpTextBox.Accept.StringASCII, maxLength = 1000 };
-
-
             // I guess copy and paste doesn't work for this
-            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(150f, 30f), this.menu.Translate("Export Playlist"));
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(150f, 30f), this.menu.Translate("Export Playlist"));
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
@@ -202,18 +194,18 @@ namespace RainMeadow.UI.Components
                     string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
                     // Copy the code to the user's clipboard
                     GUIUtility.systemCopyBuffer = result;
-                    arenaPlaylistExportTextBox.value = "Copied to clipboard";
+                    arenaImportExportLabel.text = menu.Translate("Copied to clipboard");
 
 
                 }
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
-                    arenaPlaylistExportTextBox.value = menu.Translate("Failed export");
+                    arenaImportExportLabel.text = menu.Translate("Failed export");
                 }
             };
 
-            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(150f, 30f), this.menu.Translate("Import Playlist"));
+            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(150f, 30f), this.menu.Translate("Import Playlist"));
             arenaPlaylistImportButton.OnClick += (_) =>
             {
                 try
@@ -229,14 +221,14 @@ namespace RainMeadow.UI.Components
                         {
                             arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
                         }
-                        arenaPlaylistExportTextBox.value = "Import success";
+                        arenaImportExportLabel.text = menu.Translate("Import success");
 
                     }
                 }
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
-                    arenaPlaylistExportTextBox.value = menu.Translate("Failed import");
+                    arenaImportExportLabel.text = menu.Translate("Failed import");
                 }
             };
 
@@ -259,7 +251,6 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, emptyKillTagScore);
             new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
-            new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportTextBox);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportButton);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistImportButton);
 
@@ -383,18 +374,16 @@ namespace RainMeadow.UI.Components
                     challengeDenEjectionCheckbox.SetValueBool(arena.challengeDenEjection);
                 }
             }
-            if (arenaPlaylistExportTextBox != null)
+
+            if (arenaImportExportLabel.text != "Playlist:")
             {
-                arenaPlaylistExportTextBox.greyedOut = OwnerSettingsDisabled;
-                if (arenaPlaylistExportTextBox.value != "")
+                timeToClearMessage--;
+                if (timeToClearMessage <= 0)
                 {
-                    timeToClearMessage--;
-                    if (timeToClearMessage <= 0)
-                    {
-                        arenaPlaylistExportTextBox.value = "";
-                        timeToClearMessage = 120;
-                    }
+                    arenaImportExportLabel.text = "Playlist:";
+                    timeToClearMessage = 120;
                 }
+
             }
         }
 
