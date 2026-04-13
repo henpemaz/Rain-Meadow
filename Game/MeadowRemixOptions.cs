@@ -104,6 +104,8 @@ public class RainMeadowOptions : OptionInterface
     public Configurable<RainMeadow.LogLevel> CurrentLogLevel;
     public readonly Configurable<bool> ArenaUnhandledOptimizations;
 
+    public readonly Configurable<bool> GlobalMute;
+
     public enum IntroRoll
     {
         Meadow,
@@ -235,6 +237,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
         ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
+        GlobalMute = config.Bind("GlobalMute", false);
 
     }
     List<ListItem> capeList = new List<ListItem>
@@ -317,6 +320,10 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(10, 60f, Translate("Sound on Mention")),
             new OpCheckBox(ChatPing, new Vector2(10, 30f)),
+
+
+            new OpLabel(440f, 535, Translate("Global Mute")),
+            new OpCheckBox(GlobalMute, new Vector2(410f, 535)),
 
             new OpLabel(410, 120f, Translate("Chat Inactivity Opacity")),
             chatInactivityOpacity = new OpTextBox(ChatInactivityOpacity, new Vector2(410f, 93f), 90),

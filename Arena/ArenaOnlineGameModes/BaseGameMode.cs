@@ -342,6 +342,10 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+            if (customization.globalMute)
+            {
+                return "Meadow_Menu_MutePlayerChat00";
+            }
             return "";
         }
 

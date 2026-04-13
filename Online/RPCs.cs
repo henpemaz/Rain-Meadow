@@ -78,7 +78,7 @@ namespace RainMeadow
             string incomingUsername = rpc.from.id.name;
 
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
-
+            if (RainMeadow.rainMeadowOptions.GlobalMute.Value) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
