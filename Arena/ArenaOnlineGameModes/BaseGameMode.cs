@@ -16,7 +16,7 @@ namespace RainMeadow
         public OnlineArenaBaseGameModeTab? arenaBaseGameModeTab;
         public TabContainer.Tab? myTab;
 
-        public abstract ArenaSetup.GameTypeID GetGameModeId { get; set; }
+        public abstract ArenaSetup.GameTypeID GetGameModeId { get; }
 
         public virtual void ResetOnSessionEnd() { }
 
