@@ -184,7 +184,6 @@ namespace RainMeadow.UI.Components
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
             arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
-            // TODO: Write to a file, read from file, open file
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
@@ -194,14 +193,16 @@ namespace RainMeadow.UI.Components
                     string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
                     // Copy the code to the user's clipboard
                     GUIUtility.systemCopyBuffer = result;
-                    arenaImportExportLabel.text = menu.Translate("Copied to clipboard");
+                    arenaImportExportLabel.text = menu.Translate("Copied");
                     arenaImportExportLabel.label.color = Color.green;
 
                 }
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
-                    arenaImportExportLabel.text = menu.Translate("Failed export");
+                    arenaImportExportLabel.text = menu.Translate("Failed");
+                    arenaImportExportLabel.label.color = Color.red;
+
                 }
             };
 
@@ -219,14 +220,17 @@ namespace RainMeadow.UI.Components
                         List<string> playlist = DecodePlaylist(clipboardText);
                         if (playlist.Count == 0)
                         {
-                            arenaImportExportLabel.text = "Failed";
+                            arenaImportExportLabel.text = menu.Translate("Failed");
                             arenaImportExportLabel.label.color = Color.red;
+                            return;
                         }
+
                         for (int i = 0; i < playlist.Count; i++)
                         {
                             arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
                         }
-                        arenaImportExportLabel.text = menu.Translate("Import success");
+                        arenaImportExportLabel.text = menu.Translate("Imported");
+                        arenaImportExportLabel.label.color = Color.green;
 
                     }
                 }
@@ -234,6 +238,8 @@ namespace RainMeadow.UI.Components
                 {
                     RainMeadow.Error(e);
                     arenaImportExportLabel.text = menu.Translate("Failed import");
+                    arenaImportExportLabel.label.color = Color.red;
+
                 }
             };
 
@@ -390,7 +396,10 @@ namespace RainMeadow.UI.Components
 
                     timeToClearMessage = 120;
                 }
-
+            }
+            if (arenaPlaylistImportButton != null)
+            {
+                arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
             }
         }
 
@@ -431,7 +440,6 @@ namespace RainMeadow.UI.Components
             }
             catch (FormatException)
             {
-                // This catches errors if a user pastes a string that isn't valid Base64
                 Debug.LogError("Failed to load playlist: The provided string is not a valid Base64 format.");
                 return new List<string>();
             }
