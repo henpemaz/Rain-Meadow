@@ -5,12 +5,13 @@
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
 
-## Story
-- Fixed watcher warps not working correctly
-
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
+
+## Story
+- Fixed watcher warps not working correctly
+
 
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
