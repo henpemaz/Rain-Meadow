@@ -648,6 +648,15 @@ namespace RainMeadow
                         }
                     }
                     orig(self, warpUsed);
+                    OnlineManager.lobby.overworld.worldSessions.TryGetValue(warpData.destRegion, out var ws);
+                    int roomIndex = ws.world.GetAbstractRoom(warpData.destRoom).index;
+
+                    WorldCoordinate spawnCoord = new WorldCoordinate(roomIndex, -1, -1, -1);
+                    foreach (var player in self.game.Players)
+                    {
+                        Extensions.MoveOnly(player, spawnCoord);
+                    }
+
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     { //no longer moves places
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -657,10 +666,6 @@ namespace RainMeadow
                         }
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
-                    foreach (var absplayer in self.game.Players)
-                    {
-                        warpPoint.room.abstractRoom.AddEntity(absplayer);
-                    }
 
                     DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
