@@ -2254,12 +2254,34 @@ public partial class RainMeadow
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
+
+
+            // reset and scan
+            c.Index = 0;
+            // looking for the call to get_Value() from the cfgArtificerExplosionCapacity config
+            while (c.TryGotoNext(MoveType.After,
+                i => i.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcats), "cfgArtificerExplosionCapacity"),
+                i => i.MatchCallOrCallvirt(typeof(Configurable<int>), "get_Value")
+            ))
+            {
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate<Func<int, Player, int>>((originalValue, self) =>
+                {
+                    if (RainMeadow.isArenaMode(out var arena))
+                    {
+                        return arena.artiExplosionCount;
+                    }
+
+                    return originalValue;
+                });
+            }
         }
         catch (Exception e)
         {
             Logger.LogError(e);
         }
     }
+
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {

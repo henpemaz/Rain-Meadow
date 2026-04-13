@@ -131,10 +131,12 @@ namespace RainMeadow.UI.Components
             {
                 tabWrapper = new(menu, this);
                 Vector2 positioner = new(360, 420);
-                artiExplosionTextBox = new(new Configurable<int>(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value), positioner + new Vector2(-7.5f, 0), 20)
+                artiExplosionTextBox = new(new Configurable<int>(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value), positioner + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
-                    description = Translate("How many explosions Artificer can use before cooldown")
+                    description = Translate("How many explosions Artificer can use before cooldown"),
+                    accept = OpTextBox.Accept.Int
+
                 };
                 artiExplosionTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
@@ -189,6 +191,7 @@ namespace RainMeadow.UI.Components
                     SyncMenuObjectStatus(menuObj);
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
+                arena.artiExplosionCount = artiExplosionTextBox.valueInt;
             }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
