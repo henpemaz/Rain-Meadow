@@ -1,3 +1,7 @@
+# Release 1.14.0
+## Arena
+- Prevented Overseer from earning score
+
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
