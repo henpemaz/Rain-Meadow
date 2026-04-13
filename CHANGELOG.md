@@ -1,5 +1,6 @@
 # Release 1.14.0
 ## Arena
+- Added configurable Artificer explosion capacity
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
