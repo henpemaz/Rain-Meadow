@@ -2260,7 +2260,7 @@ public partial class RainMeadow
             c.Index = 0;
             // looking for the call to get_Value() from the cfgArtificerExplosionCapacity config
             while (c.TryGotoNext(MoveType.After,
-                i => i.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcats), "cfgArtificerExplosionCapacity"),
+                i => i.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcats), nameof(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity)),
                 i => i.MatchCallOrCallvirt(typeof(Configurable<int>), "get_Value")
             ))
             {
