@@ -43,6 +43,9 @@ namespace RainMeadow
             {
                 foreach (var playerSlot in session.arenaSitting.players)
                 {
+                    if (playerSlot == null) continue; // this should never happen :tm:
+
+                    if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
                     // EXCLUSION: If this is the player who died, skip them.
                     if (playerSlot.playerNumber == excludedPlayerNumber) continue;
 
@@ -81,12 +84,22 @@ namespace RainMeadow
                 RainMeadow.Error("Arena: RainWorldGame is null!");
                 return;
             }
-            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]) && a.arenaSitting.players[playerNumber].score < newScore)
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
             {
-                a.arenaSitting.players[playerNumber].score = newScore;
-                if (OnlineManager.lobby.isOwner)
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    return; // no points for you
+                }
+
+                if (a.arenaSitting.players[playerNumber].score < newScore)
+                {
+
+                    a.arenaSitting.players[playerNumber].score = newScore;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    }
                 }
             }
 

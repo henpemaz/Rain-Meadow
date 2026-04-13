@@ -15,11 +15,7 @@ namespace RainMeadow
         );
 
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return FFA.FFAMode; }
-            set { GetGameModeId = value; }
-        }
+        public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
 
         public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
         {

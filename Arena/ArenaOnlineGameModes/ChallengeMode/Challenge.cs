@@ -17,11 +17,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public int challengeID = RainMeadow.rainMeadowOptions.ChallengeID.Value;
 
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return ArenaChallengeMode.ChallengeMode; }
-            set { GetGameModeId = value; }
-        }
+
+        public override ArenaSetup.GameTypeID GetGameModeId => ChallengeMode;
+
 
         public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
