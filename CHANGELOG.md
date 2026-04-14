@@ -10,7 +10,7 @@
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
 
 ## Story
-- Fixed watcher warps not working correctly
+- Fixed some scenarios where watcher warps were not working correctly
 
 
 # Release 1.13.2
