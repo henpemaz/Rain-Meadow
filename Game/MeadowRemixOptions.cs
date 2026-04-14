@@ -106,6 +106,9 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> GlobalMute;
 
+    public readonly Configurable<int> ArenaFlairActive;
+
+
     public enum IntroRoll
     {
         Meadow,
@@ -238,6 +241,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
         GlobalMute = config.Bind("GlobalMute", false);
+        ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
 
     }
     List<ListItem> capeList = new List<ListItem>
@@ -245,6 +249,12 @@ public class RainMeadowOptions : OptionInterface
     new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
     new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
     new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold.SafeColorRange()), "Gold")
+};
+
+    List<ListItem> arenaFlairList = new List<ListItem>
+{
+    new ListItem("0", "Default"),
+    new ListItem("1", "Greedy"),
 };
 
     public override void Initialize()
@@ -368,6 +378,8 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpComboBox2 capeColor;
+            OpComboBox2 arenaFlair;
+
 
             OpComboBox2 music;
             OpLabel downpourWarning;
@@ -550,7 +562,23 @@ public class RainMeadowOptions : OptionInterface
                 },
                 slugpupHellBackgroundLabel = new OpLabel(10f, 480, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
                 slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 455)),
+
+            new OpLabel(10f, 400, Translate("Flair")),
+
+            arenaFlair = new OpComboBox2(
+                ArenaFlairActive,
+                new Vector2(10f, 370),
+                160f,
+                arenaFlairList.Where(i =>
+                    (i.displayName == "Default") ||
+                    (i.displayName == "Greedy" && ArenaUnhandledOptimizations.Value)
+                ).ToList()
+            )
+            {
+                colorEdge = Menu.MenuColorEffect.rgbWhite
+            },
             ];
+
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
@@ -559,6 +587,18 @@ public class RainMeadowOptions : OptionInterface
                 OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
                 for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
             };
+
+            arenaFlair.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                if (!int.TryParse(value, out int result))
+                {
+                    RainMeadow.Error("Error converting ArenaFlair to integer");
+                    return;
+                }
+                ArenaFlairActive.Value = result;
+                RainMeadow.Info($"Converted ArenaFlair to integer: {result}");
+            };
+
 
             OnlineLANSettings = new UIelement[7]
             {
