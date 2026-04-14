@@ -54,8 +54,15 @@ namespace RainMeadow
                 menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
             }
         }
+        public override void RemoveSprites()
+        {
+            slugIcon?.RemoveSprites();
+            base.RemoveSprites();
+        }
         public Action<SlugcatStats.Name?>? onRecieveSlugcat;
         public SlugcatStats.Name? slug;
+        public SlugIcon slugIcon;
+        public Color[] colors;
     }
     public class StoryMenuSlugcatSelector : ButtonSelector
     {
