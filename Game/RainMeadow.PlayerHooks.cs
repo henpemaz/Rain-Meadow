@@ -1,6 +1,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
 using System;
@@ -1730,6 +1731,11 @@ public partial class RainMeadow
             if (creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat && self.state == null) // please, have a state like all other creatures PLEASE
             {
                 self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionPlayer, false);
+            }
+            if (creatureTemplate.TopAncestor().type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && self.state == null)
+            {
+                self.state = new PlayerNPCState(self, 0);
+                self.abstractAI = new SlugNPCAbstractAI(self.world, self);
             }
             if (self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
         }
