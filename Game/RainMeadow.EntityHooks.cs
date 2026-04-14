@@ -654,6 +654,7 @@ namespace RainMeadow
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
                         {
                             opo1.beingMoved = false;
+                            room?.abstractRoom.AddEntity(ac);
                         }
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");

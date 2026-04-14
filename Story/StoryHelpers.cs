@@ -40,13 +40,6 @@ namespace RainMeadow
 
             warpPoint.activated = false;
             overWorld.readyForWarp = !useNormalWarpLoader;
-            foreach (var p in overWorld.game.Players)
-            {
-                if (p.realizedCreature == null)
-                {
-                    p.Realize(); // I have no idea why clients go invis and why they aren't being realized automatically somebody please send help
-                }
-            }
 
 
         }
