@@ -270,14 +270,12 @@ namespace RainMeadow
             {
                 if (
                     OnlineManager
-                        .lobby.clientSettings[A]
-                        .TryGetData<ArenaTeamClientSettings>(out var tb1)
+                        .lobby.clientSettings.TryGetValue(A, out var cA) && cA.TryGetData<ArenaTeamClientSettings>(out var tb1)
                 )
                 {
                     if (
                         OnlineManager
-                            .lobby.clientSettings[B]
-                            .TryGetData<ArenaTeamClientSettings>(out var tb2)
+                            .lobby.clientSettings.TryGetValue(B, out var cB) && cB.TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
                         return tb1.team == tb2.team;
