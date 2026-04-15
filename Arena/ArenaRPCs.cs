@@ -57,6 +57,7 @@ namespace RainMeadow
                     {
                         OnlinePlayer? op2 = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
                         if (op2 == null) continue;
+                        if (ArenaHelpers.CheckSameTeam(op, op2)) continue;
 
                         if (OnlineManager.lobby.clientSettings.TryGetValue(op, out var clientSettings) &&
                             clientSettings.TryGetData<ArenaTeamClientSettings>(out var team1Data) &&

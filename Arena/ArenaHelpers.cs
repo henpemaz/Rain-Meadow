@@ -264,13 +264,36 @@ namespace RainMeadow
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
         }
 
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)
+        {
+            if (A is not null && B is not null)
+            {
+                if (
+                    OnlineManager
+                        .lobby.clientSettings[A]
+                        .TryGetData<ArenaTeamClientSettings>(out var tb1)
+                )
+                {
+                    if (
+                        OnlineManager
+                            .lobby.clientSettings[B]
+                            .TryGetData<ArenaTeamClientSettings>(out var tb2)
+                    )
+                    {
+                        return tb1.team == tb2.team;
+                    }
+                }
+            }
+            return false;
+        }
+
         public static bool CheckSameTeam(
-            ArenaOnlineGameMode arena,
-            OnlinePlayer? A,
-            OnlinePlayer? B,
-            Creature creature,
-            Creature friend
-        )
+    ArenaOnlineGameMode arena,
+    OnlinePlayer? A,
+    OnlinePlayer? B,
+    Creature creature,
+    Creature friend
+)
         {
             if (A is not null && B is not null)
             {
