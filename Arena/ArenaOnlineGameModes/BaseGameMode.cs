@@ -3,6 +3,7 @@ using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using UnityEngine;
@@ -901,15 +902,16 @@ namespace RainMeadow
             }
         }
         public virtual void ArenaSessionEnded(
-            ArenaOnlineGameMode arena,
-            On.ArenaSitting.orig_SessionEnded orig,
-            ArenaSitting self,
-            ArenaGameSession session)
+    ArenaOnlineGameMode arena,
+    On.ArenaSitting.orig_SessionEnded orig,
+    ArenaSitting self,
+    ArenaGameSession session)
         {
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
 
+            // 1. TALLY SCORES & SURVIVAL STATUS
             for (int i = 0; i < self.players.Count; i++)
             {
                 var arenaPlayer = self.players[i];
@@ -946,20 +948,46 @@ namespace RainMeadow
 
                 if (arenaPlayer.alive)
                 {
-
                     arenaPlayer.AddSandboxScore(self.gameTypeSetup.survivalScore);
                 }
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
+                arenaPlayer.winner = false; // Reset winner flag for everyone initially
 
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
                 }
                 arena.ReadFromStats(arenaPlayer, onlinePlayer);
-
             }
 
+            // 2. DETERMINE WINNING TEAM (IF IN TEAM MODE) BEFORE SORTING
+            bool isTeamMode = TeamBattleMode.isTeamBattleMode(arena, out var tb);
+            if (isTeamMode)
+            {
+                tb.winningTeam = -1;
+                HashSet<int> teamsRemaining = new HashSet<int>();
+
+                foreach (var player in self.players)
+                {
+                    if (player.alive)
+                    {
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (onlineP != null && OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam))
+                        {
+                            teamsRemaining.Add(playerTeam.team);
+                        }
+                    }
+                }
+
+                // If only one team is left standing, they win
+                if (teamsRemaining.Count == 1)
+                {
+                    tb.winningTeam = teamsRemaining.First();
+                }
+            }
+
+            // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)
             for (int m = 0; m < self.players.Count; m++)
             {
                 ArenaSitting.ArenaPlayer arenaPlayer = self.players[m];
@@ -980,25 +1008,44 @@ namespace RainMeadow
                 }
             }
 
-            if (list.Count == 1)
+            // 4. ASSIGN WINNERS BASED ON GAME MODE
+            if (isTeamMode)
             {
-                list[0].winner = list[0].alive;
+                // Everyone on the winning team wins, everyone else loses
+                if (tb.winningTeam != -1)
+                {
+                    for (int x = 0; x < list.Count; x++)
+                    {
+                        var onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, list[x].playerNumber);
+                        if (onlineP != null && OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var teamInfo))
+                        {
+                            list[x].winner = teamInfo.team == tb.winningTeam;
+                        }
+                    }
+                }
             }
-            else if (list.Count > 1)
+            else
             {
-
-                // if survivalScore && killScore are 0, then this should skip 
-                if (list[0].score > list[1].score)
+                // Standard Free-For-All Logic
+                if (list.Count == 1)
                 {
-                    list[0].winner = true;
+                    list[0].winner = list[0].alive;
                 }
-                else if (list[0].alive && !list[1].alive)
+                else if (list.Count > 1)
                 {
-                    list[0].winner = true;
+                    // if survivalScore && killScore are 0, then this should skip 
+                    if (list[0].score > list[1].score)
+                    {
+                        list[0].winner = true;
+                    }
+                    else if (list[0].alive && !list[1].alive)
+                    {
+                        list[0].winner = true;
+                    }
                 }
-
             }
 
+            // 5. UPDATE TOTALS AND UI
             for (int x = 0; x < list.Count; x++)
             {
                 var sortedPlayer = list[x];
@@ -1010,15 +1057,11 @@ namespace RainMeadow
                 if (!sortedPlayer.alive)
                 {
                     sortedPlayer.deaths++;
-
                 }
 
                 sortedPlayer.totScore += sortedPlayer.score;
 
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    sortedPlayer.playerNumber
-                );
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sortedPlayer.playerNumber);
 
                 if (pl != null)
                 {
@@ -1031,7 +1074,6 @@ namespace RainMeadow
 
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
-
         }
 
         public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaOnlineGameMode arena,

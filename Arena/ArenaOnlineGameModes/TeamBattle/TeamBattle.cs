@@ -398,78 +398,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = -1;
-                HashSet<int> teamsRemaining = new HashSet<int>();
-                foreach (var player in self.players)
-                {
-                    if (player.alive)
-                    {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool getPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (getPlayerTeam)
-                            {
-                                teamsRemaining.Add(playerTeam.team);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var player in self.players)
-                {
-                    if (teamsRemaining.Count == 1)
-                    {
-                        tb.winningTeam = teamsRemaining.First();
-
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool gotPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (gotPlayerTeam)
-                            {
-                                player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        player.winner = false; // everyone's a loser. Kill your enemies!
-                    }
-                }
-
-                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    A.playerNumber
-                );
-                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    B.playerNumber
-                );
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
 
                 if (playerA != null && playerB != null)
                 {
-                    OnlineManager
-                        .lobby.clientSettings[playerA]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamA);
-                    OnlineManager
-                        .lobby.clientSettings[playerB]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamB);
+                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
+                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
 
                     if (teamA != null && teamB != null)
                     {
-                        bool aIsWinningTeam = teamA.team == tb.winningTeam;
-                        bool bIsWinningTeam = teamB.team == tb.winningTeam;
+                        // Only consider them on the winning team if a winning team was actually decided (!= -1)
+                        bool aIsWinningTeam = (tb.winningTeam != -1) && (teamA.team == tb.winningTeam);
+                        bool bIsWinningTeam = (tb.winningTeam != -1) && (teamB.team == tb.winningTeam);
 
                         // Prioritize winning team
                         if (aIsWinningTeam != bIsWinningTeam)
@@ -477,21 +418,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        if (aIsWinningTeam && bIsWinningTeam)
+                        // If both are on the winning team (or both lost), sort by performance
+                        if (A.alive != B.alive)
                         {
-                            if (A.alive != B.alive)
-                            {
-                                return A.alive;
-                            }
-                            if (A.score != B.score)
-                            {
-                                return A.score > B.score; // If both are on winning team, sort by kill value
-
-                            }
-
-                            return A.deaths < B.deaths;
-
+                            return A.alive;
                         }
+                        if (A.score != B.score)
+                        {
+                            return A.score > B.score; // Sort by score
+                        }
+
+                        return A.deaths < B.deaths; // Sort by fewest deaths
                     }
                 }
             }
