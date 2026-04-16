@@ -32,6 +32,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public List<string> teamNameList;
 
+        // used for finalresult organization
+        public Dictionary<int, int> teamScores;
+        public Dictionary<int, int> teamWins;
+        public Dictionary<int, int> playerToTeam; // Cache for sorting
+
         public override void ResetOnSessionEnd()
         {
             winningTeam = -1;
@@ -40,6 +45,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             dragonslayersSpawn = 0;
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
+
+            teamScores.Clear();
+            teamWins.Clear();
+            playerToTeam.Clear();
         }
 
         public override bool IsExitsOpen(
@@ -198,6 +207,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         tb.lerp
                     );
                 }
+                teamScores = new Dictionary<int, int>();
+                teamWins = new Dictionary<int, int>();
+                playerToTeam = new Dictionary<int, int>();
             }
         }
 
@@ -257,9 +269,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                Dictionary<int, int> teamScores = new Dictionary<int, int>();
-                Dictionary<int, int> teamWins = new Dictionary<int, int>();
-                Dictionary<int, int> playerToTeam = new Dictionary<int, int>(); // Cache for sorting
 
                 // 1. Group stats by team
                 foreach (var player in resultList)
@@ -285,7 +294,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                         // Sum the scores for the whole team
                         teamScores[team] += player.totScore;
-
                         // Only keep the highest win count from the team's top player
                         teamWins[team] = System.Math.Max(teamWins[team], player.wins);
                     }

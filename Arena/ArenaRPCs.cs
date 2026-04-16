@@ -52,6 +52,25 @@ namespace RainMeadow
                     OnlinePlayer? op = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
                     if (op == null) continue;
 
+
+                    if (TeamBattleMode.isTeamBattleMode(arena, out _))
+                    {
+                        OnlinePlayer? op2 = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
+                        if (op2 == null) continue;
+                        if (ArenaHelpers.CheckSameTeam(op, op2)) continue;
+
+                        if (OnlineManager.lobby.clientSettings.TryGetValue(op, out var clientSettings) &&
+                            clientSettings.TryGetData<ArenaTeamClientSettings>(out var team1Data) &&
+
+                            OnlineManager.lobby.clientSettings.TryGetValue(op2, out var clientSettings2) &&
+                            clientSettings2.TryGetData<ArenaTeamClientSettings>(out var team2Data))
+                        {
+
+                            if (team1Data.team == team2Data.team) continue; // no self-feeding from suicides
+                        }
+
+                    }
+
                     if (arena.playerNumberWithScore.ContainsKey(op.inLobbyId))
                     {
                         arena.playerNumberWithScore[op.inLobbyId] += arena.emptyKillTagScore;

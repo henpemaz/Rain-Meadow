@@ -2260,20 +2260,22 @@ public partial class RainMeadow
             c.Index = 0;
             // looking for the call to get_Value() from the cfgArtificerExplosionCapacity config
             while (c.TryGotoNext(MoveType.After,
-                i => i.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcats), nameof(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity)),
-                i => i.MatchCallOrCallvirt(typeof(Configurable<int>), "get_Value")
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcats>(nameof(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity))
             ))
             {
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate<Func<int, Player, int>>((originalValue, self) =>
+                // ignore type definition just override the value
+                if (c.TryGotoNext(MoveType.After, i => i.MatchCallOrCallvirt(out _)))
                 {
-                    if (RainMeadow.isArenaMode(out var arena))
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate<Func<int, Player, int>>((originalValue, self) =>
                     {
-                        return arena.artiExplosionCount;
-                    }
-
-                    return originalValue;
-                });
+                        if (RainMeadow.isArenaMode(out var arena))
+                        {
+                            return arena.artiExplosionCount;
+                        }
+                        return originalValue;
+                    });
+                }
             }
         }
         catch (Exception e)
