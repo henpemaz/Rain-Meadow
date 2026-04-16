@@ -5,6 +5,7 @@
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
+- Added additional flair for winning a secret minigame
 
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
