@@ -30,12 +30,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         private int _timerDuration;
 
-        public List<string> teamNameList;
-
         // used for finalresult organization
-        public static Dictionary<int, int> teamScores;
-        public static Dictionary<int, int> teamWins;
-        public static Dictionary<int, int> playerToTeam; // Cache for sorting
+        public static Dictionary<int, int> teamScores = new();
+        public static Dictionary<int, int> teamWins = new();
+        public static Dictionary<int, int> playerToTeam = new(); // Cache for sorting
 
         public override void ResetOnSessionEnd()
         {
