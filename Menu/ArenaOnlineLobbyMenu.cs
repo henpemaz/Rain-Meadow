@@ -20,11 +20,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 {
     public ArenaMainLobbyPage arenaMainLobbyPage;
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
+    public ArenaModerationPage arenaModerationPage;
     public Vector2 newPagePos = Vector2.zero;
     public Vector2[] oldPagesPos = [];
     public MenuIllustration competitiveTitle,
         competitiveShadow;
     public Page slugcatSelectPage;
+    public Page moderationPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false,
         pushClientIntoGame,
@@ -72,7 +74,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             Arena.currentGameMode = FFA.FFAMode.value;
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
+        pages.Add(moderationPage = new Page(this, null, "moderation", 2));
         slugcatSelectPage.pos.x += 1500f;
+        moderationPage.pos.x -= 1500f;
         competitiveShadow = new(
             this,
             scene,
@@ -113,9 +117,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             painCatName,
             painCatIndex
         );
+        arenaModerationPage = new ArenaModerationPage(
+            this,
+            moderationPage,
+            default
+        );
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
+        moderationPage.SafeAddSubobjects(arenaModerationPage);
         Arena.ResetOnReturnMenu(manager);
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
         initiateStartGameAfterCountDown = false;
@@ -191,6 +201,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         customTextDescription = desc;
         customTextDescriptionCounter = overideDescForHowManyTicks;
+    }
+
+    public void GoToModerationPage()
+    {
+        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown)
+            return;
+
+        bool arenaMode = RainMeadow.isArenaMode(out _);
+
+        MovePage(new Vector2(1500f, 0f), 2);
+        selectedObject = arenaModerationPage.backButton;
     }
 
     public void GoToChangeCharacter()

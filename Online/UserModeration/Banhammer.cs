@@ -1,11 +1,99 @@
 ﻿using Menu;
+using System.IO;
+using System.Linq;
 using System;
-
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using BepInEx;
 
 namespace RainMeadow
 {
     public class BanHammer
     {
+        public static string BannedUsers => "meadow-bannedusers.json";
+        public static string RecentUsers => "meadow-recentusers.json";
+
+        public static List<SteamPlayerRep> bannedUsers = new();
+        public static List<SteamPlayerRep> recentUsers = new();
+
+        public const int MAX_RECENTS = 25;
+
+        public static void RefreshAll()
+        {
+            bannedUsers = RefreshBannedUsers();
+            recentUsers = RefreshRecentUsers();
+        }
+
+        public static List<SteamPlayerRep> RefreshBannedUsers()
+        {
+            string path = AssetManager.ResolveFilePath(BannedUsers);
+
+            try
+            {
+                // If the file doesn't exist, create an empty one
+                if (!File.Exists(path))
+                {
+                    // We use WriteAllText with an empty string to initialize the file
+                    File.WriteAllText(path, "");
+                    return new();
+                }
+
+                if (File.ReadAllText(path).IsNullOrWhiteSpace()) return new();
+
+                return JsonConvert.DeserializeObject<List<SteamPlayerRep>>(File.ReadAllText(path)) ?? new();
+
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error("There was an error reading meadow-bannedusers.json " + ex);
+                return new();
+            }
+        }
+
+        public static List<SteamPlayerRep> RefreshRecentUsers()
+        {
+            string path = AssetManager.ResolveFilePath(RecentUsers);
+
+            try
+            {
+                // If the file doesn't exist, create an empty one
+                if (!File.Exists(path))
+                {
+                    // We use WriteAllText with an empty string to initialize the file
+                    File.WriteAllText(path, "");
+                    return new();
+                }
+
+                if (File.ReadAllText(path).IsNullOrWhiteSpace()) return new();
+
+                return JsonConvert.DeserializeObject<List<SteamPlayerRep>>(File.ReadAllText(path)) ?? new();
+
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error("There was an error reading meadow-recentusers.json " + ex);
+                return new();
+            }
+        }
+
+        public static string[] GetBannedUsers()
+        {
+            string path = AssetManager.ResolveFilePath(BannedUsers);
+
+            // If the file doesn't exist, create an empty one
+            if (!File.Exists(path))
+            {
+                // We use WriteAllText with an empty string to initialize the file
+                File.WriteAllText(path, "");
+                return new string[0];
+            }
+
+            // Read the file and filter out empty lines or spaces
+            return File.ReadAllLines(path)
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToArray();
+        }
+
         public static void ShowBan(ProcessManager manager)
         {
 
@@ -45,5 +133,196 @@ namespace RainMeadow
 
         }
 
+        public static void PermaBanUser(OnlinePlayer steamUser)
+        {
+            if (steamUser.isMe) return;
+            if (OnlineManager.lobby.owner.isMe) BanUser(steamUser);
+
+            bannedUsers.Add(SteamPlayerRep.FromOnlinePlayer(steamUser));
+
+            string path = AssetManager.ResolveFilePath(BannedUsers);
+
+            File.WriteAllText(path, JsonConvert.SerializeObject(bannedUsers, Formatting.Indented));
+
+            RefreshBannedUsers();
+
+            OnRefresh?.Invoke(recentUsers, bannedUsers);
+        }
+
+        public static void PermaBanUser(SteamPlayerRep steamUser)
+        {
+            if (bannedUsers.Contains(steamUser)) return;
+
+            if (OnlineManager.lobby.owner.isMe)
+            {
+
+                var player = OnlineManager.players.Where(x => x.id is SteamMatchmakingManager.SteamPlayerId steamID && steamID.steamID.ToString() == steamUser.SteamID);
+
+                foreach (var p in player) BanUser(p);
+
+            }
+
+            bannedUsers.Add(steamUser);
+
+            string path = AssetManager.ResolveFilePath(BannedUsers);
+
+            File.WriteAllText(path, JsonConvert.SerializeObject(bannedUsers, Formatting.Indented));
+
+            RefreshBannedUsers();
+
+            OnRefresh?.Invoke(recentUsers, bannedUsers);
+        }
+
+        public static void UnpermabanUser(SteamPlayerRep steamUser)
+        {
+            if (bannedUsers.Remove(steamUser))
+            {
+                string path = AssetManager.ResolveFilePath(BannedUsers);
+                File.WriteAllText(path, JsonConvert.SerializeObject(bannedUsers, Formatting.Indented));
+                RefreshBannedUsers();
+
+                UpdateRecents(steamUser);
+            }
+        }
+
+        public static void UpdateRecents(OnlinePlayer steamUser)
+        {
+            if (steamUser.isMe) return;
+            var steamRep = SteamPlayerRep.FromOnlinePlayer(steamUser);
+
+            bool exists = false;
+
+            foreach (var userRep in recentUsers.Where(x => x.SteamID == steamRep.SteamID))
+            {
+                exists = true;
+                userRep.SlugcatColor = steamRep.SlugcatColor;
+                userRep.Selected = steamRep.Selected;
+            }
+            if (exists)
+            {
+                recentUsers = recentUsers.OrderByDescending(x => x.SteamID == steamRep.SteamID).ToList();
+                return;
+            }
+
+            recentUsers.Add(steamRep);
+
+            if (recentUsers.Count > MAX_RECENTS)
+            {
+                while (recentUsers.Count > MAX_RECENTS) recentUsers.RemoveAt(recentUsers.Count - 1);
+            }
+
+            string path = AssetManager.ResolveFilePath(RecentUsers);
+            File.WriteAllText(path, JsonConvert.SerializeObject(recentUsers, Formatting.Indented));
+            RefreshRecentUsers();
+
+            OnRefresh?.Invoke(recentUsers, bannedUsers);
+        }
+
+        public static void UpdateRecents(SteamPlayerRep steamRep)
+        {
+            bool dirty = false;
+            bool exists = false;
+
+            foreach (var userRep in recentUsers.Where(x => x.SteamID == steamRep.SteamID))
+            {
+                exists = true;
+                if (userRep.SlugcatColor != steamRep.SlugcatColor)
+                {
+                    userRep.SlugcatColor = steamRep.SlugcatColor;
+                    dirty = true;
+                }
+                if (userRep.Selected != steamRep.Selected)
+                {
+                    userRep.Selected = steamRep.Selected;
+                    dirty = true;
+                }
+            }
+            if (exists)
+            {
+                recentUsers = recentUsers.OrderByDescending(x => x.SteamID == steamRep.SteamID).ToList();
+                OnRefresh?.Invoke(recentUsers, bannedUsers);
+                return;
+            }
+
+            recentUsers.Add(steamRep);
+            dirty = true;
+
+            if (recentUsers.Count > MAX_RECENTS)
+            {
+                while (recentUsers.Count > MAX_RECENTS)
+                {
+                    recentUsers.RemoveAt(recentUsers.Count - 1);
+                    dirty = true;
+                }
+            }
+
+            if (!dirty) return;
+
+            string path = AssetManager.ResolveFilePath(RecentUsers);
+            File.WriteAllText(path, JsonConvert.SerializeObject(recentUsers, Formatting.Indented));
+            RefreshRecentUsers();
+
+            OnRefresh?.Invoke(recentUsers, bannedUsers);
+        }
+
+        public static void UpdateRecents(OnlinePlayer[] steamUsers)
+        {
+            bool dirty = false;
+            foreach (var steamUser in steamUsers)
+            {
+                if (steamUser.isMe) continue;
+                var steamRep = SteamPlayerRep.FromOnlinePlayer(steamUser);
+
+                bool exists = false;
+
+                foreach (var userRep in recentUsers.Where(x => x.SteamID == steamRep.SteamID))
+                {
+                    exists = true;
+                    if (userRep.SlugcatColor != steamRep.SlugcatColor)
+                    {
+                        userRep.SlugcatColor = steamRep.SlugcatColor;
+                        dirty = true;
+                    }
+                    if (userRep.Selected != steamRep.Selected)
+                    {
+                        userRep.Selected = steamRep.Selected;
+                        dirty = true;
+                    }
+                }
+                if (exists)
+                {
+                    var lastOrder = recentUsers.ToArray();
+                    recentUsers = recentUsers.OrderByDescending(x => x.SteamID == steamRep.SteamID).ToList();
+                    if (!lastOrder.SequenceEqual(recentUsers))
+                    {
+                        dirty = true;
+                    }
+                    continue;
+                }
+
+                recentUsers.Add(steamRep);
+                dirty = true;
+
+                if (recentUsers.Count > MAX_RECENTS)
+                {
+                    while (recentUsers.Count > MAX_RECENTS)
+                    {
+                        recentUsers.RemoveAt(recentUsers.Count - 1);
+                        dirty = true;
+                    }
+                }
+            }
+
+            if (!dirty) return;
+
+            string path = AssetManager.ResolveFilePath(RecentUsers);
+            File.WriteAllText(path, JsonConvert.SerializeObject(recentUsers, Formatting.Indented));
+            RefreshRecentUsers();
+
+            OnRefresh?.Invoke(recentUsers, bannedUsers);
+        }
+
+        public static event ModerationRefresh OnRefresh = delegate { };
+        public delegate void ModerationRefresh(List<SteamPlayerRep> recents, List<SteamPlayerRep> banned);
     }
 }
