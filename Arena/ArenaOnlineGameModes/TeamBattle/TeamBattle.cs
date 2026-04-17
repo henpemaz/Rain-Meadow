@@ -287,9 +287,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 return -1; // Draw
             }
-            teamScores.Clear();
-            teamWins.Clear();
-            playerToTeam.Clear();
             return topTeam;
         }
 
