@@ -8,7 +8,6 @@ using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
-
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -910,6 +909,8 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
+            bool isTeamMode = TeamBattleMode.isTeamBattleMode(arena, out var tb);
+            bool winByScore = arena.spearScore > 0;
 
             // 1. TALLY SCORES & SURVIVAL STATUS
             for (int i = 0; i < self.players.Count; i++)
@@ -962,29 +963,10 @@ namespace RainMeadow
             }
 
             // 2. DETERMINE WINNING TEAM (IF IN TEAM MODE) BEFORE SORTING
-            bool isTeamMode = TeamBattleMode.isTeamBattleMode(arena, out var tb);
+
             if (isTeamMode)
             {
-                tb.winningTeam = -1;
-                HashSet<int> teamsRemaining = new HashSet<int>();
-
-                foreach (var player in self.players)
-                {
-                    if (player.alive)
-                    {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                        if (onlineP != null && OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam))
-                        {
-                            teamsRemaining.Add(playerTeam.team);
-                        }
-                    }
-                }
-
-                // If only one team is left standing, they win
-                if (teamsRemaining.Count == 1)
-                {
-                    tb.winningTeam = teamsRemaining.First();
-                }
+                tb.winningTeam = TeamBattleMode.CalculateTeamScoresAndWinner(self.players, arena, winByScore, true);
             }
 
             // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)
@@ -1007,7 +989,6 @@ namespace RainMeadow
                     list.Add(arenaPlayer);
                 }
             }
-
             // 4. ASSIGN WINNERS BASED ON GAME MODE
             if (isTeamMode)
             {
@@ -1017,7 +998,9 @@ namespace RainMeadow
                     for (int x = 0; x < list.Count; x++)
                     {
                         var onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, list[x].playerNumber);
-                        if (onlineP != null && OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var teamInfo))
+                        if (onlineP == null) continue;
+
+                        if (OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var teamInfo))
                         {
                             list[x].winner = teamInfo.team == tb.winningTeam;
                         }
@@ -1034,7 +1017,7 @@ namespace RainMeadow
                 else if (list.Count > 1)
                 {
                     // if survivalScore && killScore are 0, then this should skip 
-                    if (list[0].score > list[1].score)
+                    if (list[0].score > list[1].score && winByScore)
                     {
                         list[0].winner = true;
                     }
@@ -1062,13 +1045,11 @@ namespace RainMeadow
                 sortedPlayer.totScore += sortedPlayer.score;
 
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sortedPlayer.playerNumber);
+                if (pl == null) continue;
 
-                if (pl != null)
+                if (OnlineManager.lobby.isOwner)
                 {
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl);
-                    }
+                    arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl);
                 }
             }
 
