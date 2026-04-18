@@ -63,7 +63,7 @@ namespace RainMeadow
 
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
-        public bool winByScore => spearScore > 0 || aliveScore > 9 || emptyKillTagScore > 0;
+        public bool winByScore => spearScore > 0 || aliveScore > 0 || emptyKillTagScore > 0;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
