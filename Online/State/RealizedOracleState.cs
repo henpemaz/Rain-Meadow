@@ -46,12 +46,15 @@ namespace RainMeadow
             var oracle = (Oracle)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             if (oracle == null)
                 return;
+            if (oracle.oracleBehavior != null)
+            {
+                oracle.oracleBehavior.lookPoint = this.lookPoint;
+            }
             if (oracle.ID == MoreSlugcats.MoreSlugcatsEnums.OracleID.ST)
             {
                 (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).curPhase = phase;
                 (oracle.oracleBehavior as MoreSlugcats.STOracleBehavior).activateTimer = activateTimer;
             }
-            oracle.oracleBehavior.lookPoint = this.lookPoint;
 
             oracle.mySwarmers = this
                 .mySwarmers.list.Select(x =>
