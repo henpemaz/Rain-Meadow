@@ -344,8 +344,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                bool winByScore = arena.spearScore > 0;
-                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, winByScore, false);
+                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.winByScore, false);
 
                 resultList.Sort((a, b) =>
                 {
@@ -360,16 +359,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         if (teamB == tb.winningTeam) return 1;
 
                         // Sort remaining teams by their aggregate stats
-                        int teamStatA = winByScore ? (teamScores.ContainsKey(teamA) ? teamScores[teamA] : 0) : (teamWins.ContainsKey(teamA) ? teamWins[teamA] : 0);
-                        int teamStatB = winByScore ? (teamScores.ContainsKey(teamB) ? teamScores[teamB] : 0) : (teamWins.ContainsKey(teamB) ? teamWins[teamB] : 0);
+                        int teamStatA = arena.winByScore ? (teamScores.ContainsKey(teamA) ? teamScores[teamA] : 0) : (teamWins.ContainsKey(teamA) ? teamWins[teamA] : 0);
+                        int teamStatB = arena.winByScore ? (teamScores.ContainsKey(teamB) ? teamScores[teamB] : 0) : (teamWins.ContainsKey(teamB) ? teamWins[teamB] : 0);
 
                         if (teamStatA != teamStatB)
                             return teamStatB.CompareTo(teamStatA); // Descending
                     }
 
                     // Tier 2: Individual Performance (Within the same team)
-                    int indStatA = winByScore ? a.totScore : a.wins;
-                    int indStatB = winByScore ? b.totScore : b.wins;
+                    int indStatA = arena.winByScore ? a.totScore : a.wins;
+                    int indStatB = arena.winByScore ? b.totScore : b.wins;
 
                     if (indStatA != indStatB)
                         return indStatB.CompareTo(indStatA); // Descending
