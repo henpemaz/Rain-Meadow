@@ -1,9 +1,13 @@
 # Release 1.14.0
+## General
+- Added Global Mute toggle to Meadow Remix's "Gameplay" tab
 ## Arena
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
 - Synced more attributes in Challenge 70
+- Added additional flair for winning a secret minigame
+
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`

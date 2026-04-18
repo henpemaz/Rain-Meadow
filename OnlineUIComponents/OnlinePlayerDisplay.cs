@@ -112,6 +112,16 @@ namespace RainMeadow
                     this.iconString = "Kill_Slugcat";
                 }
 
+
+                if (customization.globalMute)
+                {
+                    if (!Futile.atlasManager.DoesContainAtlas("arena_ui_elements"))
+                    {
+                        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
+                        this.iconString = "Meadow_Menu_MutePlayerChat00";
+                    }
+                }
+
             }
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -168,11 +178,18 @@ namespace RainMeadow
             this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
 
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
-            if (RainMeadow.isArenaMode(out var _) && owner.RealizedPlayer != null && owner.RealizedPlayer.isCamo && !player.isMe)
+            if (RainMeadow.isArenaMode(out var a) && owner.RealizedPlayer?.isCamo == true)
             {
-                show = false; // Don't show if it's arena mode and the player is camo
-                pos.x = -1000;
-                this.alpha = 0f;
+                // Check if we are teammates (Only true if it's Team Battle AND we are on the same team)
+                bool isTeammate = TeamBattleMode.isTeamBattleMode(a, out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
+
+                // Hide if it's NOT me AND it's NOT a teammate
+                if (!player.isMe && !isTeammate)
+                {
+                    show = false;
+                    pos.x = -1000;
+                    this.alpha = 0f;
+                }
             }
 
             if (show || this.alpha > 0 || flashIcons)

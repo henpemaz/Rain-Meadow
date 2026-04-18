@@ -30,7 +30,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         private int _timerDuration;
 
-        public List<string> teamNameList;
+        // used for finalresult organization
+        public static Dictionary<int, int> teamScores = new();
+        public static Dictionary<int, int> teamWins = new();
+        public static Dictionary<int, int> playerToTeam = new(); // Cache for sorting
 
         public override void ResetOnSessionEnd()
         {
@@ -40,6 +43,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             dragonslayersSpawn = 0;
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
+
+            teamScores.Clear();
+            teamWins.Clear();
+            playerToTeam.Clear();
         }
 
         public override bool IsExitsOpen(
@@ -198,7 +205,87 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         tb.lerp
                     );
                 }
+                teamScores = new Dictionary<int, int>();
+                teamWins = new Dictionary<int, int>();
+                playerToTeam = new Dictionary<int, int>();
             }
+        }
+
+        public static int CalculateTeamScoresAndWinner(
+    IEnumerable<ArenaSitting.ArenaPlayer> players,
+    ArenaMode arena,
+    bool winByScore, bool winByRoundScore)
+        {
+            HashSet<int> teamsRemaining = new HashSet<int>();
+            foreach (var player in players)
+            {
+                OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                if (pl == null) continue;
+
+                if (player.alive)
+                {
+                    if (OnlineManager.lobby.clientSettings[pl].TryGetData<ArenaTeamClientSettings>(out var playerTeam))
+                    {
+                        teamsRemaining.Add(playerTeam.team);
+                    }
+                }
+
+                arena.ReadFromStats(player, pl);
+
+                if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) &&
+                    clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                {
+                    int team = teamSettings.team;
+                    playerToTeam[player.playerNumber] = team; // Cache team assignment
+
+                    if (!teamScores.ContainsKey(team))
+                    {
+                        teamScores[team] = 0;
+                        teamWins[team] = 0;
+                    }
+
+                    // Sum scores and track max wins
+                    teamScores[team] += winByRoundScore ? player.score : player.totScore; // score if round, totScore if final
+                    teamWins[team] = System.Math.Max(teamWins[team], player.wins);
+                }
+            }
+
+            if (teamScores.Count == 0) return -1;
+
+            var sortedTeams = teamScores.Keys.ToList();
+            sortedTeams.Sort((t1, t2) =>
+            {
+                if (winByScore) return teamScores[t2].CompareTo(teamScores[t1]);
+                return teamWins[t2].CompareTo(teamWins[t1]);
+            });
+
+            int topTeam = sortedTeams[0];
+            bool isTie = false;
+
+            // 3. Check for a tie in 1st place
+            if (sortedTeams.Count > 1)
+            {
+                int secondTeam = sortedTeams[1];
+                if (winByScore && teamScores[topTeam] == teamScores[secondTeam]) isTie = true;
+                if (!winByScore && teamsRemaining.Count > 1) isTie = true;
+            }
+
+            // 4. Ensure the highest stat isn't 0
+            int topTeamStat = -1;
+            if (winByScore)
+            {
+                topTeamStat = teamScores[topTeam];
+            }
+            else if (teamsRemaining.Count == 1)
+            {
+                topTeamStat = teamsRemaining.First();
+            }
+
+            if (isTie || topTeamStat == 0)
+            {
+                return -1; // Draw
+            }
+            return topTeam;
         }
 
         public override bool PlayerSittingResultSort(
@@ -257,94 +344,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                Dictionary<int, int> teamScores = new Dictionary<int, int>();
-                Dictionary<int, int> teamWins = new Dictionary<int, int>();
-                Dictionary<int, int> playerToTeam = new Dictionary<int, int>(); // Cache for sorting
+                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.winByScore, false);
 
-                // 1. Group stats by team
-                foreach (var player in resultList)
-                {
-                    OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                    if (pl == null)
-                    {
-                        continue;
-                    }
-                    arena.ReadFromStats(player, pl);
-                    player.winner = false;
-
-                    if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
-                    {
-                        int team = teamSettings.team;
-                        playerToTeam[player.playerNumber] = team; // Cache team assignment
-
-                        if (!teamScores.ContainsKey(team))
-                        {
-                            teamScores[team] = 0;
-                            teamWins[team] = 0;
-                        }
-
-                        // Sum the scores for the whole team
-                        teamScores[team] += player.totScore;
-
-                        // Only keep the highest win count from the team's top player
-                        teamWins[team] = System.Math.Max(teamWins[team], player.wins);
-                    }
-                }
-
-                // 2. Determine the winning team based on the ruleset
-                bool winByScore = arena.spearScore > 0;
-
-                if (teamScores.Count > 0)
-                {
-                    // Sort the teams
-                    var sortedTeams = teamScores.Keys.ToList();
-                    sortedTeams.Sort((t1, t2) =>
-                    {
-                        if (winByScore) return teamScores[t2].CompareTo(teamScores[t1]);
-                        return teamWins[t2].CompareTo(teamWins[t1]);
-                    });
-
-                    int topTeam = sortedTeams[0];
-                    bool isTie = false;
-
-                    // 3. Check for a tie in 1st place
-                    if (sortedTeams.Count > 1)
-                    {
-                        int secondTeam = sortedTeams[1];
-                        if (winByScore && teamScores[topTeam] == teamScores[secondTeam]) isTie = true;
-                        if (!winByScore && teamWins[topTeam] == teamWins[secondTeam]) isTie = true;
-                    }
-
-                    // 4. Ensure the highest stat isn't 0
-                    int topTeamStat = winByScore ? teamScores[topTeam] : teamWins[topTeam];
-
-                    if (isTie || topTeamStat == 0)
-                    {
-                        tb.winningTeam = -1; // Draw
-                    }
-                    else
-                    {
-                        tb.winningTeam = topTeam;
-                    }
-                }
-
-                // 5. Assign Winners
-                if (tb.winningTeam != -1)
-                {
-                    foreach (var player in resultList)
-                    {
-                        if (playerToTeam.TryGetValue(player.playerNumber, out int team) && team == tb.winningTeam)
-                        {
-                            player.winner = true;
-                        }
-                    }
-                }
-                else
-                {
-                    tb.winningTeam = -1;
-                }
-
-                // 6. Sort the Final Result List
                 resultList.Sort((a, b) =>
                 {
                     int teamA = playerToTeam.ContainsKey(a.playerNumber) ? playerToTeam[a.playerNumber] : -1;
@@ -358,16 +359,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         if (teamB == tb.winningTeam) return 1;
 
                         // Sort remaining teams by their aggregate stats
-                        int teamStatA = winByScore ? (teamScores.ContainsKey(teamA) ? teamScores[teamA] : 0) : (teamWins.ContainsKey(teamA) ? teamWins[teamA] : 0);
-                        int teamStatB = winByScore ? (teamScores.ContainsKey(teamB) ? teamScores[teamB] : 0) : (teamWins.ContainsKey(teamB) ? teamWins[teamB] : 0);
+                        int teamStatA = arena.winByScore ? (teamScores.ContainsKey(teamA) ? teamScores[teamA] : 0) : (teamWins.ContainsKey(teamA) ? teamWins[teamA] : 0);
+                        int teamStatB = arena.winByScore ? (teamScores.ContainsKey(teamB) ? teamScores[teamB] : 0) : (teamWins.ContainsKey(teamB) ? teamWins[teamB] : 0);
 
                         if (teamStatA != teamStatB)
                             return teamStatB.CompareTo(teamStatA); // Descending
                     }
 
                     // Tier 2: Individual Performance (Within the same team)
-                    int indStatA = winByScore ? a.totScore : a.wins;
-                    int indStatB = winByScore ? b.totScore : b.wins;
+                    int indStatA = arena.winByScore ? a.totScore : a.wins;
+                    int indStatB = arena.winByScore ? b.totScore : b.wins;
 
                     if (indStatA != indStatB)
                         return indStatB.CompareTo(indStatA); // Descending
@@ -390,78 +391,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = -1;
-                HashSet<int> teamsRemaining = new HashSet<int>();
-                foreach (var player in self.players)
-                {
-                    if (player.alive)
-                    {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool getPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (getPlayerTeam)
-                            {
-                                teamsRemaining.Add(playerTeam.team);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var player in self.players)
-                {
-                    if (teamsRemaining.Count == 1)
-                    {
-                        tb.winningTeam = teamsRemaining.First();
-
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool gotPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (gotPlayerTeam)
-                            {
-                                player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        player.winner = false; // everyone's a loser. Kill your enemies!
-                    }
-                }
-
-                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    A.playerNumber
-                );
-                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    B.playerNumber
-                );
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
 
                 if (playerA != null && playerB != null)
                 {
-                    OnlineManager
-                        .lobby.clientSettings[playerA]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamA);
-                    OnlineManager
-                        .lobby.clientSettings[playerB]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamB);
+                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
+                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
 
                     if (teamA != null && teamB != null)
                     {
-                        bool aIsWinningTeam = teamA.team == tb.winningTeam;
-                        bool bIsWinningTeam = teamB.team == tb.winningTeam;
+                        // Only consider them on the winning team if a winning team was actually decided (!= -1)
+                        bool aIsWinningTeam = (tb.winningTeam != -1) && (teamA.team == tb.winningTeam);
+                        bool bIsWinningTeam = (tb.winningTeam != -1) && (teamB.team == tb.winningTeam);
 
                         // Prioritize winning team
                         if (aIsWinningTeam != bIsWinningTeam)
@@ -469,21 +411,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        if (aIsWinningTeam && bIsWinningTeam)
+                        // If both are on the winning team (or both lost), sort by performance
+                        if (A.alive != B.alive)
                         {
-                            if (A.alive != B.alive)
-                            {
-                                return A.alive;
-                            }
-                            if (A.score != B.score)
-                            {
-                                return A.score > B.score; // If both are on winning team, sort by kill value
-
-                            }
-
-                            return A.deaths < B.deaths;
-
+                            return A.alive;
                         }
+                        if (A.score != B.score)
+                        {
+                            return A.score > B.score; // Sort by score
+                        }
+
+                        return A.deaths < B.deaths; // Sort by fewest deaths
                     }
                 }
             }
@@ -662,6 +600,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             OnlinePlayer player
         )
         {
+
+            if (base.AddIcon(arena, display, owner, customization, player) != "")
+            {
+                return base.AddIcon(arena, display, owner, customization, player);
+            }
+
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
             {
                 return "";
