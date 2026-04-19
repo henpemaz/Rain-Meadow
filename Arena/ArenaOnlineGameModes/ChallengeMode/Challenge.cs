@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using Menu;
-using RainMeadow;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
@@ -67,12 +64,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override string TimerText()
         {
-            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());
+            return Utils.Translate("A challenge approaches,") + " " + Utils.Translate(PlayingAsText());
         }
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            if (arena?.session?.arenaSitting?.players != null && arena.session.arenaSitting.players.Count > 0)
+            {
+                return arena.session.arenaSitting.players.Max(pl => pl.timeAlive);
+            }
+            return 0;
         }
 
         public override int TimerDuration
@@ -83,7 +84,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return --arena.setupTime;
+            return ++arena.setupTime;
         }
 
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
@@ -140,6 +141,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
             return base.IconColor(arena, display, owner, customization, player);
         }
+
+
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
