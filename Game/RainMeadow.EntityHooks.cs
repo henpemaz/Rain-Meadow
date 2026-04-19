@@ -275,7 +275,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource()?.ApoEnteringWorld(apo);
+                self.world.GetResource().ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
@@ -654,7 +654,6 @@ namespace RainMeadow
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
                         {
                             opo1.beingMoved = false;
-                            room?.abstractRoom.AddEntity(ac);
                         }
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
