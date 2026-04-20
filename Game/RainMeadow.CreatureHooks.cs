@@ -144,10 +144,7 @@ namespace RainMeadow
                 }
 
                 GraspRef grasp = GraspRef.FromGrasp(self.grasps[graspUsed]);
-                RPCEvent graspRPC = grabbingOnline.owner.InvokeRPC(CreatureGrabRPC, oc.id, grasp);
-                grabbingOnline.graspLocked.Add(graspRPC);
-                graspRPC.Then((result) => grabbingOnline.graspLocked.Remove(graspRPC));
-
+                grabbingOnline.Lock("grasp", grabbingOnline.owner.InvokeRPC(CreatureGrabRPC, oc.id, grasp));
                 if (!grabbingOnline.isPending && grabbingOnline.isTransferable)
                 {
                     grabbingOnline.Request();
