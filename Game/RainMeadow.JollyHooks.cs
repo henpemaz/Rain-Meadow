@@ -473,7 +473,7 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby != null)
                         {
-                            return true; // all Jolly co-op features need to reimplented anyway. 
+                            return true; // Bypass Jolly checks so we can die
                         }
 
                         return value;
