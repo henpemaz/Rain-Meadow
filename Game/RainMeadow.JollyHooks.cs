@@ -57,7 +57,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.AddColorInterface += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.ctor += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.Update += SoftDisableJollyCoOP;
-            
+
             // IL.Menu.SlugcatSelectMenu.CheckJollyCoopAvailable += SoftDisableJollyCoOP;
 
             // IL.Options.ApplyOption += SoftDisableJollyCoOP; 
@@ -212,7 +212,7 @@ namespace RainMeadow
             IL.SaveState.BringUpToDate += SoftDisableJollyCoOP;
             IL.SaveState.SessionEnded += SoftDisableJollyCoOP;
             IL.ShelterDoor.Close += SoftDisableJollyCoOP;
-            
+
             IL.ShelterDoor.Update += SoftDisableJollyCoOP;
             IL.ShortcutHandler.SuckInCreature += SoftDisableJollyCoOP;
             IL.ShortcutHandler.Update += SoftDisableJollyCoOP;
@@ -238,14 +238,47 @@ namespace RainMeadow
             IL.VoidSea.VoidWorm.MainWormBehavior.Update += SoftDisableJollyCoOP;
             IL.VoidSea.VoidWorm.Update += SoftDisableJollyCoOP;
             IL.Vulture.AccessSkyGate += SoftDisableJollyCoOP;
+            IL.Vulture.AccessSkyGate += Vulture_AccessSkyGate_IL;
             IL.Weapon.HitThisObject += SoftDisableJollyCoOP;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += SoftDisableJollyCoOP;
+
         }
+
+        // Kill the player before the JollyCoop hook
+        private void Vulture_AccessSkyGate_IL(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+
+            // Find the field load for ModManager.CoopAvailable
+            if (c.TryGotoNext(MoveType.Before,
+                x => x.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable))))
+            {
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Creature self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        for (int i = 0; i < self.grasps.Length; i++)
+                        {
+                            if (self.grasps[i]?.grabbed is Player player)
+                            {
+                                player.Die();
+                            }
+                        }
+                    }
+                });
+            }
+            else
+            {
+                UnityEngine.Debug.LogError("RainMeadow: IL Hook failed at Vulture.AccessSkyGate");
+            }
+        }
+
         public void JollySetupDialog_ctor(On.JollyCoop.JollyMenu.JollySetupDialog.orig_ctor orig, global::JollyCoop.JollyMenu.JollySetupDialog self, global::SlugcatStats.Name name, global::ProcessManager manager, Vector2 closeButtonPos)
         {
             orig(self, name, manager, closeButtonPos);
         }
-        
+
         bool ProcessManager_IsGameInMultiplayerContext(On.ProcessManager.orig_IsGameInMultiplayerContext orig, ProcessManager self)
         {
             if (isStoryMode(out var story) && (story.avatarCount > 1))
@@ -456,6 +489,7 @@ namespace RainMeadow
                 RainMeadow.Error(except);
             }
         }
+
 
 
         private void SoftDisableJollyCoOP(ILContext context)
