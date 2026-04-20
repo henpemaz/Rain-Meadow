@@ -1,16 +1,132 @@
 using Menu;
-using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using RainMeadow.UI;
-
+using UnityEngine;
+using RWCustom;
+using System.Linq;
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
 
         [RPCMethod]
+        public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
+        {
+            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(killer.owner);
+            if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            {
+                if (killer.owner.isMe)
+                {
+                    SpecialEvents.GainedMeadowCoin(1);
+                }
+                if (killedCreature.apo.realizedObject is Creature c && c != null)
+                {
+                    SpecialEvents.PlayMeadowCoinSound(room: c.room);
+                    for (int x = 0; x < 20; x++)
+                    {
+                        c.room.AddObject(new MeadowTokenCoin.MeadowCoin(c.bodyChunks.OfType<BodyChunk>().First().pos + RWCustom.Custom.RNV() * 2f, RWCustom.Custom.RNV() * 16f * UnityEngine.Random.value, Color.Lerp(Color.yellow, new Color(1f, 1f, 1f), 0.5f + 0.5f * UnityEngine.Random.value), false));
+                    }
+                }
+
+            }
+        }
+
+        // Substracting a player's points would be infinitely easier, but Rain World has logic to display as 0 if that's the case, which is not helpful and now I have to suffer for it
+        [RPCMethod]
+        public static void DistributeEmptyKillScores(int excludedPlayerNumber)
+        {
+            if (!OnlineManager.lobby.isOwner) return;
+
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return;
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+
+            OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
+            bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
+
+            foreach (var playerSlot in session.arenaSitting.players)
+            {
+                if (playerSlot == null) continue; // this should never happen :tm:
+                if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+
+                // EXCLUSION 1: Not the player who died
+                if (playerSlot.playerNumber == excludedPlayerNumber) continue;
+
+                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
+                if (alivePlayer == null) continue;
+
+                // EXCLUSION 2: Must be alive 
+                bool isDead = false;
+                foreach (var abs in session.Players)
+                {
+                    if (abs.GetOnlineCreature()?.owner == alivePlayer && (abs.state.dead || abs.realizedCreature != null && abs.realizedCreature.dead))
+                    {
+                        isDead = true;
+                        break; // Break the inner loop, we know they are dead
+                    }
+                }
+                if (isDead) continue; // Continue the OUTER loop, skipping score distribution
+
+                // EXCLUSION 3: Not on the same team
+                if (isTeamBattle && deadPlayer != null)
+                {
+                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
+                }
+
+                // DISTRIBUTION: Give score
+                if (arena.playerNumberWithScore.ContainsKey(alivePlayer.inLobbyId))
+                {
+                    arena.playerNumberWithScore[alivePlayer.inLobbyId] += arena.emptyKillTagScore;
+                    playerSlot.score = arena.playerNumberWithScore[alivePlayer.inLobbyId];
+
+                    // Cleaner logic for skipping RPC to the owner
+                    if (alivePlayer != OnlineManager.mePlayer)
+                    {
+                        alivePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, playerSlot.playerNumber, playerSlot.score);
+                    }
+                }
+            }
+        }
+        [RPCMethod]
+        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        {
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                return;
+            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+            {
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                {
+                    return; // no points for you
+                }
+
+                if (a.arenaSitting.players[playerNumber].score < newScore)
+                {
+
+                    a.arenaSitting.players[playerNumber].score = newScore;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    }
+                }
+            }
+
+        }
+
+        [RPCMethod]
         public static void AddKilledCreatureToHUD(OnlineCreature onlineKilledCreature)
         {
+
             var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
             if (game == null)
             {
@@ -258,7 +374,10 @@ namespace RainMeadow
             }
         }
 
+
         [RPCMethod]
+
+        // TODO: May be unused now since I updated _Killing
         public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
             if (RainMeadow.isArenaMode(out var arena))
@@ -280,40 +399,29 @@ namespace RainMeadow
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
-                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
+                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber != playerNum)
                     {
-                        if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
-                        {
-                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            if (pl != null)
-                            {
-                                arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
-                                arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                            }
-                        }
-
-                        int scoreToAdd = 0;
-                        if (arena.externalArenaGameMode is ArenaChallengeMode)
-                        {
-                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                            if (index >= 0)
-                            {
-                                scoreToAdd = game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index];
-                            }
-                        }
-                        else
-                        {
-                            scoreToAdd = arena.spearScore;
-                        }
+                        continue;
+                    }
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
+                    if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
+                    {
+                        game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                        game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                         if (pl != null)
                         {
-                            arena.playerNumberWithScore[pl.inLobbyId] += scoreToAdd;
+                            arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            // 7
+                            if (crit.abstractCreature.realizedCreature.Template.type == CreatureTemplate.Type.Slugcat)
+                            {
+                                RainMeadow.Debug($"RMEL;{pl.id.DisplayName};KILLED;{creatureKilled.owner.id.DisplayName};SCORE;{game.GetArenaGameSession.arenaSitting.players[i]}");
+                            }
                         }
-                    }
 
+                    }
                 }
+
             }
         }
         [RPCMethod]

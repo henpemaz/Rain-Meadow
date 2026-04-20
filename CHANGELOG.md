@@ -2,6 +2,27 @@
 
 # Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
+## Story
+- Fixed some critical errors in Saint's ending
+## General
+- Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed Vultures not properly killing players when taken off-screen
+- Fixed Saint ascensions not working reliably outside of Arena
+## Arena
+- Added import/export map playlists from clipboard
+- Added configurable Artificer explosion capacity
+- Prevented Overseer from earning score
+- Added additional flair for winning a secret minigame
+
+### Modders
+-  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
+- Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
+
+# Release 1.13.2
+- Fixed Meadow crashing in single-player
+- Fixed Meadow initialization logs being lost
+- Fixed some arena menus running at twice the tickrate
+- Fixed an issue with the password resetting when a lobby's host changes
 
 # Release 1.13.1
 ## General
