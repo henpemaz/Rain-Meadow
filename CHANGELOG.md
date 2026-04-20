@@ -1,7 +1,10 @@
 # Release 1.14.0
+## Story
+- Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
-- Fixed most cases of pearl strings duping when a player loads a room with ScavengerOutposts or HangingPearlStrings.
+- Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
+- Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
