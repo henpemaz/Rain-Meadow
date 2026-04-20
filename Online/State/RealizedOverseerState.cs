@@ -110,8 +110,9 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).realizedCreature is not Overseer overseer) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
-
             (overseer.abstractCreature.abstractAI as OverseerAbstractAI).ownerIterator = ownerIterator;
+
+            if (overseer.room is null) return;
 
             if (!transition_modes.Contains(overseer.mode))
             {

@@ -19,9 +19,8 @@ namespace RainMeadow
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
-            
+
             On.Creature.SpitOutOfShortCut += Creature_SpitOutOfShortCut;
-            // On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -97,7 +96,7 @@ namespace RainMeadow
                                 if (creature.FollowedByCamera(0))
                                 {
                                     handler.game.world.ActivateRoom(handler.betweenRoomsWaitingLobby[inbetween_room_index].room);
-                                    handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
+                                    // handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
                                 }
                             }
                             catch (Exception except)
