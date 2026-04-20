@@ -30,44 +30,62 @@ namespace RainMeadow
             }
         }
 
+        // Substracting a player's points would be infinitely easier, but Rain World has logic to display as 0 if that's the case, which is not helpful and now I have to suffer for it
         [RPCMethod]
         public static void DistributeEmptyKillScores(int excludedPlayerNumber)
         {
             if (!OnlineManager.lobby.isOwner) return;
 
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame g ? g.session as ArenaGameSession : null;
-            if (game == null) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return;
             if (!RainMeadow.isArenaMode(out var arena)) return;
 
-            if (game is ArenaGameSession session)
+
+            OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
+            bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
+
+            foreach (var playerSlot in session.arenaSitting.players)
             {
-                foreach (var playerSlot in session.arenaSitting.players)
+                if (playerSlot == null) continue; // this should never happen :tm:
+                if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+
+                // EXCLUSION 1: Not the player who died
+                if (playerSlot.playerNumber == excludedPlayerNumber) continue;
+
+                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
+                if (alivePlayer == null) continue;
+
+                // EXCLUSION 2: Must be alive 
+                bool isDead = false;
+                foreach (var abs in session.Players)
                 {
-                    if (playerSlot == null) continue; // this should never happen :tm:
-
-                    if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
-                    // EXCLUSION: If this is the player who died, skip them.
-                    if (playerSlot.playerNumber == excludedPlayerNumber) continue;
-
-                    OnlinePlayer? op = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
-                    if (op == null) continue;
-
-                    if (arena.playerNumberWithScore.ContainsKey(op.inLobbyId))
+                    if (abs.GetOnlineCreature()?.owner == alivePlayer && (abs.state.dead || abs.realizedCreature != null && abs.realizedCreature.dead))
                     {
-                        arena.playerNumberWithScore[op.inLobbyId] += arena.emptyKillTagScore;
-                        playerSlot.score = arena.playerNumberWithScore[op.inLobbyId];
+                        isDead = true;
+                        break; // Break the inner loop, we know they are dead
+                    }
+                }
+                if (isDead) continue; // Continue the OUTER loop, skipping score distribution
 
-                        if (op == OnlineManager.mePlayer)
-                        {
-                            continue;
-                        }
-                        op.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, playerSlot.playerNumber, playerSlot.score);
+                // EXCLUSION 3: Not on the same team
+                if (isTeamBattle && deadPlayer != null)
+                {
+                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
+                }
 
+                // DISTRIBUTION: Give score
+                if (arena.playerNumberWithScore.ContainsKey(alivePlayer.inLobbyId))
+                {
+                    arena.playerNumberWithScore[alivePlayer.inLobbyId] += arena.emptyKillTagScore;
+                    playerSlot.score = arena.playerNumberWithScore[alivePlayer.inLobbyId];
+
+                    // Cleaner logic for skipping RPC to the owner
+                    if (alivePlayer != OnlineManager.mePlayer)
+                    {
+                        alivePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, playerSlot.playerNumber, playerSlot.score);
                     }
                 }
             }
         }
-
         [RPCMethod]
         public static void UpdatePlayerScore(int playerNumber, int newScore)
         {

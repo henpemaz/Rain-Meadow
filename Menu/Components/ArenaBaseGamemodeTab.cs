@@ -44,7 +44,7 @@ namespace RainMeadow.UI.Components
         public bool AllSettingsDisabled =>
             arena.initiateLobbyCountdown && arena.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled =>
-            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled || arena.externalArenaGameMode is ArenaChallengeMode;
+            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
 
 
         public OnlineArenaBaseGameModeTab(

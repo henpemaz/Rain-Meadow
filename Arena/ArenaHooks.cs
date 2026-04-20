@@ -1644,7 +1644,7 @@ namespace RainMeadow
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
-                        if (self.IsLocal() && isArenaMode(out var arena))
+                        if (self.IsLocal() && OnlineManager.lobby != null)
                         {
                             if (
                                 OnlinePhysicalObject.map.TryGetValue(
@@ -2851,6 +2851,19 @@ namespace RainMeadow
                                     tb.teamNames[tb.winningTeam].ToUpper()
                                 )
                             );
+                    }
+
+                    foreach (var box in self.resultBoxes)
+                    {
+                        OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
+                        if (pl == null)
+                        {
+                            continue;
+                        }
+                        if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                        {
+                            box.player.totScore = TeamBattleMode.teamScores[teamSettings.team];
+                        }
                     }
                 }
             }
