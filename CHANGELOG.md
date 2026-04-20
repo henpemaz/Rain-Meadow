@@ -4,6 +4,7 @@
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
 - Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
+- Fixed Vultures not properly killing players when taken off-screen
 - Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
 - Added import/export map playlists from clipboard
