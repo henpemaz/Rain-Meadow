@@ -270,7 +270,7 @@ namespace RainMeadow
             }
             else
             {
-                UnityEngine.Debug.LogError("MyMod: IL Hook failed at Vulture.AccessSkyGate (CoopAvailable check not found)");
+                UnityEngine.Debug.LogError("RainMeadow: IL Hook failed at Vulture.AccessSkyGate");
             }
         }
 
