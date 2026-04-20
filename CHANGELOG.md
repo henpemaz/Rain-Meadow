@@ -1,3 +1,8 @@
+# Release 1.14.0
+
+## Engine
+- Fixed Joke Rifle bullets duping and consuming high bandwith.
+
 # Release 1.13.1
 ## General
 - Fixed Hunter_Illness IL Hook
