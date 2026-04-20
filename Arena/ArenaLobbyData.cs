@@ -142,6 +142,17 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup", nullable = true)]
             public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
 
+
+            [OnlineField(group = "arenaSetup")]
+            public int emptyKillScore;
+
+
+            [OnlineField(group = "arenaSetup")]
+            public bool challengeDenEjection;
+
+            [OnlineField(group = "arenaSetup")]
+            public int artiExplosionCapacity;
+
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -258,6 +269,10 @@ namespace RainMeadow
                 denRule = arena.denEntryRule;
                 denScore = arena.denScore;
                 hostLoadedOverlay = arena.hostLoadedOverlay;
+                emptyKillScore = arena.emptyKillTagScore;
+                challengeDenEjection = arena.challengeDenEjection;
+
+                artiExplosionCapacity = arena.artiExplosionCount;
 
             }
 
@@ -344,6 +359,11 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
                 (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
                 (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
+                (lobby.gameMode as ArenaOnlineGameMode).emptyKillTagScore = emptyKillScore;
+                (lobby.gameMode as ArenaOnlineGameMode).challengeDenEjection = challengeDenEjection;
+
+
+                (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
 
             }
 

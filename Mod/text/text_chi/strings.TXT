@@ -164,10 +164,11 @@ Invite Friends|邀请好友
 Friendly Fire|友伤
 Require Campaign Slugcat|强制时间线蛞蝓猫
 Sync Save|同步主机存档
+Restart game|重新开始
 PLAYERS|玩家
 Press again to ban player!|再次点击可封禁玩家！
-Wait for others to shelter or rescue you, press |等待他人进入避难所或自杀，按下
- to spectate, or press PAUSE BUTTON to dismiss message|以旁观，或按下暂停关闭此提示
+Wait for others to shelter or rescue you or press |等待他人进入避难所或自杀，按下
+ to spectate|以旁观
 READY|准备
 
 // 竞技场模式
