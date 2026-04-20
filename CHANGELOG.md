@@ -1,3 +1,8 @@
+# Release 1.14.0
+
+# General
+- Fixed most cases of pearl strings duping when a player loads a room with ScavengerOutposts or HangingPearlStrings.
+
 # Release 1.13.1
 ## General
 - Fixed Hunter_Illness IL Hook
