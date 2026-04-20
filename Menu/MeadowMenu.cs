@@ -201,7 +201,7 @@ namespace RainMeadow
         public void UpdateElementBindings()
         {
             //Group up elements
-            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, eyeColorPicker.wrapper, nextButton };
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, eyeColorPicker.wrapper, startButton, colorpicker.wrapper, nextButton };
             List<MenuObject> SkinColumnElements = skinButtons.Cast<MenuObject>().ToList();
             //Enforce row/column element order
             Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);

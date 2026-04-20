@@ -1,8 +1,17 @@
 # Release 1.14.0
-
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
-
+## General
+- Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+## Arena
+- Added import/export map playlists from clipboard
+- Added configurable Artificer explosion capacity
+- Prevented Overseer from earning score
+- Added additional flair for winning a secret minigame
+- Post-game stats now persist for duration of lobby life, click "reset" to view previous round's details
+### Modders
+-  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
+- Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
 
 # Release 1.13.2
 - Fixed Meadow crashing in single-player

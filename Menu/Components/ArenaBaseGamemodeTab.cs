@@ -8,6 +8,8 @@ using RainMeadow.UI.Components.Patched;
 using System.Linq;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using Menu.Remix.MixedUI.ValueTypes;
+using System;
+using System.Text;
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -30,15 +32,19 @@ namespace RainMeadow.UI.Components
         public OpCheckBox challengeDenEjectionCheckbox;
         public EventfulScrollButton? prevButton,
 
+
             nextButton;
         public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
+        public MenuLabel arenaImportExportLabel;
+        public OpSimpleButton arenaPlaylistImportButton;
+        public OpSimpleButton arenaPlaylistExportButton;
 
-        public List<int> unstableChallenges = new List<int> { 70 };
+
 
         public bool AllSettingsDisabled =>
             arena.initiateLobbyCountdown && arena.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled =>
-            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled || arena.externalArenaGameMode is ArenaChallengeMode;
+            !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
 
 
         public OnlineArenaBaseGameModeTab(
@@ -136,6 +142,8 @@ namespace RainMeadow.UI.Components
             {
                 arena.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(value); ;
             };
+            denEntryRule.Change();
+
 
 
             emptyKillTagScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
@@ -171,6 +179,73 @@ namespace RainMeadow.UI.Components
             challengeDenEjectionCheckbox.Change();
 
 
+            arenaImportExportLabel = new(menu, this, menu.Translate("Playlist:"),
+                new(leftMargin, topOffset - rowHeight * 6), new(labelWidth, 20f), false);
+            arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
+
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
+            arenaPlaylistExportButton.OnClick += (_) =>
+            {
+                try
+                {
+
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
+                    // Copy the code to the user's clipboard
+                    GUIUtility.systemCopyBuffer = result;
+                    arenaImportExportLabel.text = menu.Translate("Copied");
+                    arenaImportExportLabel.label.color = Color.green;
+
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaImportExportLabel.text = menu.Translate("Failed");
+                    arenaImportExportLabel.label.color = Color.red;
+
+                }
+            };
+
+            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
+            arenaPlaylistImportButton.OnClick += (_) =>
+            {
+                try
+                {
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string clipboardText = UnityEngine.GUIUtility.systemCopyBuffer;
+
+                    if (!string.IsNullOrEmpty(clipboardText))
+                    {
+                        arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
+                        List<string> playlist = DecodePlaylist(clipboardText);
+                        if (playlist.Count == 0)
+                        {
+                            arenaImportExportLabel.text = menu.Translate("Failed");
+                            arenaImportExportLabel.label.color = Color.red;
+                            return;
+                        }
+
+                        for (int i = 0; i < playlist.Count; i++)
+                        {
+                            arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
+                        }
+                        arenaImportExportLabel.text = menu.Translate("Imported");
+                        arenaImportExportLabel.label.color = Color.green;
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaImportExportLabel.text = menu.Translate("Failed import");
+                    arenaImportExportLabel.label.color = Color.red;
+
+                }
+            };
+
+
+
+
             this.SafeAddSubobjects(
                 tabWrapper,
                 spearScoreLabel,
@@ -178,7 +253,8 @@ namespace RainMeadow.UI.Components
                 denEntryRuleLabel,
                 denScoreLabel,
                 emptyKillTagScoreLabel,
-                challengeDenEjectionLabel
+                challengeDenEjectionLabel,
+                arenaImportExportLabel
             );
             new PatchedUIelementWrapper(tabWrapper, spearScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
@@ -186,6 +262,9 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, emptyKillTagScore);
             new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
+            new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportButton);
+            new PatchedUIelementWrapper(tabWrapper, arenaPlaylistImportButton);
+
 
         }
         public void PopulatePage(int offset)
@@ -244,6 +323,7 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
         }
 
+        public int timeToClearMessage = 120;
         public override void Update()
         {
             base.Update();
@@ -304,6 +384,64 @@ namespace RainMeadow.UI.Components
                 {
                     challengeDenEjectionCheckbox.SetValueBool(arena.challengeDenEjection);
                 }
+            }
+
+            if (arenaImportExportLabel.text != "Playlist:")
+            {
+                timeToClearMessage--;
+                if (timeToClearMessage <= 0)
+                {
+                    arenaImportExportLabel.text = "Playlist:";
+                    arenaImportExportLabel.label.color = Color.white;
+
+                    timeToClearMessage = 120;
+                }
+            }
+            if (arenaPlaylistImportButton != null)
+            {
+                arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
+            }
+        }
+
+        /// <summary>
+        /// Encodes a List<string>  into a base64 encoding of Arena map names.
+        /// </summary>
+        public static string EncodePlaylist(List<string> arenaMaps)
+        {
+            if (arenaMaps == null || arenaMaps.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            // Join the list into a single string delimited by semicolons
+            string joinedMaps = string.Join(";", arenaMaps);
+
+            byte[] plainTextBytes = Encoding.UTF8.GetBytes(joinedMaps);
+
+
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
+        /// <summary>
+        /// Decodes a Base64 string back into a List of Arena map names.
+        /// </summary>
+        public static List<string> DecodePlaylist(string base64EncodedData)
+        {
+            if (string.IsNullOrEmpty(base64EncodedData))
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
+                string decodedString = Encoding.UTF8.GetString(base64EncodedBytes);
+                return decodedString.Split(';').ToList();
+            }
+            catch (FormatException)
+            {
+                Debug.LogError("Failed to load playlist: The provided string is not a valid Base64 format.");
+                return new List<string>();
             }
         }
     }

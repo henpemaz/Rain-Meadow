@@ -48,7 +48,7 @@ namespace RainMeadow
                 return dialog;
             }
 
-            
+
         }
 
         private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
@@ -81,11 +81,6 @@ namespace RainMeadow
 
         public static void LoadElement(string elementName)
         {
-            if (!SpecialEvents.IsSpecialEvent)
-            {
-                return;
-            }
-            
             if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;
