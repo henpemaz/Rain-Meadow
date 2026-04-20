@@ -1,8 +1,9 @@
 # Release 1.14.0
-## Engine
-- Fixed Joke Rifle bullets duping and consuming high bandwith.
+## Story
+- Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
@@ -11,7 +12,9 @@
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
-
+## Engine
+- Fixed Joke Rifle bullets duping and consuming high bandwith.
+- 
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
