@@ -122,6 +122,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         lastCountdownSoundPlayed = -1;
         if (RainMeadow.isArenaMode(out var arena))
             arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1;
+        Arena.AddToPostGameStatsDialog();
+
     }
 
     public void ChangeScene()
