@@ -1,6 +1,7 @@
 # Release 1.14.0
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed PermaDie and Vultures not killing players
 ## Arena
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity

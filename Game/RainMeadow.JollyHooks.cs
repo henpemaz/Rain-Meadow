@@ -57,7 +57,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.AddColorInterface += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.ctor += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.Update += SoftDisableJollyCoOP;
-            
+
             // IL.Menu.SlugcatSelectMenu.CheckJollyCoopAvailable += SoftDisableJollyCoOP;
 
             // IL.Options.ApplyOption += SoftDisableJollyCoOP; 
@@ -147,7 +147,7 @@ namespace RainMeadow
             IL.Player.HeavyCarry += SoftDisableJollyCoOP;
             IL.Player.JollyUpdate += SoftDisableJollyCoOP;
             IL.Player.ObjectEaten += SoftDisableJollyCoOP;
-            IL.Player.PermaDie += SoftDisableJollyCoOP;
+            IL.Player.PermaDie += SoftEnableJollyCoOP;
             IL.Player.ctor += SoftDisableJollyCoOP;
             IL.Player.ProcessChatLog += SoftDisableJollyCoOP;
             IL.Player.PyroDeathThreshold += SoftDisableJollyCoOP;
@@ -212,7 +212,7 @@ namespace RainMeadow
             IL.SaveState.BringUpToDate += SoftDisableJollyCoOP;
             IL.SaveState.SessionEnded += SoftDisableJollyCoOP;
             IL.ShelterDoor.Close += SoftDisableJollyCoOP;
-            
+
             IL.ShelterDoor.Update += SoftDisableJollyCoOP;
             IL.ShortcutHandler.SuckInCreature += SoftDisableJollyCoOP;
             IL.ShortcutHandler.Update += SoftDisableJollyCoOP;
@@ -237,7 +237,7 @@ namespace RainMeadow
             IL.VoidSea.VoidWorm.Head.Update += SoftDisableJollyCoOP;
             IL.VoidSea.VoidWorm.MainWormBehavior.Update += SoftDisableJollyCoOP;
             IL.VoidSea.VoidWorm.Update += SoftDisableJollyCoOP;
-            IL.Vulture.AccessSkyGate += SoftDisableJollyCoOP;
+            IL.Vulture.AccessSkyGate += SoftEnableJollyCoOP;
             IL.Weapon.HitThisObject += SoftDisableJollyCoOP;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += SoftDisableJollyCoOP;
         }
@@ -245,7 +245,7 @@ namespace RainMeadow
         {
             orig(self, name, manager, closeButtonPos);
         }
-        
+
         bool ProcessManager_IsGameInMultiplayerContext(On.ProcessManager.orig_IsGameInMultiplayerContext orig, ProcessManager self)
         {
             if (isStoryMode(out var story) && (story.avatarCount > 1))
@@ -457,6 +457,38 @@ namespace RainMeadow
             }
         }
 
+        private void SoftEnableJollyCoOP(ILContext context)
+        {
+            try
+            {
+                ILCursor c = new(context);
+                int i = 0;
+
+                var sw = Stopwatch.StartNew();
+                while (c.TryGotoNext(MoveType.After,
+                    x => (x.MatchLdsfld<ModManager>(nameof(ModManager.JollyCoop)) || x.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable)))
+                ))
+                {
+                    c.EmitDelegate((bool value) =>
+                    {
+                        if (OnlineManager.lobby != null)
+                        {
+                            return true; // all Jolly co-op features need to reimplented anyway. 
+                        }
+
+                        return value;
+                    });
+
+                    i++;
+                }
+                sw.Stop();
+                RainMeadow.Debug($"Replace {i} Jolly CoOP checks in {context.Method.Name} in {sw.Elapsed.TotalSeconds}s");
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
+        }
 
         private void SoftDisableJollyCoOP(ILContext context)
         {

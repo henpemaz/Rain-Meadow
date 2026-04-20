@@ -1943,6 +1943,7 @@ public partial class RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, dyingPlayerNumber);
                 }
             }
+
         }
         orig(self);
     }
