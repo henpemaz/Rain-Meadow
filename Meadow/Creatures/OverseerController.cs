@@ -152,10 +152,33 @@ namespace RainMeadow
             public bool SpectateAction(Overseer overseer)
             {
                 RainMeadow.DebugMe();
-                AbstractRoom? room = overseer.room.world.GetAbstractRoom(data.destinationCoord.room);
-                overseer.room.game.roomRealizer.RealizeAndTrackRoom(room, true);
-                overseer.ZipOutOfRoom(data.destinationCoord);
-                return false;
+                OverseerAbstractAI abstractAi = (OverseerAbstractAI)overseer.abstractCreature.abstractAI;
+
+                int dest_room = data.room.abstractRoom.connections[data.destNode];
+                overseer.room.game.roomRealizer.RealizeAndTrackRoom(abstractAi.world.GetAbstractRoom(dest_room), true);
+
+                int dest_node = data.room.world.GetAbstractRoom(dest_room).ExitIndex(data.room.abstractRoom.index);
+                var dest_coord = new WorldCoordinate(dest_room, 0, 0, dest_node);
+                abstractAi.SetDestinationNoPathing(dest_coord, true);
+                
+
+
+                if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
+                if (overseer.mode == Overseer.Mode.Watching) 
+                {
+                    if (abstractAi.parent.pos.room != abstractAi.lastRoom.room)
+                    {
+                        abstractAi.lastRooms.Insert(0, abstractAi.parent.pos.room);
+                        if (abstractAi.lastRooms.Count > 10)
+                        {
+                            abstractAi.lastRooms.RemoveAt(abstractAi.lastRooms.Count - 1);
+                        }
+                        abstractAi.lastRoom = abstractAi.parent.pos;
+                    }
+                    
+                    overseer.ZipOutOfRoom(dest_coord);
+                }
+                return true;
             }
 
             public void StopSpectating(Overseer overseer) { }
@@ -551,7 +574,6 @@ namespace RainMeadow
                         if (spectatingCandidate.SpectateAction(overseer))
                         {
                             currentlySpectating = spectatingCandidate;
-                            
                         }
                     }
 
