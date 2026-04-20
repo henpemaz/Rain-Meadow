@@ -1,8 +1,10 @@
 # Release 1.14.0
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
+- Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity

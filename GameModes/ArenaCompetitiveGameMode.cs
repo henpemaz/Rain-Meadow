@@ -63,7 +63,7 @@ namespace RainMeadow
 
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
-        public bool winByScore => spearScore > 0 || aliveScore > 0 || emptyKillTagScore > 0;
+        public bool winByScore => spearScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || externalArenaGameMode is ArenaChallengeMode;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
@@ -100,6 +100,14 @@ namespace RainMeadow
             new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+
+        // BEGIN POST-GAME PERSISTENT SCORING
+        public Dictionary<int, int> postGamePlayerNumberWithDeaths = new Dictionary<int, int>();
+        public Dictionary<int, int> postGamePlayerNumberWithWins = new Dictionary<int, int>();
+        public Dictionary<int, int> postGamePlayerTotScore = new Dictionary<int, int>();
+        public Dictionary<int, List<string>> postGamePlayerNumberWithTrophies = new Dictionary<int, List<string>>();
+        // END POST-GAME PERSISTENT SCORING
+
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
@@ -765,6 +773,42 @@ namespace RainMeadow
             }
         }
 
+        public void AddToPostGameStatsDialog()
+        {
+            foreach (var entry in playerNumberWithWins.ToList())
+            {
+                if (postGamePlayerNumberWithWins.TryGetValue(entry.Key, out int currentWins))
+                    postGamePlayerNumberWithWins[entry.Key] = currentWins + entry.Value;
+                else
+                    postGamePlayerNumberWithWins[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerNumberWithDeaths.ToList())
+            {
+                if (postGamePlayerNumberWithDeaths.TryGetValue(entry.Key, out int currentDeaths))
+                    postGamePlayerNumberWithDeaths[entry.Key] = currentDeaths + entry.Value;
+                else
+                    postGamePlayerNumberWithDeaths[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerTotScore.ToList())
+            {
+                if (postGamePlayerTotScore.TryGetValue(entry.Key, out int currentScore))
+                    postGamePlayerTotScore[entry.Key] = currentScore + entry.Value;
+                else
+                    postGamePlayerTotScore[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerNumberWithTrophies.ToList())
+            {
+                if (postGamePlayerNumberWithTrophies.TryGetValue(entry.Key, out var currentTrophies))
+                    currentTrophies.AddRange(entry.Value);
+                else
+                    postGamePlayerNumberWithTrophies[entry.Key] = entry.Value.ToList(); // Use .ToList() to prevent reference mutation
+            }
+
+        }
+
         public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
         {
             if (!playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
@@ -865,10 +909,20 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
-                    arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
-                    arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
-                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
+                    if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out int currentWins) && currentWins < newArenaPlayer.wins)
+                        playerNumberWithWins[pl.inLobbyId] = newArenaPlayer.wins;
+
+                    // Deaths
+                    if (playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
+                        playerNumberWithDeaths[pl.inLobbyId] = newArenaPlayer.deaths;
+
+                    // Total Score
+                    if (playerTotScore.TryGetValue(pl.inLobbyId, out int currentTot) && currentTot < newArenaPlayer.totScore)
+                        playerTotScore[pl.inLobbyId] = newArenaPlayer.totScore;
+
+                    // Round Score
+                    if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out int currentScore) && currentScore < newArenaPlayer.score)
+                        playerNumberWithScore[pl.inLobbyId] = newArenaPlayer.score;
 
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
