@@ -1,3 +1,8 @@
+# Release 1.14.0
+
+# Engine
+- Fixed a scenario where transferring entities could lead to deadlocks
+
 # Release 1.13.1
 ## General
 - Fixed Hunter_Illness IL Hook
