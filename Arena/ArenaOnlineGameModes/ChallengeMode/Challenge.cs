@@ -64,12 +64,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override string TimerText()
         {
-            return Utils.Translate("A challenge approaches,") + " " + Utils.Translate(PlayingAsText());
+            return Utils.Translate("Survive,") + " " + Utils.Translate(PlayingAsText());
         }
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            if (arena?.session?.arenaSitting?.players != null && arena.session.arenaSitting.players.Count > 0)
+            if (arena?.session?.arenaSitting?.players != null && arena.session.arenaSitting.players.Count > 0 && (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
             {
                 return arena.session.arenaSitting.players.Max(pl => pl.timeAlive);
             }
@@ -84,7 +84,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return ++arena.setupTime;
+            if (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
+            {
+                return ++arena.setupTime;
+            }
+            return --arena.setupTime;
         }
 
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
