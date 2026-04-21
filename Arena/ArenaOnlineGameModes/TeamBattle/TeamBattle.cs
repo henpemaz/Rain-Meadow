@@ -218,7 +218,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     bool winByScore, bool winByRoundScore, bool finalOverlay)
         {
             HashSet<int> teamsRemaining = new HashSet<int>();
-
             int finalOverlayWinner = -1;
 
             foreach (var player in players)
@@ -251,11 +250,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     }
                     else if (finalOverlay)
                     {
-                        var topPlayer = players.OrderByDescending(p => p.wins).FirstOrDefault();
-                        if (topPlayer != null && playerToTeam.TryGetValue(topPlayer.playerNumber, out int teamId))
-                        {
-                            finalOverlayWinner = teamId;
-                        }
+                        int maxWins = players.Max(p => p.wins);
+
+                        var teamsWithMaxWins = players
+                            .Where(p => p.wins == maxWins)
+                            .Select(p => playerToTeam.TryGetValue(p.playerNumber, out int t) ? t : -1)
+                            .Where(t => t != -1) // Filter out players not assigned to a team
+                            .Distinct()
+                            .ToList();
+
+                        // 3. Return winner or tie in finalResult
+                        finalOverlayWinner = teamsWithMaxWins.Count == 1 ? teamsWithMaxWins[0] : -1;
                     }
                 }
             }
