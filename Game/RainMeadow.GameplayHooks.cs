@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -91,13 +91,15 @@ namespace RainMeadow
                 i => i.MatchLdfld<JokeRifle>(nameof(JokeRifle.scareObj)),
                 i => i.MatchBrtrue(out _));
 
+
             string[] ammoTypes =
             {
                 // order matters
                 nameof(JokeRifle.AbstractRifle.AmmoType.Noodle),
                 nameof(JokeRifle.AbstractRifle.AmmoType.Singularity),
                 nameof(JokeRifle.AbstractRifle.AmmoType.FireEgg),
-                nameof(JokeRifle.AbstractRifle.AmmoType.Grenade)
+                nameof(JokeRifle.AbstractRifle.AmmoType.Grenade),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Light)
             };
 
             foreach (var ammoType in ammoTypes)
