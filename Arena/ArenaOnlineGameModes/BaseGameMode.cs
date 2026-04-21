@@ -965,7 +965,7 @@ namespace RainMeadow
 
             if (isTeamMode)
             {
-                tb.winningTeam = TeamBattleMode.CalculateTeamScoresAndWinner(self.players, arena, arena.winByScore, true, false);
+                tb.winningTeam = tb.CalculateTeamScoresAndWinner(self.players, arena, arena.winByScore, true, false);
             }
 
             // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)

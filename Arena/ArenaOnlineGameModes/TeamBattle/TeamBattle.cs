@@ -31,10 +31,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         private int _timerDuration;
 
         // used for finalresult organization
-        public static Dictionary<int, int> teamScores = new();
-        public static Dictionary<int, int> playerToTeam = new(); // Cache for sorting
+        public Dictionary<int, int> teamScores = [];
+        public Dictionary<int, int> playerToTeam = []; // Cache for sorting
 
-        public static void ClearSortingDictionaries()
+        public void ClearSortingDictionaries()
         {
             teamScores.Clear();
             playerToTeam.Clear();
@@ -49,7 +49,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
 
-            TeamBattleMode.ClearSortingDictionaries();
+            ClearSortingDictionaries();
 
         }
 
@@ -212,7 +212,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public static int CalculateTeamScoresAndWinner(
+        public int CalculateTeamScoresAndWinner(
     IEnumerable<ArenaSitting.ArenaPlayer> players,
     ArenaMode arena,
     bool winByScore, bool winByRoundScore, bool finalOverlay)
