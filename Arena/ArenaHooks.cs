@@ -1037,7 +1037,7 @@ namespace RainMeadow
                             }
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.score = TeamBattleMode.teamScores[teamSettings.team];
+                                box.player.score = tb.teamScores[teamSettings.team];
 
                             }
                         }
@@ -2882,7 +2882,7 @@ namespace RainMeadow
                             }
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.totScore = TeamBattleMode.teamScores[teamSettings.team];
+                                box.player.totScore = tb.teamScores[teamSettings.team];
                             }
                         }
                     }
