@@ -78,6 +78,7 @@ namespace RainMeadow
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
             IL.Menu.ArenaOverlay.Update += IL_Arena_Overlay_Update;
 
+
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
@@ -995,6 +996,7 @@ namespace RainMeadow
             return orig(self);
         }
 
+
         public void ArenaOverlay_ctor(
             On.Menu.ArenaOverlay.orig_ctor orig,
             ArenaOverlay self,
@@ -1023,6 +1025,22 @@ namespace RainMeadow
                                     tb.teamNames[tb.winningTeam].ToUpper()
                                 )
                             );
+                    }
+                    if (arena.winByScore)
+                    {
+                        foreach (var box in self.resultBoxes)
+                        {
+                            OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
+                            if (pl == null || box == null)
+                            {
+                                continue;
+                            }
+                            if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                            {
+                                box.player.score = TeamBattleMode.teamScores[teamSettings.team];
+
+                            }
+                        }
                     }
                 }
             }
@@ -2678,6 +2696,7 @@ namespace RainMeadow
                                 self.playerNameLabel.text +=
                                     $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
                             }
+
                         }
                     }
                     catch
@@ -2808,7 +2827,6 @@ namespace RainMeadow
                 orig(self, eu);
             }
         }
-
         public void MultiplayerResults_ctor(
             On.Menu.MultiplayerResults.orig_ctor orig,
             Menu.MultiplayerResults self,
@@ -2853,16 +2871,19 @@ namespace RainMeadow
                             );
                     }
 
-                    foreach (var box in self.resultBoxes)
+                    if (arena.winByScore)
                     {
-                        OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
-                        if (pl == null)
+                        foreach (var box in self.resultBoxes)
                         {
-                            continue;
-                        }
-                        if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
-                        {
-                            box.player.totScore = TeamBattleMode.teamScores[teamSettings.team];
+                            OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
+                            if (pl == null || box == null)
+                            {
+                                continue;
+                            }
+                            if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                            {
+                                box.player.totScore = TeamBattleMode.teamScores[teamSettings.team];
+                            }
                         }
                     }
                 }
