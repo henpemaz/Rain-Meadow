@@ -72,6 +72,72 @@ namespace RainMeadow
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
             On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
+
+            IL.JokeRifle.Use += JokeRifle_Use;
+            On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
+
+        }
+        public void Vulture_AccessSkyGate(On.Vulture.orig_AccessSkyGate orig, Vulture self, WorldCoordinate start, WorldCoordinate dest)
+        {
+
+            if (OnlineManager.lobby != null)
+            {
+                for (int i = 0; i < self.grasps.Length; i++)
+                {
+                    if (self.grasps[i]?.grabbed is Player player)
+                    {
+                        player.Die();
+                        player.State.alive = false;
+                    }
+                }
+            }
+            orig(self, start, dest);
+
+        }
+
+        // Prevent ammo from duping
+        private void JokeRifle_Use(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+
+            // Bees and regular bullets are already set to not sync, this will cover everything else.
+
+            // Jump past first if statements, doesn't really matter where
+
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<JokeRifle>(nameof(JokeRifle.scareObj)),
+                i => i.MatchBrtrue(out _));
+
+
+            string[] ammoTypes =
+            {
+                // order matters
+                nameof(JokeRifle.AbstractRifle.AmmoType.Noodle),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Singularity),
+                nameof(JokeRifle.AbstractRifle.AmmoType.FireEgg),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Grenade),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Light)
+            };
+
+            foreach (var ammoType in ammoTypes)
+            {
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<JokeRifle>("get_abstractRifle"),
+                    i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
+                    i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(ammoType),
+                    i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((JokeRifle self) =>
+                {
+                    return !self.IsLocal();
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
         }
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)

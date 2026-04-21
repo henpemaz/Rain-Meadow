@@ -238,41 +238,11 @@ namespace RainMeadow
             IL.VoidSea.VoidWorm.MainWormBehavior.Update += SoftDisableJollyCoOP;
             IL.VoidSea.VoidWorm.Update += SoftDisableJollyCoOP;
             IL.Vulture.AccessSkyGate += SoftDisableJollyCoOP;
-            IL.Vulture.AccessSkyGate += Vulture_AccessSkyGate_IL;
             IL.Weapon.HitThisObject += SoftDisableJollyCoOP;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += SoftDisableJollyCoOP;
 
         }
 
-        // Kill the player before the JollyCoop hook
-        private void Vulture_AccessSkyGate_IL(ILContext il)
-        {
-            ILCursor c = new ILCursor(il);
-
-            // Find the field load for ModManager.CoopAvailable
-            if (c.TryGotoNext(MoveType.Before,
-                x => x.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable))))
-            {
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Creature self) =>
-                {
-                    if (OnlineManager.lobby != null)
-                    {
-                        for (int i = 0; i < self.grasps.Length; i++)
-                        {
-                            if (self.grasps[i]?.grabbed is Player player)
-                            {
-                                player.Die();
-                            }
-                        }
-                    }
-                });
-            }
-            else
-            {
-                UnityEngine.Debug.LogError("MyMod: IL Hook failed at Vulture.AccessSkyGate (CoopAvailable check not found)");
-            }
-        }
 
         public void JollySetupDialog_ctor(On.JollyCoop.JollyMenu.JollySetupDialog.orig_ctor orig, global::JollyCoop.JollyMenu.JollySetupDialog self, global::SlugcatStats.Name name, global::ProcessManager manager, Vector2 closeButtonPos)
         {
