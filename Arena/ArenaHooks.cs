@@ -2561,6 +2561,8 @@ namespace RainMeadow
 
                 ArenaSitting.ArenaPlayer sittingPlayer = self.arenaSitting.players[sessionPlayerIndex];
 
+                if (self.sessionEnded) return sittingPlayer.score;
+
                 // 2. Calculate food points currently being held
                 float graspFoodPoints = 0f;
                 if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
@@ -2592,7 +2594,7 @@ namespace RainMeadow
                     }
                 }
 
-                // 4. Final Calculation for this individual player
+                // Final Calculation for this individual player
                 // Formula: Current Base Score + ((Stomach + Hands) * Score Multiplier)
                 int finalScore = (int)((float)sittingPlayer.score +
                                       ((float)player.FoodInStomach + graspFoodPoints) * (float)self.arenaSitting.gameTypeSetup.foodScore);
