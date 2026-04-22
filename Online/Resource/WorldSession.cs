@@ -25,7 +25,7 @@ namespace RainMeadow
         )
         {
             float startTime = UnityEngine.Time.time;
-            float timeoutSeconds = 5f;
+            float timeoutSeconds = 8f;
             bool cleanupTriggered = false;
 
             session.transitionInProgress = true;
