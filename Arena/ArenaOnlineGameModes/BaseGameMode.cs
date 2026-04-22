@@ -274,6 +274,12 @@ namespace RainMeadow
                 RainMeadow.Warn("Player_LandSpearPlayer is going to die and this will corrupt killing score, returning");
                 return;
             }
+            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
+            {
+                RainMeadow.Warn("Player_LandSpearPlayer: Players on same team, returning");
+                return;
+            }
+
             aPlayer.AddSandboxScore(arena.spearHitScore);
             if (OnlineManager.lobby.isOwner)
             {
