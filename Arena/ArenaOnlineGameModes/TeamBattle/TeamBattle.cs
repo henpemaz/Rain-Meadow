@@ -176,16 +176,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public override void LandSpear(
-            ArenaOnlineGameMode arena,
-            ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer
-        )
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
-        }
 
         public override void ArenaSessionCtor(
             ArenaOnlineGameMode arena,
@@ -210,6 +200,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     );
                 }
             }
+            ClearSortingDictionaries();
         }
 
         public int CalculateTeamScoresAndWinner(

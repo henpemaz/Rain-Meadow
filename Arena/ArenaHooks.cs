@@ -1907,6 +1907,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+                RainMeadow.DebugMe();
                 if (
                     self.sessionEnded
                     || self.GameTypeSetup.spearHitScore == 0
@@ -1930,16 +1931,18 @@ namespace RainMeadow
                     )
                     {
                         RainMeadow.Error("Could not get PlayerLandSpear player");
+                        continue;
                     }
                     var onlineArenaPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                         arena,
                         self.arenaSitting.players[i].playerNumber
                     );
 
-                    if (op.owner != onlineArenaPlayer)
+                    if (op.owner != onlineArenaPlayer || onlineArenaPlayer == null)
                     {
                         continue;
                     }
+                    RainMeadow.Debug("ArenaGameSession_PlayerLandSpear: Executing");
                     arena.externalArenaGameMode.LandSpear(
                         arena,
                         self,
