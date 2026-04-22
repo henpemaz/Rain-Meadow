@@ -210,6 +210,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     );
                 }
             }
+            ClearSortingDictionaries();
         }
 
         public int CalculateTeamScoresAndWinner(

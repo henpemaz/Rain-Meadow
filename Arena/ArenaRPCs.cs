@@ -34,6 +34,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void DistributeEmptyKillScores(int excludedPlayerNumber)
         {
+            RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) return;
 
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return;
@@ -89,6 +90,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void UpdatePlayerScore(int playerNumber, int newScore)
         {
+            RainMeadow.DebugMe();
             if (!RainMeadow.isArenaMode(out var arena)) return;
 
             OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
