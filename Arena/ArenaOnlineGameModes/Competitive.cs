@@ -104,17 +104,6 @@ namespace RainMeadow
             }
         }
 
-        public override void LandSpear(
-            ArenaOnlineGameMode arena,
-            ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer
-        )
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
-        }
-
         public override string AddIcon(
             ArenaOnlineGameMode arena,
             OnlinePlayerDisplay display,

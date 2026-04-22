@@ -57,7 +57,7 @@ namespace RainMeadow
         {
             self.foodScore = 1;
             self.survivalScore = arena.aliveScore;
-            self.spearHitScore = arena.spearScore;
+            self.spearHitScore = arena.spearHitScore;
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
             self.denEntryRule = arena.denEntryRule;
@@ -210,7 +210,7 @@ namespace RainMeadow
 
             }
             // 6. Handle Scoring 
-            int scoreToAdd = arena.spearScore; // Default fallback
+            int scoreToAdd = arena.killScore; // Default fallback
             if (arena.externalArenaGameMode is ArenaChallengeMode)
             {
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
@@ -219,20 +219,11 @@ namespace RainMeadow
 
             // this is set locally because we return if the victim is not ours, so we need to notify everyone of this update
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-
             if (isLobbyOwner) // host creature was killed
             {
 
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-
-                for (int x = 0; x < rs.participants.Count; x++)
-                {
-                    if (rs.participants[x].isMe)
-                    {
-                        continue;
-                    }
-                    rs.participants[x].InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
-                }
+                onlineKilledCreature.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
             }
             else // my creature, not host - tell the room
             {
@@ -276,7 +267,33 @@ namespace RainMeadow
             Creature target,
             ArenaSitting.ArenaPlayer aPlayer
         )
-        { }
+        {
+
+            if (target is Player pl && pl.State is PlayerState st && st.permanentDamageTracking >= 1)
+            {
+                RainMeadow.Warn("Player_LandSpearPlayer is going to die and this will corrupt killing score, returning");
+                return;
+            }
+            aPlayer.AddSandboxScore(arena.spearHitScore);
+            if (OnlineManager.lobby.isOwner)
+            {
+
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, aPlayer.playerNumber);
+                if (onlinePlayer == null)
+                {
+                    return;
+                }
+                if (arena.playerNumberWithScore[onlinePlayer.inLobbyId] < aPlayer.score)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += aPlayer.score;
+                }
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
+            }
+            else
+            {
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, aPlayer.score);
+            }
+        }
 
         public virtual void HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arena,

@@ -114,7 +114,6 @@ namespace RainMeadow
 
                 if (a.arenaSitting.players[playerNumber].score < newScore)
                 {
-
                     a.arenaSitting.players[playerNumber].score = newScore;
                     if (OnlineManager.lobby.isOwner)
                     {
