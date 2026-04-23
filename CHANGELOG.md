@@ -1,14 +1,21 @@
 # Release 1.14.0
+
+# Engine
+- Fixed a scenario where transferring entities could lead to deadlocks
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
+- Fixed some scenarios where watcher warps were not working correctly
 - Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed Vultures not properly killing players when taken off-screen
 - Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
+- Fixed scoring across all modes
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
+- Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame
 - Post-game stats now persist for duration of lobby life, click "reset" to view previous round's details
 ### Modders

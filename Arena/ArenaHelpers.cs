@@ -307,10 +307,6 @@ namespace RainMeadow
                             .TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
-                        if (tb1.team == tb2.team && !arena.friendlyFire)
-                        {
-                            RainMeadow.Debug("Same team! No hits");
-                        }
                         return tb1.team == tb2.team
                             && !arena.friendlyFire
                             && creature.State.alive

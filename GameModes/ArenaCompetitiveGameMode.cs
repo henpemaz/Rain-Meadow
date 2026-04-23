@@ -56,14 +56,18 @@ namespace RainMeadow
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
-        public int spearScore = RainMeadow.rainMeadowOptions.ArenaSpearScore.Value;
+        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
+
+        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
+
+        public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
         public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
         public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
         public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
-        public bool winByScore => spearScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || externalArenaGameMode is ArenaChallengeMode;
+        public bool winByScore => killScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
@@ -137,7 +141,7 @@ namespace RainMeadow
             .ArenaSaintAscendanceTimer
             .Value;
 
-        public int artiExplosionCount = MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value;
+        public int artiExplosionCount = ModManager.MSC ? MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value : 0;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
         public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
@@ -185,7 +189,8 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            spearScore = 0;
+            spearHitScore = 0;
+            killScore = 0;
             aliveScore = 0;
             hostLoadedOverlay = false;
 

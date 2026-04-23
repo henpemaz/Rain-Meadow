@@ -16,8 +16,14 @@ namespace RainMeadow.UI.Components
         : RectangularMenuObject
     {
         public MenuTabWrapper tabWrapper;
-        public MenuLabel spearScoreLabel;
-        public OpTextBox spearScoreTextBox;
+
+        public MenuLabel foodScoreLabel;
+        public OpTextBox foodScoreTextBox;
+
+        public MenuLabel spearHitScoreLabel;
+        public OpTextBox spearHitScoreTextBox;
+        public MenuLabel killScoreLabel;
+        public OpTextBox killScoreTextBox;
         public MenuLabel aliveScoreLabel;
         public OpTextBox aliveScoreTextBox;
         public MenuLabel denEntryRuleLabel;
@@ -62,32 +68,68 @@ namespace RainMeadow.UI.Components
             float rowHeight = 40f;
             float boxMargin = leftMargin + labelWidth + 50f; // The X-position for all boxes
 
-            // --- Row 1: Spear Score ---
-            spearScoreLabel = new(menu, this, menu.Translate("Kill Score:"),
-                new(leftMargin, topOffset), new(labelWidth, 20f), false);
-            spearScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            spearScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaSpearScore,
+            foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),
+                new(leftMargin, topOffset), new(labelWidth, 20f), false);
+            foodScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            foodScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaFoodScore,
                 new(boxMargin, topOffset - 2f), 60)
+            {
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("Food points multiplier"),
+                accept = OpTextBox.Accept.Int
+            };
+
+            foodScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (foodScoreTextBox.valueInt < 0) foodScoreTextBox.valueInt = 0;
+                arena.foodScore = foodScoreTextBox.valueInt;
+            };
+
+
+            spearHitScoreLabel = new(menu, this, menu.Translate("Spear Hit Score:"),
+                new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
+            spearHitScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            spearHitScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaSpearHitScore,
+                new(boxMargin, topOffset - rowHeight - 2f), 60)
+            {
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("Points a spear is worth (non-lethal)"),
+                accept = OpTextBox.Accept.Int
+            };
+
+            spearHitScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                if (spearHitScoreTextBox.valueInt < 0) spearHitScoreTextBox.valueInt = 0;
+                arena.spearHitScore = spearHitScoreTextBox.valueInt;
+            };
+
+            killScoreLabel = new(menu, this, menu.Translate("Kill Score:"),
+                new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
+            killScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            killScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaKillScore,
+                new(boxMargin, topOffset - (rowHeight * 2) - 2f), 60)
             {
                 alignment = FLabelAlignment.Center,
                 description = menu.Translate("Points a kill is worth"),
                 accept = OpTextBox.Accept.Int
             };
 
-            spearScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            killScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                if (spearScoreTextBox.valueInt < 0) spearScoreTextBox.valueInt = 0;
-                arena.spearScore = spearScoreTextBox.valueInt;
+                if (killScoreTextBox.valueInt < 0) killScoreTextBox.valueInt = 0;
+                arena.killScore = killScoreTextBox.valueInt;
             };
 
-            // --- Row 2: Win Score ---
             aliveScoreLabel = new(menu, this, menu.Translate("Survival Score:"),
-                new(leftMargin, topOffset - rowHeight), new(labelWidth, 20f), false);
+                new(leftMargin, topOffset - (rowHeight * 3)), new(labelWidth, 20f), false);
             aliveScoreLabel.label.alignment = FLabelAlignment.Left;
 
             aliveScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaAliveScore,
-                new(boxMargin, topOffset - rowHeight - 2f), 60)
+               new(boxMargin, topOffset - (rowHeight * 3) - 2f), 60)
             { alignment = FLabelAlignment.Center, description = menu.Translate("Points for surviving inside the shelter"), accept = OpTextBox.Accept.Int };
 
             aliveScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
@@ -95,56 +137,6 @@ namespace RainMeadow.UI.Components
                 if (aliveScoreTextBox.valueInt < 0) aliveScoreTextBox.valueInt = 0;
                 arena.aliveScore = aliveScoreTextBox.valueInt;
             };
-
-
-            // --- Row 3: Den Score ---
-            denScoreLabel = new(menu, this, menu.Translate("Den Score:"),
-                    new(leftMargin, topOffset - (rowHeight * 2)), new(labelWidth, 20f), false);
-            denScoreLabel.label.alignment = FLabelAlignment.Left;
-
-            denScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaDenScore,
-                new(boxMargin, topOffset - (rowHeight * 2) - 2f), 60) // FIXED: Added '- (rowHeight * 2)'
-            {
-                alignment = FLabelAlignment.Center,
-                description = menu.Translate("Points required to open dens"),
-                accept = OpTextBox.Accept.Int
-            };
-
-            denScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
-                    {
-                        if (denScoreTextBox.valueInt < 0) denScoreTextBox.valueInt = 0;
-                        arena.denScore = denScoreTextBox.valueInt;
-                    };
-
-            // --- Row 4: Den Entry ---
-            denEntryRuleLabel = new(menu, this, menu.Translate("Den Entry:"),
-                new(leftMargin, topOffset - (rowHeight * 3)), new(labelWidth, 20f), false);
-            denEntryRuleLabel.label.alignment = FLabelAlignment.Left;
-
-            var denRuleItems = OpResourceSelector.GetEnumNames(null, typeof(ArenaSetup.GameTypeSetup.DenEntryRule))
-                .Select(li =>
-                {
-                    li.displayName = menu.Translate(li.displayName);
-                    return li;
-                }).ToList();
-
-            denEntryRule = new OpComboBox2(
-                RainMeadow.rainMeadowOptions.ArenaDenType,
-                new(boxMargin, topOffset - (rowHeight * 3) - 2f),
-                110,
-                denRuleItems
-            )
-            {
-                description = menu.Translate("Den entry behavior"),
-            };
-
-            denEntryRule.OnValueChanged += (UIconfig, value, oldValue) =>
-            {
-                arena.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(value); ;
-            };
-            denEntryRule.Change();
-
-
 
             emptyKillTagScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
                 new(leftMargin, topOffset - rowHeight * 4), new(labelWidth, 20f), false);
@@ -160,13 +152,59 @@ namespace RainMeadow.UI.Components
                 arena.emptyKillTagScore = emptyKillTagScore.valueInt;
             };
 
+            denScoreLabel = new(menu, this, menu.Translate("Unlock Dens:"),
+                    new(leftMargin, topOffset - (rowHeight * 5)), new(labelWidth, 20f), false);
+            denScoreLabel.label.alignment = FLabelAlignment.Left;
+
+            denScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaDenScore,
+                new(boxMargin, topOffset - (rowHeight * 5) - 2f), 60) // FIXED: Added '- (rowHeight * 2)'
+            {
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("Points required to unlock dens"),
+                accept = OpTextBox.Accept.Int
+            };
+
+            denScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+                    {
+                        if (denScoreTextBox.valueInt < 0) denScoreTextBox.valueInt = 0;
+                        arena.denScore = denScoreTextBox.valueInt;
+                    };
+
+            denEntryRuleLabel = new(menu, this, menu.Translate("Den Entry:"),
+                new(leftMargin, topOffset - (rowHeight * 6)), new(labelWidth, 20f), false);
+            denEntryRuleLabel.label.alignment = FLabelAlignment.Left;
+
+            var denRuleItems = OpResourceSelector.GetEnumNames(null, typeof(ArenaSetup.GameTypeSetup.DenEntryRule))
+                .Select(li =>
+                {
+                    li.displayName = menu.Translate(li.displayName);
+                    return li;
+                }).ToList();
+
+            denEntryRule = new OpComboBox2(
+                RainMeadow.rainMeadowOptions.ArenaDenType,
+                new(boxMargin, topOffset - (rowHeight * 6) - 2f),
+                110,
+                denRuleItems
+            )
+            {
+                description = menu.Translate("Den entry behavior"),
+            };
+
+            denEntryRule.OnValueChanged += (UIconfig, value, oldValue) =>
+            {
+                arena.denEntryRule = new ArenaSetup.GameTypeSetup.DenEntryRule(value); ;
+            };
+            denEntryRule.Change();
+
+
 
 
             challengeDenEjectionLabel = new(menu, this, menu.Translate("Den Ejection:"),
-                new(leftMargin, topOffset - rowHeight * 5), new(labelWidth, 20f), false);
+                new(leftMargin, topOffset - rowHeight * 7), new(labelWidth, 20f), false);
             challengeDenEjectionLabel.label.alignment = FLabelAlignment.Left;
 
-            challengeDenEjectionCheckbox = new(RainMeadow.rainMeadowOptions.ChallengeDenEjection, boxMargin, topOffset - (rowHeight * 5));
+            challengeDenEjectionCheckbox = new(RainMeadow.rainMeadowOptions.ChallengeDenEjection, boxMargin, topOffset - (rowHeight * 7));
 
             challengeDenEjectionCheckbox.OnValueUpdate += (config, value, oldValue) =>
             {
@@ -180,10 +218,10 @@ namespace RainMeadow.UI.Components
 
 
             arenaImportExportLabel = new(menu, this, menu.Translate("Playlist:"),
-                new(leftMargin, topOffset - rowHeight * 6), new(labelWidth, 20f), false);
+                new(leftMargin, topOffset - rowHeight * 8), new(labelWidth, 20f), false);
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 6) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
@@ -206,7 +244,7 @@ namespace RainMeadow.UI.Components
                 }
             };
 
-            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 7) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
+            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
             arenaPlaylistImportButton.OnClick += (_) =>
             {
                 try
@@ -248,7 +286,9 @@ namespace RainMeadow.UI.Components
 
             this.SafeAddSubobjects(
                 tabWrapper,
-                spearScoreLabel,
+                foodScoreLabel,
+                spearHitScoreLabel,
+                killScoreLabel,
                 aliveScoreLabel,
                 denEntryRuleLabel,
                 denScoreLabel,
@@ -256,7 +296,9 @@ namespace RainMeadow.UI.Components
                 challengeDenEjectionLabel,
                 arenaImportExportLabel
             );
-            new PatchedUIelementWrapper(tabWrapper, spearScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, foodScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, spearHitScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, killScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
             new PatchedUIelementWrapper(tabWrapper, aliveScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
@@ -296,7 +338,9 @@ namespace RainMeadow.UI.Components
         {
             if (!(OnlineManager.lobby?.isOwner == true))
                 return;
-            RainMeadow.rainMeadowOptions.ArenaSpearScore.Value = arena.spearScore;
+            RainMeadow.rainMeadowOptions.ArenaFoodScore.Value = arena.foodScore;
+            RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value = arena.spearHitScore;
+            RainMeadow.rainMeadowOptions.ArenaKillScore.Value = arena.killScore;
             RainMeadow.rainMeadowOptions.ArenaAliveScore.Value = arena.aliveScore;
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
             RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
@@ -327,15 +371,39 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
-            if (spearScoreTextBox != null)
+            if (foodScoreTextBox != null)
             {
-                spearScoreTextBox.held = spearScoreTextBox._KeyboardOn;
-                if (!spearScoreTextBox.held)
+                foodScoreTextBox.held = foodScoreTextBox._KeyboardOn;
+                if (!foodScoreTextBox.held)
                 {
-                    spearScoreTextBox.valueInt = arena.spearScore;
+                    foodScoreTextBox.valueInt = arena.foodScore;
                 }
 
-                spearScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                foodScoreTextBox.greyedOut = OwnerSettingsDisabled;
+            }
+            if (spearHitScoreTextBox != null)
+            {
+                spearHitScoreTextBox.held = spearHitScoreTextBox._KeyboardOn;
+                if (!spearHitScoreTextBox.held)
+                {
+                    if (!ModManager.MSC && arena.spearHitScore > 0) // reset
+                    {
+                        arena.spearHitScore = 0;
+                    }
+                    spearHitScoreTextBox.valueInt = arena.spearHitScore;
+                }
+
+                spearHitScoreTextBox.greyedOut = OwnerSettingsDisabled || !ModManager.MSC;
+            }
+            if (killScoreTextBox != null)
+            {
+                killScoreTextBox.held = killScoreTextBox._KeyboardOn;
+                if (!killScoreTextBox.held)
+                {
+                    killScoreTextBox.valueInt = arena.killScore;
+                }
+
+                killScoreTextBox.greyedOut = OwnerSettingsDisabled;
             }
             if (aliveScoreTextBox != null)
             {
