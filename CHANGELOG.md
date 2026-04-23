@@ -14,6 +14,7 @@
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
+- Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame
 
 ### Modders
