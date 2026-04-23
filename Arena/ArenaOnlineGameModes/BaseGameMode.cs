@@ -55,7 +55,7 @@ namespace RainMeadow
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 1;
+            self.foodScore = arena.foodScore;
             self.survivalScore = arena.aliveScore;
             self.spearHitScore = arena.spearHitScore;
             self.repeatSingleLevelForever = false;
@@ -293,6 +293,7 @@ namespace RainMeadow
             }
 
             aPlayer.AddSandboxScore(arena.spearHitScore);
+
             if (OnlineManager.lobby.isOwner)
             {
 
@@ -301,9 +302,10 @@ namespace RainMeadow
                 {
                     return;
                 }
+
                 if (arena.playerNumberWithScore[onlinePlayer.inLobbyId] < aPlayer.score)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += aPlayer.score;
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = aPlayer.score;
                 }
                 player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
             }

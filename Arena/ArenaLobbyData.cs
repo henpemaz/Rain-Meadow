@@ -131,6 +131,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool enableOverseer;
 
+            [OnlineField(group = "arenaSetup")]
+            public int foodScore;
 
             [OnlineField(group = "arenaSetup")]
             public int spearHitScore;
@@ -268,8 +270,9 @@ namespace RainMeadow
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
 
-                spearHitScore = arena.spearHitScore;
+                foodScore = arena.foodScore;
 
+                spearHitScore = arena.spearHitScore;
                 killScore = arena.killScore;
                 aliveScore = arena.aliveScore;
                 denRule = arena.denEntryRule;
@@ -360,8 +363,10 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
 
-                (lobby.gameMode as ArenaOnlineGameMode).spearHitScore = spearHitScore;
 
+                (lobby.gameMode as ArenaOnlineGameMode).foodScore = foodScore;
+
+                (lobby.gameMode as ArenaOnlineGameMode).spearHitScore = spearHitScore;
                 (lobby.gameMode as ArenaOnlineGameMode).killScore = killScore;
                 (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
                 (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
