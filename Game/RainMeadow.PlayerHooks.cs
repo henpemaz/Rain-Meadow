@@ -1732,7 +1732,7 @@ public partial class RainMeadow
             {
                 self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionPlayer, false);
             }
-            if (creatureTemplate.TopAncestor().type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && self.state == null)
+            if (ModManager.MSC && creatureTemplate.TopAncestor().type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && self.state == null)
             {
                 self.state = new PlayerNPCState(self, 0);
                 self.abstractAI = new SlugNPCAbstractAI(self.world, self);
