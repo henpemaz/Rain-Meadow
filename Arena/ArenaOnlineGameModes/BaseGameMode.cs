@@ -268,12 +268,24 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer aPlayer
         )
         {
+            if (!ModManager.MSC)
+            {
+                RainMeadow.Warn("Player_LandSpearPlayer: MSC is not active, returning...");
+                return;
+            }
+
+            if (player.gourmandExhausted)
+            {
+                RainMeadow.Warn("Player_LandSpearPlayer: Player is exhausted. Spamming hits for score is not allowed, returning...");
+                return;
+            }
 
             if (target is Player pl && pl.State is PlayerState st && st.permanentDamageTracking >= 1)
             {
-                RainMeadow.Warn("Player_LandSpearPlayer is going to die and this will corrupt killing score, returning");
+                RainMeadow.Warn("Player_LandSpear: Player is going to die and this will corrupt killing score, returning");
                 return;
             }
+
             if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
             {
                 RainMeadow.Warn("Player_LandSpearPlayer: Players on same team, returning");
