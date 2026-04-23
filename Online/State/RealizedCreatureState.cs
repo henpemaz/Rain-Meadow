@@ -66,7 +66,7 @@ namespace RainMeadow
 
             if (artificialIntelligenceState != null)
             {
-                if (creature.Template.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && creature is Player player)
+                if (ModManager.MSC && creature.Template.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && creature is Player player)
                 {
                     if (player.abstractCreature.abstractAI == null)
                     {
