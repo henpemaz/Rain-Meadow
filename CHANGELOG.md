@@ -1,4 +1,7 @@
 # Release 1.14.0
+
+# Engine
+- Fixed a scenario where transferring entities could lead to deadlocks
 ## Story
 - Fixed some critical errors in Saint's ending
 ## General
