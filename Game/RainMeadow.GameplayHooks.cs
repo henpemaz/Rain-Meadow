@@ -72,8 +72,8 @@ namespace RainMeadow
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
             On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
-
             IL.JokeRifle.Use += JokeRifle_Use;
+            On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
         }
 
         // Prevent ammo from duping
@@ -119,6 +119,23 @@ namespace RainMeadow
                 });
                 c.Emit(OpCodes.Brtrue, skip);
             }
+        }
+        public void Vulture_AccessSkyGate(On.Vulture.orig_AccessSkyGate orig, Vulture self, WorldCoordinate start, WorldCoordinate dest)
+        {
+
+            if (OnlineManager.lobby != null)
+            {
+                for (int i = 0; i < self.grasps.Length; i++)
+                {
+                    if (self.grasps[i]?.grabbed is Player player)
+                    {
+                        player.Die();
+                        player.State.alive = false;
+                    }
+                }
+            }
+            orig(self, start, dest);
+
         }
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)

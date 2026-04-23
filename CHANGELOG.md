@@ -1,13 +1,20 @@
 # Release 1.14.0
+
+# Engine
+- Fixed a scenario where transferring entities could lead to deadlocks
 ## Story
+- Fixed some scenarios where watcher warps were not working correctly
 - Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed Vultures not properly killing players when taken off-screen
 - Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
+- Fixed scoring across all modes
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
 - Prevented Overseer from earning score
+- Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter

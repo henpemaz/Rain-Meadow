@@ -57,7 +57,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.AddColorInterface += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.ctor += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.Update += SoftDisableJollyCoOP;
-            
+
             // IL.Menu.SlugcatSelectMenu.CheckJollyCoopAvailable += SoftDisableJollyCoOP;
 
             // IL.Options.ApplyOption += SoftDisableJollyCoOP; 
@@ -212,7 +212,7 @@ namespace RainMeadow
             IL.SaveState.BringUpToDate += SoftDisableJollyCoOP;
             IL.SaveState.SessionEnded += SoftDisableJollyCoOP;
             IL.ShelterDoor.Close += SoftDisableJollyCoOP;
-            
+
             IL.ShelterDoor.Update += SoftDisableJollyCoOP;
             IL.ShortcutHandler.SuckInCreature += SoftDisableJollyCoOP;
             IL.ShortcutHandler.Update += SoftDisableJollyCoOP;
@@ -240,12 +240,14 @@ namespace RainMeadow
             IL.Vulture.AccessSkyGate += SoftDisableJollyCoOP;
             IL.Weapon.HitThisObject += SoftDisableJollyCoOP;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += SoftDisableJollyCoOP;
+
         }
+
         public void JollySetupDialog_ctor(On.JollyCoop.JollyMenu.JollySetupDialog.orig_ctor orig, global::JollyCoop.JollyMenu.JollySetupDialog self, global::SlugcatStats.Name name, global::ProcessManager manager, Vector2 closeButtonPos)
         {
             orig(self, name, manager, closeButtonPos);
         }
-        
+
         bool ProcessManager_IsGameInMultiplayerContext(On.ProcessManager.orig_IsGameInMultiplayerContext orig, ProcessManager self)
         {
             if (isStoryMode(out var story) && (story.avatarCount > 1))
@@ -456,6 +458,7 @@ namespace RainMeadow
                 RainMeadow.Error(except);
             }
         }
+
 
 
         private void SoftDisableJollyCoOP(ILContext context)
