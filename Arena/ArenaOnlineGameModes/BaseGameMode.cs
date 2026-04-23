@@ -270,13 +270,13 @@ namespace RainMeadow
         {
             if (!ModManager.MSC)
             {
-                RainMeadow.Warn("Player_LandSpearPlayer: MSC is not active, returning...");
+                RainMeadow.Warn("Player_LandSpear: MSC is not active, returning...");
                 return;
             }
 
             if (player.gourmandExhausted)
             {
-                RainMeadow.Warn("Player_LandSpearPlayer: Player is exhausted. Spamming hits for score is not allowed, returning...");
+                RainMeadow.Warn("Player_LandSpear: Player is exhausted. Spamming hits for score is not allowed, returning...");
                 return;
             }
 
