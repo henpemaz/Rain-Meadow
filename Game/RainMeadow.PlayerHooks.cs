@@ -755,7 +755,6 @@ public partial class RainMeadow
                         continue;
                     }
 
-
                     otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj));
                     other.slugOnBack?.SlugToBack(self);
                     break;
