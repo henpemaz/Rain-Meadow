@@ -1,6 +1,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
 using System;
@@ -855,7 +856,7 @@ public partial class RainMeadow
                     RainMeadow.Error($"{self.owner.abstractCreature} is trying to backpack but it has no online presence.");
                 }
 
-                Player slugcat = self.slugcat;                
+                Player slugcat = self.slugcat;
                 self.DropSlug(); //NOTE: makes self.slugcat null!
                 slugcat.jumpChunk = self.owner.mainBodyChunk;
                 slugcat.JumpOnChunk();
@@ -1739,6 +1740,11 @@ public partial class RainMeadow
             {
                 self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionPlayer, false);
             }
+            if (ModManager.MSC && creatureTemplate.TopAncestor().type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && self.state == null)
+            {
+                self.state = new PlayerNPCState(self, 0);
+                self.abstractAI = new SlugNPCAbstractAI(self.world, self);
+            }
             if (self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
         }
     }
@@ -1942,14 +1948,12 @@ public partial class RainMeadow
 
             if (dyingPlayerNumber != -1)
             {
-                if (OnlineManager.lobby.isOwner)
+                List<OnlinePlayer> alivePlayers = ArenaHelpers.GetAllAlivePlayers(dyingPlayerNumber);
+                foreach (var p in alivePlayers)
                 {
-                    ArenaRPCs.DistributeEmptyKillScores(dyingPlayerNumber);
+                    p.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, dyingPlayerNumber);
                 }
-                else
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, dyingPlayerNumber);
-                }
+
             }
 
         }

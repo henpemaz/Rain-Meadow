@@ -472,6 +472,8 @@ namespace RainMeadow
             return true;
         }
 
+
+
         public int GetNewAvailableSlugcatIndex(int slugcatIndex) //has to be part of selectableSlugcats
         {
             int newIndex = slugcatIndex;

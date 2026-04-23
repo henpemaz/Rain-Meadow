@@ -1,3 +1,4 @@
+using MoreSlugcats;
 using RainMeadow.Generics;
 using RWCustom;
 using System;
@@ -62,6 +63,23 @@ namespace RainMeadow
             creature.stun = stun;
             creature.enteringShortCut = enteringShortcut;
             creature.NPCTransportationDestination = transportationDestination;
+
+            if (artificialIntelligenceState != null)
+            {
+                if (ModManager.MSC && creature.Template.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && creature is Player player)
+                {
+                    if (player.abstractCreature.abstractAI == null)
+                    {
+                        player.abstractCreature.abstractAI = new SlugNPCAbstractAI(player.abstractCreature.world, player.abstractCreature);
+                    }
+                    if (player.abstractCreature.abstractAI.RealAI == null)
+                    {
+                        player.abstractCreature.abstractAI.RealAI = new SlugNPCAI(player.abstractCreature, player.abstractCreature.world);
+                    }
+
+                    artificialIntelligenceState.ReadTo(player.AI);
+                }
+            }
 
             if (creature.grasps != null)
             {
