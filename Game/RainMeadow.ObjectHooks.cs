@@ -1,6 +1,11 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
+using RWCustom;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -8,6 +13,43 @@ namespace RainMeadow
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+
+            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1; ;
+        }
+
+        private void ScavengerOutpost_ctor1(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+
+            c.GotoNext(MoveType.Before,
+                i => i.MatchLdsfld<Futile>(nameof(Futile.atlasManager)),
+                i => i.MatchLdstr("outpostSkulls"),
+                i => i.MatchCallvirt<FAtlasManager>(nameof(FAtlasManager.DoesContainAtlas)),
+                i => i.MatchBrtrue(out skip));
+
+            c.GotoPrev(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchNewobj<List<ScavengerOutpost.PearlString>>(),
+                i => i.MatchStfld<ScavengerOutpost>(nameof(ScavengerOutpost.pearlStrings)));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc_0);
+            c.EmitDelegate((ScavengerOutpost self, Random.State state) =>
+            {
+                if (OnlineManager.lobby != null && (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var session) || !session.isOwner))
+                {
+                    // need to run this last bit here due to some weird error when trying to define a label.
+                    Random.state = state;
+                    if (!Futile.atlasManager.DoesContainAtlas("outpostSkulls"))
+                    {
+                        Futile.atlasManager.LoadAtlas("Atlases/outPostSkulls");
+                    }
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
         }
 
         private void Room_Update(ILContext il)
