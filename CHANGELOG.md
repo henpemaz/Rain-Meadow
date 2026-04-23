@@ -2,12 +2,14 @@
 
 # Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
+- Fixed Joke Rifle bullets duping and consuming high bandwith.
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
 - Fixed some scenarios where watcher warps were not working correctly
 - Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
 - Fixed Vultures not properly killing players when taken off-screen
 - Fixed Saint ascensions not working reliably outside of Arena
 ## Arena
