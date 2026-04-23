@@ -80,7 +80,6 @@ namespace RainMeadow
                 RainMeadow.Error("Arena: RainWorldGame is null!");
                 return;
             }
-            RainMeadow.Error($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{newScore}");
 
             if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
             {
