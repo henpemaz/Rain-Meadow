@@ -118,7 +118,7 @@ namespace RainMeadow
                 return base.AddIcon(arena, display, owner, customization, player);
             }
 
-            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null & ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
+            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
