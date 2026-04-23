@@ -755,20 +755,6 @@ public partial class RainMeadow
                         continue;
                     }
 
-                    otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj));
-                    other.slugOnBack?.SlugToBack(self);
-                    var myobj = self.abstractCreature.GetOnlineCreature();
-                    if (myobj is null)
-                    {
-                        RainMeadow.Error($"{self.abstractCreature} is trying to backpack but it has no online presence.");
-                        continue;
-                    }
-                    var otherobj = other.abstractCreature.GetOnlineCreature();
-                    if (otherobj is null)
-                    {
-                        RainMeadow.Error($"{self.abstractCreature} is trying to backpack {other.abstractCreature} but it has no online presence.");
-                        continue;
-                    }
 
                     otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj));
                     other.slugOnBack?.SlugToBack(self);
