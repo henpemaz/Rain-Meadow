@@ -282,7 +282,7 @@ namespace RainMeadow
 
             if (target is Player pl && pl.State is PlayerState st && st.permanentDamageTracking >= 1)
             {
-                RainMeadow.Warn("Player_LandSpear: Player is going to die and this will corrupt killing score, returning");
+                RainMeadow.Warn("Player_LandSpear: Player is going to die and this will corrupt killing score, returning...");
                 return;
             }
 
