@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 
@@ -175,6 +176,48 @@ namespace RainMeadow
             return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
         }
 
+        public static List<OnlinePlayer> GetAllAlivePlayers(int excludedPlayerNumber)
+        {
+            RainMeadow.DebugMe();
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return null;
+            if (!RainMeadow.isArenaMode(out var arena)) return null;
+
+
+            OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
+            bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
+            List<OnlinePlayer> allAlivePlayers = new();
+
+            for (int i = 0; i < session.arenaSitting.players.Count; i++)
+            {
+                if (session.arenaSitting.players[i] == null || session.arenaSitting.players[i].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+                if (session.arenaSitting.players[i].playerNumber == excludedPlayerNumber) continue;
+
+                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, session.arenaSitting.players[i].playerNumber);
+                if (alivePlayer == null) continue;
+
+                // 1. Try to find the creature associated with this player
+                var playerAbstractCreature = session.Players.Find(abs => abs.GetOnlineCreature()?.owner == alivePlayer);
+
+                // 2. If the creature is null, they fell into the abyss (or disconnected/despawned)
+                // 3. Otherwise, check if the creature state or realized body is dead
+                bool isMissingOrDead = playerAbstractCreature == null ||
+                                       playerAbstractCreature.state.dead ||
+                                       (playerAbstractCreature.realizedCreature != null && playerAbstractCreature.realizedCreature.dead);
+
+                if (isMissingOrDead)
+                {
+                    continue;
+                }
+
+                // EXCLUSION 3: Not on the same team
+                if (isTeamBattle && deadPlayer != null)
+                {
+                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
+                }
+                allAlivePlayers.Add(alivePlayer);
+            }
+            return allAlivePlayers;
+        }
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
             manager.arenaSitting.players = [];
