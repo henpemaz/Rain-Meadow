@@ -44,28 +44,27 @@ namespace RainMeadow
             OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
             bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
 
-            foreach (var playerSlot in session.arenaSitting.players)
+            for (int i = 0; i < session.arenaSitting.players.Count; i++)
             {
-                if (playerSlot == null) continue; // this should never happen :tm:
-                if (playerSlot.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+                if (session.arenaSitting.players[i] == null || session.arenaSitting.players[i].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+                if (session.arenaSitting.players[i].playerNumber == excludedPlayerNumber) continue;
 
-                // EXCLUSION 1: Not the player who died
-                if (playerSlot.playerNumber == excludedPlayerNumber) continue;
-
-                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerSlot.playerNumber);
+                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, session.arenaSitting.players[i].playerNumber);
                 if (alivePlayer == null) continue;
 
-                // EXCLUSION 2: Must be alive 
-                bool isDead = false;
-                foreach (var abs in session.Players)
+                // 1. Try to find the creature associated with this player
+                var playerAbstractCreature = session.Players.Find(abs => abs.GetOnlineCreature()?.owner == alivePlayer);
+
+                // 2. If the creature is null, they fell into the abyss (or disconnected/despawned)
+                // 3. Otherwise, check if the creature state or realized body is dead
+                bool isMissingOrDead = playerAbstractCreature == null ||
+                                       playerAbstractCreature.state.dead ||
+                                       (playerAbstractCreature.realizedCreature != null && playerAbstractCreature.realizedCreature.dead);
+
+                if (isMissingOrDead)
                 {
-                    if (abs.GetOnlineCreature()?.owner == alivePlayer && (abs.state.dead || abs.realizedCreature != null && abs.realizedCreature.dead))
-                    {
-                        isDead = true;
-                        break; // Break the inner loop, we know they are dead
-                    }
+                    continue;
                 }
-                if (isDead) continue; // Continue the OUTER loop, skipping score distribution
 
                 // EXCLUSION 3: Not on the same team
                 if (isTeamBattle && deadPlayer != null)
@@ -77,12 +76,12 @@ namespace RainMeadow
                 if (arena.playerNumberWithScore.ContainsKey(alivePlayer.inLobbyId))
                 {
                     arena.playerNumberWithScore[alivePlayer.inLobbyId] += arena.emptyKillTagScore;
-                    playerSlot.score = arena.playerNumberWithScore[alivePlayer.inLobbyId];
+                    session.arenaSitting.players[i].score = arena.playerNumberWithScore[alivePlayer.inLobbyId];
 
                     // Cleaner logic for skipping RPC to the owner
                     if (alivePlayer != OnlineManager.mePlayer)
                     {
-                        alivePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, playerSlot.playerNumber, playerSlot.score);
+                        alivePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, session.arenaSitting.players[i].playerNumber, session.arenaSitting.players[i].score);
                     }
                 }
             }
