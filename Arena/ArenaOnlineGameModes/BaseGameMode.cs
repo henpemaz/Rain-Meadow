@@ -288,7 +288,7 @@ namespace RainMeadow
 
             if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
             {
-                RainMeadow.Warn("Player_LandSpear: Players on same team, returning");
+                RainMeadow.Warn("Player_LandSpear: Players on same team, returning...");
                 return;
             }
 
