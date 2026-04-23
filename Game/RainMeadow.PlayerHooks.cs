@@ -836,55 +836,31 @@ public partial class RainMeadow
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
             self.slugcat.immuneToFallDamage += 10;
             if (self.slugcat.IsLocal() && self.slugcat.input[0].jmp)
-                if (self.slugcat.IsLocal() && self.slugcat.input[0].jmp)
+            {
+                var myobj = self.slugcat.abstractCreature.GetOnlineCreature();
+                if (myobj is not null)
                 {
-                    var myobj = self.slugcat.abstractCreature.GetOnlineCreature();
-                    if (myobj is not null)
+                    var otherobj = self.owner.abstractCreature.GetOnlineCreature();
+                    if (otherobj is not null)
                     {
-                        var otherobj = self.owner.abstractCreature.GetOnlineCreature();
-                        if (otherobj is not null)
-                        {
-                            otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOffBack, myobj));
-                        }
-                        else
-                        {
-                            RainMeadow.Error($"{self.slugcat.abstractCreature} is trying to backpack {self.slugcat.abstractCreature} but it has no online presence.");
-                        }
+                        otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOffBack, myobj));
                     }
                     else
                     {
-                        RainMeadow.Error($"{self.owner.abstractCreature} is trying to backpack but it has no online presence.");
+                        RainMeadow.Error($"{self.slugcat.abstractCreature} is trying to backpack {self.slugcat.abstractCreature} but it has no online presence.");
                     }
-
-                    Player slugcat = self.slugcat;
-                    self.DropSlug(); //NOTE: makes self.slugcat null!
-                    slugcat.jumpChunk = self.owner.mainBodyChunk;
-                    slugcat.JumpOnChunk();
-                    return;
-                    var myobj = self.slugcat.abstractCreature.GetOnlineCreature();
-                    if (myobj is not null)
-                    {
-                        var otherobj = self.owner.abstractCreature.GetOnlineCreature();
-                        if (otherobj is not null)
-                        {
-                            otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOffBack, myobj));
-                        }
-                        else
-                        {
-                            RainMeadow.Error($"{self.slugcat.abstractCreature} is trying to backpack {self.slugcat.abstractCreature} but it has no online presence.");
-                        }
-                    }
-                    else
-                    {
-                        RainMeadow.Error($"{self.owner.abstractCreature} is trying to backpack but it has no online presence.");
-                    }
-
-                    Player slugcat = self.slugcat;
-                    self.DropSlug(); //NOTE: makes self.slugcat null!
-                    slugcat.jumpChunk = self.owner.mainBodyChunk;
-                    slugcat.JumpOnChunk();
-                    return;
                 }
+                else
+                {
+                    RainMeadow.Error($"{self.owner.abstractCreature} is trying to backpack but it has no online presence.");
+                }
+
+                Player slugcat = self.slugcat;
+                self.DropSlug(); //NOTE: makes self.slugcat null!
+                slugcat.jumpChunk = self.owner.mainBodyChunk;
+                slugcat.JumpOnChunk();
+                return;
+            }
 
             if (self.owner.input[0].pckp && (self.owner.input[0].y > 0) && self.HasASlug)
             {
