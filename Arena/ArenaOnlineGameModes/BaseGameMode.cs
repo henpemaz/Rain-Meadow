@@ -55,7 +55,7 @@ namespace RainMeadow
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = 1;
+            self.foodScore = arena.foodScore;
             self.survivalScore = arena.aliveScore;
             self.spearHitScore = arena.spearHitScore;
             self.repeatSingleLevelForever = false;
@@ -268,19 +268,32 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer aPlayer
         )
         {
+            if (!ModManager.MSC)
+            {
+                RainMeadow.Warn("Player_LandSpear: MSC is not active, returning...");
+                return;
+            }
+
+            if (player.gourmandExhausted)
+            {
+                RainMeadow.Warn("Player_LandSpear: Player is exhausted. Spamming hits for score is not allowed, returning...");
+                return;
+            }
 
             if (target is Player pl && pl.State is PlayerState st && st.permanentDamageTracking >= 1)
             {
-                RainMeadow.Warn("Player_LandSpearPlayer is going to die and this will corrupt killing score, returning");
+                RainMeadow.Warn("Player_LandSpear: Player is going to die and this will corrupt killing score, returning...");
                 return;
             }
+
             if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
             {
-                RainMeadow.Warn("Player_LandSpearPlayer: Players on same team, returning");
+                RainMeadow.Warn("Player_LandSpear: Players on same team, returning...");
                 return;
             }
 
             aPlayer.AddSandboxScore(arena.spearHitScore);
+
             if (OnlineManager.lobby.isOwner)
             {
 
@@ -289,9 +302,10 @@ namespace RainMeadow
                 {
                     return;
                 }
+
                 if (arena.playerNumberWithScore[onlinePlayer.inLobbyId] < aPlayer.score)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] += aPlayer.score;
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = aPlayer.score;
                 }
                 player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
             }

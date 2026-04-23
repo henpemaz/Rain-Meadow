@@ -118,6 +118,9 @@ namespace RainMeadow
                     {
                         arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
                     }
+
+                    RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
+
                 }
             }
 
@@ -413,10 +416,6 @@ namespace RainMeadow
                             arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
                             arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
                             // 7
-                            if (crit.abstractCreature.realizedCreature.Template.type == CreatureTemplate.Type.Slugcat)
-                            {
-                                RainMeadow.Debug($"RMEL;{pl.id.DisplayName};KILLED;{creatureKilled.owner.id.DisplayName};SCORE;{game.GetArenaGameSession.arenaSitting.players[i]}");
-                            }
                         }
 
                     }

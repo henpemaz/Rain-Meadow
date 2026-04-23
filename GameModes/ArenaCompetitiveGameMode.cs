@@ -56,6 +56,8 @@ namespace RainMeadow
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
+        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
+
         public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
 
         public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;

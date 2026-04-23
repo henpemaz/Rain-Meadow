@@ -92,6 +92,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ChallengeID;
 
 
+    public readonly Configurable<int> ArenaFoodScore;
+
     public readonly Configurable<int> ArenaSpearHitScore;
     public readonly Configurable<int> ArenaKillScore;
 
@@ -233,6 +235,7 @@ public class RainMeadowOptions : OptionInterface
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
 
+        ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
         ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
         ArenaKillScore = config.Bind("ArenaKillScore", 0);
         ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
