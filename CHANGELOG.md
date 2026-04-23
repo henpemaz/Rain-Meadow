@@ -2,6 +2,7 @@
 
 # Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
+- Fixed Joke Rifle bullets duping and consuming high bandwith.
 ## Story
 - Fixed some scenarios where watcher warps were not working correctly
 - Fixed some critical errors in Saint's ending
@@ -19,9 +20,6 @@
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
-## Engine
-- Fixed Joke Rifle bullets duping and consuming high bandwith.
-- 
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
