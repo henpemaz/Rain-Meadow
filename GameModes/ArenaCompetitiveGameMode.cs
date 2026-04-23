@@ -1142,6 +1142,7 @@ namespace RainMeadow
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            MoreSlugcatsEnums.AbstractObjectType.Bullet, // Too many spawned objects
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
