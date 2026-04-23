@@ -74,9 +74,8 @@ namespace RainMeadow
                     var grabbed = grasp.onlineGrabbed.FindEntity() as OnlinePhysicalObject; // lookup once, use multiple times
                     if (grabbed?.apo.realizedObject is null) continue;
 
-                    grabbed.graspLocked.RemoveAll(x => !x.to.OutgoingEvents.Contains(x));
-                    if (!grabbed.apo.realizedObject.grabbedBy.Any()) grabbed.graspLocked.Clear();
-                    if (grabbed.graspLocked.Select(x => x.to).Contains(onlineEntity.owner)) continue;
+                    if (!grabbed.apo.realizedObject.grabbedBy.Any()) grabbed.ClearLock("grasp");
+                    if (grabbed.IsLocked("grasp")) continue;
 
                     var foundat = Array.FindIndex(creature.grasps, s => grasp.EqualsGrasp(s, grabbed.apo.realizedObject));
                     if (foundat == -1)
