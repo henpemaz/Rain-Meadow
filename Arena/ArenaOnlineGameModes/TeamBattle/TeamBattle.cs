@@ -334,9 +334,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        if (aIsWinningTeam && bIsWinningTeam)
+                        if (teamA.team == teamB.team)
                         {
-                            return A.score > B.score; // If both are on winning team, sort by kill value
+                            if (A.alive != B.alive)
+                            {
+                                return A.alive;
+                            }
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // Sort by score
+                            }
+                            return A.deaths < B.deaths; // Sort by fewest deaths
                         }
                     }
                 }
@@ -424,17 +432,18 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        // If both are on the winning team (or both lost), sort by performance
-                        if (A.alive != B.alive)
+                        if (teamA.team == teamB.team)
                         {
-                            return A.alive;
+                            if (A.alive != B.alive)
+                            {
+                                return A.alive;
+                            }
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // Sort by score
+                            }
+                            return A.deaths < B.deaths; // Sort by fewest deaths
                         }
-                        if (A.score != B.score)
-                        {
-                            return A.score > B.score; // Sort by score
-                        }
-
-                        return A.deaths < B.deaths; // Sort by fewest deaths
                     }
                 }
             }
