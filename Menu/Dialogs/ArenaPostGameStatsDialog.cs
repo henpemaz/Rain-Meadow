@@ -37,10 +37,10 @@ namespace RainMeadow.UI
             var resetButton = new SimplerButton(this, pages[0], Translate("RESET"), new(roundedRect.pos.x + roundedRect.size.x - 180, roundedRect.pos.y - 40), new(80, 30));
             resetButton.OnClick += _ =>
             {
-                arenaMode.postGamePlayerNumberWithDeaths = arenaMode.playerNumberWithDeaths;
-                arenaMode.postGamePlayerNumberWithTrophies = arenaMode.playerNumberWithTrophies;
-                arenaMode.postGamePlayerTotScore = arenaMode.playerTotScore;
-                arenaMode.postGamePlayerNumberWithWins = arenaMode.playerNumberWithWins;
+                arenaMode.postGamePlayerNumberWithDeaths.Clear();
+                arenaMode.postGamePlayerNumberWithTrophies.Clear();
+                arenaMode.postGamePlayerTotScore.Clear();
+                arenaMode.postGamePlayerNumberWithWins.Clear();
 
             };
             pages[0].subObjects.AddRange([postGameStatsLabel, closeButton, resetButton]);
