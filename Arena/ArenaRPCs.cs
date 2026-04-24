@@ -3,6 +3,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using RWCustom;
 using System.Linq;
+using System.Collections.Generic;
 namespace RainMeadow
 {
     public static class ArenaRPCs
@@ -30,62 +31,42 @@ namespace RainMeadow
             }
         }
 
+
         // Substracting a player's points would be infinitely easier, but Rain World has logic to display as 0 if that's the case, which is not helpful and now I have to suffer for it
+        // We also have to account for already dead players who shouldn't be getting score
         [RPCMethod]
-        public static void DistributeEmptyKillScores(int excludedPlayerNumber)
+        public static void DistributeEmptyKillScores(int[] alivePlayers)
         {
             RainMeadow.DebugMe();
-            if (!OnlineManager.lobby.isOwner) return;
-
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return;
             if (!RainMeadow.isArenaMode(out var arena)) return;
 
-
-            OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
-            bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
-
             for (int i = 0; i < session.arenaSitting.players.Count; i++)
             {
-                if (session.arenaSitting.players[i] == null || session.arenaSitting.players[i].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
-                if (session.arenaSitting.players[i].playerNumber == excludedPlayerNumber) continue;
+                var pState = session.arenaSitting.players[i];
+                if (pState == null || pState.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
 
-                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, session.arenaSitting.players[i].playerNumber);
-                if (alivePlayer == null) continue;
-
-                // 1. Try to find the creature associated with this player
-                var playerAbstractCreature = session.Players.Find(abs => abs.GetOnlineCreature()?.owner == alivePlayer);
-
-                // 2. If the creature is null, they fell into the abyss (or disconnected/despawned)
-                // 3. Otherwise, check if the creature state or realized body is dead
-                bool isMissingOrDead = playerAbstractCreature == null ||
-                                       playerAbstractCreature.state.dead ||
-                                       (playerAbstractCreature.realizedCreature != null && playerAbstractCreature.realizedCreature.dead);
-
-                if (isMissingOrDead)
+                // Only process players who were confirmed alive by the sender
+                if (alivePlayers.Contains(pState.playerNumber))
                 {
-                    continue;
-                }
-
-                // EXCLUSION 3: Not on the same team
-                if (isTeamBattle && deadPlayer != null)
-                {
-                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
-                }
-
-                // DISTRIBUTION: Give score
-                if (arena.playerNumberWithScore.ContainsKey(alivePlayer.inLobbyId))
-                {
-                    arena.playerNumberWithScore[alivePlayer.inLobbyId] += arena.emptyKillTagScore;
-                    session.arenaSitting.players[i].score = arena.playerNumberWithScore[alivePlayer.inLobbyId];
-
-                    // Cleaner logic for skipping RPC to the owner
-                    if (alivePlayer != OnlineManager.mePlayer)
+                    // 1. Update local score for the UI (everyone does this)
+                    pState.score += arena.emptyKillTagScore;
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        alivePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, session.arenaSitting.players[i].playerNumber, session.arenaSitting.players[i].score);
+                        OnlinePlayer? targetPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, pState.playerNumber);
+                        if (targetPlayer != null)
+                        {
+                            // Ensure the key exists, then add the score
+                            if (arena.playerNumberWithScore.ContainsKey(targetPlayer.inLobbyId))
+                            {
+                                arena.playerNumberWithScore[targetPlayer.inLobbyId] += arena.emptyKillTagScore;
+                            }
+                        }
                     }
                 }
             }
         }
+
         [RPCMethod]
         public static void UpdatePlayerScore(int playerNumber, int newScore)
         {
