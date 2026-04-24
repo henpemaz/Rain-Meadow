@@ -176,7 +176,7 @@ namespace RainMeadow
             return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
         }
 
-        public static List<OnlinePlayer> GetAllAlivePlayers(int excludedPlayerNumber)
+        public static int[] GetAllAlivePlayers(int excludedPlayerNumber)
         {
             RainMeadow.DebugMe();
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return null;
@@ -185,7 +185,7 @@ namespace RainMeadow
 
             OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
             bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
-            List<OnlinePlayer> allAlivePlayers = new();
+            int[] allAlivePlayers = [];
 
             for (int i = 0; i < session.arenaSitting.players.Count; i++)
             {
@@ -214,8 +214,10 @@ namespace RainMeadow
                 {
                     if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
                 }
-                allAlivePlayers.Add(alivePlayer);
+                RainMeadow.Debug($"Found GetAllAlivePlayers playerNumber {session.arenaSitting.players[i].playerNumber}");
+                allAlivePlayers = [.. allAlivePlayers, session.arenaSitting.players[i].playerNumber];
             }
+            RainMeadow.Debug("Finished GetAllAlivePlayers");
             return allAlivePlayers;
         }
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)

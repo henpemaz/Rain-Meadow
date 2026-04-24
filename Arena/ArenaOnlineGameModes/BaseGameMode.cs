@@ -217,13 +217,11 @@ namespace RainMeadow
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
             }
 
-            // this is set locally because we return if the victim is not ours, so we need to notify everyone of this updat
+            // this is set locally because we return if the victim is not ours, so we need to notify everyone of this update
 
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-
             if (isLobbyOwner) // host creature was killed
             {
-
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                 onlineKilledCreature.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
             }
