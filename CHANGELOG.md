@@ -16,10 +16,11 @@
 - Fixed scoring across all modes
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
+- Added Spear Hit score config
 - Prevented Overseer from earning score
 - Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame
-- Post-game stats now persist for duration of lobby life, click "reset" to view previous round's details
+- Post-game stats now persist for duration of lobby life or reset as desired
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
