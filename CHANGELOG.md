@@ -4,10 +4,10 @@
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 ## Story
+- Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
 ### Watcher
 - Fixed some scenarios where watcher warps were not working correctly
 - Fixed clients not being sucked into warps
-
 ### Saint
 - Fixed some critical errors in Saint's ending
 ## General
@@ -19,12 +19,15 @@
 - Fixed scoring across all modes
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
+- Added Spear Hit score config
 - Prevented Overseer from earning score
 - Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame
+- Post-game stats now persist for duration of lobby life or reset as desired
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
+
 # Release 1.13.2
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
