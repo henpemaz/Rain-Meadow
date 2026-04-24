@@ -573,9 +573,10 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                Debug($"Warp Status -> worldLoader: {self.worldLoader?.ReturnWorld().name ?? "NULL"}, activeWorld: {self.activeWorld.name}");
+                World returnedWorld = self.worldLoader?.ReturnWorld();
+                Debug($"Warp Status -> worldLoader: {returnedWorld?.name ?? "NULL"}, activeWorld: {self.activeWorld.name}");
 
-                World newWorld = self.worldLoader?.ReturnWorld() ?? self.activeWorld;
+                World newWorld = returnedWorld ?? self.activeWorld;
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException("New world session not found.");
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession; // Do not throw for the old world to prevent error during coroutine
 

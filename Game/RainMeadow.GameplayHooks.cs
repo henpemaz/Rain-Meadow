@@ -914,13 +914,13 @@ namespace RainMeadow
             {
                 foreach (var grasp in self.grasps)
                 {
-                    if (grasp == null) continue;
+                    if (grasp == null || grasp.grabbed == null) continue;
                     if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
                     {
                         Trace($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
                         continue;
                     }
-                    if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending && onlineGrabbed != null) // been leased to someone else
+                    if (onlineGrabbed != null && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending) // been leased to someone else
                     {
                         var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                         if (grabbersOtherThanMe.All(x => x.abstractPhysicalObject.GetOnlineObject(out var opo) && opo != null && opo.isMine))

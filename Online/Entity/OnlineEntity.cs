@@ -508,6 +508,46 @@ namespace RainMeadow
             return lastState;
         }
 
+        private Dictionary<string, List<RPCEvent>> Locks = new();
+        public void Lock(string key, RPCEvent @event)
+        {
+            if (!Locks.ContainsKey(key))
+            {
+                Locks.Add(key, [ @event ]);
+            }
+            else
+            {
+                Locks[key].Add(@event);
+            }
+
+            @event.Then(_ => {
+                if (Locks.ContainsKey(key))
+                {
+                    Locks[key].Remove(@event);
+                }
+            });
+        }
+
+        public void ClearLock(string key) 
+        {
+            if (Locks.ContainsKey(key)) 
+            {
+                Locks[key].Clear();
+            }
+        }
+
+        public void Unlock(string key, RPCEvent @event) 
+        {
+            if (Locks.ContainsKey(key)) 
+            {
+                Locks[key].Remove(@event);
+            }
+        }
+
+        public bool IsLocked(string key) => Locks.ContainsKey(key) && Locks[key].Any();
+        
+
+
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
         {
             [OnlineField(always: true)]

@@ -147,7 +147,7 @@ namespace RainMeadow
             IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
             bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
 
-            // 1. Find the target player first (Separating the search from the action)
+            // 1. Find the target player first 
             int targetPlayerNumber = -1;
             bool playerFound = false;
             foreach (var sittingPlayer in self.arenaSitting.players)
@@ -209,8 +209,16 @@ namespace RainMeadow
                 }
 
             }
+
             // 6. Handle Scoring 
-            int scoreToAdd = arena.killScore; // Default fallback
+            int scoreToAdd = arena.killScore;
+            if (killedCrit.Template.type != CreatureTemplate.Type.Slugcat)
+            {
+                if (self.arenaSitting.gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+                {
+                    scoreToAdd = 0; // creature got in somehow
+                }
+            }
             if (arena.externalArenaGameMode is ArenaChallengeMode)
             {
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
@@ -221,7 +229,6 @@ namespace RainMeadow
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
             if (isLobbyOwner) // host creature was killed
             {
-
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
                 onlineKilledCreature.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
             }

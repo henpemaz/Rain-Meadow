@@ -5,7 +5,10 @@
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
+### Watcher
 - Fixed some scenarios where watcher warps were not working correctly
+- Fixed clients not being sucked into warps
+### Saint
 - Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
