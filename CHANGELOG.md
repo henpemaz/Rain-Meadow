@@ -4,7 +4,11 @@
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 ## Story
+### Watcher
 - Fixed some scenarios where watcher warps were not working correctly
+- Fixed clients not being sucked into warps
+
+### Saint
 - Fixed some critical errors in Saint's ending
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
