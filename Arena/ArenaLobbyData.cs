@@ -132,7 +132,13 @@ namespace RainMeadow
             public bool enableOverseer;
 
             [OnlineField(group = "arenaSetup")]
-            public int spearScore;
+            public int foodScore;
+
+            [OnlineField(group = "arenaSetup")]
+            public int spearHitScore;
+
+            [OnlineField(group = "arenaSetup")]
+            public int killScore;
 
             [OnlineField(group = "arenaSetup")]
             public int aliveScore;
@@ -141,6 +147,17 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaSetup", nullable = true)]
             public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
+
+
+            [OnlineField(group = "arenaSetup")]
+            public int emptyKillScore;
+
+
+            [OnlineField(group = "arenaSetup")]
+            public bool challengeDenEjection;
+
+            [OnlineField(group = "arenaSetup")]
+            public int artiExplosionCapacity;
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -253,11 +270,18 @@ namespace RainMeadow
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
 
-                spearScore = arena.spearScore;
+                foodScore = arena.foodScore;
+
+                spearHitScore = arena.spearHitScore;
+                killScore = arena.killScore;
                 aliveScore = arena.aliveScore;
                 denRule = arena.denEntryRule;
                 denScore = arena.denScore;
                 hostLoadedOverlay = arena.hostLoadedOverlay;
+                emptyKillScore = arena.emptyKillTagScore;
+                challengeDenEjection = arena.challengeDenEjection;
+
+                artiExplosionCapacity = arena.artiExplosionCount;
 
             }
 
@@ -339,11 +363,20 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
 
-                (lobby.gameMode as ArenaOnlineGameMode).spearScore = spearScore;
+
+                (lobby.gameMode as ArenaOnlineGameMode).foodScore = foodScore;
+
+                (lobby.gameMode as ArenaOnlineGameMode).spearHitScore = spearHitScore;
+                (lobby.gameMode as ArenaOnlineGameMode).killScore = killScore;
                 (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
                 (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
                 (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
                 (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
+                (lobby.gameMode as ArenaOnlineGameMode).emptyKillTagScore = emptyKillScore;
+                (lobby.gameMode as ArenaOnlineGameMode).challengeDenEjection = challengeDenEjection;
+
+
+                (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
 
             }
 

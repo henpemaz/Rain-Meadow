@@ -252,7 +252,16 @@ namespace RainMeadow
             }
             if (primaryResource == null && !isPending)
             {
-                Deregister();
+                if (inResource is WorldSession or RoomSession)
+                {
+                    // let those last state packets come in first
+                    OnlineManager.RunDeferred(() => Deregister());
+                }
+                else
+                {
+                    Deregister();
+                }
+
             }
         }
 
@@ -395,33 +404,33 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-                lastStates[inResource] = entityState;
-                StateProfiler.Instance?.Push(entityState.GetType());
-                entityState.ReadTo(this);
-                StateProfiler.Instance?.Pop(entityState.GetType());
+            lastStates[inResource] = entityState;
+            StateProfiler.Instance?.Push(entityState.GetType());
+            entityState.ReadTo(this);
+            StateProfiler.Instance?.Pop(entityState.GetType());
 
         }
 
-        public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick) 
+        public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick)
         {
             var entity = entityState.entityId.FindEntity();
             if (entity == null)
             {
                 RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: entity.FindEntity() is null: {entityState.from}, {entityState.entityId}");
                 return false;
-            } 
+            }
 
             var localState = entity.GetState(tick, inResource);
             if (localState == null)
             {
                 RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: localState.GetState() is null");
                 return false;
-            } 
+            }
 
 
             if (!entityState.GetType().IsAssignableFrom(localState.GetType()))
             {
-            RainMeadow.Error($"CanReadTo: Is not assignable EntityState: {entityState.GetType()}, localState: {localState.GetType()}:  {entityState.GetType().IsAssignableFrom(localState.GetType())}");
+                RainMeadow.Error($"CanReadTo: Is not assignable EntityState: {entityState.GetType()}, localState: {localState.GetType()}:  {entityState.GetType().IsAssignableFrom(localState.GetType())}");
             }
 
             return entityState.GetType().IsAssignableFrom(localState.GetType());
@@ -498,6 +507,46 @@ namespace RainMeadow
             if (lastState == null) throw new InvalidProgrammerException("state is null");
             return lastState;
         }
+
+        private Dictionary<string, List<RPCEvent>> Locks = new();
+        public void Lock(string key, RPCEvent @event)
+        {
+            if (!Locks.ContainsKey(key))
+            {
+                Locks.Add(key, [ @event ]);
+            }
+            else
+            {
+                Locks[key].Add(@event);
+            }
+
+            @event.Then(_ => {
+                if (Locks.ContainsKey(key))
+                {
+                    Locks[key].Remove(@event);
+                }
+            });
+        }
+
+        public void ClearLock(string key) 
+        {
+            if (Locks.ContainsKey(key)) 
+            {
+                Locks[key].Clear();
+            }
+        }
+
+        public void Unlock(string key, RPCEvent @event) 
+        {
+            if (Locks.ContainsKey(key)) 
+            {
+                Locks[key].Remove(@event);
+            }
+        }
+
+        public bool IsLocked(string key) => Locks.ContainsKey(key) && Locks[key].Any();
+        
+
 
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
         {

@@ -29,7 +29,21 @@ namespace RainMeadow.UI
                 manager.StopSideProcess(this);
                 PlaySound(SoundID.MENU_Remove_Level);
             };
-            pages[0].subObjects.AddRange([postGameStatsLabel, closeButton]);
+            arenaMode.postGamePlayerNumberWithWins ??= [];
+            arenaMode.postGamePlayerNumberWithDeaths ??= [];
+            arenaMode.postGamePlayerTotScore ??= [];
+            arenaMode.postGamePlayerNumberWithTrophies ??= [];
+
+            var resetButton = new SimplerButton(this, pages[0], Translate("RESET"), new(roundedRect.pos.x + roundedRect.size.x - 180, roundedRect.pos.y - 40), new(80, 30));
+            resetButton.OnClick += _ =>
+            {
+                arenaMode.postGamePlayerNumberWithDeaths.Clear();
+                arenaMode.postGamePlayerNumberWithTrophies.Clear();
+                arenaMode.postGamePlayerTotScore.Clear();
+                arenaMode.postGamePlayerNumberWithWins.Clear();
+
+            };
+            pages[0].subObjects.AddRange([postGameStatsLabel, closeButton, resetButton]);
             storedResults = [];
             SetUpStoredResults();
         }
@@ -56,13 +70,13 @@ namespace RainMeadow.UI
         {
 
             if (i == 0)
-                return [.. arenaMode.playerNumberWithWins.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.postGamePlayerNumberWithWins.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 1)
-                return [.. arenaMode.playerNumberWithTrophies.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
+                return [.. arenaMode.postGamePlayerNumberWithTrophies.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
             if (i == 2)
-                return [.. arenaMode.playerNumberWithDeaths.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.postGamePlayerNumberWithDeaths.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 3)
-                return [.. arenaMode.playerTotScore.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.postGamePlayerTotScore.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             return [];
         }
         public void UpdateStoredResults(StoredResults storedResults, string[] strings)

@@ -78,6 +78,7 @@ namespace RainMeadow
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
             IL.Menu.ArenaOverlay.Update += IL_Arena_Overlay_Update;
 
+
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
@@ -986,61 +987,15 @@ namespace RainMeadow
 
         public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
             On.ArenaSitting.orig_FinalSittingResult orig,
-            ArenaSitting self
-        )
+            ArenaSitting self)
         {
             if (isArenaMode(out var arena))
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
-                {
-                    // Initialize to -1 so the first player evaluated always becomes the leader,
-                    // even if they have 0 wins.
-                    int winDetermination = -1;
-
-                    foreach (var player in self.players)
-                    {
-                        OnlinePlayer? winPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-
-                        if (winPlayer != null)
-                        {
-                            if (player.wins > winDetermination)
-                            {
-                                winDetermination = player.wins;
-
-                                if (
-                                    OnlineManager
-                                        .lobby.clientSettings[winPlayer]
-                                        .TryGetData<ArenaTeamClientSettings>(out var winningTeam)
-                                )
-                                {
-                                    tb.winningTeam = winningTeam.team;
-                                }
-                            }
-                            else if (player.wins == winDetermination)
-                            {
-                                // We have a tie in wins! Let's check the tied player's team.
-                                if (
-                                    OnlineManager
-                                        .lobby.clientSettings[winPlayer]
-                                        .TryGetData<ArenaTeamClientSettings>(out var tiedTeam)
-                                )
-                                {
-                                    // Only declare a tie if the tied player is on a DIFFERENT team
-                                    if (tb.winningTeam != tiedTeam.team)
-                                    {
-                                        tb.winningTeam = -1;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                return arena.externalArenaGameMode.FinalSittingResult(arena, orig, self);
             }
             return orig(self);
         }
+
 
         public void ArenaOverlay_ctor(
             On.Menu.ArenaOverlay.orig_ctor orig,
@@ -1070,6 +1025,22 @@ namespace RainMeadow
                                     tb.teamNames[tb.winningTeam].ToUpper()
                                 )
                             );
+                    }
+                    if (arena.winByScore)
+                    {
+                        foreach (var box in self.resultBoxes)
+                        {
+                            OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
+                            if (pl == null || box == null)
+                            {
+                                continue;
+                            }
+                            if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                            {
+                                box.player.score = tb.teamScores[teamSettings.team];
+
+                            }
+                        }
                     }
                 }
             }
@@ -1691,7 +1662,7 @@ namespace RainMeadow
                 c.EmitDelegate(
                     (Player self, PhysicalObject po) =>
                     {
-                        if (self.IsLocal() && isArenaMode(out var arena))
+                        if (self.IsLocal() && OnlineManager.lobby != null)
                         {
                             if (
                                 OnlinePhysicalObject.map.TryGetValue(
@@ -1936,6 +1907,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+                RainMeadow.DebugMe();
                 if (
                     self.sessionEnded
                     || self.GameTypeSetup.spearHitScore == 0
@@ -1959,16 +1931,18 @@ namespace RainMeadow
                     )
                     {
                         RainMeadow.Error("Could not get PlayerLandSpear player");
+                        continue;
                     }
                     var onlineArenaPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                         arena,
                         self.arenaSitting.players[i].playerNumber
                     );
 
-                    if (op.owner != onlineArenaPlayer)
+                    if (op.owner != onlineArenaPlayer || onlineArenaPlayer == null)
                     {
                         continue;
                     }
+                    RainMeadow.Debug("ArenaGameSession_PlayerLandSpear: Executing");
                     arena.externalArenaGameMode.LandSpear(
                         arena,
                         self,
@@ -2537,7 +2511,7 @@ namespace RainMeadow
                 cursor.GotoNext(MoveType.After,
                     x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
                     x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));
-                cursor.EmitDelegate(delegate (bool origIsChallenge) { return origIsChallenge || isArenaMode(out var _); });
+                cursor.EmitDelegate(delegate (bool origIsChallenge) { return origIsChallenge || isArenaMode(out var arena) && arena.challengeDenEjection; });
             }
             catch (Exception ex) { RainMeadow.Error(ex); }
         }
@@ -2587,6 +2561,8 @@ namespace RainMeadow
 
                 ArenaSitting.ArenaPlayer sittingPlayer = self.arenaSitting.players[sessionPlayerIndex];
 
+                if (self.sessionEnded) return sittingPlayer.score;
+
                 // 2. Calculate food points currently being held
                 float graspFoodPoints = 0f;
                 if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
@@ -2618,7 +2594,7 @@ namespace RainMeadow
                     }
                 }
 
-                // 4. Final Calculation for this individual player
+                // Final Calculation for this individual player
                 // Formula: Current Base Score + ((Stomach + Hands) * Score Multiplier)
                 int finalScore = (int)((float)sittingPlayer.score +
                                       ((float)player.FoodInStomach + graspFoodPoints) * (float)self.arenaSitting.gameTypeSetup.foodScore);
@@ -2725,6 +2701,7 @@ namespace RainMeadow
                                 self.playerNameLabel.text +=
                                     $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
                             }
+
                         }
                     }
                     catch
@@ -2855,7 +2832,6 @@ namespace RainMeadow
                 orig(self, eu);
             }
         }
-
         public void MultiplayerResults_ctor(
             On.Menu.MultiplayerResults.orig_ctor orig,
             Menu.MultiplayerResults self,
@@ -2877,17 +2853,43 @@ namespace RainMeadow
                 );
                 self.pages[0].subObjects.Add(exitButton);
 
+                if (!TeamBattleMode.isTeamBattleMode(arena, out _))
+                {
+                    var winningResult = self.result.FirstOrDefault(x => x.winner);
+                    if (winningResult != null)
+                    {
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
+                        self.headingLabel.text = self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
+                    }
+                }
+
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!")
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
                             .Replace(
                                 "<TEAMNAME>",
                                 MatchmakingManager.currentInstance.FilterTeamName(
                                     tb.teamNames[tb.winningTeam].ToUpper()
                                 )
                             );
+                    }
+
+                    if (arena.winByScore)
+                    {
+                        foreach (var box in self.resultBoxes)
+                        {
+                            OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
+                            if (pl == null || box == null)
+                            {
+                                continue;
+                            }
+                            if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                            {
+                                box.player.totScore = tb.teamScores[teamSettings.team];
+                            }
+                        }
                     }
                 }
             }

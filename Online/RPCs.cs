@@ -78,7 +78,7 @@ namespace RainMeadow
             string incomingUsername = rpc.from.id.name;
 
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
-
+            if (RainMeadow.rainMeadowOptions.GlobalMute.Value) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
@@ -132,8 +132,10 @@ namespace RainMeadow
             {
                 // Don't kill our friends!
                 if ((saint.apo as AbstractCreature).realizedCreature.FriendlyFireSafetyCandidate((opo.apo as AbstractCreature).realizedCreature)) return;
+
+                (opo.apo.realizedObject as Creature).SetKillTag(saint.apo as AbstractCreature);
+
             }
-            (opo.apo.realizedObject as Creature).SetKillTag(saint.apo as AbstractCreature);
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)
             {

@@ -91,12 +91,28 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> currentlyActiveCapeColor;
     public readonly Configurable<int> ChallengeID;
 
-    public readonly Configurable<int> ArenaSpearScore;
+
+    public readonly Configurable<int> ArenaFoodScore;
+
+    public readonly Configurable<int> ArenaSpearHitScore;
+    public readonly Configurable<int> ArenaKillScore;
+
     public readonly Configurable<int> ArenaAliveScore;
     public readonly Configurable<int> ArenaDenScore;
+
+    public readonly Configurable<bool> ChallengeDenEjection;
+
+
+    public readonly Configurable<int> ArenaEmptyKillTagScore;
+
     public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
     public Configurable<RainMeadow.LogLevel> CurrentLogLevel;
     public readonly Configurable<bool> ArenaUnhandledOptimizations;
+
+    public readonly Configurable<bool> GlobalMute;
+
+    public readonly Configurable<int> ArenaFlairActive;
+
 
     public enum IntroRoll
     {
@@ -218,7 +234,10 @@ public class RainMeadowOptions : OptionInterface
         boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
         currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
-        ArenaSpearScore = config.Bind("ArenaSpearScore", 0);
+
+        ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
+        ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
+        ArenaKillScore = config.Bind("ArenaKillScore", 0);
         ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
         ArenaDenScore = config.Bind("ArenaDenScore", 0);
 
@@ -227,6 +246,10 @@ public class RainMeadowOptions : OptionInterface
         wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
         CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
+        ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
+        ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
+        GlobalMute = config.Bind("GlobalMute", false);
+        ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
 
     }
     List<ListItem> capeList = new List<ListItem>
@@ -234,6 +257,12 @@ public class RainMeadowOptions : OptionInterface
     new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
     new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
     new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold.SafeColorRange()), "Gold")
+};
+
+    List<ListItem> arenaFlairList = new List<ListItem>
+{
+    new ListItem("0", "Default"),
+    new ListItem("1", "Greedy"),
 };
 
     public override void Initialize()
@@ -310,6 +339,10 @@ public class RainMeadowOptions : OptionInterface
             new OpLabel(10, 60f, Translate("Sound on Mention")),
             new OpCheckBox(ChatPing, new Vector2(10, 30f)),
 
+
+            new OpLabel(440f, 535, Translate("Global Mute")),
+            new OpCheckBox(GlobalMute, new Vector2(410f, 535)),
+
             new OpLabel(410, 120f, Translate("Chat Inactivity Opacity")),
             chatInactivityOpacity = new OpTextBox(ChatInactivityOpacity, new Vector2(410f, 93f), 90),
 
@@ -353,6 +386,8 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpComboBox2 capeColor;
+            OpComboBox2 arenaFlair;
+
 
             OpComboBox2 music;
             OpLabel downpourWarning;
@@ -535,7 +570,23 @@ public class RainMeadowOptions : OptionInterface
                 },
                 slugpupHellBackgroundLabel = new OpLabel(10f, 480, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
                 slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 455)),
+
+            new OpLabel(10f, 400, Translate("Flair")),
+
+            arenaFlair = new OpComboBox2(
+                ArenaFlairActive,
+                new Vector2(10f, 370),
+                160f,
+                arenaFlairList.Where(i =>
+                    (i.displayName == "Default") ||
+                    (i.displayName == "Greedy" && ArenaUnhandledOptimizations.Value)
+                ).ToList()
+            )
+            {
+                colorEdge = Menu.MenuColorEffect.rgbWhite
+            },
             ];
+
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
@@ -544,6 +595,18 @@ public class RainMeadowOptions : OptionInterface
                 OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
                 for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
             };
+
+            arenaFlair.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                if (!int.TryParse(value, out int result))
+                {
+                    RainMeadow.Error("Error converting ArenaFlair to integer");
+                    return;
+                }
+                ArenaFlairActive.Value = result;
+                RainMeadow.Info($"Converted ArenaFlair to integer: {result}");
+            };
+
 
             OnlineLANSettings = new UIelement[7]
             {

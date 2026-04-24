@@ -1,12 +1,14 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Formatters;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 
@@ -203,7 +205,7 @@ public partial class RainMeadow
         {
             return true;
         }
-        
+
 
         return orig(self);
     }
@@ -237,34 +239,34 @@ public partial class RainMeadow
         }
     }
 
-        private void Player_CamoUpdate(ILContext il)
+    private void Player_CamoUpdate(ILContext il)
+    {
+        try
         {
-            try
-            {
-                ILCursor c = new(il);
-                ILLabel label = null;
+            ILCursor c = new(il);
+            ILLabel label = null;
 
-                // We look for: self.rippleData (check if null/false)
-                while (c.TryGotoNext(MoveType.After,
-                    x => x.MatchLdarg(0),                           // Load 'self'
-                    x => x.MatchLdfld<Player>("rippleData"),        // Load field 'rippleData'
-                    x => x.MatchBrfalse(out label)                  // Branch if null (capture the jump target)
-                ))
-                {
-                    c.Emit(OpCodes.Ldarg_0); // Load self again for the IsLocal check
-                    c.EmitDelegate<Func<Player, bool>>((self) => 
-                    {
-                        return self.IsLocal(); 
-                    });
-                    c.Emit(OpCodes.Brfalse, label); 
-                }
-            }
-            catch (Exception ex)
+            // We look for: self.rippleData (check if null/false)
+            while (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdarg(0),                           // Load 'self'
+                x => x.MatchLdfld<Player>("rippleData"),        // Load field 'rippleData'
+                x => x.MatchBrfalse(out label)                  // Branch if null (capture the jump target)
+            ))
             {
-                Error(ex);
+                c.Emit(OpCodes.Ldarg_0); // Load self again for the IsLocal check
+                c.EmitDelegate<Func<Player, bool>>((self) =>
+                {
+                    return self.IsLocal();
+                });
+                c.Emit(OpCodes.Brfalse, label);
             }
         }
-    
+        catch (Exception ex)
+        {
+            Error(ex);
+        }
+    }
+
     private void Player_WatcherUpdate(ILContext il)
     {
         try
@@ -719,8 +721,6 @@ public partial class RainMeadow
             }
         }
 
-
-
         float range = 26 + self.bodyChunks[1].rad;
         if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null &&
             !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0)
@@ -743,26 +743,21 @@ public partial class RainMeadow
                     viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
                     viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
                     if (!viable) continue;
-                    if (other.IsLocal())
+                    var myobj = self.abstractCreature.GetOnlineCreature();
+                    if (myobj is null)
                     {
-                        other.slugOnBack?.SlugToBack(self);
+                        RainMeadow.Error($"{self.abstractCreature} is trying to backpack but it has no online presence.");
+                        continue;
                     }
-                    else
+                    var otherobj = other.abstractCreature.GetOnlineCreature();
+                    if (otherobj is null)
                     {
-                        var myobj = self.abstractCreature.GetOnlineCreature();
-                        if (myobj is null)
-                        {
-                            RainMeadow.Error($"{self.abstractCreature} is trying to backpack but it has no online presence.");
-                            continue;
-                        }
-                        var otherobj = other.abstractCreature.GetOnlineCreature();
-                        if (otherobj is null)
-                        {
-                            RainMeadow.Error($"{self.abstractCreature} is trying to backpack {other.abstractCreature} but it has no online presence.");
-                            continue;
-                        }
-                        otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj);
+                        RainMeadow.Error($"{self.abstractCreature} is trying to backpack {other.abstractCreature} but it has no online presence.");
+                        continue;
                     }
+
+                    otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj));
+                    other.slugOnBack?.SlugToBack(self);
                     break;
                 }
             }
@@ -824,9 +819,9 @@ public partial class RainMeadow
     private bool SlugcatStatsOnHiddenOrUnplayableSlugcat(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
     {
         if (Ext_SlugcatStatsName.AllMeadowExtSlugcats.Contains(i))
-          {
+        {
             return true;
-          }
+        }
 
         return orig(i);
     }
@@ -841,16 +836,31 @@ public partial class RainMeadow
             self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
             self.slugcat.immuneToFallDamage += 10;
-            if (self.slugcat.input[0].jmp)
+            if (self.slugcat.IsLocal() && self.slugcat.input[0].jmp)
             {
-                var slug = self.slugcat;
-                self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
-
-                if (!slug.isNPC && slug.input[0].jmp && slug.IsLocal())
+                var myobj = self.slugcat.abstractCreature.GetOnlineCreature();
+                if (myobj is not null)
                 {
-                    slug.jumpChunk = self.owner.mainBodyChunk;
-                    slug.JumpOnChunk();
+                    var otherobj = self.owner.abstractCreature.GetOnlineCreature();
+                    if (otherobj is not null)
+                    {
+                        otherobj.Lock("slugonback", otherobj.owner.InvokeRPC(otherobj.HopOffBack, myobj));
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"{self.slugcat.abstractCreature} is trying to backpack {self.slugcat.abstractCreature} but it has no online presence.");
+                    }
                 }
+                else
+                {
+                    RainMeadow.Error($"{self.owner.abstractCreature} is trying to backpack but it has no online presence.");
+                }
+
+                Player slugcat = self.slugcat;
+                self.DropSlug(); //NOTE: makes self.slugcat null!
+                slugcat.jumpChunk = self.owner.mainBodyChunk;
+                slugcat.JumpOnChunk();
+                return;
             }
 
             if (self.owner.input[0].pckp && (self.owner.input[0].y > 0) && self.HasASlug)
@@ -1241,13 +1251,13 @@ public partial class RainMeadow
             if (self.IsLocal() && !self.inShortcut) //When entering a shortcut, Player.Update() *should* exit way before it gets here, but, occasionally it just decides not to I guess.
             {
                 if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
-                else                       { extras.timeSinceShelterWakeup++;   }
+                else { extras.timeSinceShelterWakeup++; }
 
                 bool isInvalidInputPressed = self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec;
                 bool hasReleasedDownEarly = self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime;
-                
+
                 if (isInvalidInputPressed || hasReleasedDownEarly) { extras.manualSleepDownCounter = 0; }
-                else if (self.input[0].y < 0)                      { extras.manualSleepDownCounter++;   }
+                else if (self.input[0].y < 0) { extras.manualSleepDownCounter++; }
 
                 if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
                     self.onBack == null && //Check we're not piggybacked onto someone else (hilarious but looked very wrong).
@@ -1278,11 +1288,11 @@ public partial class RainMeadow
             }
         }
 
-        if (OnlineManager.lobby != null && !(ModManager.MSC && 
-            self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && 
-            (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
-                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
-                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
+        if (OnlineManager.lobby != null && !(ModManager.MSC &&
+            self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint &&
+            (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession &&
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge &&
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) &&
                 SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>())
         {
 
@@ -1323,7 +1333,7 @@ public partial class RainMeadow
                             Player.BodyModeIndex.ClimbIntoShortCut
                         ];
 
-                        
+
                         if ((flyDir.x == 0 && flyDir.y == 0) || bannedBodyModes.Contains(self.bodyMode))
                         {
                             extras.capeFlyCounter = 0;
@@ -1332,17 +1342,17 @@ public partial class RainMeadow
                         {
                             self.animation = Player.AnimationIndex.None;
                             self.mainBodyChunk.vel *= 0.8f;
-                            self.mainBodyChunk.vel += flyDir.ToVector2().normalized*2f;
+                            self.mainBodyChunk.vel += flyDir.ToVector2().normalized * 2f;
                             self.airInLungs = 1f;
                             self.standing = false;
                             self.WeightedPush(0, 1, Custom.DirVec(self.bodyChunks[0].pos, self.bodyChunks[1].pos), 1.0f);
-                            foreach (BodyChunk chunk in self.bodyChunks) chunk.vel.y += self.gravity * Mathf.Pow(((float)Mathf.Min(20, extras.capeFlyCounter))/20.0f, 1.4f);
+                            foreach (BodyChunk chunk in self.bodyChunks) chunk.vel.y += self.gravity * Mathf.Pow(((float)Mathf.Min(20, extras.capeFlyCounter)) / 20.0f, 1.4f);
                         }
-                        
+
                     }
                 }
             }
-          
+
         }
     }
 
@@ -1730,6 +1740,11 @@ public partial class RainMeadow
             {
                 self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionPlayer, false);
             }
+            if (ModManager.MSC && creatureTemplate.TopAncestor().type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && self.state == null)
+            {
+                self.state = new PlayerNPCState(self, 0);
+                self.abstractAI = new SlugNPCAbstractAI(self.world, self);
+            }
             if (self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
         }
     }
@@ -1790,7 +1805,7 @@ public partial class RainMeadow
                 x => x.MatchBrfalse(out breakTo));
 
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate(delegate(Player self)
+            cursor.EmitDelegate(delegate (Player self)
             {
                 return self.IsLocal(out _);
             });
@@ -1919,6 +1934,40 @@ public partial class RainMeadow
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
+        // Inside player_die hook
+        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
+        {
+            OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
+
+            if (self.room.game.session is ArenaGameSession s)
+            {
+                int excludedPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
+
+                if (excludedPlayerNumber != -1)
+                {
+                    int[] alivePlayerNumbers = ArenaHelpers.GetAllAlivePlayers(excludedPlayerNumber);
+                    for (int i = 0; i < s.arenaSitting.players.Count; i++)
+                    {
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
+                        if (onlinePlayer == null) continue;
+
+                        if (onlinePlayer.isMe)
+                        {
+                            // Execute locally for the dying player
+                            ArenaRPCs.DistributeEmptyKillScores(alivePlayerNumbers);
+
+                        }
+                        else
+                        {
+                            // Send the RPC to everyone else in the lobby
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, alivePlayerNumbers);
+                        }
+                    }
+                }
+            }
+        }
+
         orig(self);
     }
 
@@ -2086,11 +2135,13 @@ public partial class RainMeadow
                     }
                     if (obj is Player pl)
                     {
-                        if (pl.dead || pl.Stunned) {
+                        if (pl.dead || pl.Stunned)
+                        {
                             if (pl.dead && !arena.enableCorpseGrab)// no grabbing period
                             {
-                                return false;                  
-                            };
+                                return false;
+                            }
+                            ;
                             return orig(self, obj);
                         }
                     }
@@ -2227,12 +2278,36 @@ public partial class RainMeadow
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
+
+
+            // reset and scan
+            c.Index = 0;
+            // looking for the call to get_Value() from the cfgArtificerExplosionCapacity config
+            while (c.TryGotoNext(MoveType.After,
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcats>(nameof(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity))
+            ))
+            {
+                // ignore type definition just override the value
+                if (c.TryGotoNext(MoveType.After, i => i.MatchCallOrCallvirt(out _)))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate<Func<int, Player, int>>((originalValue, self) =>
+                    {
+                        if (RainMeadow.isArenaMode(out var arena))
+                        {
+                            return arena.artiExplosionCount;
+                        }
+                        return originalValue;
+                    });
+                }
+            }
         }
         catch (Exception e)
         {
             Logger.LogError(e);
         }
     }
+
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
