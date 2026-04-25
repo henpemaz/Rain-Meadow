@@ -1165,6 +1165,15 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer B
         )
         {
+            if (A.score != B.score && arena.winByScore)
+            {
+                return A.score > B.score;
+            }
+            if (A.alive != B.alive)
+            {
+                return A.alive;
+            }
+
             return orig(self, A, B);
         }
 
