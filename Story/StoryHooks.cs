@@ -1874,11 +1874,13 @@ namespace RainMeadow
                 }
                 else
                 {
+                    // Returns `self.currentSaveState` or `null`
                     SaveState saveState = self.LoadGameState(null, game, saveAsDeathOrQuit);
                     if (saveState != null)
                     {
+                        // Modifies `self.currentSaveState`, so `saveState` is invalid now
                         SaveStateHandler(self, storyGameMode, game);
-                        return saveState;
+                        return self.currentSaveState;
                     }
 
                     self.currentSaveState.LoadGame("", game);
