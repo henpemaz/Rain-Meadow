@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -1097,6 +1097,12 @@ namespace RainMeadow
                 }
 
                 sortedPlayer.totScore += sortedPlayer.score;
+                if (sortedPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) 
+                {
+                    // overseer does not get any love
+                    sortedPlayer.wins = 0;
+                    sortedPlayer.deaths = 0;
+                } 
 
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sortedPlayer.playerNumber);
                 if (pl == null) continue;
