@@ -386,6 +386,17 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
+            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
+            {
+                SpecialEvents.LoadElement("meadowcoin");
+                if (display.slugIcon is not null)
+                {
+                    display.slugIcon.scale = 0.08f;
+                }
+                return "meadowcoin";
+            }
+
             if (customization.globalMute)
             {
                 return "Meadow_Menu_MutePlayerChat00";

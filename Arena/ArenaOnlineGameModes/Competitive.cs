@@ -118,16 +118,6 @@ namespace RainMeadow
                 return base.AddIcon(arena, display, owner, customization, player);
             }
 
-            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
-            {
-                SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon is not null)
-                {
-                    display.slugIcon.scale = 0.08f;
-                }
-                return "meadowcoin";
-            }
             else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
