@@ -333,6 +333,7 @@ namespace RainMeadow
         {
             clientSettings.inGame = true;
             clientSettings.avatars = avatars.Select(a => a.id).ToList();
+            OnlineManager.lobby.SendValidation();
         }
 
         public virtual void GameShutDown(RainWorldGame game)

@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using RWCustom;
 using UnityEngine;
+using System.Security.Cryptography;
 
 namespace RainMeadow
 {
@@ -127,6 +128,24 @@ namespace RainMeadow
             var toTake = endIndex - startIndex;
 
             return fromStart.Take(toTake).ToList();
+        }
+
+        public static string CreateModChecksum(ModManager.Mod mod)
+        {
+            List<string> results = new();
+            string[] files = Directory.GetFiles(mod.path.ToLowerInvariant(), "*.dll", SearchOption.AllDirectories).ToArray();
+
+            using(MD5 md = MD5.Create())
+            {
+                foreach(var file in files)
+                {
+                    byte[] bytes = File.ReadAllBytes(file);
+                    var hash = md.ComputeHash(bytes);
+                    results.Add(BitConverter.ToString(hash).Replace("-", ""));
+                }
+            }
+
+            return string.Join(", ", results);
         }
     }
 }
