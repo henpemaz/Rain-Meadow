@@ -559,6 +559,17 @@ namespace RainMeadow
             ResetRoundKills();
         }
 
+        public void ResetPlayerStats(ArenaSitting.ArenaPlayer player)
+        {
+            player.score = 0;
+            player.totScore = 0;
+            player.wins = 0;
+            player.deaths = 0;
+            player.wins = 0;
+            player.winner = false;
+            player.alive = false;
+        }
+
         public void RestartGame()
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)

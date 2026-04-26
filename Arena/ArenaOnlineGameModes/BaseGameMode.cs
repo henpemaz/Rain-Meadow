@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -972,6 +972,19 @@ namespace RainMeadow
                 var arenaPlayer = self.players[i];
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaPlayer.playerNumber);
 
+                if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                {
+                    // overseer does not get any love
+                    arena.ResetPlayerStats(arenaPlayer);
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                    }
+                    arena.ReadFromStats(arenaPlayer, onlinePlayer);
+                    continue;
+
+                }
+
                 if (session.Players != null && i < session.Players.Count)
                 {
                     var sessionPlayer = session.Players[i];
@@ -1008,6 +1021,7 @@ namespace RainMeadow
 
                 arenaPlayer.score += 100 * arenaPlayer.sandboxWin;
                 arenaPlayer.winner = false; // Reset winner flag for everyone initially
+
 
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -1097,12 +1111,6 @@ namespace RainMeadow
                 }
 
                 sortedPlayer.totScore += sortedPlayer.score;
-                if (sortedPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) 
-                {
-                    // overseer does not get any love
-                    sortedPlayer.wins = 0;
-                    sortedPlayer.deaths = 0;
-                } 
 
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, sortedPlayer.playerNumber);
                 if (pl == null) continue;
