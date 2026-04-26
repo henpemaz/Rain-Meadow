@@ -3,6 +3,7 @@
 # Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
+- Improved piggyback netcode
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
 ### Watcher
@@ -22,8 +23,10 @@
 - Added Spear Hit score config
 - Prevented Overseer from earning score
 - Synced more attributes in Challenge 70
-- Added additional flair for winning a secret minigame
+- Added additional flair for winning a secret minigame. Check Rain Meadow's Arena Remix page
 - Post-game stats now persist for duration of lobby life or reset as desired
+### Team Battle
+- Teammates will now see the location of Watcher while invisible
 ### Modders
 -  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
