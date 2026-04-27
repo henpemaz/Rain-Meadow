@@ -1765,6 +1765,17 @@ namespace RainMeadow
             return null;
         }
 
+        private static SaveState ApplyClientSaveState(SaveState host, SaveState client)
+        {
+            // Loading host on-top of client causes duplication of some fields, so let's target exact fields
+            host.deathPersistentSaveData.tutorialMessages = client.deathPersistentSaveData.tutorialMessages;
+            host.deathPersistentSaveData.songsPlayRecords = client.deathPersistentSaveData.songsPlayRecords;
+            host.deathPersistentSaveData.karmaFlowerPosition = client.deathPersistentSaveData.karmaFlowerPosition;
+            host.swallowedItems = client.swallowedItems;
+            host.unrecognizedSwallowedItems = client.unrecognizedSwallowedItems;
+            return host;
+        }
+
         private void SaveStateHandler(PlayerProgression self, StoryGameMode storyGameMode, RainWorldGame game)
         {
             RainMeadow.Debug("story: found loaded game state");
@@ -1776,8 +1787,10 @@ namespace RainMeadow
             }
             else
             {
-                // this already syncs the denpos
-                self.currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
+                // This already syncs the denpos
+                var hostSaveState = new SaveState(self.currentSaveState.saveStateNumber, self);
+                hostSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
+                self.currentSaveState = ApplyClientSaveState(hostSaveState, self.currentSaveState);
             }
 
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
@@ -1861,11 +1874,13 @@ namespace RainMeadow
                 }
                 else
                 {
+                    // Returns `self.currentSaveState` or `null`
                     SaveState saveState = self.LoadGameState(null, game, saveAsDeathOrQuit);
                     if (saveState != null)
                     {
+                        // Modifies `self.currentSaveState`, so `saveState` is invalid now
                         SaveStateHandler(self, storyGameMode, game);
-                        return saveState;
+                        return self.currentSaveState;
                     }
 
                     self.currentSaveState.LoadGame("", game);

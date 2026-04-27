@@ -11,6 +11,7 @@
 - Fixed clients not being sucked into warps
 ### Saint
 - Fixed some critical errors in Saint's ending
+- Fixed duplication of some save records when loading on clients. This should fix save bloating that caused load slowdown over time.
 ## General
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
 - Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
