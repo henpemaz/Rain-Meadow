@@ -4,6 +4,7 @@
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 - Improved piggyback netcode
+- Added documentation to the GitHub wiki on OnlinEntity Locks() to manage state race conditions
 ## Story
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
 - Fixed duplication of some save records when loading on clients. This should fix save bloating that caused load slowdown over time.
