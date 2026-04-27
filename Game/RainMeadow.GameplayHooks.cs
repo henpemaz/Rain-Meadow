@@ -1,4 +1,4 @@
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -40,7 +40,6 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -150,16 +149,25 @@ namespace RainMeadow
             }
         }
 
-        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
+            if (OnlineManager.lobby != null)
             {
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
 
-                if (wep1 != null && wep2 != null)
+                if (self.IsLocal())
                 {
-                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
+                    self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
+                }
+
+                if (!obj.IsLocal())
+                {
+                    OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
+                    OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+
+                    if (wep1 != null && wep2 != null)
+                    {
+                        wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2));
+                    }
                 }
             }
             orig(self, obj);
@@ -231,14 +239,6 @@ namespace RainMeadow
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
         }
 
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
-        {
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-            }
-            orig(self, obj);
-        }
 
         bool WeaponIsDangerous(Weapon weapon)
         {
