@@ -40,7 +40,7 @@ namespace RainMeadow
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = mode;
             
-            if (weapon.room != null && weapon.mode != newMode)
+            if (weapon.room != null && weapon.mode != newMode && !onlineEntity.IsLocked("parry"))
             {
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
                 weapon.ChangeMode(newMode);
