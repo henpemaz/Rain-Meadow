@@ -150,7 +150,6 @@ namespace RainMeadow
         }
 
         // Intercept the incoming WeaponHitSomething as fast as possible
-        public static bool didParry = false;
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
             if (OnlineManager.lobby != null)
