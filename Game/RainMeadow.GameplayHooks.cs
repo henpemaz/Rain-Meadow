@@ -149,15 +149,13 @@ namespace RainMeadow
             }
         }
 
+        // Intercept the incoming WeaponHitSomething as fast as possible
+        public static bool didParry = false;
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
             if (OnlineManager.lobby != null)
             {
-
-                if (self.IsLocal())
-                {
-                    self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-                }
+                RainMeadow.DebugMe();
 
                 if (!obj.IsLocal())
                 {
@@ -166,7 +164,9 @@ namespace RainMeadow
 
                     if (wep1 != null && wep2 != null)
                     {
+                        RainMeadow.Error("Setting Parry Lock");
                         wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2));
+                        OnlinePhysicalObject.didParry = true;
                     }
                 }
             }
@@ -624,7 +624,7 @@ namespace RainMeadow
                 BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
                 AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
-                if (!onlineHit.owner.isMe)
+                if (!onlineHit.owner.isMe && !WeaponOnline.IsLocked("parry"))
                 {
                     onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
                         onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
