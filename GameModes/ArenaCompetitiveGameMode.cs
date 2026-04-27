@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -857,7 +857,7 @@ namespace RainMeadow
         {
             if (player == null || pl == null)
             {
-                RainMeadow.Debug("ReadFromStats failed: player or pl is null!");
+                RainMeadow.Error("ReadFromStats failed: player or pl is null!");
                 return;
             }
             RainMeadow.Debug(this);
@@ -896,7 +896,11 @@ namespace RainMeadow
 
         public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
-            if (pl == null) return;
+            if (pl == null) 
+            {
+               RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
+               return;
+            }
             int id = pl.inLobbyId;
 
             // Wins
