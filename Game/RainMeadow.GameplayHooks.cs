@@ -1,4 +1,4 @@
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -67,7 +67,6 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
@@ -152,14 +151,22 @@ namespace RainMeadow
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
+            if (OnlineManager.lobby != null)
             {
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
-
-                if (wep1 != null && wep2 != null)
+                if (self.IsLocal())
                 {
-                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
+                    self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
+                }
+
+                if (!obj.IsLocal())
+                {
+                    OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
+                    OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+
+                    if (wep1 != null && wep2 != null)
+                    {
+                        wep2.Lock("parry", wep2.owner.InvokeOnceRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2));
+                    }
                 }
             }
             orig(self, obj);
@@ -229,15 +236,6 @@ namespace RainMeadow
                 self.firstChunk.lastPos = firstFrameTraceFromPos.Value;
             }
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
-        }
-
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
-        {
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-            }
-            orig(self, obj);
         }
 
         bool WeaponIsDangerous(Weapon weapon)

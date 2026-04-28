@@ -1157,7 +1157,6 @@ public partial class RainMeadow
         float wasSleepCurlUp = self.sleepCurlUp;
 
         orig(self, eu);
-
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())

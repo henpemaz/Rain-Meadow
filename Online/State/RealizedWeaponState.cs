@@ -39,7 +39,12 @@ namespace RainMeadow
 
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = mode;
-            
+            if (onlineEntity.IsLocked("parry"))
+            {
+                weapon.mode = Weapon.Mode.Free;
+                newMode = Weapon.Mode.Free;
+            }
+
             if (weapon.room != null && weapon.mode != newMode)
             {
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
@@ -49,10 +54,11 @@ namespace RainMeadow
 
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            if (!ShouldPosBeLenient(weapon)) {
+            if (!ShouldPosBeLenient(weapon))
+            {
                 weapon.rotation = Custom.DegToVec(rotation);
                 weapon.rotationSpeed = rotationSpeed;
-                weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
+                weapon.throwDir = new IntVector2((throwDir & 0b01) != 0 ? 0 : (throwDir & 0b10) != 0 ? -1 : 1, (throwDir & 0b01) == 0 ? 0 : (throwDir & 0b10) != 0 ? -1 : 1);
             }
         }
     }
