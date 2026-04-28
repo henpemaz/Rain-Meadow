@@ -108,6 +108,14 @@ namespace RainMeadow.UI.Components
         {
             return baseColor.GetValueOrDefault(Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey));
         }
+        public HSLColor MyEyeColor()
+        {
+            return eyeColor.GetValueOrDefault(Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey));
+        }
+        public HSLColor MyFeatColor()
+        {
+            return featColor.GetValueOrDefault(Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey));
+        }
         public float MiddleOfY(float sizeY)
         {
             return (size.y - sizeY) / 2;
@@ -119,6 +127,8 @@ namespace RainMeadow.UI.Components
         public bool showRainbow;
         public bool flexYourCash;
         public HSLColor? baseColor;
+        public HSLColor? eyeColor;
+        public HSLColor? featColor;
         public HSLColor rainbowColor;
         public Color goldColor;
 
