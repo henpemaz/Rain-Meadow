@@ -239,12 +239,10 @@ namespace RainMeadow
                     }
                 }
                 bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
-                if (!OnlineManager.lobby.isOwner || !readyForWarp)
-                { // clients cant activate or update warp points unless it is an echo
-
-                    // 04-24-2026: Removed this so that clients correctly get added to rooms
-                    // self.triggerTime = 0;
-                    // self.lastTriggerTime = 0;
+                if (!readyForWarp) //||!OnlineManager.lobby.isOwner // 04-24-2026: Removed this so that clients correctly get added to rooms
+                {
+                    self.triggerTime = 0;
+                    self.lastTriggerTime = 0;
                 }
             }
             orig(self, eu); // either host or singleplayer
