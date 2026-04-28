@@ -611,7 +611,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
                     {
                         RainMeadow.Debug("Parried!");
-                        OnlineManager.RunDeferred(() => onlineResult.didParry = false);
+                        onlineResult.didParry = false;
                         HittingRemotely = false;
                         return;
                     }
