@@ -418,11 +418,9 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadowGameMode)
             {
-                if (self.hud == null && self.followAbstractCreature?.realizedObject is Creature owner)
+                if (self.hud == null && meadowGameMode.avatars[0].realizedCreature is Creature owner)
                 {
                     RainMeadow.Debug("followed creature is " + owner);
-                    if (owner != meadowGameMode.avatars[0].realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatars[0]}"); }
-
                     self.hud = new HUD.HUD(new FContainer[]
                     {
                         self.ReturnFContainer("HUD"),
@@ -435,6 +433,10 @@ namespace RainMeadow
                     self.hud.AddPart(new MeadowProgressionHud(self.hud));
                     self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
                     self.hud.AddPart(new MeadowHud(self.hud, self, owner));
+                    if (owner is Overseer)
+                    {
+                        self.hud.AddPart(new SpectatorHud(self.hud, self));
+                    }
                 }
             }
             orig(self);

@@ -46,6 +46,7 @@ namespace RainMeadow
             public string displayName; // in select screen
             public string emotePrefix; // for emote sprites
             public string emoteAtlas; // atlas name
+            public bool noEmotes = false;
             public Color emoteColor; // emote tile color (pre-tint)
             public SoundID voiceId;
             public List<Skin> skins = new();
@@ -141,6 +142,7 @@ namespace RainMeadow
                 displayName = "OVERSEER",
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
+                noEmotes = true,
                 emoteColor = Extensions.ColorFromHex(0x79635f),
                 voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
                 selectSpriteIndexes = new[] { 2 },
@@ -603,6 +605,7 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.Overseer,
                 randomSeed = 9834,
                 baseColor = new Color(1f, 0.8f, 0.3f),
+                tintFactor = 1.0f,
             });
         }
 
@@ -681,11 +684,7 @@ namespace RainMeadow
 
         public static List<Emote> AllAvailableEmotes(Character character)
         {
-            if (character == Character.Overseer)
-            {
-                return [];    
-            }
-
+            if (characterData[character].noEmotes) return [];
             return emoteEmotes.Intersect(progressionData.characterProgress[character].unlockedEmotes).ToList();
         }
 
@@ -701,6 +700,7 @@ namespace RainMeadow
 
         public static Emote NextUnlockableEmote()
         {
+            if (progressionData.currentlySelectedCharacter == Character.Overseer) return default!;
             return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
         }
 
@@ -943,11 +943,22 @@ namespace RainMeadow
                 {
                     if (character != null)
                     {
-                        unlockedEmotes = emoteEmotes.Take(4).ToList();
+
+
                         unlockedSkins = characterData[character].skins.Take(1).ToList();
                         selectedSkin = unlockedSkins[0];
                         saveLocation = characterData[character].startingCoords;
-                        emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
+                        if (characterData[character].noEmotes)
+                        {
+                            unlockedEmotes = [];
+                            emoteHotbar = symbolEmotes.Take(8).ToList();
+                        }
+                        else
+                        {
+                            unlockedEmotes = emoteEmotes.Take(4).ToList();
+                            emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
+                        }
+                        
                     }
                 }
             }
