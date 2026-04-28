@@ -193,7 +193,7 @@ namespace RainMeadow
             if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
+                this.didParry = false;
                 return;
             }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
