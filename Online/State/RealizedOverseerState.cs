@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using OverseerHolograms;
 using RWCustom;
 using UnityEngine;
@@ -17,12 +18,16 @@ namespace RainMeadow
         [OnlineField(nullable: true)] 
         public OnlineEntity.EntityId? communicateWith;
 
+        [OnlineField(nullable: true)]
+        public MeadowProgression.Emote? emote;
+
         public OverseerHologramState() { }
         public OverseerHologramState(OverseerHologram hologram)
         {
             pos = hologram.pos;
             message = hologram.message.value;
             communicateWith = hologram.communicateWith?.abstractCreature?.GetOnlineCreature()?.id;
+            if (hologram is EmoteHologram emoteHologram) emote = emoteHologram.emote;
         }
 
         public void MakeHologram(Overseer overseer) 
@@ -33,12 +38,12 @@ namespace RainMeadow
                 overseer.hologram.stillRelevant = false;
                 overseer.hologram = null;
             }
-            if (message == RainMeadow.Ext_OverseerHologram_Message.OverseerEmote.value)
+            if (message == RainMeadow.Ext_OverseerHologram_Message.OverseerEmote.value && emote != null)
             {
-                if (CreatureController.creatureControllers.TryGetValue(overseer, out var controller) 
-                        && controller is OverseerController overseerController && overseerController.latestEmoteDisplayer is not null && overseerController.latestEmote is not null)
+                EmoteDisplayer? displayer = EmoteDisplayer.map.GetValue(overseer, (c) => null!);
+                if (displayer != null)
                 {
-                    overseerController.AddEmoteLocal(overseerController.latestEmoteDisplayer, overseerController.latestEmote);
+                    OverseerController.AddEmoteHologram(overseer, displayer, emote);
                 }
             }
         }
@@ -135,16 +140,24 @@ namespace RainMeadow
 
                 if (overseer.rootTile != rootTile)
                 {
-                    overseer.FindZipPath(rootTile, hoverTile);
-                    if (overseer.mode == Overseer.Mode.SittingInWall)
+                    if (overseer.AI != null)
                     {
-                        overseer.SwitchModes(Overseer.Mode.Zipping);
-                    }
-                    else
-                    {
-                        overseer.nextHoverTile = hoverTile;
-                        overseer.afterWithdrawMode = Overseer.Mode.Zipping;
-                        overseer.SwitchModes(Overseer.Mode.Withdrawing);
+                        // if (overseer.AI.zipPathingMatrix == null) overseer.AI.ResetZipPathingMatrix(overseer.rootTile);
+                        if (overseer.AI.GetZipPathMatrixCell(rootTile) >= 0f && overseer.AI.GetZipPathMatrixCell(rootTile) < float.MaxValue)
+                        {
+                            overseer.FindZipPath(rootTile, hoverTile);
+                            if (overseer.mode == Overseer.Mode.SittingInWall)
+                            {
+                                overseer.SwitchModes(Overseer.Mode.Zipping);
+                            }
+                            else
+                            {
+                                overseer.nextHoverTile = hoverTile;
+                                overseer.afterWithdrawMode = Overseer.Mode.Zipping;
+                                overseer.SwitchModes(Overseer.Mode.Withdrawing);
+                            }
+                            
+                        }
                     }
                 }
                 else
