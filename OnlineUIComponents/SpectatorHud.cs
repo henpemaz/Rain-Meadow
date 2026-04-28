@@ -19,6 +19,22 @@ namespace RainMeadow
             get => spectatee is not null;
         }
 
+        public AbstractCreature? Spectatee
+        {
+            get => spectatee;
+            set 
+            {
+                if (value == null)
+                {
+                    ClearSpectatee();    
+                }
+                else
+                {
+                    SpectateCreature(value);
+                }
+            }
+        }
+
         public SpectatorHud(HUD.HUD hud, RoomCamera camera)
             : base(hud)
         {
@@ -36,6 +52,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
+                    spectatorOverlay.spectatee = spectatee;
                     if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                     {
                         holidayStoreOverlay = new HolidayStoreOverlay(game.manager, game);
@@ -57,6 +74,16 @@ namespace RainMeadow
             }
             spectatorOverlay?.GrafUpdate(timeStacker);
             holidayStoreOverlay?.GrafUpdate(timeStacker);
+        }
+
+        public void SpectateCreature(AbstractCreature critter)
+        {
+            spectatee = critter;
+            if (spectatorOverlay != null)
+            {
+                spectatorOverlay.spectatee = critter;
+                spectatorOverlay.Update();
+            }
         }
 
         public void ClearSpectatee()

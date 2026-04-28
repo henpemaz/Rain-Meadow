@@ -336,39 +336,48 @@ namespace RainMeadow
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
-            self.AddPart(new Pointing(self));
+            
             self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
-            self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
-            if (
-                ModManager.Watcher
-                && OnlineManager
-                    .lobby.clientSettings[OnlineManager.mePlayer]
-                    .GetData<ArenaClientSettings>()
-                    .playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher
-            )
-            {
-                RainMeadow.Debug("Adding Watcher Camo Meter");
-                self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
-            }
+
             if (OnlineManager
                     .lobby.clientSettings[OnlineManager.mePlayer]
                     .GetData<ArenaClientSettings>()
-                    .playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
-            )
+                    .playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator && arena.enableOverseer)
             {
-                return;
+                
+                self.AddPart(new MeadowEmoteHud(self, session.game.cameras[0], 
+                    arena.avatars.First(x => x.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Overseer).realizedCreature));
             }
-            var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
-            psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
-            psmh.flip = -1;
-            psmh.parts.RemoveAll(x => x is HUD.PlayerSpecificMultiplayerHud.PlayerArrow || x is HUD.PlayerSpecificMultiplayerHud.PlayerDeathBump);
-            var killsList = new HUD.PlayerSpecificMultiplayerHud.KillList(psmh);
-            var scoreCounter = new HUD.PlayerSpecificMultiplayerHud.ScoreCounter(psmh);
-            scoreCounter.scoreText.color = Color.white; // can't see crap
-            scoreCounter.lightGradient.color = Color.white;
-            psmh.parts.Add(killsList);
-            psmh.parts.Add(scoreCounter);
-            self.AddPart(psmh);
+            else
+            {
+                self.AddPart(new Pointing(self));
+                foreach(AbstractCreature localPlayer in session.Players.Where(x => x != null && x.IsLocal()).ToArray())
+                {
+                    var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, localPlayer)
+                    {
+                        cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 
+                                    20f + self.rainWorld.options.SafeScreenOffset.y),
+                        flip = -1
+                    };
+
+                    psmh.parts.RemoveAll(x => x is HUD.PlayerSpecificMultiplayerHud.PlayerArrow || x is HUD.PlayerSpecificMultiplayerHud.PlayerDeathBump);
+                    psmh.parts.Add(new HUD.PlayerSpecificMultiplayerHud.KillList(psmh));
+                    var scoreCounter = new HUD.PlayerSpecificMultiplayerHud.ScoreCounter(psmh);
+                    scoreCounter.scoreText.color = Color.white; // can't see crap
+                    scoreCounter.lightGradient.color = Color.white;
+                    psmh.parts.Add(scoreCounter);
+                    self.AddPart(psmh);
+
+                    if (ModManager.Watcher && OnlineManager
+                        .lobby.clientSettings[OnlineManager.mePlayer]
+                        .GetData<ArenaClientSettings>()
+                        .playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                    {
+                        self.AddPart(new Watcher.CamoMeter(self, psmh, self.fContainers[1]));
+                    }
+                }
+                
+            }   
         }
 
         public virtual void ArenaCreatureSpawner_SpawnCreatures(
@@ -933,6 +942,7 @@ namespace RainMeadow
                         playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
                         && opo.apo is AbstractCreature ac
                         && !self.Players.Contains(ac)
+                        && ac.creatureTemplate.type != CreatureTemplate.Type.Overseer
                     ) //&& ac.state.alive
                     {
                         self.Players.Add(ac);
