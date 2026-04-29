@@ -350,6 +350,14 @@ namespace RainMeadow
                 RainMeadow.Debug("Adding Watcher Camo Meter");
                 self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
             }
+            if (OnlineManager
+                    .lobby.clientSettings[OnlineManager.mePlayer]
+                    .GetData<ArenaClientSettings>()
+                    .playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+            )
+            {
+                return;
+            }
             var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, session.Players.FirstOrDefault(x => x != null && x.IsLocal()));
             psmh.cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 20f + self.rainWorld.options.SafeScreenOffset.y);
             psmh.flip = -1;
@@ -971,6 +979,7 @@ namespace RainMeadow
             {
                 var arenaPlayer = self.players[i];
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaPlayer.playerNumber);
+                if (onlinePlayer == null) continue;
 
                 if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 {
@@ -1105,7 +1114,7 @@ namespace RainMeadow
                     sortedPlayer.wins++;
                 }
 
-                if (!sortedPlayer.alive)
+                if (!sortedPlayer.alive && sortedPlayer.playerClass != RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 {
                     sortedPlayer.deaths++;
                 }
