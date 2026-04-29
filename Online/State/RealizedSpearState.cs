@@ -56,8 +56,6 @@ namespace RainMeadow
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             spear.spearDamageBonus = spearDamageBonus;
-            spear.addPoles = stuckInWall.HasValue;
-
             spear.spearmasterNeedle_hasConnection = needleActive;
 
             if (stuckInChunk is not null)
@@ -69,11 +67,7 @@ namespace RainMeadow
                 spear.stuckRotation = stuckRotation;
             }
 
-            if (spear is ExplosiveSpear explosive) {
-                if (ignited && !explosive.Ignited) {
-                    explosive.Ignite();
-                }
-            }
+            if (spear is ExplosiveSpear explosive && ignited && !explosive.Ignited) explosive.Ignite();
 
             base.ReadTo(onlineEntity);
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
