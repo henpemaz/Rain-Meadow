@@ -32,17 +32,19 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc, 
+        public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc, Vector2 parryorigin,
             OnlinePhysicalObject weapon1, OnlinePhysicalObject weapon2, RealizedWeaponState realizedWeaponState1, RealizedWeaponState realizedWeaponState2)
         {
-
+            if (weapon1.IsLocked("parry") || weapon2.IsLocked("parry")) return;
             if (rpc.from != weapon1.owner && rpc.from != weapon2.owner) throw new InvalidOperationException("Not owner of either weapon");
-            if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
+            
+            if (weapon1.apo.realizedObject != null && weapon2.apo.realizedObject != null)
             {
-                if (weapon1.apo.realizedObject != null && weapon2.apo.realizedObject != null)
-                {
-                    (weapon1.apo.realizedObject as Weapon).HitAnotherThrownWeapon(weapon2.apo.realizedObject as Weapon);
-                }
+                weapon1.apo.realizedObject.firstChunk.lastPos = parryorigin;
+                weapon2.apo.realizedObject.firstChunk.lastPos = parryorigin;
+                (weapon1.apo.realizedObject as Weapon).HitAnotherThrownWeapon(weapon2.apo.realizedObject as Weapon);
+                realizedWeaponState1.ReadTo(weapon1);
+                realizedWeaponState2.ReadTo(weapon2);
             }
         }
 

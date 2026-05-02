@@ -158,49 +158,55 @@ namespace RainMeadow
 
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent == null)
-            {
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = self.abstractPhysicalObject.GetOnlineObject();
-
-                if (wep1 != null && wep2 != null)
-                {
-                    RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
-                    if (realizedstatewep1 is null)
-                    {
-                        RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
-                        return;
-                    } 
-
-                    
-                    RealizedWeaponState? realizedstatewep2 = GetAppropriateWeaponState(wep2);
-                    if (realizedstatewep2 is null)
-                    {
-                        RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
-                        return;
-                    } 
-
-
-                    if (wep1.owner != OnlineManager.mePlayer)
-                    {
-                        wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
-                    }
-                    else if (wep2.owner != OnlineManager.mePlayer)
-                    {
-                        wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
-                    }
-
-                    foreach (OnlinePlayer p in wep1.roomSession?.participants ?? [])
-                    {
-                        if (p != wep1.owner && p != wep2.owner)
-                        {
-                            p.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2);
-                        }
-                    }
-                }
-            }
+            RainMeadow.DebugMe();
+            var parryorigin = Vector2.Lerp(self.firstChunk.lastPos, obj.firstChunk.lastPos, 0.5f);
 
             orig(self, obj);
+            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(parryorigin, self, obj);
+        }
+
+        private void BroacastParry(Vector2 parryorigin, Weapon A, Weapon B)
+        {
+            RainMeadow.DebugMe();
+            OnlinePhysicalObject? wep1 = A.abstractPhysicalObject.GetOnlineObject();
+            OnlinePhysicalObject? wep2 = B.abstractPhysicalObject.GetOnlineObject();
+            if (wep1 == null || wep2 == null || !(wep1.isMine || wep2.isMine)) return;
+            RainMeadow.Debug($"Parry {wep1}, {wep1.owner}, {wep2}, {wep2.owner}");
+            
+            RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
+            if (realizedstatewep1 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
+                return;
+            } 
+
+            
+            RealizedWeaponState? realizedstatewep2 = GetAppropriateWeaponState(wep2);
+            if (realizedstatewep2 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
+                return;
+            } 
+                
+
+            if (!wep1.isMine)
+            {
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
+            }
+
+            if (!wep2.isMine)
+            {
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
+            }
+            
+
+            foreach (OnlinePlayer p in wep1.roomSession?.participants ?? [])
+            {
+                if (p != wep1.owner && p != wep2.owner)
+                {
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2);
+                }
+            }
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
@@ -621,7 +627,7 @@ namespace RainMeadow
                 return orig(self, result, eu);
             }
 
-            if (RPCEvent.currentRPCEvent != null)
+            if (RPCEvent.currentRPCEvent is not null)
             {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
                 if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)

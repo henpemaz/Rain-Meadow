@@ -598,6 +598,7 @@ namespace RainMeadow
         [RPCMethod]
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
+            if (this.IsLocked("parry")) return;
             if (this.apo.realizedObject != null) 
             {
                 statewhenhit.ReadTo(this);
