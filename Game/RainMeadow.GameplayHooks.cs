@@ -59,6 +59,7 @@ namespace RainMeadow
             IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
 
             On.Spear.Spear_makeNeedle += Spear_makeNeedle;
+            On.Spear.resetHorizontalBeamState += Spear_resetHorizontalBeamState;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
@@ -76,6 +77,17 @@ namespace RainMeadow
             On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
         }
 
+        // Sends an RPC to potentially remove beam left by the spear on other clients
+        private static void Spear_resetHorizontalBeamState(On.Spear.orig_resetHorizontalBeamState orig, Spear self)
+        {
+            if (self?.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlinePhysicalObject && self.stuckInWall != null)
+            {
+                onlinePhysicalObject.BroadcastRPCInRoom(RPCs.RemovePoleStateForSpear, 
+                    onlinePhysicalObject, self.stuckInWall, self.abstractSpear.stuckInWallCycles, self.wasHorizontalBeam);
+            }
+            orig(self);
+        }
+        
         // Prevent ammo from duping
         private void JokeRifle_Use(ILContext il)
         {
