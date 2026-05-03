@@ -56,7 +56,7 @@ namespace RainMeadow
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             spear.spearDamageBonus = spearDamageBonus;
-            spear.addPoles = stuckInWall.HasValue;
+            // spear.addPoles = stuckInWall.HasValue; <- not good
 
             spear.spearmasterNeedle_hasConnection = needleActive;
 
