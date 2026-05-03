@@ -300,6 +300,10 @@ namespace RainMeadow
             {
                 if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
+                    if (c is OverseerController oc && oc.cursor is not null && oc.cursor.currentlyInteracting != null)
+                    {
+                        return oc.cursor.interactTimer > 20;
+                    } 
                     return c.touchedNoInputCounter > 20;
                 }
             }
@@ -312,6 +316,18 @@ namespace RainMeadow
             {
                 if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
+                    if (c is OverseerController oc)
+                    {
+                        if (oc.cursor is not null && oc.cursor.currentlyInteracting is OverseerController.InteractableGateSide gateside)
+                        {
+                            return gateside.index + 1;
+                        }
+                        else
+                        {
+                            return self.letThroughDir ? 3 : 0;
+                        }
+                    } 
+
                     return self.DetectZone(c.creature.abstractCreature);
                 }
             }

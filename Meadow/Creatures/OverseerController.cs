@@ -162,7 +162,7 @@ namespace RainMeadow
             int Priority { get;}
             Vector2 pos { get; }
             bool Interact(Overseer overseer);
-            public void StopInteracting(Overseer overseer);
+            public bool StopInteracting(Overseer overseer);
             public bool IsViableForOverseer(Overseer overseer);
         }
 
@@ -206,13 +206,15 @@ namespace RainMeadow
                 return true;
             }
 
-            public void StopInteracting(Overseer overseer)
+            public bool StopInteracting(Overseer overseer)
             {
                 var spectator = creature.world.game.cameras[0].hud.parts.OfType<SpectatorHud>().FirstOrDefault();
                 if (spectator is not null && spectator.isSpectating && spectator.Spectatee == creature)
                 {
                     spectator.ClearSpectatee();
                 }
+
+                return true;
             }
 
 
@@ -242,26 +244,52 @@ namespace RainMeadow
                 OverseerAbstractAI abstractAi = (OverseerAbstractAI)overseer.abstractCreature.abstractAI;
 
                 int dest_room = data.room.abstractRoom.connections[data.destNode];
-                overseer.room.game.roomRealizer.RealizeAndTrackRoom(abstractAi.world.GetAbstractRoom(dest_room), true);
-
+                if (overseer.room.world.GetAbstractRoom(dest_room) == null) return false;
                 int dest_node = data.room.world.GetAbstractRoom(dest_room).ExitIndex(data.room.abstractRoom.index);
                 var dest_coord = new WorldCoordinate(dest_room, -1, -1, dest_node);
                 abstractAi.SetDestinationNoPathing(dest_coord, true);
-                abstractAi.AbstractBehavior(1);
-
-                if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
-                if (overseer.mode == Overseer.Mode.Watching) overseer.ZipOutOfRoom(dest_coord);
                 return true;
             }
 
-            public void StopInteracting(Overseer overseer) { }
+            public bool StopInteracting(Overseer overseer) => true;
 
             public bool IsViableForOverseer(Overseer overseer)
             {
+                if (data.room.regionGate is not null && data.room.regionGate.waitingForWorldLoader) return false; 
                 return data.room == overseer.room;
             }
         }
 
+        public class InteractableGateSide : IInteractable
+        {
+            public RegionGate gate;
+            public int index;
+            public InteractableGateSide(RegionGate gate, int index)
+            {
+                this.gate = gate;  
+                this.index = index;
+            }
+
+            public int Priority => 1;
+
+            public Vector2 pos => gate.karmaGlyphs[index].pos;
+
+            public bool Interact(Overseer overseer)
+            {
+                return gate.mode == RegionGate.Mode.MiddleClosed;
+            }
+
+            public bool IsViableForOverseer(Overseer overseer)
+            {
+                if (gate.mode == RegionGate.Mode.ClosingAirLock || gate.waitingForWorldLoader) return true;
+                return gate.room == overseer.room && gate.room != null && !gate.slatedForDeletetion;
+            }
+            public bool StopInteracting(Overseer overseer)
+            {
+                if (gate.mode == RegionGate.Mode.ClosingAirLock || gate.waitingForWorldLoader) return false;
+                return true;
+            }
+        }
 
 
 
@@ -311,34 +339,41 @@ namespace RainMeadow
             {
                 if (creature.isAvatar && creature.isMine)
                 {
+                    run_orig = false;
+                    var destination = self.destination;
                     var spectator = self.world.game.cameras[0].hud.parts.OfType<SpectatorHud>().FirstOrDefault();
-                    if (spectator.Spectatee != null && spectator.Spectatee.Room != self.parent.Room)
+                    if (spectator?.Spectatee != null && spectator.Spectatee.Room != self.parent.Room)
                     {
                         // move avatar to current spectation room
-                        int dest_room = spectator.Spectatee.pos.room;
-                        var dest_abroom = self.world.GetAbstractRoom(dest_room);
-                        if (dest_abroom.realizedRoom is null)
+                        destination = spectator.Spectatee.pos;
+                    }
+
+                    if (self.parent.pos.room != destination.room)
+                    {
+                        var dest_abroom = self.world.GetAbstractRoom(destination);
+                        if (dest_abroom is not null)
                         {
-                            self.world.game.roomRealizer.RealizeAndTrackRoom(dest_abroom, true);
-                        }
-                        else
-                        {
-                            if (dest_abroom.realizedRoom.readyForAI)
+                            if (dest_abroom.realizedRoom is null)
                             {
-                                self.world.game.roomRealizer.RealizeAndTrackRoom(self.world.GetAbstractRoom(dest_room), true);
-                                var dest_coord = new WorldCoordinate(dest_room, -1, -1, 0);
-                                self.SetDestinationNoPathing(dest_coord, true);
-                                if (self.parent.realizedCreature is Overseer overseer)
+                                self.world.game.roomRealizer.RealizeAndTrackRoom(dest_abroom, true);
+                            }
+                            else
+                            {
+                                if (dest_abroom.realizedRoom.readyForAI)
                                 {
-                                    if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
-                                    if (overseer.mode == Overseer.Mode.Watching) overseer.ZipOutOfRoom(dest_coord);
-                                }
-                                else
-                                {
-                                    self.parent.Move(dest_coord);
+                                    self.world.game.roomRealizer.RealizeAndTrackRoom(self.world.GetAbstractRoom(destination), true);
+                                    self.SetDestinationNoPathing(destination, true);
+                                    if (self.parent.realizedCreature is Overseer overseer)
+                                    {
+                                        if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
+                                        if (overseer.mode == Overseer.Mode.Watching) overseer.ZipOutOfRoom(destination);
+                                    }
+                                    else
+                                    {
+                                        self.parent.Move(destination);
+                                    }
                                 }
                             }
-                            
                         }
                     }
                 }
@@ -504,6 +539,7 @@ namespace RainMeadow
             public readonly OverseerController controller;
             public Vector2 ScreenPos => this.pos - this.room.game.cameras[0].pos;
             public bool OverseerActive => overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping;
+            public int interactTimer = 0;
 
             public Vector2 OverseerEyePos(float timeStacker)
             {
@@ -687,6 +723,15 @@ namespace RainMeadow
                     {
                         if (onlineCreature.isAvatar && Custom.DistLess(closestCreature.mainBodyChunk.pos, pos, candidate_distance)) PromoteCandidate(new SpectatableCreature(this, closestCreature.abstractCreature));
                     }
+
+                    if (room.regionGate != null)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            Vector2 glyphpos = room.regionGate.karmaGlyphs[i].pos;
+                            if (Custom.DistLess(glyphpos, pos, candidate_distance*4f)) PromoteCandidate(new InteractableGateSide(room.regionGate, i));
+                        }
+                    }
                     
 
                     ShortcutData closestShortCut = this.room.shortcuts.Where(x => x.shortCutType == ShortcutData.Type.RoomExit).DefaultIfEmpty().Aggregate((a, b) => 
@@ -705,7 +750,7 @@ namespace RainMeadow
 
                 if (currentlyInteracting is not null)
                 {
-                    
+                    interactTimer += 1;
                     this.homePos = currentlyInteracting.pos;
                     if (mouseMode || !this.input[0].AnyDirectionalInput)
                     {
@@ -725,7 +770,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    
+                    interactTimer = 0;
                     this.homeIn = Mathf.Max(0f, this.homeIn - 0.033333335f);
                 }
                 
@@ -734,10 +779,9 @@ namespace RainMeadow
 
                 if (this.input[0].jmp && !this.input[1].jmp)
                 {
-                    if (currentlyInteracting is not null)
+                    if (currentlyInteracting is not null && currentlyInteracting.StopInteracting(overseer))
                     {
                         clickedSomething = true;
-                        currentlyInteracting.StopInteracting(overseer);
                         currentlyInteracting = null;
                     }
                     else if (interactionCandidate is not null)
