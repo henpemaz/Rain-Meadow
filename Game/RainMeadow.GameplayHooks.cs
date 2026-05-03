@@ -204,7 +204,7 @@ namespace RainMeadow
             {
                 if (p != wep1.owner && p != wep2.owner)
                 {
-                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2);
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2);
                 }
             }
         }
