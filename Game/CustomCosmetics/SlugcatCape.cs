@@ -1,10 +1,7 @@
-using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
