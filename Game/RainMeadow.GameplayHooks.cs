@@ -59,6 +59,8 @@ namespace RainMeadow
             IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
 
             On.Spear.Spear_makeNeedle += Spear_makeNeedle;
+            On.Spear.resetHorizontalBeamState += Spear_RemoveSpearFromBeingABeam;
+            On.Spear.Update += Spear_CheckIfSpearIsBeingABeam;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
@@ -76,6 +78,29 @@ namespace RainMeadow
             On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
         }
 
+        // Sends an RPC whenever the Spear has addPoles as true AND did the check to add a pole. Prevents the spear from being set as a beam twice.
+        private static void Spear_CheckIfSpearIsBeingABeam(On.Spear.orig_Update orig, Spear self, bool eu)
+        {
+            bool oldAddPoles = self.addPoles;
+            orig(self, eu);
+            if (self?.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlinePhysicalObject
+                && oldAddPoles && !self.addPoles && self.room.readyForAI && onlinePhysicalObject.isMine)
+            {
+                onlinePhysicalObject.BroadcastRPCInRoom(MeadowRPCs.AddPoleForSpear, onlinePhysicalObject);
+            }
+        }
+        
+        // Sends an RPC whenever the Spear stops being climmable, preventing ghost beams from appearing
+        private static void Spear_RemoveSpearFromBeingABeam(On.Spear.orig_resetHorizontalBeamState orig, Spear self)
+        {
+            if (self?.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlinePhysicalObject && self.stuckInWall != null)
+            {
+                onlinePhysicalObject.BroadcastRPCInRoom(MeadowRPCs.ResetPoleStateForSpear, 
+                    onlinePhysicalObject, self.stuckInWall, self.abstractSpear.stuckInWallCycles, self.wasHorizontalBeam);
+            }
+            orig(self);
+        }
+        
         // Prevent ammo from duping
         private void JokeRifle_Use(ILContext il)
         {
