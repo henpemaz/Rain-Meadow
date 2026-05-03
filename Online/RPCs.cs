@@ -234,5 +234,40 @@ namespace RainMeadow
             }
             DeathMessage.CreatureKillPlayer(myKiller, myTarget);
         }
+        
+        [RPCMethod]
+        public static void RemovePoleStateForSpear(RPCEvent rpc, OnlinePhysicalObject onlineSpear, Vector2 stuckInWall, int stuckInWallCycles, bool[] wasHorizontalBeam)
+        {
+            if (onlineSpear?.apo?.realizedObject is Spear spear)
+            {
+                spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
+                spear.wasHorizontalBeam = wasHorizontalBeam;
+    
+                if (spear.abstractSpear.stuckInWallCycles > 0) // from Spear.resetHorizontalBeamState()
+                {
+                    spear.room.GetTile(stuckInWall.Value).horizontalBeam = spear.wasHorizontalBeam[1];
+                    for (int i = -1; i < 2; i += 2)
+                    {
+                        if (!spear.room.GetTile(stuckInWall.Value + new Vector2(20f * i, 0f)).Solid)
+                        {
+                            spear.room.GetTile(stuckInWall.Value + new Vector2(20f * i, 0f)).horizontalBeam = spear.wasHorizontalBeam[i + 1];
+                        }
+                    }
+                }
+                else
+                {
+                    spear.room.GetTile(stuckInWall.Value).verticalBeam = spear.wasHorizontalBeam[1];
+                    for (int j = -1; j < 2; j += 2)
+                    {
+                        if (!spear.room.GetTile(stuckInWall.Value + new Vector2(0f, 20f * j)).Solid)
+                        {
+                            spear.room.GetTile(stuckInWall.Value + new Vector2(0f, 20f * j)).verticalBeam = spear.wasHorizontalBeam[j + 1];
+                        }
+                    }
+                }
+                spear.hasHorizontalBeamState = false;
+                spear.abstractSpear.stuckInWallCycles = 0;
+            }
+        }
     }
 }
