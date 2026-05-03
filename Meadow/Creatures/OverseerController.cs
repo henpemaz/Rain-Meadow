@@ -27,43 +27,25 @@ namespace RainMeadow
                 if (useFade == 0f)
                 {
                     sLeaser.sprites[firstSprite].isVisible = false;
-                    sLeaser.sprites[firstSprite + 1].isVisible = false;
                     return;
                 }
 
                 sLeaser.sprites[firstSprite].isVisible = true;
-                sLeaser.sprites[firstSprite + 1].isVisible = true;
+                
                 partPos = Vector3.Lerp(headPos, partPos, popOut);
                 sLeaser.sprites[firstSprite].x = partPos.x - camPos.x;
                 sLeaser.sprites[firstSprite].y = partPos.y - camPos.y;
-                if (showRandomFlickerImage)
-                {
-                    sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["HologramImage"];
-                    sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(showRandomFlickerImage ? "RND_PROJ" : "STR_PROJ");
-                    sLeaser.sprites[firstSprite].color = new Color(0.5f + 0.5f * Mathf.Lerp(lastPanPos.x, panPos.x, timeStacker), 0.5f + 0.5f * Mathf.Lerp(lastPanPos.y, panPos.y, timeStacker), (float)randomImage / 25f);
-                }
-                else
-                {
-                    sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["Hologram"];
-                    sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote));
-                }
+                sLeaser.sprites[firstSprite].color = useColor;
+                sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["Hologram"];
+                sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote));
 
                 float imagefade = useFade;
                 
                 float num2 = Custom.SCurve(Mathf.Pow(imagefade, 2f) * Mathf.Lerp(lastMyAlpha, myAlpha, timeStacker), 0.4f);
                 sLeaser.sprites[firstSprite].alpha = num2;
-
                 sLeaser.sprites[firstSprite].rotation = 0f;
                 sLeaser.sprites[firstSprite].scaleY = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
                 sLeaser.sprites[firstSprite].scaleX = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
-
-                sLeaser.sprites[firstSprite + 1].shader = rCam.game.rainWorld.Shaders["FlatLight"];
-                sLeaser.sprites[firstSprite + 1].x = partPos.x - camPos.x;
-                sLeaser.sprites[firstSprite + 1].y = partPos.y - camPos.y;
-                num2 = Mathf.Lerp(Mathf.Min(num2, imagefade), num2, 0.5f);
-                sLeaser.sprites[firstSprite + 1].scale = 15f * Mathf.Lerp(0.5f, 1f, num2);
-                sLeaser.sprites[firstSprite + 1].alpha = Mathf.Lerp(1.0f, 0.8f, num2);
-                sLeaser.sprites[firstSprite + 1].color = useColor;
             }
         }
 
