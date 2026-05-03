@@ -1,33 +1,55 @@
-using System.Runtime.CompilerServices;
+using HarmonyLib;
+using Newtonsoft.Json.Linq;
 using RWCustom;
-using UnityEngine;
-using System.Net;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
-using HarmonyLib;
+using UnityEngine;
+using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
 {
 
     public interface ICapeColor
     {
-        public void ApplyColor(TriangleMesh mesh, int vertex);
+        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam);
     }
 
     public class RainbowCapeColor : ICapeColor
     {
-        public void ApplyColor(TriangleMesh mesh, int vertex)
+        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam)
         {
             Color color = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f); ;
             mesh.verticeColors[vertex] = color;
         }
 
         public override string ToString() => "rainbow";
+    }
+
+    public class CosmicCapeColor : ICapeColor
+    {
+        public bool shaderApplied;
+
+        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam)
+        {
+            if (!shaderApplied)
+            {
+                var nightsky = rCam?.game.rainWorld.Shaders["RM_NightSkySkin"];
+                mesh.shader = nightsky;
+                OnPopulateRenderLayer.Get(mesh).onEvent += (FFacetNode node) =>
+                {
+                    node._renderLayer._material.SetTexture("_RM_NightSky", RainMeadow.nightsky);
+                };
+                shaderApplied = true;
+            }
+        }
+
+        public override string ToString() => "cosmic";
     }
 
     public class SolidCapeColor : ICapeColor
@@ -38,7 +60,7 @@ namespace RainMeadow
             this.color = color;
         }
 
-        public void ApplyColor(TriangleMesh mesh, int vertex)
+        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera? rCam = null)
         {
             mesh.verticeColors[vertex] = color;
         }
@@ -179,6 +201,7 @@ namespace RainMeadow
             {
                 if (color == "sgold") return new SolidCapeColor(RainWorld.SaturatedGold);
                 if (color == "rainbow") return new RainbowCapeColor();
+                if (color == "cosmic") return new CosmicCapeColor();
             }
 
             return new SolidCapeColor(Color.red);
@@ -272,6 +295,10 @@ namespace RainMeadow
         {
             sLeaser.sprites[this.firstSpriteIndex] = TriangleMesh.MakeGridMesh("Futile_White", SlugcatCape.size);
             sLeaser.sprites[this.firstSpriteIndex].shader = rCam.game.rainWorld.Shaders["TemplarCloak"];
+            if (cloakColor is CosmicCapeColor ccc)
+            {
+                ccc.shaderApplied = false;
+            }
         }
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -294,7 +321,7 @@ namespace RainMeadow
                     Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
                     Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
                     Vector2 vector = Custom.DirVec(p, p2) * 5f;
-                    cloakColor.ApplyColor(triangleMesh, num++);
+                    cloakColor.ApplyColor(triangleMesh, num++, rCam);
                 }
             }
         }
