@@ -10,85 +10,149 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class EmoteHologram : OverseerHologram, IOwnAHoloImage
+    public class EmoteHologram : OverseerHologram
     {
         public EmoteDisplayer displayer;
         public MeadowProgression.Emote emote;
-        public class EmoteHoloImage : OverseerImage.HoloImage
+        public class EmoteHoloImage : OverseerImage.Frame
         {
+            int imageFirstSprite;
             EmoteHologram Emotehologram;
-            public EmoteHoloImage(EmoteHologram hologram, int firstSprite, IOwnAHoloImage imageOwner) : base(hologram, firstSprite, imageOwner)
+            public EmoteHoloImage(EmoteHologram hologram, int firstSprite) : base(hologram, firstSprite)
             {
                 Emotehologram = hologram;
+                imageFirstSprite = firstSprite + totalSprites;
+                totalSprites += 1;
             }
 
             public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos, Vector2 partPos, Vector2 headPos, float useFade, float popOut, Color useColor)
             {
+                base.DrawSprites(sLeaser, rCam, timeStacker, camPos, partPos, headPos, useFade, popOut, useColor);
+
                 if (useFade == 0f)
                 {
-                    sLeaser.sprites[firstSprite].isVisible = false;
+                    sLeaser.sprites[imageFirstSprite].isVisible = false;
                     return;
                 }
 
-                sLeaser.sprites[firstSprite].isVisible = true;
+                sLeaser.sprites[imageFirstSprite].isVisible = true;
                 
                 partPos = Vector3.Lerp(headPos, partPos, popOut);
-                sLeaser.sprites[firstSprite].x = partPos.x - camPos.x;
-                sLeaser.sprites[firstSprite].y = partPos.y - camPos.y;
-                sLeaser.sprites[firstSprite].color = useColor;
-                sLeaser.sprites[firstSprite].shader = rCam.game.rainWorld.Shaders["Hologram"];
-                sLeaser.sprites[firstSprite].element = Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote));
+                sLeaser.sprites[imageFirstSprite].x = partPos.x - camPos.x;
+                sLeaser.sprites[imageFirstSprite].y = partPos.y - camPos.y;
+                sLeaser.sprites[imageFirstSprite].color = useColor;
+                sLeaser.sprites[imageFirstSprite].shader = rCam.game.rainWorld.Shaders["Hologram"];
+                sLeaser.sprites[imageFirstSprite].element = Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote));
 
-                float imagefade = useFade;
-                
-                float num2 = Custom.SCurve(Mathf.Pow(imagefade, 2f) * Mathf.Lerp(lastMyAlpha, myAlpha, timeStacker), 0.4f);
-                sLeaser.sprites[firstSprite].alpha = num2;
-                sLeaser.sprites[firstSprite].rotation = 0f;
-                sLeaser.sprites[firstSprite].scaleY = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
-                sLeaser.sprites[firstSprite].scaleX = Mathf.Lerp(0.5f, 1f, imagefade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
+                sLeaser.sprites[imageFirstSprite].alpha = Mathf.Pow(useFade, 2f);
+                sLeaser.sprites[imageFirstSprite].rotation = 0f;
+                sLeaser.sprites[imageFirstSprite].scaleY = Mathf.Lerp(0.5f, 1f, useFade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
+                sLeaser.sprites[imageFirstSprite].scaleX = Mathf.Lerp(0.5f, 1f, useFade) * (EmoteDisplayer.emoteSize / EmoteDisplayer.emoteSourceSize);
+            }
+
+            public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+            { 
+                base.InitiateSprites(sLeaser, rCam);
+                sLeaser.sprites[imageFirstSprite] = new FSprite(Futile.atlasManager.GetElementWithName(Emotehologram.displayer.customization.GetEmote(Emotehologram.emote)));
             }
         }
 
         public EmoteHologram(Overseer overseer, Creature communicateWith, float importance, EmoteDisplayer displayer, MeadowProgression.Emote emote) : 
             base(overseer, RainMeadow.Ext_OverseerHologram_Message.OverseerEmote, communicateWith, importance)
         {
+            if (!Futile.atlasManager.DoesContainAtlas("emotes_common"))
+            {
+                HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/emotes_common").name);
+            }
+            
             this.displayer = displayer;
             this.emote = emote;
-            this.AddPart(new EmoteHoloImage(this, totalSprites, this));
-            this.AddPart(new OverseerImage.Frame(this, totalSprites));
+            this.AddPart(new EmoteHoloImage(this, totalSprites));
             lifetime = 0;
         }
 
         public int lifetime = 0;
         public override void Update(bool eu)
         {
-            base.Update(eu);
-            lifetime++;
-            if (lifetime > ShowTime)
+            if ((overseer != null && overseer.room != room) || (robo != null && robo.room != room))
+            {
+                Destroy();
+                return;
+            }
+
+            lastPos = pos;
+            lookAtCommCritCounter--;
+            if (lookAtCommCritCounter < 1)
+            {
+                lookAtCommunicationCreature = !lookAtCommunicationCreature;
+                lookAtCommCritCounter = UnityEngine.Random.Range(20, lookAtCommunicationCreature ? 120 : 40);
+            }
+
+            for (int i = 0; i < parts.Count; i++)
+            {
+                parts[i].Update();
+            }
+
+            lastFade = fade;
+            if (overseer != null)
+            {
+
+                lifetime++;
+                if (lifetime > ShowTime && overseer.IsLocal())
+                {
+                    stillRelevant = false;
+                }
+                
+                if (stillRelevant && overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping)
+                {
+                    fade = Custom.LerpAndTick(fade, 1f, 0.9f, 0.05f);
+                }
+                else
+                {
+                    fade = Custom.LerpAndTick(fade, 0f, 0.01f, 0.1f);
+                }
+
+                if (overseer.IsLocal())
+                {
+                    if (CreatureController.creatureControllers.TryGetValue(overseer, out var p) && p is OverseerController controller)
+                    {
+                        if (controller.cursor != null)
+                        {
+                            pos = Vector2.MoveTowards(overseer.mainBodyChunk.pos, controller.cursor.pos, 250);
+                            pos = Vector2.MoveTowards(pos, controller.cursor.pos, Mathf.Log(Custom.Dist(pos, controller.cursor.pos))/Mathf.Log(2));
+                        }
+                    }
+                }
+                
+            }
+            else
+            {
+                fade = (stillRelevant ? 1f : 0f);
+            }
+
+            if (fade == 0f && lastFade == 0f)
+            {
+                lastPos = pos;
+                if (!stillRelevant)
+                {
+                    Destroy();
+                }
+            }
+
+
+            fade = Mathf.Min(fade, 0.2f + 0.8f * Mathf.InverseLerp(20f, 2f, Vector2.Distance(lastPos, pos)));
+            if (robo != null)
+            {
+                fade = Mathf.Clamp(robo.gXScaleFactor * robo.gYScaleFactor, 0.01f, 1f) * UnityEngine.Random.Range(0.9f, 1f);
+            }
+
+            if (communicateWith != null && communicateWith.room != null && (communicateWith.room != room || communicateWith.dead || communicateWith.grabbedBy.Count > 0))
             {
                 stillRelevant = false;
             }
-
-            if (stillRelevant && overseer.room == this.room && overseer.mode != Overseer.Mode.Zipping)
-            {
-                this.lastFade = 1.0f;
-                this.fade = 1.0f;
-            }
             
-            if (CreatureController.creatureControllers.TryGetValue(overseer, out var p) && p is OverseerController controller)
-            {
-                if (controller.cursor != null)
-                {
-                    pos = Vector2.MoveTowards(overseer.mainBodyChunk.pos, controller.cursor.pos, 250);
-                    pos = Vector2.MoveTowards(pos, controller.cursor.pos, Mathf.Log(Custom.Dist(pos, controller.cursor.pos))/Mathf.Log(2));
-                }
-            }
         }
-
-        public int CurrImageIndex => 0;
         public int ShowTime => 40*5;
-        public OverseerImage.ImageID CurrImage => OverseerImage.ImageID.Dead_Slugcat_B;
-        public float ImmediatelyToContent => 1.0f;
     }
 
     public class OverseerController : CreatureController, ICustomEmoteDisplayer
@@ -196,7 +260,6 @@ namespace RainMeadow
             {
                 return data.room == overseer.room;
             }
-
         }
 
 
@@ -408,7 +471,7 @@ namespace RainMeadow
             return true;
         }
 
-        public static bool AddEmoteHologram(Overseer overseer, EmoteDisplayer emoteDisplayer,  MeadowProgression.Emote emote)
+        public static bool AddEmoteHologram(Overseer overseer, EmoteDisplayer emoteDisplayer, MeadowProgression.Emote emote)
         {
             if (overseer.hologram is not null)
             {
@@ -503,15 +566,15 @@ namespace RainMeadow
 
             public override void Update(bool eu)
             {
-                if (room != null)
+                if (room == null) return;
+                
+                
+                var spectator = room.game.cameras[0].hud.parts.OfType<SpectatorHud>().FirstOrDefault();
+                if (spectator.Spectatee != null)
                 {
-                    var spectator = room.game.cameras[0].hud.parts.OfType<SpectatorHud>().FirstOrDefault();
-                    if (spectator.Spectatee != null)
+                    if (currentlyInteracting is not SpectatableCreature spectatableCreature || spectatableCreature.creature != spectator.Spectatee)
                     {
-                        if (currentlyInteracting is not SpectatableCreature spectatableCreature || spectatableCreature.creature != spectator.Spectatee)
-                        {
-                            currentlyInteracting = new SpectatableCreature(this, spectator.Spectatee);
-                        }
+                        currentlyInteracting = new SpectatableCreature(this, spectator.Spectatee);
                     }
                 }
                 
@@ -620,8 +683,11 @@ namespace RainMeadow
 
                     Creature closestCreature = this.room.physicalObjects.SelectMany(x => x).OfType<Creature>().Where(x => !x.slatedForDeletetion).DefaultIfEmpty().Aggregate((a, b) => 
                         Custom.DistNoSqrt(a.mainBodyChunk.pos, pos) < Custom.DistNoSqrt(b.mainBodyChunk.pos, pos)? a : b);
-
-                    if (closestCreature is not null && (closestCreature.abstractCreature.GetOnlineCreature()?.isAvatar ?? false) && Custom.DistLess(closestCreature.mainBodyChunk.pos, pos, candidate_distance)) PromoteCandidate(new SpectatableCreature(this, closestCreature.abstractCreature));
+                    if (closestCreature?.abstractCreature?.GetOnlineCreature() is OnlineCreature onlineCreature)
+                    {
+                        if (onlineCreature.isAvatar && Custom.DistLess(closestCreature.mainBodyChunk.pos, pos, candidate_distance)) PromoteCandidate(new SpectatableCreature(this, closestCreature.abstractCreature));
+                    }
+                    
 
                     ShortcutData closestShortCut = this.room.shortcuts.Where(x => x.shortCutType == ShortcutData.Type.RoomExit).DefaultIfEmpty().Aggregate((a, b) => 
                         Custom.DistNoSqrt(room.MiddleOfTile(a.StartTile), pos) < Custom.DistNoSqrt(room.MiddleOfTile(b.StartTile),pos)? a : b);
