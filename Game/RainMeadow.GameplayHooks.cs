@@ -191,12 +191,12 @@ namespace RainMeadow
 
             if (!wep1.isMine)
             {
-                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
             }
 
             if (!wep2.isMine)
             {
-                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2));
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
             }
             
 
