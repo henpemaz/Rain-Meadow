@@ -95,9 +95,8 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public bool realized;
         public bool lenientPos;
+        public bool didParry;
         public bool beingMoved;
-
-        public static bool didParry;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
@@ -213,7 +212,7 @@ namespace RainMeadow
                 creatingRemoteObject = oldCreatingRemoteObject;
                 throw;
             }
-            creatingRemoteObject = oldCreatingRemoteObject;
+            creatingRemoteObject = oldCreatingRemoteObject; 
 
 
             realized = initialState.realized;
@@ -421,7 +420,7 @@ namespace RainMeadow
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
             }
         }
-
+        
         public void RemoveEntityFromGame(bool onlineaware = true)
         {
             RainMeadow.Debug("Removing entity from game: " + this);
@@ -560,7 +559,7 @@ namespace RainMeadow
 
             public Vector2 collisionPoint;
 
-            public OnlineCollisionResult() { }
+            public OnlineCollisionResult() {}
             public OnlineCollisionResult(OnlineEntity.EntityId obj, BodyChunkRef? chunk, AppendageRef onAppendagePos, bool hitSomething, Vector2 collisionPoint)
             {
                 this.obj = obj;
@@ -570,63 +569,57 @@ namespace RainMeadow
                 this.collisionPoint = collisionPoint;
             }
 
-            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer)
-            {
+            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer) {
                 serializer.Serialize(ref obj);
                 serializer.SerializeNullable(ref chunk);
                 serializer.SerializeNullable(ref onAppendagePos);
                 serializer.Serialize(ref hitSomething);
                 serializer.Serialize(ref collisionPoint);
             }
-            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result)
-            {
+            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result) {
                 result = null;
                 OnlinePhysicalObject? collision_obj = this.obj.FindEntity() as OnlinePhysicalObject;
-                if (collision_obj == null)
-                {
+                if (collision_obj == null) {
                     RainMeadow.Error("Invalid collision result");
                     return;
                 }
 
-                if (collision_obj.apo.realizedObject == null)
-                {
+                if (collision_obj.apo.realizedObject == null) {
                     RainMeadow.Error("Object not realized");
                     return;
                 }
 
-                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject,
-                    chunk?.ToBodyChunk(),
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
+                    chunk?.ToBodyChunk(), 
                     onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
 
 
-        public bool HittingRemotely { get; private set; } = false;
+        public bool HittingRemotely { get; private set; }=  false;
         [RPCMethod]
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
 
-            if (this.apo.realizedObject != null)
-            {
+            if (this.apo.realizedObject != null) {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue)
-                {
+                if (result.HasValue) {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
-                    if (OnlineManager.lobby != null && onlineResult != null && (onlineResult.IsLocked("parry") || didParry))
+                    if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
                     {
                         RainMeadow.Debug("Parried!");
+                        OnlineManager.RunDeferred(() => onlineResult.didParry = false);
                         HittingRemotely = false;
-                        didParry = false;
                         return;
                     }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
-
+                
             }
-
+            
             HittingRemotely = false;
         }
 
@@ -704,14 +697,14 @@ namespace RainMeadow
             hazer.inkLeft = Mathf.Clamp01(inkLeft);
         }
 
-        [RPCMethod(security = RPCSecurity.Owner)]
+        [RPCMethod (security = RPCSecurity.Owner)]
         public void RecieveHelp()
         {
             if (apo.realizedObject is null || apo.realizedObject is not ICallForHelp realized) return;
             realized.RecieveHelp();
         }
 
-        [RPCMethod(security = RPCSecurity.InResource)]
+        [RPCMethod (security = RPCSecurity.InResource)]
         public void Demask(Vector2 violenceDir)
         {
             if (apo.realizedObject is null || apo.realizedObject is not Vulture vulture || vulture.IsMiros) return;

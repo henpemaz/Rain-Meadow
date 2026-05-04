@@ -65,8 +65,6 @@ namespace RainMeadow
                 creature.room.AddObject(obj);
             }
             RainMeadow.Debug(this);
-
-            if (creature is Player && obj is PlayerCarryableItem item) item.PickedUp(creature);
             creature.Grab(obj, graspUsed, chunkGrabbed, new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(shareability)), dominance, false, pacifying);
         }
 
