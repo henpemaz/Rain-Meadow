@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -40,6 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -149,24 +150,16 @@ namespace RainMeadow
             }
         }
 
-        // Intercept the incoming WeaponHitSomething as fast as possible
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
             {
-                RainMeadow.DebugMe();
+                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
+                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
 
-                if (!obj.IsLocal())
+                if (wep1 != null && wep2 != null)
                 {
-                    OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                    OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
-
-                    if (wep1 != null && wep2 != null)
-                    {
-                        RainMeadow.Error("Setting Parry Lock");
-                        wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2));
-                        OnlinePhysicalObject.didParry = true;
-                    }
+                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
                 }
             }
             orig(self, obj);
@@ -238,6 +231,14 @@ namespace RainMeadow
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
         }
 
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        {
+            if (OnlineManager.lobby != null && self.IsLocal())
+            {
+                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
+            }
+            orig(self, obj);
+        }
 
         bool WeaponIsDangerous(Weapon weapon)
         {
@@ -623,7 +624,7 @@ namespace RainMeadow
                 BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
                 AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
-                if (!onlineHit.owner.isMe && !WeaponOnline.IsLocked("parry"))
+                if (!onlineHit.owner.isMe)
                 {
                     onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
                         onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
