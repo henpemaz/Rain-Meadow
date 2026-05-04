@@ -114,6 +114,32 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaFlairActive;
 
 
+    // DROWN
+    public readonly Configurable<int> MaxCreatureCount;
+    public readonly Configurable<int> PointsForSpear;
+    public readonly Configurable<int> PointsForExplSpear;
+    public readonly Configurable<int> PointsForBomb;
+    public readonly Configurable<int> PointsForElectricSpear;
+    public readonly Configurable<int> PointsForBoomerang;
+
+    public readonly Configurable<int> PointsForRespawn;
+    public readonly Configurable<int> PointsForDenOpen;
+    public readonly Configurable<int> CreatureCleanup;
+    public readonly Configurable<int> PointsForRock;
+
+
+    public readonly Configurable<KeyCode> StoreItem1;
+    public readonly Configurable<KeyCode> StoreItem2;
+    public readonly Configurable<KeyCode> StoreItem3;
+    public readonly Configurable<KeyCode> StoreItem4;
+    public readonly Configurable<KeyCode> StoreItem5;
+    public readonly Configurable<KeyCode> StoreItem6;
+    public readonly Configurable<KeyCode> StoreItem7;
+    public readonly Configurable<KeyCode> StoreItem8;
+
+    public readonly Configurable<KeyCode> OpenStore;
+
+
     public enum IntroRoll
     {
         Meadow,
@@ -250,6 +276,32 @@ public class RainMeadowOptions : OptionInterface
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
         GlobalMute = config.Bind("GlobalMute", false);
         ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
+
+        //DROWN
+        MaxCreatureCount = config.Bind("DrownMaxCreatures", 10);
+        PointsForSpear = config.Bind("DrownPointsForSpear", 1);
+        PointsForExplSpear = config.Bind("DrownPointsForExplSpear", 10);
+        PointsForBomb = config.Bind("DrownPointsForBomb", 10);
+        PointsForElectricSpear = config.Bind("PointsForElectricSpear", 12);
+
+        PointsForBoomerang = config.Bind("PointsForBoomerang", 15);
+
+        PointsForRespawn = config.Bind("DrownPointsForRespawn", 25);
+        PointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
+        CreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
+        PointsForRock = config.Bind("PointsForRock", 0);
+
+
+        StoreItem1 = config.Bind("DrownStoreItem1", KeyCode.Alpha1);
+        StoreItem2 = config.Bind("DrownStoreItem2", KeyCode.Alpha2);
+        StoreItem3 = config.Bind("DrownStoreItem3", KeyCode.Alpha3);
+        StoreItem4 = config.Bind("DrownStoreItem4", KeyCode.Alpha4);
+        StoreItem5 = config.Bind("DrownStoreItem5", KeyCode.Alpha5);
+        StoreItem6 = config.Bind("DrownStoreItem6", KeyCode.Alpha6);
+        StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
+        StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
+
+        OpenStore = config.Bind("DrownStoreAccess", KeyCode.Tab);
 
     }
     List<ListItem> capeList = new List<ListItem>
