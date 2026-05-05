@@ -73,8 +73,12 @@ namespace RainMeadow
         public int currentWave = 0;
         public int lastCleanupWave = 0;
         public bool waveNeedsUpdate = true;
+
+        public int timerPoints = 0; // no way to get this from ArenaGameSession without breaking API
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
+
+        public AbstractCreature abstractCreatureToRemove = null;
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
@@ -106,7 +110,6 @@ namespace RainMeadow
                     if (clientSettings != null)
                     {
                         clientSettings.iOpenedDen = false;
-                        clientSettings.score = 5;
                     }
                 }
             }
@@ -115,9 +118,9 @@ namespace RainMeadow
 
         public override void InitAsCustomGameType(ArenaMode arena, ArenaSetup.GameTypeSetup self)
         {
-            self.foodScore = arena.foodScore;
-            self.survivalScore = arena.aliveScore;
-            self.spearHitScore = arena.spearHitScore;
+            self.foodScore = 1;
+            self.survivalScore = 0;
+            self.spearHitScore = 0;
             self.repeatSingleLevelForever = false;
             self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             self.rainWhenOnePlayerLeft = false;
@@ -130,62 +133,24 @@ namespace RainMeadow
 
         }
 
-        public override void Killing(ArenaMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
-        {
-            base.Killing(arena, orig, self, player, killedCrit);
-
-            OnlinePhysicalObject? onlineP = player.abstractCreature.GetOnlineObject();
-            OnlinePhysicalObject? onlineC = killedCrit.abstractCreature.GetOnlineObject();
-
-            if (onlineP == null || onlineC == null)
-            {
-                RainMeadow.Error($"Error in ArenaGameSession_Killing: onlineP :{onlineP} or onlineC : {onlineC}is null");
-                return;
-            }
-
-            if (player.abstractCreature == killedCrit.killTag && onlineP.owner == OnlineManager.mePlayer) //  Me. I killed them.
-            {
-                OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                if (cs != null)
-                {
-
-                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                    if (clientSettings != null)
-                    {
-                        int arenaPlayer = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
-                        IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
-                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                        if (index >= 0)
-                        {
-                            self.arenaSitting.players[arenaPlayer].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
-                        }
-                        else
-                        {
-                            self.arenaSitting.players[arenaPlayer].AddSandboxScore(0);
-                        }
-                        clientSettings.score += self.arenaSitting.gameTypeSetup.killScores[index];
-                    }
-                }
-
-            }
-        }
-
         public override string TimerText()
         {
             var waveTimer = ArenaPrepTimer.FormatTime(currentWaveTimer);
             OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-            var points = 0;
+
             if (cs != null)
             {
-
                 cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
                 if (clientSettings != null)
                 {
-                    points = !spearHits ? clientSettings.teamScore : clientSettings.score;
+                    if (!spearHits)
+                    {
+                        timerPoints = clientSettings.teamScore;
+                    }
                 }
             }
             var text = !spearHits ? "Team points" : "Current points";
-            return $": {text}: {points}. Current Wave: {currentWave}. Next wave: {waveTimer}";
+            return $": {text}: {timerPoints}. Current Wave: {currentWave}. Next wave: {waveTimer}";
         }
 
         public override int SetTimer(ArenaOnlineGameMode arena)
@@ -225,10 +190,6 @@ namespace RainMeadow
             }
         }
 
-        public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
-        {
-
-        }
 
         public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
@@ -353,28 +314,7 @@ namespace RainMeadow
                     if (!self.GameTypeSetup.spearsHitPlayers) // team work makes the dream work
                     {
                         var points = 0;
-
-                        arena.arenaSittingOnlineOrder.ForEach(x =>
-                        {
-
-                            OnlinePlayer? p = ArenaHelpers.FindOnlinePlayerByLobbyId(x);
-                            if (p != null)
-                            {
-                                OnlineManager.lobby.clientSettings.TryGetValue(p, out var cs);
-                                if (cs != null)
-                                {
-
-                                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                                    if (clientSettings != null)
-                                    {
-
-                                        points += clientSettings.score;
-                                    }
-                                }
-                            }
-                        });
-
-
+                        points = self.arenaSitting.players.Sum(x => x.score);
                         arena.arenaSittingOnlineOrder.ForEach(x =>
                       {
 
@@ -449,6 +389,7 @@ namespace RainMeadow
                             }
                         }
                         oe.RemoveEntityFromRoom();
+                        oe.RemoveEntityFromGame();
                     }
                 }
             }

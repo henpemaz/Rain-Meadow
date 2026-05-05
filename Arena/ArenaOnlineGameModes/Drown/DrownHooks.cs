@@ -1,19 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.InteropServices;
 using Drown;
-using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
-using MoreSlugcats;
-using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using RainMeadow.UI;
-using RainMeadow.UI.Components;
-using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace RainMeadow
 {
@@ -21,16 +12,25 @@ namespace RainMeadow
     {
         public void DrownHooks()
         {
-            On.Menu.Menu.ctor += Menu_ctor;
             On.HUD.TextPrompt.AddMessage_string_int_int_bool_bool += TextPrompt_AddMessage_string_int_int_bool_bool;
             On.Spear.Spear_makeNeedle += Spear_Spear_makeNeedle;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActiveDrown;
             On.Player.checkInput += Player_checkInputDrown;
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayerDrown;
         }
 
 
 
+        public int ArenaGameSession_ScoreOfPlayerDrown(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
+        {
+            int score = orig(self, player, inHands);
+            if (isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var d))
+            {
+                d.timerPoints = score;
+            }
+            return score;
+        }
 
         private void Player_checkInputDrown(On.Player.orig_checkInput orig, Player self)
         {
@@ -47,62 +47,61 @@ namespace RainMeadow
 
         private int ArenaGameSession_PlayersStillActiveDrown(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
         {
+            // 1. ALWAYS run orig first. This allows native alive-time tracking to process 
+            // and gives us the baseline count of alive players.
+            int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
+
             if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
             {
-                bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+                // If dens are opened, nobody can respawn. Let native logic decide the end state.
+                if (drown.openedDen)
+                {
+                    return activeCount;
+                }
 
-                var count = 0;
+                bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+                int canRespawnCount = 0;
+
                 foreach (var p in arena.arenaSittingOnlineOrder)
                 {
                     OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
                     if (pl != null)
                     {
                         OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
-                        if (cs != null)
+                        if (cs != null && cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
                         {
-
-                            cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                            if (clientSettings != null)
+                            int playerNum = ArenaHelpers.FindOnlinePlayerNumber(arena, pl);
+                            if (playerNum >= 0 && playerNum < self.Players.Count && playerNum < self.arenaSitting.players.Count)
                             {
-
-                                if ((teamWork ? clientSettings.teamScore : clientSettings.score) >= drown.respCost && !drown.openedDen) // We can still respawn
+                                var abstractPlayer = self.Players[playerNum];
+                                if (abstractPlayer.GetOnlineCreature().isMine)
                                 {
-                                    count++;
+                                    drown.abstractCreatureToRemove = abstractPlayer;
+                                }
+
+                                // Only count them if they are dead. If they're alive, orig() already handled them.
+                                bool isDead = abstractPlayer.state.dead || (abstractPlayer.realizedCreature != null && abstractPlayer.realizedCreature.State.dead);
+
+                                if (isDead)
+                                {
+                                    int score = teamWork ? clientSettings.teamScore : self.arenaSitting.players[playerNum].score;
+                                    if (score >= drown.respCost)
+                                    {
+                                        canRespawnCount++;
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                if (teamWork && (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count > 0))
-                {
-                    return orig(self, addToAliveTime, dontCountSandboxLosers);
-                }
-
-                if (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count == 0)
-                {
-                    if (count > 0)
-                    {
-                        return count;
-                    }
-                }
-
+                // By adding the dead-but-respawnable players to the active count,
+                // we trick the session into staying alive as long as there are contenders left.
+                return activeCount + canRespawnCount;
             }
-            return orig(self, addToAliveTime, dontCountSandboxLosers);
-        }
 
-        private void Menu_ctor(On.Menu.Menu.orig_ctor orig, Menu.Menu self, ProcessManager manager, ProcessManager.ProcessID ID)
-        {
-            if (RainMeadow.isArenaMode(out var arena) && arena != null && self is ArenaOnlineLobbyMenu)
-            {
-                if (!arena.registeredGameModes.ContainsKey(DrownMode.Drown.value))
-                {
-                    arena.registeredGameModes.Add(DrownMode.Drown.value, new DrownMode());
-                }
-            }
-            orig(self, manager, ID);
+            return activeCount;
         }
-
 
         private void Player_ClassMechanicsSaint(ILContext il)
         {
@@ -126,29 +125,20 @@ namespace RainMeadow
                         {
                             Creature creat = (po as Creature);
                             creat.SetKillTag(self.abstractCreature);
-                            OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                            if (cs != null)
+                            ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
+                            IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(creat.abstractCreature);
+                            int arenaPlayer = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+
+                            int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                            if (index >= 0)
                             {
-                                ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
-                                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(creat.abstractCreature);
-                                int arenaPlayer = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
-
-                                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                                if (index >= 0)
-                                {
-                                    sitting.players[arenaPlayer].AddSandboxScore(sitting.gameTypeSetup.killScores[index]);
-                                }
-                                else
-                                {
-                                    sitting.players[arenaPlayer].AddSandboxScore(0);
-                                }
-
-                                cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                                if (clientSettings != null)
-                                {
-                                    clientSettings.score += sitting.gameTypeSetup.killScores[index];
-                                }
+                                sitting.players[arenaPlayer].AddSandboxScore(sitting.gameTypeSetup.killScores[index]);
                             }
+                            else
+                            {
+                                sitting.players[arenaPlayer].AddSandboxScore(0);
+                            }
+
                         }
                         catch (Exception e)
                         {
@@ -174,16 +164,8 @@ namespace RainMeadow
             }
             if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
             {
-                OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                if (cs != null)
-                {
-
-                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                    if (clientSettings != null)
-                    {
-                        clientSettings.score = clientSettings.score - drown.spearCost;
-                    }
-                }
+                ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
+                sitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= drown.spearCost;
             }
 
         }
@@ -193,7 +175,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode == arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == DrownMode.Drown.value).Value)
             {
-                text = text + $" - Press {RainMeadow.rainMeadowOptions.OpenStore.Value} to access the store";
+                text = text + $" - Press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to access the store";
                 orig(self, text, wait, time, darken, hideHud);
             }
             else

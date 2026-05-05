@@ -24,7 +24,7 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.OpenStore.Value))
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
                 {
                     if (storeOverlay == null)
                     {

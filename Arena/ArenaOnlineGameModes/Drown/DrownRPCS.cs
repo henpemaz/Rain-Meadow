@@ -35,8 +35,41 @@ namespace RainMeadow
                 }
             }
         }
+
+
+        // This is basically the same as UpdatePlayerScore, but it removes the < operator on the score check. I'm scared to remove that before tourney so we're making another RPC instead
+        [RPCMethod]
+        public static void UpdatePlayerScoreDrown(int playerNumber, int newScore)
+        {
+            RainMeadow.DebugMe();
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                return;
+            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+            {
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                {
+                    return; // no points for you
+                }
+
+                a.arenaSitting.players[playerNumber].score = newScore;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                }
+            }
+
+        }
     }
 }
-
-//    }
-//}

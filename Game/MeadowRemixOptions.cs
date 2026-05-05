@@ -137,9 +137,6 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> StoreItem7;
     public readonly Configurable<KeyCode> StoreItem8;
 
-    public readonly Configurable<KeyCode> OpenStore;
-
-
     public enum IntroRoll
     {
         Meadow,
@@ -300,9 +297,6 @@ public class RainMeadowOptions : OptionInterface
         StoreItem6 = config.Bind("DrownStoreItem6", KeyCode.Alpha6);
         StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
         StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
-
-        OpenStore = config.Bind("DrownStoreAccess", KeyCode.Tab);
-
     }
     List<ListItem> capeList = new List<ListItem>
 {

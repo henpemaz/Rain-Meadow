@@ -13,11 +13,8 @@ namespace RainMeadow
         public AbstractCreature? foundMe;
         public Vector2 pos;
 
-
-
         public class ItemButton
         {
-
             public const string Rock = "Rock";
             public const string Spear = "Spear";
             public const string ExplosiveSpear = "Explosive Spear";
@@ -29,40 +26,47 @@ namespace RainMeadow
 
             public OnlinePhysicalObject player;
             public SimplerButton button;
-            public bool mutedPlayer;
-            private string clientMuteSymbol;
-            public Dictionary<string, int> storeItems;
             public StoreOverlay overlay;
+
             public int cost;
             public string name;
-            public bool didRespawn;
+            public KeyCode hotkey;
+
+            private int lastClickFrame = -1; // Protects against double execution in the same frame
+
             public bool RequiresWatcher => ModManager.Watcher;
             public bool RequiresMSC => ModManager.MSC;
-            public ItemButton(StoreOverlay menu, Vector2 pos, RainWorldGame game, ArenaOnlineGameMode arena, KeyValuePair<string, int> itemEntry, int index, bool canBuy = false)
+
+            public ItemButton(StoreOverlay menu, Vector2 pos, RainWorldGame game, ArenaOnlineGameMode arena, string itemName, int itemCost, KeyCode hotkey)
             {
+                this.overlay = menu;
+                this.name = itemName;
+                this.cost = itemCost;
+                this.hotkey = hotkey;
+
                 bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
 
                 if (DrownMode.isDrownMode(arena, out var drown))
                 {
-                    this.overlay = menu;
-                    this.name = itemEntry.Key;
-                    this.cost = itemEntry.Value;
-                    this.button = new SimplerButton(menu, menu.pages[0], $"{itemEntry.Key}: {itemEntry.Value}", pos, new Vector2(110, 30));
-
-                    AbstractCreature me = null;
-
+                    this.button = new SimplerButton(menu, menu.pages[0], $"{itemName}: {itemCost}", pos, new Vector2(110, 30));
                     this.button.OnClick += (_) =>
                     {
-                        AbstractPhysicalObject desiredObject = null;
+                        // Prevent running twice in the same frame
+                        if (Time.frameCount == lastClickFrame) return;
+                        lastClickFrame = Time.frameCount;
+                        AbstractCreature me = null;
                         for (int i = 0; i < game.GetArenaGameSession.Players.Count; i++)
                         {
                             if (OnlinePhysicalObject.map.TryGetValue(game.GetArenaGameSession.Players[i], out var onlineP) && onlineP.owner == OnlineManager.mePlayer)
                             {
                                 me = game.GetArenaGameSession.Players[i];
+                                break;
                             }
                         }
 
-                        switch (itemEntry.Key)
+                        AbstractPhysicalObject desiredObject = null;
+
+                        switch (itemName)
                         {
                             case Spear:
                                 desiredObject = new AbstractSpear(game.world, null, me.pos, game.GetNewID(), false);
@@ -79,69 +83,52 @@ namespace RainMeadow
                             case Boomerang:
                                 desiredObject = new AbstractPhysicalObject(game.world, Watcher.WatcherEnums.AbstractObjectType.Boomerang, null, me.pos, game.GetNewID());
                                 break;
-
-                            case Respawn:
-
-                                didRespawn = false;
-                                if (!didRespawn)
-                                {
-                                    RevivePlayer(game.GetArenaGameSession, arena);
-                                    didRespawn = true;
-                                }
-
-                                break;
-                            case OpenDens:
-                                if (DrownMode.isDrownMode(arena, out var drown))
-                                {
-
-                                    OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs2);
-                                    if (cs2 != null)
-                                    {
-
-                                        cs2.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                                        if (clientSettings != null)
-                                        {
-                                            clientSettings.iOpenedDen = true;
-                                        }
-                                    }
-                                    drown.openedDen = true;
-                                    for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
-                                    {
-                                        OnlinePlayer? currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, j);
-                                        if (currentPlayer != null && !OnlineManager.lobby.isOwner)
-                                        {
-                                            OnlineManager.lobby.owner.InvokeOnceRPC(DrownModeRPCs.Arena_OpenDen, drown.openedDen);
-
-                                        }
-                                    }
-                                }
-                                game.cameras[0].hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
-                                break;
                             case Rock:
                                 desiredObject = new AbstractPhysicalObject(game.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, me.pos, game.GetNewID());
                                 break;
+                            case Respawn:
+                                RevivePlayer(game.GetArenaGameSession, arena, drown);
+                                break;
+                            case OpenDens:
+                                HandleOpenDens(arena, drown);
+                                game.cameras[0].hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
+                                break;
                         }
 
+                        // Realize physical objects
                         if (desiredObject != null && me != null)
                         {
-                            (game.cameras[0].room.abstractRoom).AddEntity(desiredObject);
+                            game.cameras[0].room.abstractRoom.AddEntity(desiredObject);
                             desiredObject.RealizeInRoom();
                         }
 
-                        OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                        if (cs != null)
-                        {
 
-                            cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                            if (clientSettings != null)
-                            {
-                                clientSettings.score = clientSettings.score - itemEntry.Value;
-                            }
-                        }
-                        didRespawn = false;
+                        game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= itemCost;
+                        me?.GetOnlineCreature()?.BroadcastRPCInRoom(DrownModeRPCs.UpdatePlayerScoreDrown, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score);
 
                     };
+
                     this.button.owner.subObjects.Add(button);
+                }
+            }
+
+            private void HandleOpenDens(ArenaOnlineGameMode arena, DrownMode drown)
+            {
+                if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs2) &&
+                    cs2.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
+                {
+                    clientSettings.iOpenedDen = true;
+                }
+
+                drown.openedDen = true;
+
+                for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
+                {
+                    OnlinePlayer? currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, j);
+                    if (currentPlayer != null && !OnlineManager.lobby.isOwner)
+                    {
+                        OnlineManager.lobby.owner.InvokeOnceRPC(DrownModeRPCs.Arena_OpenDen, drown.openedDen);
+                    }
                 }
             }
 
@@ -154,7 +141,6 @@ namespace RainMeadow
 
         public RainWorldGame game;
         public List<ItemButton> storeItemList;
-        ItemButton itemButtons;
         public DrownMode drown;
 
         public StoreOverlay(ProcessManager manager, RainWorldGame game, DrownMode drown, ArenaOnlineGameMode arena) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
@@ -163,163 +149,117 @@ namespace RainMeadow
             this.drown = drown;
             this.pages.Add(new Page(this, null, "store", 0));
             this.selectedObject = null;
-            this.storeItemList = new();
+            this.storeItemList = new List<ItemButton>();
             this.pos = new Vector2(180, 553);
+
             this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("STORE"), new Vector2(pos.x, pos.y + 30f), new Vector2(110, 30), true));
-            var storeItems = new Dictionary<string, int> {
-            { "Spear", drown.spearCost },
-            { "Rock", drown.rockCost},
-            { "Explosive Spear", drown.spearExplCost },
-            { "Scavenger Bomb", drown.bombCost },
-            { "Electric Spear", drown.electricSpearCost },
-            { "Boomerang", drown.boomerangeCost },
-            { "Respawn", drown.respCost},
-            { "Open Dens", drown.denCost},
 
+            // Map item data directly to their respective hotkeys to avoid hardcoded indices later
+            var storeItemsData = new (string name, int cost, KeyCode hotkey)[] {
+                (ItemButton.Spear, drown.spearCost, RainMeadow.rainMeadowOptions.StoreItem1.Value),
+                (ItemButton.Rock, drown.rockCost, RainMeadow.rainMeadowOptions.StoreItem2.Value),
+                (ItemButton.ExplosiveSpear, drown.spearExplCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
+                (ItemButton.ScavengerBomb, drown.bombCost, RainMeadow.rainMeadowOptions.StoreItem4.Value),
+                (ItemButton.ElectricSpear, drown.electricSpearCost, RainMeadow.rainMeadowOptions.StoreItem5.Value),
+                (ItemButton.Boomerang, drown.boomerangeCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
+                (ItemButton.Respawn, drown.respCost, RainMeadow.rainMeadowOptions.StoreItem7.Value),
+                (ItemButton.OpenDens, drown.denCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
+            };
 
-        };
-            int index = 0; // Initialize an index variable
-
-            foreach (var item in storeItems)
+            foreach (var itemData in storeItemsData)
             {
-                // Format the message for the button, for example: "Spear: 1"
-                string buttonMessage = $"{item.Key}: {item.Value}";
-
-                // Create a new ItemButton for each dictionary entry
-                this.itemButtons = new ItemButton(this, pos, game, arena, item, index, true);
-                this.storeItemList.Add(itemButtons);
-
-
+                var itemBtn = new ItemButton(this, pos, game, arena, itemData.name, itemData.cost, itemData.hotkey);
+                this.storeItemList.Add(itemBtn);
                 pos.y -= 40; // Move the button 40 units down for the next one
-                index++;
             }
-
         }
 
         public override void Update()
         {
             base.Update();
-            bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
-            if (RainMeadow.isArenaMode(out var arena) && (DrownMode.isDrownMode(arena, out var drown)))
+
+            if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.isDrownMode(arena, out var drownMode))
+                return;
+
+            // Robustly find if the local player is currently alive
+            bool isAlive = false;
+            foreach (var player in game.Players)
             {
-                for (int p = 0; p < game.Players.Count; p++)
+                // Check if this player is the local player and is alive
+                if (OnlinePhysicalObject.map.TryGetValue(player, out var onlineC) && onlineC.owner == OnlineManager.mePlayer)
                 {
-                    if (OnlinePhysicalObject.map.TryGetValue(game.Players[p], out var onlineC))
+                    if (player.state.alive || (player.realizedCreature != null && !player.realizedCreature.dead))
                     {
-
-                        if (onlineC.owner == OnlineManager.mePlayer)
-                        {
-                            foundMe = game.Players[p];
-                        }
-
+                        isAlive = true;
+                        break; // Found the player and they are alive, no need to check others
                     }
                 }
-                if (storeItemList != null)
+            }
+
+            if (storeItemList == null || storeItemList.Count == 0) return;
+
+            if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs) &&
+                cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
+            {
+                bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
+                int currentScore = teamWork ? clientSettings.teamScore : game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
+
+                foreach (var item in storeItemList)
                 {
-                    OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                    if (cs != null)
+                    bool canAfford = currentScore >= item.cost;
+                    bool greyedOut = false;
+
+                    // Logic gate for specific buttons
+                    switch (item.name)
                     {
+                        case ItemButton.Respawn:
+                            // Grey out if ALIVE or CANNOT AFFORD or GAME OVER
+                            greyedOut = isAlive || !canAfford || drown.openedDen;
+                            break;
 
-                        cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                        if (clientSettings != null)
-                        {
+                        case ItemButton.OpenDens:
+                            // Grey out if already opened or cannot afford
+                            greyedOut = drownMode.openedDen || !canAfford;
+                            break;
 
-                            for (int i = 0; i < storeItemList.Count; i++)
-                            {
-                                storeItemList[i].button.buttonBehav.greyedOut = true;
+                        case ItemButton.ElectricSpear:
+                            greyedOut = !ModManager.MSC || !canAfford;
+                            break;
 
-                                if (storeItemList[i].name == "Respawn")
-                                {
-                                    if (foundMe is not null && (foundMe.state.alive || (foundMe.realizedCreature != null && foundMe.realizedCreature.State.alive)) || drown.openedDen)
-                                    {
-                                        storeItemList[i].button.buttonBehav.greyedOut = true;
-                                    }
-                                    else
-                                    {
-                                        storeItemList[i].button.buttonBehav.greyedOut = (teamWork ? clientSettings.teamScore : clientSettings.score) < storeItemList[i].cost;
-                                    }
-                                }
+                        case ItemButton.Boomerang:
+                            greyedOut = !ModManager.Watcher || !canAfford;
+                            break;
 
-                                if (storeItemList[i].name == "Open Dens" && !drown.openedDen)
-                                {
-                                    storeItemList[i].button.buttonBehav.greyedOut = (teamWork ? clientSettings.teamScore : clientSettings.score) < storeItemList[i].cost;
-                                }
+                        default:
+                            greyedOut = !canAfford;
+                            break;
+                    }
 
-                                if (foundMe != null && !drown.openedDen && (storeItemList[i].name != "Respawn" && storeItemList[i].name != "Open Dens"))
-                                {
-                                    if (storeItemList[i].name == "Electric Spear" && !ModManager.MSC || storeItemList[i].name == "Boomerang" && !ModManager.Watcher)
-                                    {
-                                        storeItemList[i].button.buttonBehav.greyedOut = true;
-                                    }
-                                    else
-                                    {
+                    // Apply visual state
+                    item.button.buttonBehav.greyedOut = greyedOut;
 
-                                        storeItemList[i].button.buttonBehav.greyedOut = (teamWork ? clientSettings.teamScore : clientSettings.score) < storeItemList[i].cost;
-                                    }
-                                }
-
-
-                            }
-                            if (foundMe != null)
-                            {
-                                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem1.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[0].cost)
-                                {
-                                    storeItemList[0].button.Clicked();
-                                }
-                                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem2.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[1].cost)
-                                {
-                                    storeItemList[1].button.Clicked();
-                                }
-                                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem3.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[2].cost)
-                                {
-                                    storeItemList[2].button.Clicked();
-                                }
-                                if (ModManager.MSC && Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem4.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[3].cost)
-                                {
-                                    storeItemList[3].button.Clicked();
-                                }
-                                if (ModManager.Watcher && Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem5.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[4].cost)
-                                {
-                                    storeItemList[4].button.Clicked();
-                                }
-
-                                if (ModManager.Watcher && Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem6.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[5].cost)
-                                {
-                                    storeItemList[5].button.Clicked();
-                                }
-
-                            }
-                            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem7.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[6].cost && !drown.openedDen && (foundMe == null || foundMe.state.dead))
-                            {
-                                storeItemList[6].button.Clicked();
-                            }
-                            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.StoreItem8.Value) && (teamWork ? clientSettings.teamScore : clientSettings.score) >= storeItemList[7].cost && !drown.openedDen)
-                            {
-                                storeItemList[7].button.Clicked();
-                            }
-
-                        }
+                    // Handle Input (only if not greyed out)
+                    if (!greyedOut && Input.GetKeyDown(item.hotkey))
+                    {
+                        item.button.Clicked();
                     }
                 }
             }
         }
 
-        private static void RevivePlayer(ArenaGameSession game, ArenaOnlineGameMode arena)
+        private static void RevivePlayer(ArenaGameSession game, ArenaOnlineGameMode arena, DrownMode drown)
         {
-
-
             List<int> exitList = new List<int>();
 
             for (int i = 0; i < game.room.world.GetAbstractRoom(0).exits; i++)
             {
                 exitList.Add(i);
             }
+
             arena.avatars.Clear();
             arena.externalArenaGameMode.SpawnPlayer(arena, game, game.room, exitList);
-            game.Players.Clear();
-
+            game.Players.Remove(drown.abstractCreatureToRemove);
 
         }
-
     }
 }

@@ -214,12 +214,12 @@ namespace RainMeadow
             int scoreToAdd = arena.killScore;
             if (killedCrit.Template.type != CreatureTemplate.Type.Slugcat)
             {
-                if (self.arenaSitting.gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+                if (self.arenaSitting.gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && arena.externalArenaGameMode is FFA or TeamBattleMode)
                 {
                     scoreToAdd = 0; // creature got in somehow
                 }
             }
-            if (arena.externalArenaGameMode is ArenaChallengeMode)
+            if (arena.externalArenaGameMode is not FFA and not TeamBattleMode)
             {
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
