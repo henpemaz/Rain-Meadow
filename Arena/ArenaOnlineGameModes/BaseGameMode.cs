@@ -486,7 +486,6 @@ namespace RainMeadow
             RainMeadow.Debug(
                 $"RANDOM START TILE INDEX: {room.ShortcutLeadingToNode(randomExitIndex).StartTile}"
             );
-            RainMeadow.sSpawningAvatar = true;
             AbstractCreature abstractCreature = new AbstractCreature(
                 self.game.world,
                 StaticWorld.GetCreatureTemplate(templateType),
@@ -498,10 +497,9 @@ namespace RainMeadow
             abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(
                 randomExitIndex
             ).destNode;
+            OnlinePhysicalObject.RegisterPhysicalObject(abstractCreature, OnlinePhysicalObject.RegisterFlags.Avatar);
             abstractCreature.Room.AddEntity(abstractCreature);
             RainMeadow.Debug("assigned ac, registering");
-            self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
-            RainMeadow.sSpawningAvatar = false;
             self.game.cameras[0].followAbstractCreature = abstractCreature;
 
             if (

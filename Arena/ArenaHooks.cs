@@ -469,6 +469,7 @@ namespace RainMeadow
                 return;
 
             var room = self.room;
+
             AbstractPhysicalObject apo = new(
                 room.world,
                 Watcher.WatcherEnums.AbstractObjectType.RippleSpawn,
@@ -487,6 +488,7 @@ namespace RainMeadow
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);
+
             voidSpawn.abstractPhysicalObject.Realize();
             voidSpawn.abstractPhysicalObject.realizedObject.PlaceInRoom(room);
             voidSpawn.PlaceInRoom(room);

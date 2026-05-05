@@ -16,7 +16,6 @@ namespace RainMeadow;
 
 public partial class RainMeadow
 {
-    public static bool sSpawningAvatar;
     public void PlayerHooks()
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
@@ -1754,11 +1753,9 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            sSpawningAvatar = true;
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
-            sSpawningAvatar = false;
-
+            if (ac.GetOnlineObject() == null) OnlinePhysicalObject.RegisterPhysicalObject(ac, OnlinePhysicalObject.RegisterFlags.Avatar);
             return ac;
         }
         return orig(self, player1, player2, player3, player4, location);

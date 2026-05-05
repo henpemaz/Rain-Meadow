@@ -101,17 +101,15 @@ namespace RainMeadow
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
 
-        public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
+        public enum RegisterFlags
         {
-            OnlinePhysicalObject newOe = NewFromApo(apo);
-            RainMeadow.Debug("Registered new entity - " + newOe.ToString());
-            return newOe;
+            None = 0,
+            NonTransferable = 0b1,
+            Avatar = 0b10 | NonTransferable
         }
 
-        public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
+        public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo, RegisterFlags flags = RegisterFlags.None)
         {
-            bool transferable = !RainMeadow.sSpawningAvatar;
-
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
             {
@@ -125,26 +123,19 @@ namespace RainMeadow
                 RainMeadow.Error($"set as: {entityId}");
             }
 
-            switch (apo)
+            bool transferable = !flags.HasFlag(RegisterFlags.NonTransferable);
+            OnlinePhysicalObject opo = apo switch 
             {
-                case AbstractMeadowCollectible:
-                    return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, transferable);
-                case AbstractCreature ac:
-                    return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, transferable);
-                case AbstractConsumable acm:
-                    if (IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, transferable);
-                    else
-                    {
-                        RainMeadow.Error("object has AbstractConsumable but type is not consumable: " + apo.type);
-                        goto default; // screw you, trader-spawned scavengerbomb
-                    }
-                case AbstractSpear asp:
-                    return new OnlineSpear(asp, entityId, OnlineManager.mePlayer, transferable);
-                default:
-                    return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, transferable);
-                case null:
-                    throw new ArgumentNullException(nameof(apo));
-            }
+                AbstractMeadowCollectible => new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, transferable),
+                AbstractCreature ac => new OnlineCreature(ac, entityId, OnlineManager.mePlayer, transferable, flags.HasFlag(RegisterFlags.Avatar)) {},
+                AbstractConsumable acm when IsTypeConsumable(apo.type) => OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, transferable),
+                AbstractSpear asp => new OnlineSpear(asp, entityId, OnlineManager.mePlayer, transferable),
+                _ when apo is null => throw new ArgumentNullException(nameof(apo)),
+                _ => new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, transferable)
+            };
+
+            RainMeadow.Debug("Registered new entity - " + opo.ToString());
+            return opo;
         }
 
         private static bool IsTypeConsumable(AbstractPhysicalObject.AbstractObjectType type)

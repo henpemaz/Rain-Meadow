@@ -97,9 +97,9 @@ namespace RainMeadow
         public Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
-        public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
+        public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable, bool isAvatar) : base(ac, id, owner, isTransferable)
         {
-            if (RainMeadow.sSpawningAvatar) isAvatar = true;
+            isAvatar = isAvatar;
         }
 
         public OnlineCreature(OnlineCreatureDefinition onlineCreatureDefinition, OnlineResource inResource, AbstractCreatureState initialState) : base(onlineCreatureDefinition, inResource, initialState)
