@@ -23,7 +23,7 @@ namespace RainMeadow
             public virtual void UpdateLoginMessage(Menu.Menu self)
             {
                 int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
-                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                if (chanceToShowMessage < 7 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
                 {
                     return;
                 }
