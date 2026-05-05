@@ -5,7 +5,6 @@ namespace Drown
 {
     public class ArenaDrownClientSettings : OnlineEntity.EntityData
     {
-        public int teamScore;
         public bool isInStore;
         public bool iOpenedDen;
 
@@ -18,8 +17,7 @@ namespace Drown
 
         public class State : EntityDataState
         {
-            [OnlineField]
-            public int teamScore;
+
             [OnlineField]
             public bool isInStore;
             [OnlineField]
@@ -30,7 +28,6 @@ namespace Drown
             {
                 if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena != null && DrownMode.isDrownMode(arena, out var drown) && drown != null)
                 {
-                    teamScore = onlineEntity.teamScore;
                     isInStore = drown.isInStore;
                     iOpenedDen = onlineEntity.iOpenedDen;
                 }
@@ -41,7 +38,6 @@ namespace Drown
                 var avatarSettings = (ArenaDrownClientSettings)entityData;
                 avatarSettings.isInStore = isInStore;
                 avatarSettings.iOpenedDen = iOpenedDen;
-                avatarSettings.teamScore = teamScore;
 
             }
 

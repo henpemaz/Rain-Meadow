@@ -227,14 +227,14 @@ namespace RainMeadow
 
             // this is set locally because we return if the victim is not ours, so we need to notify everyone of this update
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-            if (isLobbyOwner) // host creature was killed
+            if (onlineKilledCreature.owner == OnlineManager.lobby.owner) // host creature was killed
             {
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                onlineKilledCreature.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
             }
             else // my creature, not host - tell the room
             {
-                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
 
             // 7.
@@ -314,11 +314,11 @@ namespace RainMeadow
                 {
                     arena.playerNumberWithScore[onlinePlayer.inLobbyId] = aPlayer.score;
                 }
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
             }
             else
             {
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, aPlayer.score);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, aPlayer.score);
             }
         }
 

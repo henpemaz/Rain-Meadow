@@ -67,13 +67,16 @@ namespace RainMeadow
                     OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
                     if (pl != null)
                     {
-                        OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
-                        if (cs != null && cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
                         {
                             int playerNum = ArenaHelpers.FindOnlinePlayerNumber(arena, pl);
                             if (playerNum >= 0 && playerNum < self.Players.Count && playerNum < self.arenaSitting.players.Count)
                             {
                                 var abstractPlayer = self.Players[playerNum];
+                                if (abstractPlayer == null)
+                                {
+                                    continue;
+                                }
+
                                 if (abstractPlayer.GetOnlineCreature().isMine)
                                 {
                                     drown.abstractCreatureToRemove = abstractPlayer;
@@ -84,7 +87,7 @@ namespace RainMeadow
 
                                 if (isDead)
                                 {
-                                    int score = teamWork ? clientSettings.teamScore : self.arenaSitting.players[playerNum].score;
+                                    int score = teamWork ? drown.teamPoints : self.arenaSitting.players[playerNum].score;
                                     if (score >= drown.respCost)
                                     {
                                         canRespawnCount++;

@@ -68,7 +68,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        public static void IncreasePlayerScore(int playerNumber, int newScore)
         {
             RainMeadow.DebugMe();
             if (!RainMeadow.isArenaMode(out var arena)) return;
@@ -102,6 +102,41 @@ namespace RainMeadow
 
                     RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
 
+                }
+            }
+
+        }
+
+        // Can increase or decrease
+        [RPCMethod]
+        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        {
+            RainMeadow.DebugMe();
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                return;
+            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+            {
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                {
+                    return; // no points for you
+                }
+
+                a.arenaSitting.players[playerNumber].score = newScore;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
                 }
             }
 

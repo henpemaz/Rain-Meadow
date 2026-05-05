@@ -104,7 +104,7 @@ namespace RainMeadow
 
 
                         game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= itemCost;
-                        me?.GetOnlineCreature()?.BroadcastRPCInRoom(DrownModeRPCs.UpdatePlayerScoreDrown, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score);
+                        me?.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score);
 
                     };
 
@@ -202,7 +202,7 @@ namespace RainMeadow
                 cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
             {
                 bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
-                int currentScore = teamWork ? clientSettings.teamScore : game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
+                int currentScore = teamWork ? drown.teamPoints : game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
 
                 foreach (var item in storeItemList)
                 {

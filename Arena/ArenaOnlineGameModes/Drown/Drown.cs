@@ -38,7 +38,7 @@ namespace RainMeadow
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
-            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE>Toggle Spear Hits for teams or FFA"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Toggle Spear Hits for teams or FFA"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
         public static bool isDrownMode(ArenaOnlineGameMode arena, out DrownMode mode)
@@ -75,10 +75,12 @@ namespace RainMeadow
         public bool waveNeedsUpdate = true;
 
         public int timerPoints = 0; // no way to get this from ArenaGameSession without breaking API
+
+        public int teamPoints;
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public AbstractCreature abstractCreatureToRemove = null;
+        public AbstractCreature? abstractCreatureToRemove;
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
@@ -145,7 +147,7 @@ namespace RainMeadow
                 {
                     if (!spearHits)
                     {
-                        timerPoints = clientSettings.teamScore;
+                        timerPoints = teamPoints;
                     }
                 }
             }
@@ -266,7 +268,6 @@ namespace RainMeadow
                         {
                             if (cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
                             {
-                                // player.score = clientSettings.score;
                                 player.winner = clientSettings.iOpenedDen;
                             }
                         }
@@ -313,27 +314,7 @@ namespace RainMeadow
                     }
                     if (!self.GameTypeSetup.spearsHitPlayers) // team work makes the dream work
                     {
-                        var points = 0;
-                        points = self.arenaSitting.players.Sum(x => x.score);
-                        arena.arenaSittingOnlineOrder.ForEach(x =>
-                      {
-
-                          OnlinePlayer? p = ArenaHelpers.FindOnlinePlayerByLobbyId(x);
-                          if (p != null)
-                          {
-                              OnlineManager.lobby.clientSettings.TryGetValue(p, out var cs);
-                              if (cs != null)
-                              {
-
-                                  cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                                  if (clientSettings != null)
-                                  {
-                                      clientSettings.teamScore = points;
-                                  }
-                              }
-                          }
-
-                      });
+                        teamPoints = self.arenaSitting.players.Sum(x => x.score);
                     }
 
                 }
