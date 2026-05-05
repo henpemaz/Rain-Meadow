@@ -80,6 +80,7 @@ namespace RainMeadow
             if (location.room == MeadowProgression.progressionData.currentCharacterProgress.saveLocation.room) location = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
             var skinData = MeadowProgression.skinData[avatarData.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, skinData.randomSeed)); // altseed not sync'd because not serialized by game smh
+            OnlinePhysicalObject.RegisterPhysicalObject(abstractCreature, OnlinePhysicalObject.RegisterFlags.Avatar);
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, false);
@@ -453,7 +454,7 @@ namespace RainMeadow
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar);
+            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature); // avatars are manually registered, so this is fine.
         }
 
         public override bool AllowedInMode(PlacedObject item)

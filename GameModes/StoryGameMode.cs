@@ -286,6 +286,7 @@ namespace RainMeadow
             {
                 abstractCreature = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, i));
                 abstractCreature.state = new PlayerState(abstractCreature, i, avatarSettings[i].playingAs, false) { isPup = avatarSettings[i].fakePup };
+                OnlinePhysicalObject.RegisterPhysicalObject(abstractCreature, OnlinePhysicalObject.RegisterFlags.Avatar);
                 self.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
                 self.session.AddPlayer(abstractCreature);
 
@@ -296,9 +297,7 @@ namespace RainMeadow
             }
 
 
-            if (MainAvatar is null) throw new InvalidProgrammerException("MainAvatar is null somehow");
-            return MainAvatar;
-            return null;
+            return MainAvatar ?? throw new InvalidProgrammerException("MainAvatar is null somehow");
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)

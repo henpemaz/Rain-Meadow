@@ -243,7 +243,7 @@ namespace RainMeadow
         public virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             RainMeadow.Debug(oe);
-            if (RainMeadow.sSpawningAvatar && oe is OnlineCreature onlineCreature)
+            if (oe is OnlineCreature onlineCreature && onlineCreature.isAvatar)
             {
                 RainMeadow.Debug("Registring avatar: " + onlineCreature);
                 this.avatars.Add(onlineCreature);
