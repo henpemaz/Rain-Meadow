@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -110,7 +110,7 @@ namespace RainMeadow
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
-            bool transferable = !RainMeadow.sSpawningAvatar || !RainMeadow.sSpawningNonTransferable;
+            bool transferable = !RainMeadow.sSpawningAvatar && !RainMeadow.sSpawningNonTransferable;
 
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
