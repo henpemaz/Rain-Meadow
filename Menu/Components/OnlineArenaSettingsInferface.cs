@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -281,27 +280,53 @@ namespace RainMeadow.UI.Components
             countdownTimerLabel.label.color = countdownTimerTextBox.rect.colorEdge;
             arenaGameModeLabel.label.color = arenaGameModeComboBox._rect.colorEdge;
         }
-
+        // To hide buttons offscreen when gameModeComboBox is open. This gives us more breathing room for modes
+        private Dictionary<ButtonTemplate, Vector2> originalButtonPositions = new Dictionary<ButtonTemplate, Vector2>();
         public override void Update()
         {
             base.Update();
             foreach (MenuObject obj in subObjects)
             {
-                if (obj is ButtonTemplate btn)
+                if ((obj is ButtonTemplate btn) && !object.ReferenceEquals(btn, arenaGameModeComboBox))
+                {
                     btn.buttonBehav.greyedOut = SettingsDisabled;
+
+                    if (arenaGameModeComboBox.held)
+                    {
+                        // Cache the original position if we haven't already
+                        if (!originalButtonPositions.ContainsKey(btn))
+                        {
+                            originalButtonPositions[btn] = btn.pos;
+                        }
+
+                        btn.pos = new Vector2(-10000f, -10000f);
+                        btn.lastPos = btn.pos;
+                    }
+                    else
+                    {
+                        // Restore the position when the combobox is closed
+                        if (originalButtonPositions.ContainsKey(btn))
+                        {
+                            btn.pos = originalButtonPositions[btn];
+                            btn.lastPos = btn.pos;
+                            originalButtonPositions.Remove(btn);
+                        }
+                    }
+                }
+
                 if (obj is MultipleChoiceArray array)
                     array.greyedOut = SettingsDisabled;
             }
-            countdownTimerTextBox.greyedOut = SettingsDisabled;
+
+            countdownTimerTextBox.greyedOut = SettingsDisabled || arenaGameModeComboBox.held;
             arenaGameModeComboBox.greyedOut = SettingsDisabled;
             overseerCheckbox.buttonBehav.greyedOut = SettingsDisabled;
+
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                if (
-                    !countdownTimerTextBox.held
-                    && countdownTimerTextBox.valueInt != arena.setupTime
-                )
+                if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime)
                     countdownTimerTextBox.valueInt = arena.setupTime;
+
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld)
                     arenaGameModeComboBox.value = arena.currentGameMode;
             }
