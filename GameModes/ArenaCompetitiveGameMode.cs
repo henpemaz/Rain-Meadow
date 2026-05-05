@@ -150,6 +150,8 @@ namespace RainMeadow
         public ArenaTeamClientSettings arenaTeamClientSettings;
         public SlugcatCustomization avatarSettings;
 
+        public MeadowAvatarData meadowOverseerData;
+
 
         public bool shufflePlayList;
         public List<string> playList = new List<string>();
@@ -166,6 +168,15 @@ namespace RainMeadow
             {
                 nickname = OnlineManager.mePlayer.id.name,
             };
+            meadowOverseerData = new MeadowAvatarData()
+            {
+                character = MeadowProgression.Character.Overseer,
+                skin = MeadowProgression.Skin.Overseer_Moon,
+                tint = Color.white,
+                tintAmount = 1f,  
+            };
+            meadowOverseerData.Updated();
+
             arenaClientSettings = new ArenaClientSettings();
             arenaTeamClientSettings = new ArenaTeamClientSettings();
 
@@ -1327,6 +1338,14 @@ namespace RainMeadow
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
+            if (onlineCreature.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Overseer)
+            {
+                meadowOverseerData.tint = avatarSettings.bodyColor;
+                meadowOverseerData.tintAmount = 1.0f;
+                onlineCreature.AddData(new MeadowCreatureData());
+                onlineCreature.AddData(meadowOverseerData);
+            }
+            
             onlineCreature.AddData(avatarSettings);
             avatarSettings.overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
@@ -1336,8 +1355,26 @@ namespace RainMeadow
             if (oc.TryGetData<SlugcatCustomization>(out var data))
             {
                 RainMeadow.Debug(oc);
-                RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
+                
+                if (creature is Overseer overseer)
+                {
+                    new OverseerController(overseer, oc, data.playerIndex);
+                    creature.abstractCreature.tentacleImmune = true;
+                    creature.abstractCreature.lavaImmune = true;
+                    creature.abstractCreature.HypothermiaImmune = true;
+
+                    if (oc.TryGetData<MeadowCreatureData>(out var mcd) && oc.TryGetData<MeadowAvatarData>(out var mcc))
+                    {   
+                        EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
+                    }
+                    RainMeadow.creatureCustomizations.GetValue(creature, (c) => oc.GetData<MeadowAvatarData>());
+                }
+                else
+                {
+                    RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
+                }
             }
+
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)

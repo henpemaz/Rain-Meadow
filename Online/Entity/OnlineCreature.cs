@@ -301,7 +301,7 @@ namespace RainMeadow
         public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
         {
             RainMeadow.Debug(this);
-            if (this.roomSession.absroom.realizedRoom is null) {
+            if (this.roomSession?.absroom?.realizedRoom is null) {
                 RainMeadow.Error($"{this} is trying to enter abstracted room.");
                 apo.Abstractize(apo.pos);
                 return;
