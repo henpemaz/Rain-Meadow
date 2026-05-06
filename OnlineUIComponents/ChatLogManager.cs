@@ -41,18 +41,18 @@ namespace RainMeadow
         /// Queries the player colours and populates the given dictionary
         /// </summary>
         public static void UpdatePlayerColors()
+{
+    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+    {
+        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
         {
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-            {
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
-                {
-                    if (!colorDict.ContainsKey(opo.owner.id.DisplayName) && opo.TryGetData<SlugcatCustomization>(out var customization))
-                    {
-                        colorDict.Add(opo.owner.id.DisplayName, customization.bodyColor);
-                    }
-                }
+            // If we successfully get the customization data, upsert
+            if (opo.TryGetData<SlugcatCustomization>(out var customization))
+                colorDict[opo.owner.id.DisplayName] = customization.bodyColor;
             }
         }
+    }
+}
 
         /// <summary>
         /// Obtains a player's color from it's name, with HSV adjustment
