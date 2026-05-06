@@ -9,6 +9,8 @@ namespace RainMeadow
 
         public int currentWaveTimer;
         public int currentWave;
+        public int rockCost;
+
         public int spearCost;
         public int spearExpCost;
         public int bombCost;
@@ -27,6 +29,8 @@ namespace RainMeadow
             int currentWaveTimer;
             [OnlineField]
             int currentWave;
+            [OnlineField]
+            int rockCost;
             [OnlineField]
             int spearCost;
             [OnlineField]
@@ -56,6 +60,7 @@ namespace RainMeadow
                     currentWaveTimer = (drownData).currentWaveTimer;
                     currentWave = drownData.currentWave;
                     densOpened = drownData.openedDen;
+                    rockCost = drownData.rockCost;
                     spearCost = drownData.spearCost;
                     spearExplCost = drownData.spearExplCost;
                     bombCost = drownData.bombCost;
@@ -80,6 +85,7 @@ namespace RainMeadow
                     (drownData).currentWaveTimer = currentWaveTimer;
                     drownData.currentWave = currentWave;
                     drownData.openedDen = densOpened;
+                    drownData.rockCost = rockCost;
                     drownData.spearCost = spearCost;
                     drownData.spearExplCost = spearExplCost;
                     drownData.bombCost = bombCost;

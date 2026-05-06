@@ -253,6 +253,11 @@ namespace RainMeadow.UI.Components
             {
                 maxCTextBox.valueInt = DROWN.maxCreatures;
             }
+
+            if (pointsForRockTextBox != null)
+            {
+                pointsForRockTextBox.valueInt = DROWN.rockCost;
+            }
             if (pointsForSpearTextBox != null)
             {
                 pointsForSpearTextBox.valueInt = DROWN.spearCost;
