@@ -17,7 +17,6 @@ namespace RainMeadow;
 public partial class RainMeadow
 {
     public static bool sSpawningAvatar;
-    public static bool sSpawningNonTransferable; // We need this for Arena's Void Amoebas, maybe other OPOs someday
     public void PlayerHooks()
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
