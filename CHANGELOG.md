@@ -1,10 +1,6 @@
-# Release 1.14.1
-## Arena
-- Fixed Amoebas not showing / not spawning when using Voidkeeper
-
 # Release 1.14.0
 
-## Engine
+# Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 - Improved piggyback netcode
