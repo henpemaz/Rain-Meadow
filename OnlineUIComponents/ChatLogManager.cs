@@ -46,10 +46,9 @@ namespace RainMeadow
             {
                 if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
                 {
-                    if (!colorDict.ContainsKey(opo.owner.id.DisplayName) && opo.TryGetData<SlugcatCustomization>(out var customization))
-                    {
-                        colorDict.Add(opo.owner.id.DisplayName, customization.bodyColor);
-                    }
+                    // If we successfully get the customization data, upsert
+                    if (opo.TryGetData<SlugcatCustomization>(out var customization))
+                        colorDict[opo.owner.id.DisplayName] = customization.bodyColor;
                 }
             }
         }
@@ -68,13 +67,13 @@ namespace RainMeadow
                 if (V < 0.8f) return UnityEngine.Color.HSVToRGB(H, S, 0.8f);
                 return colorOrig;
             }
-            return colorIfNotFound == default? Color.white : colorIfNotFound;
+            return colorIfNotFound == default ? Color.white : colorIfNotFound;
         }
     }
 
     public interface IChatSubscriber
     {
-        public bool Active{ get; }
+        public bool Active { get; }
         public void AddMessage(string user, string text);
     }
 }
