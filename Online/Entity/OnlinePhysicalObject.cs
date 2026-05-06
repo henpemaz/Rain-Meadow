@@ -95,7 +95,6 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public bool realized;
         public bool lenientPos;
-        public bool didParry;
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
@@ -596,31 +595,21 @@ namespace RainMeadow
         }
 
 
-        public bool HittingRemotely { get; private set; }=  false;
         [RPCMethod]
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
-            HittingRemotely = true;
-
-            if (this.apo.realizedObject != null) {
+            if (this.IsLocked("parry")) return;
+            if (this.apo.realizedObject != null) 
+            {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) {
+                if (result.HasValue) 
+                {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
-                    if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
-                    {
-                        RainMeadow.Debug("Parried!");
-                        OnlineManager.RunDeferred(() => onlineResult.didParry = false);
-                        HittingRemotely = false;
-                        return;
-                    }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
-                
             }
-            
-            HittingRemotely = false;
         }
 
         [RPCMethod]

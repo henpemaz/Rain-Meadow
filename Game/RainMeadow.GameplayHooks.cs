@@ -40,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -67,7 +67,6 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
@@ -150,19 +149,64 @@ namespace RainMeadow
             }
         }
 
-        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private RealizedWeaponState? GetAppropriateWeaponState(OnlinePhysicalObject obj) => obj.apo.realizedObject switch
         {
-            if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
-            {
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+            Spear => new RealizedSpearState(obj),
+            Weapon => new RealizedWeaponState(obj),
+            _ => null
+        };
 
-                if (wep1 != null && wep2 != null)
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        {
+            RainMeadow.DebugMe();
+            var parryorigin = Vector2.Lerp(self.firstChunk.lastPos, obj.firstChunk.lastPos, 0.5f);
+
+            orig(self, obj);
+            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(parryorigin, self, obj);
+        }
+
+        private void BroacastParry(Vector2 parryorigin, Weapon A, Weapon B)
+        {
+            RainMeadow.DebugMe();
+            OnlinePhysicalObject? wep1 = A.abstractPhysicalObject.GetOnlineObject();
+            OnlinePhysicalObject? wep2 = B.abstractPhysicalObject.GetOnlineObject();
+            if (wep1 == null || wep2 == null || !(wep1.isMine || wep2.isMine)) return;
+            RainMeadow.Debug($"Parry {wep1}, {wep1.owner}, {wep2}, {wep2.owner}");
+            
+            RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
+            if (realizedstatewep1 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
+                return;
+            } 
+
+            
+            RealizedWeaponState? realizedstatewep2 = GetAppropriateWeaponState(wep2);
+            if (realizedstatewep2 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
+                return;
+            } 
+                
+
+            if (!wep1.isMine)
+            {
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
+            }
+
+            if (!wep2.isMine)
+            {
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
+            }
+            
+
+            foreach (OnlinePlayer p in wep1.roomSession?.participants ?? [])
+            {
+                if (p != wep1.owner && p != wep2.owner)
                 {
-                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2);
                 }
             }
-            orig(self, obj);
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
@@ -229,15 +273,6 @@ namespace RainMeadow
                 self.firstChunk.lastPos = firstFrameTraceFromPos.Value;
             }
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
-        }
-
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
-        {
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-            }
-            orig(self, obj);
         }
 
         bool WeaponIsDangerous(Weapon weapon)
@@ -592,7 +627,7 @@ namespace RainMeadow
                 return orig(self, result, eu);
             }
 
-            if (WeaponOnline.HittingRemotely)
+            if (RPCEvent.currentRPCEvent is not null)
             {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
                 if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
@@ -616,22 +651,21 @@ namespace RainMeadow
             }
             else if (WeaponOnline.isMine || WeaponOnline.isPending)
             {
-                RealizedPhysicalObjectState realizedstate = null!;
-                if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);
-                else realizedstate = new RealizedWeaponState(WeaponOnline);
-
-
-                BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
-                AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
-
-                if (!onlineHit.owner.isMe)
+                RealizedWeaponState? realizedstate = GetAppropriateWeaponState(WeaponOnline);
+                if (realizedstate != null)
                 {
-                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
-                        onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                    ));
-                }
+                    BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                    AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
-                return orig(self, result, eu);
+                    if (!onlineHit.owner.isMe)
+                    {
+                        onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                            onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                        ));
+                    }
+
+                    return orig(self, result, eu);
+                } else RainMeadow.Error($"Failed to create the appropriate weapon state for obj {WeaponOnline}");
             }
             return true;
         }
