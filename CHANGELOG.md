@@ -1,3 +1,7 @@
+# Release 1.15.0
+## Arena
+- Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
+
 # Release 1.14.0
 
 # Engine
