@@ -66,7 +66,7 @@ namespace RainMeadow
 
             if (mode == Weapon.Mode.StuckInWall)
             {
-                spear.stuckInWall = stuckInWall;
+                spear.stuckInWall = stuckInWall ?? spear.firstChunk.pos;
                 spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             }
             
