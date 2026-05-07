@@ -1,11 +1,13 @@
 # Release 1.14.1
+
 ## Engine 
 - Improved parry netcode.
-
+- Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 
 
 ## Chat
 - Fixed events not displaying while Global Mute was toggled
 - Fixed username color not updating between Arena games
+
 # Release 1.14.0
 
 ## Engine
