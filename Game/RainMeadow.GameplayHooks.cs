@@ -159,13 +159,12 @@ namespace RainMeadow
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
             RainMeadow.DebugMe();
-            var parryorigin = Vector2.Lerp(self.firstChunk.lastPos, obj.firstChunk.lastPos, 0.5f);
-
+            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(self, obj);
             orig(self, obj);
-            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(parryorigin, self, obj);
+            
         }
 
-        private void BroacastParry(Vector2 parryorigin, Weapon A, Weapon B)
+        private void BroacastParry(Weapon A, Weapon B)
         {
             RainMeadow.DebugMe();
             OnlinePhysicalObject? wep1 = A.abstractPhysicalObject.GetOnlineObject();
@@ -191,12 +190,12 @@ namespace RainMeadow
 
             if (!wep1.isMine)
             {
-                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
             }
 
             if (!wep2.isMine)
             {
-                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2));
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
             }
             
 
@@ -204,7 +203,7 @@ namespace RainMeadow
             {
                 if (p != wep1.owner && p != wep2.owner)
                 {
-                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, parryorigin, wep1, wep2, realizedstatewep1, realizedstatewep2);
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state);
                 }
             }
         }

@@ -37,7 +37,14 @@ namespace RainMeadow
                 return;
             }
 
-            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            var onlineWeapon = (OnlinePhysicalObject)onlineEntity;
+            var weapon = onlineWeapon.apo?.realizedObject as Weapon;
+            if (weapon == null)
+            {
+                RainMeadow.Error($"Online weapon {onlineEntity} is not realized locally ");
+                return;
+            }
+
             var newMode = mode;
 
             if (!onlineEntity.IsLocked("parry"))
@@ -53,7 +60,7 @@ namespace RainMeadow
 
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            if (!ShouldPosBeLenient(weapon)) 
+            if (!onlineWeapon.lenientPos) 
             {
                 weapon.rotation = Custom.DegToVec(rotation);
                 weapon.rotationSpeed = rotationSpeed;
@@ -63,7 +70,12 @@ namespace RainMeadow
 
         public override bool ShouldPosBeLenient(PhysicalObject po)
         {
-            if (po.abstractPhysicalObject.GetOnlineObject()?.IsLocked("parry") ?? false) return true;
+            bool parrylocked = po.abstractPhysicalObject.GetOnlineObject()?.IsLocked("parry") ?? false;
+            RainMeadow.Trace($"{po} parry locked lenient pos {parrylocked}"); 
+            if (parrylocked) 
+            {   
+                return true;
+            }
             return base.ShouldPosBeLenient(po);
         }
     }

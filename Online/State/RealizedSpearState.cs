@@ -85,9 +85,9 @@ namespace RainMeadow
 
         override public bool ShouldPosBeLenient(PhysicalObject po)
         {
-            if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
+            if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return base.ShouldPosBeLenient(po); }
             if (p.onPlayerBack) return true;
-            if (p.stuckInObject != null) return true; 
+            if (p.mode == Weapon.Mode.StuckInCreature || p.mode == Weapon.Mode.StuckInWall) return true; 
             return base.ShouldPosBeLenient(po);
         }
     }
