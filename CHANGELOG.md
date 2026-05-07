@@ -1,7 +1,9 @@
 # Release 1.14.1
-## Arena
-- Fixed Amoebas not showing / not spawning when using Voidkeeper
 
+
+## Chat
+- Fixed events not displaying while Global Mute was toggled
+- Fixed username color not updating between Arena games
 # Release 1.14.0
 
 ## Engine
