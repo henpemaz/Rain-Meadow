@@ -58,6 +58,10 @@ namespace RainMeadow
                 {
                     return activeCount;
                 }
+                if (self.sessionEnded)
+                {
+                    return activeCount;
+                }
 
                 bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
                 int canRespawnCount = 0;
@@ -77,6 +81,10 @@ namespace RainMeadow
                                     continue;
                                 }
 
+                                if (abstractPlayer.GetOnlineCreature() == null)
+                                {
+                                    continue;
+                                }
                                 if (abstractPlayer.GetOnlineCreature().isMine)
                                 {
                                     drown.abstractCreatureToRemove = abstractPlayer;

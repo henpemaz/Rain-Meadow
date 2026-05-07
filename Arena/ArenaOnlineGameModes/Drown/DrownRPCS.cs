@@ -1,6 +1,7 @@
 using Drown;
 using RainMeadow;
 using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -32,6 +33,27 @@ namespace RainMeadow
                             clientSettings.iOpenedDen = denOpen;
                         }
                     }
+                }
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_RemoveAbstractCreatureFromList(RPCEvent e)
+        {
+            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                if (game.session is ArenaGameSession s)
+                {
+                    s.Players.RemoveAll(x =>
+                        x.GetOnlineCreature().owner == e.from &&
+                        (x.realizedCreature == null || x.realizedCreature.dead || x.state.dead)
+                    );
                 }
             }
         }
