@@ -33,14 +33,14 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, UnityEngine.Random.State rng, bool silentDeflect)
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, bool silentDeflect) //(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, UnityEngine.Random.State rng, bool silentDeflect)
         {
             if (weapon.IsLocked("parry") || !weapon.isMine) return;
-            var state = UnityEngine.Random.state;
+            // var state = UnityEngine.Random.state;
             
             try
             {
-                UnityEngine.Random.state = rng;
+                // UnityEngine.Random.state = rng;
                 if (weapon.apo.realizedObject is Spear spear)
                 {
                     realizedWeaponState.ReadTo(weapon);
@@ -53,7 +53,7 @@ namespace RainMeadow
             }
             finally
             {
-                UnityEngine.Random.state = state;
+                // UnityEngine.Random.state = state;
             }
         }
 

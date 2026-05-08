@@ -109,7 +109,8 @@ namespace RainMeadow
                         return;
                     } 
                     
-                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, true));
+                    // onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, true));
+                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true));
                 });
             }
             catch (Exception e)
