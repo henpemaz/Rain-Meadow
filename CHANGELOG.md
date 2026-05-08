@@ -7,6 +7,7 @@
 
 ## Arena
 - Fixed Watcher Amoebas not appearing under certain conditions
+- Fixed score being granted for killing teammates 
 
 # Release 1.14.0
 
