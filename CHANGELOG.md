@@ -2,9 +2,15 @@
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 
+# Release 1.14.1
+
+
+## Chat
+- Fixed events not displaying while Global Mute was toggled
+- Fixed username color not updating between Arena games
 # Release 1.14.0
 
-# Engine
+## Engine
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 - Improved piggyback netcode
