@@ -109,7 +109,7 @@ namespace RainMeadow
                         return;
                     } 
                     
-                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, weapon, realizedWeaponState, UnityEngine.Random.state, true));
+                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, true));
                 });
             }
             catch (Exception e)
@@ -149,7 +149,7 @@ namespace RainMeadow
                         return;
                     } 
                     
-                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, weapon, realizedWeaponState, UnityEngine.Random.state, false));
+                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, false));
                 });
             }
             catch (Exception e)

@@ -31,8 +31,9 @@ namespace RainMeadow
                 game.globalRain.deathRain.calmBeforeStormSunlight = calmBeforeStornSunlight;
             }
         }
+
         [RPCMethod]
-        public static void Weapon_CreatureDeflect(RPCEvent rpc, OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, UnityEngine.Random.State rng, bool silentDeflect)
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, UnityEngine.Random.State rng, bool silentDeflect)
         {
             if (weapon.IsLocked("parry") || !weapon.isMine) return;
             var state = UnityEngine.Random.state;

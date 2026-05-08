@@ -157,7 +157,7 @@ namespace RainMeadow.UI.Components
                 artiParryDistanceTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.artiExplosionCount = artiParryDistanceTextBox.valueInt;
+                    arena.artiParryDistance = artiParryDistanceTextBox.valueInt;
                 };
                 artiParryDistanceLabel = new(menu, this, Translate("Artificer Parry Range"), artiParryDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 artiParryDistanceLabel.label.alignment = FLabelAlignment.Left;
