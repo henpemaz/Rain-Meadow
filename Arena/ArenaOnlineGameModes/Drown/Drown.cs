@@ -26,7 +26,7 @@ namespace RainMeadow
         public static string OpenDens = "Open Dens";
 
 
-        public static ArenaSetup.GameTypeID Drown = new ArenaSetup.GameTypeID("Drown", register: true);
+        public static ArenaSetup.GameTypeID Drown = new ArenaSetup.GameTypeID("Drown", register: false);
         public override ArenaSetup.GameTypeID GetGameModeId
         {
             get
@@ -121,8 +121,8 @@ namespace RainMeadow
         public override void InitAsCustomGameType(ArenaMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
-            self.survivalScore = 0;
-            self.spearHitScore = 0;
+            self.survivalScore = arena.aliveScore;
+            self.spearHitScore = arena.spearHitScore;
             self.repeatSingleLevelForever = false;
             self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             self.rainWhenOnePlayerLeft = false;
@@ -131,7 +131,9 @@ namespace RainMeadow
             self.saveCreatures = false;
             self.spearsHitPlayers = ArenaHelpers.GetOptionFromArena("SPEARSHIT", self.spearsHitPlayers);
             spearHits = self.spearsHitPlayers;
+            if (arena.spearHitScore == 0) {
             SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
+            }
 
         }
 
