@@ -69,6 +69,10 @@ namespace RainMeadow
                 spear.stuckInWall = stuckInWall ?? spear.firstChunk.pos;
                 spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             }
+            else
+            {
+                spear.addPoles = false;
+            }
             
             spear.spearDamageBonus = spearDamageBonus;
             // spear.addPoles = stuckInWall.HasValue && !spear.hasHorizontalBeamState && !(spear is ExplosiveSpear);
