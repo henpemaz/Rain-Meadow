@@ -131,7 +131,7 @@ namespace RainMeadow
             self.saveCreatures = false;
             self.spearsHitPlayers = ArenaHelpers.GetOptionFromArena("SPEARSHIT", self.spearsHitPlayers);
             spearHits = self.spearsHitPlayers;
-            if (arena.spearHitScore == 0) {
+            if (arena.killScore == 0) {
             SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
             }
 
