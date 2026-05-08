@@ -33,17 +33,18 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, bool silentDeflect) //(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, UnityEngine.Random.State rng, bool silentDeflect)
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, bool silentDeflect)
         {
-            if (weapon.IsLocked("parry") || !weapon.isMine) return;
-            // var state = UnityEngine.Random.state;
+            if (weapon.IsLocked("parry")) return;
             
             try
             {
-                // UnityEngine.Random.state = rng;
                 if (weapon.apo.realizedObject is Spear spear)
                 {
-                    realizedWeaponState.ReadTo(weapon);
+                    if (weapon.isMine) // to act on the owner, but have the sound for everyone
+                    {
+                        realizedWeaponState.ReadTo(weapon);
+                    }
                     if (!silentDeflect) // artificer's deflect is silent, the parry sound is loud enough
                     {
                         spear.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, spear.firstChunk);

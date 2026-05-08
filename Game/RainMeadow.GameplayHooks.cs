@@ -109,7 +109,6 @@ namespace RainMeadow
                         return;
                     } 
                     
-                    // onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, true));
                     onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true));
                 });
             }
@@ -150,7 +149,15 @@ namespace RainMeadow
                         return;
                     } 
                     
-                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, UnityEngine.Random.state, false));
+                    onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false));
+                    
+                    foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
+                    {
+                        if (player is not null && player != onlineWeapon.owner && !player.isMe)
+                        {
+                            player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false);
+                        }
+                    }
                 });
             }
             catch (Exception e)
