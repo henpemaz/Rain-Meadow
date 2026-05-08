@@ -440,12 +440,12 @@ namespace RainMeadow
             return orig(self);
         }
 
-                public void Player_SpawnDynamicWarpPoint(
-            On.Player.orig_SpawnDynamicWarpPoint orig,
-            Player self,
-            string forcedDestination,
-            Vector2? forcedDestinationPosition
-        )
+        public void Player_SpawnDynamicWarpPoint(
+    On.Player.orig_SpawnDynamicWarpPoint orig,
+    Player self,
+    string forcedDestination,
+    Vector2? forcedDestinationPosition
+)
         {
             if (!isArenaMode(out var arena))
             {
@@ -579,6 +579,9 @@ namespace RainMeadow
                     if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
                         continue;
                 }
+
+                if (player.realizedCreature != null && player.realizedCreature.State.dead)
+                    continue;
 
                 int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
                 int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
