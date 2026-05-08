@@ -184,6 +184,34 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
+
+            IL.Player.ClassMechanicsArtificer += Player_ArtificerParryRange;
+        }
+        
+        // Restrict Artificer's parry range in arena
+        private void Player_ArtificerParryRange(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                cursor.GotoNext(moveType: MoveType.After,
+                    x => x.MatchCallvirt(typeof(Weapon).GetProperty(nameof(Weapon.mode)).GetGetMethod()),
+                    x => x.MatchLdsfld<Weapon>(nameof(Weapon.Thrown))
+                );
+                cursor.GotoNext(moveType: MoveType.After,
+                    x => x.MatchLdcR4(300)
+                );
+                // We go to the throw detection, then where the 300 value is located
+
+                cursor.EmitDelegate((float orig) =>
+                {
+                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiParryDistance : orig;
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         public void PlayerSpecificOnlineHud_Update(ILContext il)
