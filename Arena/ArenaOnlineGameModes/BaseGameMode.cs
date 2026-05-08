@@ -219,7 +219,7 @@ namespace RainMeadow
                     scoreToAdd = 0; // creature got in somehow
                 }
             }
-            if (arena.externalArenaGameMode is ArenaChallengeMode)
+            if (arena.externalArenaGameMode is ArenaChallengeMode || arena.killScore == 0)
             {
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
