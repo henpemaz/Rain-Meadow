@@ -1,11 +1,14 @@
 # Arena Development Notes
 
-## General Design & Patterns
-The codebase favors Golang-style iterations (index-based loops and manual null checking) over `Linq`. 
-
-* **Player Identification:** Determined by the `InLobbyId` index position.
-* **Logic Management:** `arena.winByScore` handles the scoring logic for `ArenaOverlay`.
-* **The Crux:** The `Killing` hook is the "source of truth" for all arena violence, including scores and trophy assignments.
+## Executive Summary
+* **Coding Style:** The codebase favors index-based iterations and manual null checking over LINQ cuz I was more familiar with that.
+* **Player Identification:** Player numbering and identity are strictly determined by the `InLobbyId` index position.
+* **Scoring Logic:** Current technical debt requires an IL hook for negative integers to properly handle suicide deductions without awarding points to opponents.
+* **Killing Mechanism:** The `Killing` hook acts as the central source of truth for combat violence and uses specific logic to revert to base game scoring when needed.
+* **NextLevel Flow:** A host-initiated handshake and an 8-second deadlock timer in `WorldSession` protect the lobby from crashing due to failed resource exits.
+* **Arena Helpers:** This class manages critical player-finding functions and contains static logic, some of which should eventually be moved into external modes.
+* **External Game Modes:** The stable API must be updated sparingly to preserve compatibility for other modders relying on the provided documentation.
+* **Contributor Legacy:** Arena represents an iterative learning process where design patterns may shift depending on when specific logic was implemented.
 
 ---
 
@@ -21,7 +24,7 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 * Update `DistributeEmptyKillScore` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaRPCs.cs#L38) to remove score from the target player directly.
 * Clean up the legacy "clamp to 0" code once the hook is in place.
 * Right now, `UpdatePlayerScore` only checks if current score is less than incoming score. [Drown PR](https://github.com/henpemaz/Rain-Meadow/pull/1448/files) renames it to `IncreasePlayerScore` and adds `UpdatePlayerScore` without this check. 
-* It was too close to tournament to make any changes to this, so thats why two RPCs will exist
+* It was too close to tournament to make any changes to this, so thats why two RPCs will exist.
 
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**
@@ -60,5 +63,8 @@ The API is live and used by other modders. **Update the API sparingly** to avoid
 This project represents 2.5 years of iterative learning. You may encounter:
 * **Inconsistent Designs:** Later implementations reflect a better understanding of the engine than earlier ones.
 * **Manual Implementations:** Some helper functions might be missing in certain spots simply due to the sheer scale of the project.
+
+## Conclusion
+It's been one hell of a ride. I hope you enjoy it like I did.
 
 **Need help?** DM **@UO** with questions. Good luck—the Arena awaits!
