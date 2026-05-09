@@ -35,7 +35,7 @@ The transition logic is designed to isolate crashes and prevent "lobby tanking."
 * **Deadlock Timer:** `WorldSession` has an **8s timer** if a player fails to leave a world resource. This isolates problematic players so the rest of the lobby can proceed.
 * **Handshake:** The Host initiates the level change in `ArenaOverlay_Update` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaHooks.cs#L1091), then pulls the other players along once the host has loaded.
 * **Known Issues:**
-    * **Ghost Players:** Some players report being stuck in the lobby menu on start without errors. Occurrences are rare.
+    * **Lobbied Players:** Some players report being stuck in the lobby menu on start without errors. Occurrences are rare.
     * **Visual Bug:** Mid-game joins cause duplicate score entries in the result overlay. Harmless, but needs a fix eventually.
 
 ---
