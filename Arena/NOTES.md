@@ -9,7 +9,7 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 **The Fix:**
 * **Do not** just update the `teamsScore` dictionary. 
 * **Use an IL hook** to support negative integers.
-* Update `DistributeEmptyKillScore` (here)[https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaRPCs.cs#L38] to remove score from the target player directly.
+* Update `DistributeEmptyKillScore` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaRPCs.cs#L38) to remove score from the target player directly.
 * Clean up the legacy "clamp to 0" code once the hook is in place.
 * Right now, `UpdatePlayerScore` only checks if current score is less than incoming score. Drown PR renames it to `IncreasePlayerScore` and adds `UpdatePlayerScore` without this check. 
 * It was too close to tournament to make any changes to this, so thats why two RPCs will exist
@@ -17,7 +17,7 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**
 
-* **Logic:** A PR for `1.15.0` to add Drown mode (here)[https://github.com/henpemaz/Rain-Meadow/blob/0503-drown/Arena/ArenaOnlineGameModes/BaseGameMode.cs#L222] checks if `arena.killingScore` is `0`. If so, it reverts to base game logic for score assignment.
+* **Logic:** A PR for `1.15.0` to add Drown mode [here](https://github.com/henpemaz/Rain-Meadow/blob/0503-drown/Arena/ArenaOnlineGameModes/BaseGameMode.cs#L222) checks if `arena.killingScore` is `0`. If so, it reverts to base game logic for score assignment.
 * **Configuration:** Score configs in the menu do not auto-reset to `0` when the mode changes; this is currently left to the user’s discretion.
 
 ## NextLevel Flow
@@ -50,7 +50,7 @@ This is a high-traffic class. Currently, `TeamBattle` logic is static here, but 
 ## External Game Modes
 The API is live and used by other modders. **Update the API sparingly** to avoid breaking external dependencies.
 
-* **Documentation:** Detailed docs can be found in (Arena/README.me)[./Arena/README.md].
+* **Documentation:** Detailed docs can be found in [Arena/README.md](./Arena/README.md).
 
 ---
 
