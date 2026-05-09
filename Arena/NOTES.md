@@ -41,7 +41,7 @@ The transition logic is designed to isolate crashes and prevent "lobby tanking."
 ---
 
 ## Arena Helpers
-This is a high-traffic class. Currently, `TeamBattle` logic is static here, but it should eventually be moved into the external mode itself.
+This is a highly used class. Currently, `TeamBattle` logic is static here, but it should eventually be moved into the external mode itself.
 
 **Primary Functions:**
 1.  `FindOnlinePlayerFromFakePlayerNumber`: Finds the owner from the `ArenaSitting.ArenaPlayer` player number.
