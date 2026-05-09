@@ -2,7 +2,7 @@
 
 ## Executive Summary
 * **Coding Style:** The codebase favors index-based iterations and manual null checking over LINQ cuz I was more familiar with that.
-* **Player Identification:** Player numbering and identity are strictly determined by the `InLobbyId` index position.
+* **Player Identification:** Player numbering and identity are determined by a combo of the `InLobbyId` index position and `ArenaSitting` setup.
 * **Scoring Logic:** Current technical debt requires an IL hook for negative integers to properly handle suicide deductions without awarding points to opponents.
 * **Killing Mechanism:** The `Killing` hook acts as the central source of truth for combat violence and uses specific logic to revert to base game scoring when needed.
 * **NextLevel Flow:** A host-initiated handshake and an 8-second deadlock timer in `WorldSession` protect the lobby from crashing due to failed resource exits.
