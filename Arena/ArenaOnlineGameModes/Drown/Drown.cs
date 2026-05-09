@@ -131,14 +131,16 @@ namespace RainMeadow
             self.saveCreatures = false;
             self.spearsHitPlayers = ArenaHelpers.GetOptionFromArena("SPEARSHIT", self.spearsHitPlayers);
             spearHits = self.spearsHitPlayers;
-            if (arena.killScore == 0) {
-            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
+            if (arena.killScore == 0)
+            {
+                SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
             }
 
         }
 
         public override string TimerText()
         {
+            RainMeadow.isArenaMode(out var arena);
             var waveTimer = ArenaPrepTimer.FormatTime(currentWaveTimer);
             OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
 
@@ -150,6 +152,10 @@ namespace RainMeadow
                     if (!spearHits)
                     {
                         timerPoints = teamPoints;
+                    }
+                    else
+                    {
+                        timerPoints = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
                     }
                 }
             }

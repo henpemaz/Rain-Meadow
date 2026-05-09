@@ -102,9 +102,13 @@ namespace RainMeadow
                             desiredObject.RealizeInRoom();
                         }
 
-
                         game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= itemCost;
-                        me?.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score);
+                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        {
+                            OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                            if (pl == null || pl.isMe) continue;
+                            pl.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score);
+                        }
 
                     };
 
@@ -223,15 +227,15 @@ namespace RainMeadow
                             break;
 
                         case ItemButton.ElectricSpear:
-                            greyedOut = !ModManager.MSC || !canAfford;
+                            greyedOut = !ModManager.MSC || !canAfford || !isAlive;
                             break;
 
                         case ItemButton.Boomerang:
-                            greyedOut = !ModManager.Watcher || !canAfford;
+                            greyedOut = !ModManager.Watcher || !canAfford || !isAlive;
                             break;
 
                         default:
-                            greyedOut = !canAfford;
+                            greyedOut = !canAfford || !isAlive;
                             break;
                     }
 
@@ -258,8 +262,14 @@ namespace RainMeadow
 
             arena.avatars.Clear();
             arena.externalArenaGameMode.SpawnPlayer(arena, game, game.room, exitList);
-            drown.abstractCreatureToRemove?.GetOnlineCreature().BroadcastRPCInRoom(DrownModeRPCs.Arena_RemoveAbstractCreatureFromList);
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                if (pl == null || pl.isMe) continue;
+                pl.InvokeOnceRPC(DrownModeRPCs.Arena_RemoveAbstractCreatureFromList);
+            }
             game.Players.Remove(drown.abstractCreatureToRemove);
+
 
         }
     }
