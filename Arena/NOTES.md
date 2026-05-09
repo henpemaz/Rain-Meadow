@@ -22,7 +22,6 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 * **Do not** just update the `teamsScore` dictionary. 
 * **Use an IL hook** to support negative integers.
 * Update `DistributeEmptyKillScore` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaRPCs.cs#L38) to remove score from the target player directly.
-* Clean up the legacy "clamp to 0" code once the hook is in place.
 * Right now, `UpdatePlayerScore` only checks if current score is less than incoming score. [Drown PR](https://github.com/henpemaz/Rain-Meadow/pull/1448/files) renames it to `IncreasePlayerScore` and adds `UpdatePlayerScore` without this check. 
 * It was too close to tournament to make any changes to this, so thats why two RPCs will exist.
 
