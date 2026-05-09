@@ -50,7 +50,7 @@ This is a high-traffic class. Currently, `TeamBattle` logic is static here, but 
 ## External Game Modes
 The API is live and used by other modders. **Update the API sparingly** to avoid breaking external dependencies.
 
-* **Documentation:** Detailed docs can be found in `Arena/README.me`.
+* **Documentation:** Detailed docs can be found in (Arena/README.me)[./Arena/README.md].
 
 ---
 
