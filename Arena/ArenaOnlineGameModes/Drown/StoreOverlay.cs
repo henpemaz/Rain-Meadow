@@ -258,7 +258,7 @@ namespace RainMeadow
 
             arena.avatars.Clear();
             arena.externalArenaGameMode.SpawnPlayer(arena, game, game.room, exitList);
-            drown.abstractCreatureToRemove.GetOnlineCreature().BroadcastRPCInRoom(DrownModeRPCs.Arena_RemoveAbstractCreatureFromList);
+            drown.abstractCreatureToRemove?.GetOnlineCreature().BroadcastRPCInRoom(DrownModeRPCs.Arena_RemoveAbstractCreatureFromList);
             game.Players.Remove(drown.abstractCreatureToRemove);
 
         }
