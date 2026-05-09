@@ -55,7 +55,7 @@ This is a highly used class. Currently, `TeamBattle` logic is static here, but i
 ## External Game Modes
 The API is live and used by other modders. **Update the API sparingly** to avoid breaking external dependencies.
 
-* **Documentation:** Detailed docs can be found in [Arena/README.md](./Arena/README.md).
+* **Documentation:** Detailed docs can be found in [Arena/README.md](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/README.md).
 
 ---
 
