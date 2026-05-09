@@ -47,7 +47,7 @@ This is a highly used class. Currently, `TeamBattle` logic is static here, but i
 
 **Primary Functions:**
 1.  `FindOnlinePlayerFromFakePlayerNumber`: Finds the owner from the `ArenaSitting.ArenaPlayer` player number.
-2.  `FineOnlinePlayerNumber`: Finds the index position of `InLobbyId`.
+2.  `FindOnlinePlayerNumber`: Finds the index position of `InLobbyId`.
 
 ---
 
