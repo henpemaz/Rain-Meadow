@@ -1,5 +1,14 @@
 # Arena Development Notes
 
+## General Design & Patterns
+The codebase favors Golang-style iterations (index-based loops and manual null checking) over `Linq`. 
+
+* **Player Identification:** Determined by the `InLobbyId` index position.
+* **Logic Management:** `arena.winByScore` handles the scoring logic for `ArenaOverlay`.
+* **The Crux:** The `Killing` hook is the "source of truth" for all arena violence, including scores and trophy assignments.
+
+---
+
 ## Scoring
 One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player.specificMultiplayerHud` that clamped points to 0 if they dropped below that threshold. 
 
@@ -26,15 +35,8 @@ The transition logic is designed to isolate crashes and prevent "lobby tanking."
 * **Deadlock Timer:** `WorldSession` has an **8s timer** if a player fails to leave a world resource. This isolates problematic players so the rest of the lobby can proceed.
 * **Handshake:** The Host initiates the level change in `ArenaOverlay_Update` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaHooks.cs#L1091), then pulls the other players along once the host has loaded.
 * **Known Issues:**
-    * **Lobbied Players:** Some players report being stuck in the lobby menu on start without errors. Occurrences are rare.
+    * **Ghost Players:** Some players report being stuck in the lobby menu on start without errors. Occurrences are rare.
     * **Visual Bug:** Mid-game joins cause duplicate score entries in the result overlay. Harmless, but needs a fix eventually.
-
-## General Design & Patterns
-The codebase favors Golang-style iterations (index-based loops and manual null checking) over `Linq`. 
-
-* **Player Identification:** Determined by the `InLobbyId` index position.
-* **Logic Management:** `arena.winByScore` handles the scoring logic for `ArenaOverlay`.
-* **The Crux:** The `Killing` hook is the "source of truth" for all arena violence, including scores and trophy assignments.
 
 ---
 
