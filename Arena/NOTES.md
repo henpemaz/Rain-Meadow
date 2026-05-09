@@ -67,6 +67,4 @@ This project represents 2.5 years of iterative learning. You may encounter:
 ## Conclusion
 It's been one hell of a ride. I hope you enjoy it like I did.
 
-**Need help?** DM **@UO** with questions. 
-
-```Will you drown in the deep, or rise from it?```
+**Need help?** DM **@UO** with questions. Fight hard, Slugcat
