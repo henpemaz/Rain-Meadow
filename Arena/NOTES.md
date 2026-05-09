@@ -15,7 +15,7 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**
 
-* **Logic:** A PR for `1.15.0` (TODO: [Link]) checks if `arena.killingScore` is `0`. If so, it reverts to base game logic for score assignment.
+* **Logic:** A PR for `1.15.0` to add Drown mode (here)[https://github.com/henpemaz/Rain-Meadow/blob/0503-drown/Arena/ArenaOnlineGameModes/BaseGameMode.cs#L222] checks if `arena.killingScore` is `0`. If so, it reverts to base game logic for score assignment.
 * **Configuration:** Score configs in the menu do not auto-reset to `0` when the mode changes; this is currently left to the user’s discretion.
 
 ## NextLevel Flow
