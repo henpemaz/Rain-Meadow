@@ -206,13 +206,7 @@ namespace RainMeadow
 
                 if (isMissingOrDead)
                 {
-                    continue;
-                }
-
-                // EXCLUSION 3: Not on the same team
-                if (isTeamBattle && deadPlayer != null)
-                {
-                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
+                  continue;
                 }
                 RainMeadow.Debug($"Found GetAllAlivePlayers playerNumber {session.arenaSitting.players[i].playerNumber}");
                 allAlivePlayers = [.. allAlivePlayers, session.arenaSitting.players[i].playerNumber];
