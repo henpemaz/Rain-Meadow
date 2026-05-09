@@ -45,74 +45,65 @@ namespace RainMeadow
             }
         }
 
-        private int ArenaGameSession_PlayersStillActiveDrown(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
+ private int ArenaGameSession_PlayersStillActiveDrown(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
+{
+    // 1. ALWAYS run orig first. This allows native alive-time tracking to process 
+    // and gives us the baseline count of alive players.
+    int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
+
+    if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+    {
+        // If dens are opened, nobody can respawn. Let native logic decide the end state.
+        if (drown.openedDen || self.sessionEnded)
         {
-            // 1. ALWAYS run orig first. This allows native alive-time tracking to process 
-            // and gives us the baseline count of alive players.
-            int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
-
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
-            {
-                // If dens are opened, nobody can respawn. Let native logic decide the end state.
-                if (drown.openedDen)
-                {
-                    return activeCount;
-                }
-                if (self.sessionEnded)
-                {
-                    return activeCount;
-                }
-
-                bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
-                int canRespawnCount = 0;
-
-                foreach (var p in arena.arenaSittingOnlineOrder)
-                {
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (pl != null)
-                    {
-                        {
-                            int playerNum = ArenaHelpers.FindOnlinePlayerNumber(arena, pl);
-                            if (playerNum >= 0 && playerNum < self.Players.Count && playerNum < self.arenaSitting.players.Count)
-                            {
-                                var abstractPlayer = self.Players[playerNum];
-                                if (abstractPlayer == null)
-                                {
-                                    continue;
-                                }
-
-                                if (abstractPlayer.GetOnlineCreature() == null)
-                                {
-                                    continue;
-                                }
-                                if (abstractPlayer.GetOnlineCreature().isMine)
-                                {
-                                    drown.abstractCreatureToRemove = abstractPlayer;
-                                }
-
-                                // Only count them if they are dead. If they're alive, orig() already handled them.
-                                bool isDead = abstractPlayer.state.dead || (abstractPlayer.realizedCreature != null && abstractPlayer.realizedCreature.State.dead);
-
-                                if (isDead)
-                                {
-                                    int score = teamWork ? drown.teamPoints : self.arenaSitting.players[playerNum].score;
-                                    if (score >= drown.respCost)
-                                    {
-                                        canRespawnCount++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // By adding the dead-but-respawnable players to the active count,
-                // we trick the session into staying alive as long as there are contenders left.
-                return activeCount + canRespawnCount;
-            }
-
             return activeCount;
         }
+
+        bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+        int canRespawnCount = 0;
+
+        // Ensure the Players list is not null before iterating
+        if (self.Players != null)
+        {
+            for (int playerNum = 0; playerNum < self.Players.Count; playerNum++)
+            {
+                var abstractPlayer = self.Players[playerNum];
+                if (abstractPlayer == null) continue;
+
+                var onlineCreature = abstractPlayer.GetOnlineCreature();
+                if (onlineCreature == null) continue;
+
+                // Get the online Player through the owner extension
+                var pl = onlineCreature.owner;
+                if (pl == null) continue;
+
+                if (onlineCreature.isMine)
+                {
+                    drown.abstractCreatureToRemove = abstractPlayer;
+                }
+
+                // Only count them if they are dead. If they're alive, orig() already handled them.
+                bool isDead = abstractPlayer.state.dead || (abstractPlayer.realizedCreature != null && abstractPlayer.realizedCreature.State.dead);
+
+                // Ensure we don't go out of bounds on the arenaSitting.players list
+                if (isDead && playerNum < self.arenaSitting.players.Count)
+                {
+                    int score = teamWork ? drown.teamPoints : self.arenaSitting.players[playerNum].score;
+                    if (score >= drown.respCost)
+                    {
+                        canRespawnCount++;
+                    }
+                }
+            }
+        }
+
+        // By adding the dead-but-respawnable players to the active count,
+        // we trick the session into staying alive as long as there are contenders left.
+        return activeCount + canRespawnCount;
+    }
+
+    return activeCount;
+}
 
         private void Player_ClassMechanicsSaint(ILContext il)
         {
