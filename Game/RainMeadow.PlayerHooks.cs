@@ -766,10 +766,6 @@ public partial class RainMeadow
 
     private void PlayerCarryableItem_PickedUp(On.PlayerCarryableItem.orig_PickedUp orig, PlayerCarryableItem self, Creature upPicker)
     {
-        if (OnlineManager.lobby != null)
-        {
-            upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
-        }
         orig(self, upPicker);
     }
 

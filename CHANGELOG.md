@@ -1,4 +1,6 @@
 # Release 1.14.1
+## Engine 
+- Improved parry netcode.
 
 
 ## Chat

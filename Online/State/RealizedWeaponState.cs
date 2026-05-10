@@ -37,23 +37,46 @@ namespace RainMeadow
                 return;
             }
 
-            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            var newMode = mode;
-            
-            if (weapon.room != null && weapon.mode != newMode)
+            var onlineWeapon = (OnlinePhysicalObject)onlineEntity;
+            var weapon = onlineWeapon.apo?.realizedObject as Weapon;
+            if (weapon == null)
             {
-                RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
-                weapon.ChangeMode(newMode);
-                weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+                RainMeadow.Error($"Online weapon {onlineEntity} is not realized locally ");
+                return;
             }
+
+            var newMode = mode;
+
+            if (!onlineEntity.IsLocked("parry"))
+            {
+                if (weapon.room != null && weapon.mode != newMode)
+                {
+                    RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
+                    weapon.ChangeMode(newMode);
+                    weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+                }
+            }
+            
 
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            if (!ShouldPosBeLenient(weapon)) {
+            if (!onlineWeapon.lenientPos) 
+            {
                 weapon.rotation = Custom.DegToVec(rotation);
                 weapon.rotationSpeed = rotationSpeed;
                 weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
             }
+        }
+
+        public override bool ShouldPosBeLenient(PhysicalObject po)
+        {
+            bool parrylocked = po.abstractPhysicalObject.GetOnlineObject()?.IsLocked("parry") ?? false;
+            RainMeadow.Trace($"{po} parry locked lenient pos {parrylocked}"); 
+            if (parrylocked) 
+            {   
+                return true;
+            }
+            return base.ShouldPosBeLenient(po);
         }
     }
 }
