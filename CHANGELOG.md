@@ -8,6 +8,10 @@
 - Fixed events not displaying while Global Mute was toggled
 - Fixed username color not updating between Arena games
 
+## Arena
+- Fixed Watcher Amoebas not appearing under certain conditions
+- Fixed score being granted for killing teammates 
+
 # Release 1.14.0
 
 ## Engine
