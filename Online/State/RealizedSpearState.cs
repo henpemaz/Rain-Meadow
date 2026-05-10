@@ -34,8 +34,9 @@ namespace RainMeadow
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
             spearDamageBonus = spear.spearDamageBonus;
-            
-            if (spear is ExplosiveSpear explosive) {
+
+            if (spear is ExplosiveSpear explosive)
+            {
                 ignited = explosive.Ignited;
             }
 
@@ -53,10 +54,28 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            spear.stuckInWall = stuckInWall;
-            spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
+            if (spear == null) return;
+            if (spear.mode == Weapon.Mode.StuckInWall && mode != Weapon.Mode.StuckInWall && spear.hasHorizontalBeamState)
+            {
+                spear.resetHorizontalBeamState();
+                stuckInWall = default(Vector2);
+                spear.vibrate = 20;
+                spear.firstChunk.collideWithTerrain = true;
+                spear.abstractSpear.stuckInWallCycles = 0;
+            }
+
+            if (mode == Weapon.Mode.StuckInWall)
+            {
+                spear.stuckInWall = stuckInWall ?? spear.firstChunk.pos;
+                spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
+            }
+            else
+            {
+                spear.addPoles = false;
+            }
+            
             spear.spearDamageBonus = spearDamageBonus;
-            spear.addPoles = stuckInWall.HasValue;
+            // spear.addPoles = stuckInWall.HasValue && !spear.hasHorizontalBeamState && !(spear is ExplosiveSpear);
 
             spear.spearmasterNeedle_hasConnection = needleActive;
 
@@ -69,11 +88,7 @@ namespace RainMeadow
                 spear.stuckRotation = stuckRotation;
             }
 
-            if (spear is ExplosiveSpear explosive) {
-                if (ignited && !explosive.Ignited) {
-                    explosive.Ignite();
-                }
-            }
+            if (spear is ExplosiveSpear explosive && ignited && !explosive.Ignited) explosive.Ignite();
 
             base.ReadTo(onlineEntity);
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
@@ -91,9 +106,9 @@ namespace RainMeadow
 
         override public bool ShouldPosBeLenient(PhysicalObject po)
         {
-            if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
+            if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return base.ShouldPosBeLenient(po); }
             if (p.onPlayerBack) return true;
-            if (p.stuckInObject != null) return true; 
+            if (p.mode == Weapon.Mode.StuckInCreature || p.mode == Weapon.Mode.StuckInWall) return true; 
             return base.ShouldPosBeLenient(po);
         }
     }
