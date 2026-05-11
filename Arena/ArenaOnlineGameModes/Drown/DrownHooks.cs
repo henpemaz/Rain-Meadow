@@ -62,7 +62,6 @@ namespace RainMeadow
                 }
 
 
-
                 // Ensure the Players list is not null before iterating
                 if (self.arenaSitting.players != null)
                 {
@@ -75,14 +74,14 @@ namespace RainMeadow
                         if (i < self.Players.Count && self.Players[i] != null)
                         {
                             var absCrit = self.Players[i];
-                            if (!absCrit.state.dead && (absCrit.realizedCreature == null || !absCrit.realizedCreature.State.dead))
+                            if (absCrit.state.alive || (absCrit.realizedCreature != null && absCrit.realizedCreature.State.alive))
                             {
                                 isPhysicallyAlive = true;
                             }
                         }
 
                         // 2. If they aren't physically alive (dead, fell out of map, or despawned)
-                        // Check if they HAVE the resources to come back.
+                        // Check if they have the resources to come back.
                         if (!isPhysicallyAlive)
                         {
                             int score = teamWork ? drown.teamPoints : self.arenaSitting.players[i].score;

@@ -51,8 +51,7 @@ namespace RainMeadow
                 if (game.session is ArenaGameSession s)
                 {
                     s.Players.RemoveAll(x =>
-                        x.GetOnlineCreature().owner == e.from &&
-                        (x.realizedCreature == null || x.realizedCreature.dead || x.state.dead)
+                        x.realizedCreature == null || x.realizedCreature.dead || x.state.dead
                     );
                 }
             }

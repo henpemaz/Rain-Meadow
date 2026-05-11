@@ -185,14 +185,14 @@ namespace RainMeadow
             if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.isDrownMode(arena, out var drownMode))
                 return;
 
-            // Robustly find if the local player is currently alive
+            // find if the local player is currently alive
             bool isAlive = false;
             foreach (var player in game.Players)
             {
                 // Check if this player is the local player and is alive
                 if (OnlinePhysicalObject.map.TryGetValue(player, out var onlineC) && onlineC.owner == OnlineManager.mePlayer)
                 {
-                    if (player.state.alive || (player.realizedCreature != null && !player.realizedCreature.dead))
+                    if (player.state.alive || (player.realizedCreature != null && player.realizedCreature.State.alive))
                     {
                         isAlive = true;
                         break; // Found the player and they are alive, no need to check others
@@ -213,16 +213,13 @@ namespace RainMeadow
                     bool canAfford = currentScore >= item.cost;
                     bool greyedOut = false;
 
-                    // Logic gate for specific buttons
                     switch (item.name)
                     {
                         case ItemButton.Respawn:
-                            // Grey out if ALIVE or CANNOT AFFORD or GAME OVER
                             greyedOut = isAlive || !canAfford || drown.openedDen;
                             break;
 
                         case ItemButton.OpenDens:
-                            // Grey out if already opened or cannot afford
                             greyedOut = drownMode.openedDen || !canAfford;
                             break;
 
@@ -239,10 +236,8 @@ namespace RainMeadow
                             break;
                     }
 
-                    // Apply visual state
                     item.button.buttonBehav.greyedOut = greyedOut;
 
-                    // Handle Input (only if not greyed out)
                     if (!greyedOut && Input.GetKeyDown(item.hotkey))
                     {
                         item.button.Clicked();
@@ -268,9 +263,7 @@ namespace RainMeadow
                 if (pl == null || pl.isMe) continue;
                 pl.InvokeOnceRPC(DrownModeRPCs.Arena_RemoveAbstractCreatureFromList);
             }
-            game.Players.Remove(drown.abstractCreatureToRemove);
-
-
+            game.Players.RemoveAll(x => x.state.dead || x.realizedCreature == null || x.realizedCreature.State.dead);
         }
     }
 }

@@ -80,8 +80,6 @@ namespace RainMeadow
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public AbstractCreature? abstractCreatureToRemove;
-
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             return openedDen;
