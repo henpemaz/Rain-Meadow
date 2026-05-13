@@ -403,7 +403,7 @@ namespace RainMeadow
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                display.slugIcon?.scale = 0.08f;
+                if (display.slugIcon != null) display.slugIcon.scale = 0.08f;
                 return "meadowcoin";
             }
 
