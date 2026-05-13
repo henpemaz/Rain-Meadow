@@ -42,6 +42,7 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
             internal static MenuScene.SceneID Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
             internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
+            internal static MenuScene.SceneID Slugcat_MeadowOverseer = new("Slugcat_MeadowOverseer", true);
 
 
             internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);

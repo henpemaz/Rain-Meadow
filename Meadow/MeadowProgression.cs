@@ -144,8 +144,8 @@ namespace RainMeadow
                 emoteAtlas = "emotes_slugcat",
                 noEmotes = true,
                 emoteColor = Extensions.ColorFromHex(0x79635f),
-                voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
-                selectSpriteIndexes = new[] { 2 },
+                voiceId = SoundID.MENU_Button_Successfully_Assigned,
+                selectSpriteIndexes = new[] { 2, 3 },
                 startingCoords = new WorldCoordinate("SU_C04", 7, 28, -1),
             });
         }
