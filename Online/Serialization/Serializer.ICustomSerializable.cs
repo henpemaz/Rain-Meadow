@@ -265,6 +265,9 @@ namespace RainMeadow
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
 
+            var method = typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            if (method is not null) return method;
+
             if (Nullable.GetUnderlyingType(fieldType) is Type t)
             {
                 var retMethod = typeof(Serializer).GetMethod("SerializeNullable", new[] { fieldType.MakeByRefType() }); ;
@@ -372,7 +375,29 @@ namespace RainMeadow
                 return dynMethod;
             }
 
-            return typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            if (fieldType.GetCustomAttribute(typeof(System.SerializableAttribute)) is System.SerializableAttribute attriute && !fieldType.IsPrimitive && !fieldType.IsEnum && !fieldType.IsArray && fieldType != typeof(string))
+            {
+                RainMeadow.Debug($"Generating function for [Serializable] {fieldType}");
+                var dynMethod = new DynamicMethod("SerializeSystemSerializable" + fieldType.Name, null, [typeof(Serializer), fieldType.MakeByRefType()], true);
+                var il = dynMethod.GetILGenerator();
+
+                var fields = fieldType.GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Where(x => x.GetCustomAttribute(typeof(NonSerializedAttribute)) is null).OfType<FieldInfo>().ToArray();
+                foreach (FieldInfo field in fields)
+                {
+                    RainMeadow.Debug($"{field}");
+                    var func = GetSerializationMethod(field.FieldType, false, false, false);
+
+                    il.Emit(OpCodes.Ldarg, 0);
+                    il.Emit(OpCodes.Ldarga, 1);
+                    il.Emit(OpCodes.Ldflda, field);
+                    il.Emit(OpCodes.Call, func);
+                }
+                il.Emit(OpCodes.Ret);
+                return dynMethod;
+            }
+
+
+            throw new KeyNotFoundException("Could not find a valid serializable function");
         }
     }
 }
