@@ -141,11 +141,11 @@ namespace RainMeadow
             }
 
 
-            fade = Mathf.Min(fade, 0.2f + 0.8f * Mathf.InverseLerp(20f, 2f, Vector2.Distance(lastPos, pos)));
-            if (robo != null)
-            {
-                fade = Mathf.Clamp(robo.gXScaleFactor * robo.gYScaleFactor, 0.01f, 1f) * UnityEngine.Random.Range(0.9f, 1f);
-            }
+            // fade = Mathf.Min(fade, 0.2f + 0.8f * Mathf.InverseLerp(20f, 2f, Vector2.Distance(lastPos, pos)));
+            // if (robo != null)
+            // {
+            //     fade = Mathf.Clamp(robo.gXScaleFactor * robo.gYScaleFactor, 0.01f, 1f) * UnityEngine.Random.Range(0.9f, 1f);
+            // }
 
             if (communicateWith != null && communicateWith.room != null && (communicateWith.room != room || communicateWith.dead || communicateWith.grabbedBy.Count > 0))
             {
@@ -457,7 +457,12 @@ namespace RainMeadow
                 if (controller.cursor != null)
                 {
                     score += Mathf.Max(0f, Vector2.Distance(self.overseer.room.MiddleOfTile(testTile), controller.cursor.pos) - 250f) * 50f;
-                }
+                    if (testTile == self.overseer.hoverTile && (controller.cursor.currentlyInteracting != null || self.overseer.hologram != null) && 
+                        Custom.DistLess(controller.cursor.pos, self.overseer.mainBodyChunk.pos, 250f))
+                    {
+                        score -= 1000f;
+                    }
+                }     
             }
             
             // keep on my side of the gate
@@ -911,6 +916,8 @@ namespace RainMeadow
                 sLeaser.sprites[0] = new FSprite("Futile_White", true);
                 sLeaser.sprites[0].shader = rCam.game.rainWorld.Shaders["FlatLight"];
                 sLeaser.sprites[0].color = Color.black;
+                if (overseer.graphicsModule is OverseerGraphics gr) sLeaser.sprites[0].color = gr.MainColor;
+
                 sLeaser.sprites[1] = new FSprite("Futile_White", true);
                 sLeaser.sprites[1].shader = rCam.game.rainWorld.Shaders["LightSource"];
                 for (int i = 0; i < 8; i++)
@@ -970,7 +977,7 @@ namespace RainMeadow
                 sLeaser.sprites[0].x = vector2.x - camPos.x;
                 sLeaser.sprites[0].y = vector2.y - camPos.y;
                 sLeaser.sprites[0].scale = (150f + num8 * (1f - UnityEngine.Random.value * num)) / 8f;
-                sLeaser.sprites[0].alpha = 0.3f * (1f - UnityEngine.Random.value * num);
+                sLeaser.sprites[0].alpha = 0.05f * (1f - UnityEngine.Random.value * num);
                 sLeaser.sprites[1].x = vector2.x - camPos.x;
                 sLeaser.sprites[1].y = vector2.y - camPos.y;
                 sLeaser.sprites[1].scale = (150f + num8 * (1f - UnityEngine.Random.value * num) * 2f) / 8f;
