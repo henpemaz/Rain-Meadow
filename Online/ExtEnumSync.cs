@@ -94,12 +94,22 @@ public abstract class CompressedExtEnumBase
         this.enumEntries = ExtEnumBase.valueDictionary[enumType];
         SetEnumEntriesFromCurrentExtEnum();
     }
-    public void SetEnumEntriesFromCurrentExtEnum()
+    public void SetEnumEntriesFromCurrentExtEnum(bool orderalphabetically = false)
     {
         entriesMap.Clear();
         for (int i = 0; i < enumEntries.entries.Count; i++)
         {
             entriesMap.Add(enumEntries.entries[i], i);
+        }
+        if (orderalphabetically)
+        {
+            List<string> sortedList = entriesMap.Keys.ToList();
+            sortedList.Sort((x,y) => x.CompareTo(y));
+            entriesMap.Clear();
+            for (int i = 0; i < sortedList.Count; i++)
+            {
+                entriesMap.Add(sortedList[i], i);
+            }
         }
     }
     public int GetIndex(string value) => entriesMap[value];
@@ -128,10 +138,22 @@ public abstract class CompressedExtEnumBase
     // Decompress it and give the result of the decompression. Be sure to add an exception if you find the exact wording (so it doesn't count as an ambiguity or a miss)
     public abstract DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries);
 
+    internal void LogMappedExtEnum()
+    {
+        RainMeadow.Debug($"Logging currently mapped of {enumType.FullName} ExtEnum :");
+        List<string> sortedList = entriesMap.Keys.ToList();
+        sortedList.Sort((x,y) => entriesMap[x] - entriesMap[y]);
+        for (int i = 0; i < sortedList.Count; i++)
+        {
+            RainMeadow.Debug($"   > <{entriesMap[sortedList[i]]}> {sortedList[i]}");
+        }
+    }
     internal void LogCompressionTest(bool logList = false)
     {
         RainMeadow.Debug($"Starting compression test of {enumType.FullName} ExtEnum with {this.GetType().FullName} method...");
-        string[] start = entriesMap.Keys.ToArray();
+        List<string> unsortedStart = entriesMap.Keys.ToList();
+        unsortedStart.Sort((x,y) => entriesMap[x] - entriesMap[y]);
+        string[] start = unsortedStart.ToArray();
         string[] end = GetCompressedEntries();
 
         if (logList)
@@ -654,16 +676,7 @@ public static class MeadowExtEnumSync
     internal static void ApplyHooks()
     {
         MatchmakingManager.OnLobbyJoined += MatchmakingManager_BTWVersionChecker_OnLobbyJoined;
-        // On.Menu.MainMenu.ctor += MainMenu_SwapEnumForTestingPurposes;
     }
-
-    // private static bool HasSwapped = false;
-    // private static void MainMenu_SwapEnumForTestingPurposes(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
-    // {
-    //     orig(self, manager, showRegionSpecificBkg);
-    //     if (!HasSwapped) { HasSwapped = true; Swap2EnumForTestingPurposes(100); }
-    // }
-
     private static void MatchmakingManager_BTWVersionChecker_OnLobbyJoined(bool ok, string error)
     {
         if (ok)
@@ -672,11 +685,12 @@ public static class MeadowExtEnumSync
             {
                 for (int i = 0; i < SyncedExtEnumList.Count; i++)
                 {
-                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum();
+                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); // ordering them alphabetically to reduce ordeer mismatch chances
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
                     // Uh have fun ig ? Not much to do there
+                    // Swap2EnumForTestingPurposes(100); shuffling is a bad idea yeah.
                     LogTestCompression();
                 }
                 else
@@ -774,7 +788,7 @@ public static class MeadowExtEnumSync
     {
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
         {
-            SyncedExtEnumList[i].LogCompressionTest();
+            SyncedExtEnumList[i].LogCompressionTest(i == 0);
         }
     }
 
@@ -788,13 +802,12 @@ public static class MeadowExtEnumSync
             try
             {
                 int en = UnityEngine.Random.Range(0, SyncedExtEnumList.Count);
-                int i = UnityEngine.Random.Range(0, SyncedExtEnumList[en].enumEntries.entries.Count);
-                int j = UnityEngine.Random.Range(0, SyncedExtEnumList[en].enumEntries.entries.Count);
+                int i = UnityEngine.Random.Range(0, SyncedExtEnumList[en].entriesMap.Count);
+                int j = UnityEngine.Random.Range(0, SyncedExtEnumList[en].entriesMap.Count);
 
-                (SyncedExtEnumList[en].enumEntries.entries[j], SyncedExtEnumList[en].enumEntries.entries[i]) 
-                    = (SyncedExtEnumList[en].enumEntries.entries[i], SyncedExtEnumList[en].enumEntries.entries[j]);
-                SyncedExtEnumList[en].enumEntries.version++;
-                RainMeadow.Debug($"Swapped <{i}>[{SyncedExtEnumList[en].enumEntries.entries[j]}] and <{j}>[{SyncedExtEnumList[en].enumEntries.entries[i]}] of enum [{SyncedExtEnumList[en].enumType.FullName}]");
+                (SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key], SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key]) 
+                    = (SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key], SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key]);
+                RainMeadow.Debug($"Swapped <{SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key]}>[{SyncedExtEnumList[en].entriesMap.ElementAt(i).Key}] and <{SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key]}>[{SyncedExtEnumList[en].entriesMap.ElementAt(j).Key}] of enum [{SyncedExtEnumList[en].enumType.FullName}]");
             }
             catch (Exception ex)
             {
@@ -833,8 +846,10 @@ public static class MeadowExtEnumSync
             if (i > -1)
             {
                 string[] compressedExtEnum = CompressedExtEnumStringToArray(compressedExtEnumKeyPair.Value);
+                // SyncedExtEnumList[i].LogMappedExtEnum();
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(compressedExtEnum);
                 RainMeadow.Debug($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Status OK ? {result.IsOK}");
+                // SyncedExtEnumList[i].LogMappedExtEnum();
                 if (!result.IsOK)
                 {
                     SyncedExtEnumList[i].storedCompressedValues = compressedExtEnum;
