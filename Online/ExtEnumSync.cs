@@ -690,7 +690,6 @@ public static class MeadowExtEnumSync
                 if (OnlineManager.lobby.isOwner)
                 {
                     // Uh have fun ig ? Not much to do there
-                    // Swap2EnumForTestingPurposes(100); shuffling is a bad idea yeah.
                     LogTestCompression();
                 }
                 else
@@ -790,31 +789,6 @@ public static class MeadowExtEnumSync
         {
             SyncedExtEnumList[i].LogCompressionTest(i == 0);
         }
-    }
-
-    // This swaps the base enum list ! (not permanently, it's recent after every restart)
-    // Used only for testing purposes
-    private static void Swap2EnumForTestingPurposes(int swaps = 1)
-    {
-        RainMeadow.Debug($"Swapping two enum order (x{swaps}) for testing purposes...");
-        for (int s = 1; s <= swaps; s++)
-        {
-            try
-            {
-                int en = UnityEngine.Random.Range(0, SyncedExtEnumList.Count);
-                int i = UnityEngine.Random.Range(0, SyncedExtEnumList[en].entriesMap.Count);
-                int j = UnityEngine.Random.Range(0, SyncedExtEnumList[en].entriesMap.Count);
-
-                (SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key], SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key]) 
-                    = (SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key], SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key]);
-                RainMeadow.Debug($"Swapped <{SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(i).Key]}>[{SyncedExtEnumList[en].entriesMap.ElementAt(i).Key}] and <{SyncedExtEnumList[en].entriesMap[SyncedExtEnumList[en].entriesMap.ElementAt(j).Key]}>[{SyncedExtEnumList[en].entriesMap.ElementAt(j).Key}] of enum [{SyncedExtEnumList[en].enumType.FullName}]");
-            }
-            catch (Exception ex)
-            {
-                RainMeadow.Debug("Error while changing the order of the enums ! " + ex);
-            }
-        }
-        RainMeadow.Debug($"Done without issues ! For now...");
     }
     
     // --------------------- RPCS
