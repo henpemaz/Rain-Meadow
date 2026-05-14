@@ -214,6 +214,7 @@ namespace RainMeadow
 
             if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(fieldType))
             {
+                RainMeadow.Debug($"SERIALIZE MY METHOD DAMMIT");
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == arguments switch
                 {
