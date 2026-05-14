@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -255,7 +256,7 @@ namespace RainMeadow
 
             public bool IsViableForOverseer(Overseer overseer)
             {
-                if (data.room.regionGate is not null && data.room.regionGate.waitingForWorldLoader) return false; 
+                if (data.room.regionGate is not null && (data.room.regionGate.waitingForWorldLoader || data.room.regionGate.mode == RegionGate.Mode.ClosingAirLock)) return false; 
                 return data.room == overseer.room;
             }
         }
@@ -286,7 +287,6 @@ namespace RainMeadow
             }
             public bool StopInteracting(Overseer overseer)
             {
-                if (gate.mode == RegionGate.Mode.ClosingAirLock || gate.waitingForWorldLoader) return false;
                 return true;
             }
         }
@@ -315,6 +315,53 @@ namespace RainMeadow
                 Overseer_BodyColor
             );
             On.OverseerAbstractAI.AbstractBehavior += OverseerAbstractAI_AbstractBehavior;
+            IL.RoomRealizer.Update += RoomRealizer_Update;
+        }
+
+        public static void RoomRealizer_Update(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor = new ILCursor(context);
+                /*
+                156	01D3	ldsfld	bool ModManager::MSC
+                157	01D8	brfalse.s	201 (0253) ldarg.0 
+                158	01DA	ldarg.0
+                159	01DB	ldfld	class AbstractCreature RoomRealizer::followCreature
+                160	01E0	ldfld	class CreatureTemplate AbstractCreature::creatureTemplate
+                161	01E5	ldfld	class CreatureTemplate/Type CreatureTemplate::'type'
+                162	01EA	ldsfld	class CreatureTemplate/Type CreatureTemplate/Type::Overseer
+                163	01EF	call	bool class ExtEnum`1<class CreatureTemplate/Type>::op_Equality(class ExtEnum`1<!0>, class ExtEnum`1<!0>)
+                164	01F4	brfalse.s	201 (0253) ldarg.0 
+                */
+                Expression<Func<CreatureTemplate.Type, CreatureTemplate.Type, bool>> expr = (a, b) => a == b;
+                var binaryExpr = ((BinaryExpression)expr.Body).Method;
+                ILLabel? leavelabel = default;
+                int i = 0;
+                while (cursor.TryGotoNext(MoveType.Before,
+                    x => x.MatchLdsfld(typeof(ModManager).GetField(nameof(ModManager.MSC))),
+                    x => x.MatchBrfalse(out leavelabel),
+                    x => x.MatchLdarg(0),
+                    x => x.MatchLdfld(typeof(RoomRealizer).GetField(nameof(RoomRealizer.followCreature))),
+                    x => x.MatchLdfld(typeof(AbstractCreature).GetField(nameof(AbstractCreature.creatureTemplate))),
+                    x => x.MatchLdfld(typeof(CreatureTemplate).GetField(nameof(CreatureTemplate.type))),
+                    x => x.MatchLdsfld(typeof(CreatureTemplate.Type).GetField(nameof(CreatureTemplate.Type.Overseer))),
+                    x => x.MatchCall(binaryExpr),
+                    x => x.MatchBrfalse(out _))
+                    )
+                {
+                    i++;
+                    cursor.EmitDelegate(() => OnlineManager.lobby != null);
+                    cursor.Emit(OpCodes.Brtrue, leavelabel);
+                    cursor.Index += 1;
+                }
+
+                RainMeadow.Debug($"Patched {i} MSC Overseer Realizers in {context.Method}");
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
         }
 
         public static void OverseerAbstractAI_AbstractBehavior(On.OverseerAbstractAI.orig_AbstractBehavior orig, OverseerAbstractAI self, int time)
@@ -340,38 +387,29 @@ namespace RainMeadow
                 if (creature.isAvatar && creature.isMine)
                 {
                     run_orig = false;
-                    var destination = self.destination;
+
                     var spectator = self.world.game.cameras[0].hud.parts.OfType<SpectatorHud>().FirstOrDefault();
                     if (spectator?.Spectatee != null && spectator.Spectatee.Room != self.parent.Room)
                     {
-                        // move avatar to current spectation room
-                        destination = spectator.Spectatee.pos;
+                        self.SetDestinationNoPathing(spectator.Spectatee.pos, true);
                     }
 
-                    if (self.parent.pos.room != destination.room)
+                    if (self.parent.pos.room != self.destination.room)
                     {
-                        var dest_abroom = self.world.GetAbstractRoom(destination);
+                        var dest_abroom = self.world.GetAbstractRoom(self.destination);
                         if (dest_abroom is not null)
                         {
-                            if (dest_abroom.realizedRoom is null)
+                            self.world.ActivateRoom(dest_abroom);
+                            if (dest_abroom.realizedRoom.readyForAI)
                             {
-                                self.world.game.roomRealizer.RealizeAndTrackRoom(dest_abroom, true);
-                            }
-                            else
-                            {
-                                if (dest_abroom.realizedRoom.readyForAI)
+                                if (self.parent.realizedCreature is Overseer overseer)
                                 {
-                                    self.world.game.roomRealizer.RealizeAndTrackRoom(self.world.GetAbstractRoom(destination), true);
-                                    self.SetDestinationNoPathing(destination, true);
-                                    if (self.parent.realizedCreature is Overseer overseer)
-                                    {
-                                        if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
-                                        if (overseer.mode == Overseer.Mode.Watching) overseer.ZipOutOfRoom(destination);
-                                    }
-                                    else
-                                    {
-                                        self.parent.Move(destination);
-                                    }
+                                    if (overseer.mode != Overseer.Mode.Withdrawing && overseer.mode != Overseer.Mode.Zipping) overseer.SwitchModes(Overseer.Mode.Watching);
+                                    if (overseer.mode == Overseer.Mode.Watching) overseer.ZipOutOfRoom(self.destination);
+                                }
+                                else
+                                {
+                                    self.parent.Move(self.destination);
                                 }
                             }
                         }
@@ -421,6 +459,60 @@ namespace RainMeadow
                     score += Mathf.Max(0f, Vector2.Distance(self.overseer.room.MiddleOfTile(testTile), controller.cursor.pos) - 250f) * 50f;
                 }
             }
+            
+            // keep on my side of the gate
+            if (self.overseer.room.regionGate is RegionGate gate)
+            {
+                // be in gate when we're closing the airlock
+                if (gate.mode == RegionGate.Mode.ClosingAirLock)
+                {
+                    if (Math.Abs(testTile.x - self.overseer.room.TileWidth / 2) > 8)
+                    {
+                        return float.MaxValue;
+                    }
+                }
+                else
+                {
+                    if (gate.doors[0].closedFac > 0.1)
+                    {
+                        if ((testTile.x < self.overseer.room.TileWidth / 2 - 8) != (self.creature.pos.x < self.overseer.room.TileWidth / 2 - 8))
+                        {
+                            return float.MaxValue;
+                        }
+
+                        if (Math.Abs(testTile.x - (self.overseer.room.TileWidth / 2 - 8)) <= 2)
+                        {
+                            return float.MaxValue;
+                        }
+                    }
+
+                    if (gate.doors[2].closedFac > 0.1)
+                    {
+                        if ((testTile.x < self.overseer.room.TileWidth / 2 + 8) != (self.creature.pos.x < self.overseer.room.TileWidth / 2 + 8))
+                        {
+                            return float.MaxValue;
+                        }
+
+                        if (Math.Abs(testTile.x - (self.overseer.room.TileWidth / 2 + 8)) <= 2)
+                        {
+                            return float.MaxValue;
+                        }
+                    }
+                }
+                
+                if (gate.doors[1].closedFac > 0.1)
+                {
+                    if ((testTile.x < self.overseer.room.TileWidth / 2) != (self.creature.pos.x < self.overseer.room.TileWidth / 2))
+                    {
+                        return float.MaxValue;
+                    }
+
+                    if (Math.Abs(testTile.x - self.overseer.room.TileWidth / 2) <= 2)
+                    {
+                        return float.MaxValue;
+                    }
+                }
+            }
 
             return score;
         }
@@ -459,9 +551,22 @@ namespace RainMeadow
         public static void Overseer_PlaceInRoom(On.Overseer.orig_PlaceInRoom orig, Overseer self, Room room)
         {
             orig(self, room);
-            if (self.IsLocal())
+            if (creatureControllers.TryGetValue(self, out var p) && p is OverseerController controller)
             {
-                if (creatureControllers.TryGetValue(self, out var p) && p is OverseerController controller)
+                if (self.abstractCreature.abstractAI.destination.NodeDefined)
+                {
+                    var entrance_pos = room.ShortcutLeadingToNode(self.abstractCreature.abstractAI.destination.abstractNode).StartTile;
+                    for (int k = 0; k < 8; k++)
+                    {
+                        if (room.GetTile(entrance_pos + Custom.eightDirectionsAndZero[k]).Solid)
+                        {
+                            self.HardSetTile(entrance_pos, entrance_pos + Custom.eightDirectionsAndZero[k]);
+                            break;
+                        }
+                    }
+                }
+
+                if (self.IsLocal())
                 {
                     if (controller.cursor is null || controller.cursor.room != room)
                     {
@@ -470,7 +575,6 @@ namespace RainMeadow
                     }
                 }
             }
-           
         }
 
         public void AddCursor()
@@ -726,11 +830,9 @@ namespace RainMeadow
 
                     if (room.regionGate != null)
                     {
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Vector2 glyphpos = room.regionGate.karmaGlyphs[i].pos;
-                            if (Custom.DistLess(glyphpos, pos, candidate_distance*4f)) PromoteCandidate(new InteractableGateSide(room.regionGate, i));
-                        }
+                        int gateside = (overseer.abstractCreature.pos.x < room.TileWidth / 2)?  0 : 1;
+                        Vector2 glyphpos = room.regionGate.karmaGlyphs[gateside].pos;
+                        if (Custom.DistLess(glyphpos, pos, candidate_distance*2f)) PromoteCandidate(new InteractableGateSide(room.regionGate, gateside));
                     }
                     
 
