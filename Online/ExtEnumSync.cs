@@ -724,7 +724,7 @@ public static class MeadowExtEnumSync
 
     public static byte MeadowIndex<T>(this T extEnum) where T : ExtEnum<T>
     {
-        if (IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
+        if (OnlineManager.lobby is not null && IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
         {
             return (byte)compressedExtEnum.GetIndex(extEnum);
         }
@@ -736,7 +736,7 @@ public static class MeadowExtEnumSync
     public static string GetExtEnumValue<T>(byte index) where T : ExtEnum<T>
     {
         string? entry = null;
-        if (IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
+        if (OnlineManager.lobby is not null && IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
         {
             entry = compressedExtEnum.GetValueFromIndex(index);
         }
