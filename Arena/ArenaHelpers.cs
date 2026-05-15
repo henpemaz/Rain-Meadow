@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 
@@ -175,6 +176,50 @@ namespace RainMeadow
             return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
         }
 
+        public static int[] GetAllAlivePlayers(int excludedPlayerNumber)
+        {
+            RainMeadow.DebugMe();
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return null;
+            if (!RainMeadow.isArenaMode(out var arena)) return null;
+
+
+            OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
+            bool isTeamBattle = TeamBattleMode.isTeamBattleMode(arena, out _);
+            int[] allAlivePlayers = [];
+
+            for (int i = 0; i < session.arenaSitting.players.Count; i++)
+            {
+                if (session.arenaSitting.players[i] == null || session.arenaSitting.players[i].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
+                if (session.arenaSitting.players[i].playerNumber == excludedPlayerNumber) continue;
+
+                OnlinePlayer? alivePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, session.arenaSitting.players[i].playerNumber);
+                if (alivePlayer == null) continue;
+
+                // 1. Try to find the creature associated with this player
+                var playerAbstractCreature = session.Players.Find(abs => abs.GetOnlineCreature()?.owner == alivePlayer);
+
+                // 2. If the creature is null, they fell into the abyss (or disconnected/despawned)
+                // 3. Otherwise, check if the creature state or realized body is dead
+                bool isMissingOrDead = playerAbstractCreature == null ||
+                                       playerAbstractCreature.state.dead ||
+                                       (playerAbstractCreature.realizedCreature != null && playerAbstractCreature.realizedCreature.dead);
+
+                if (isMissingOrDead)
+                {
+                    continue;
+                }
+
+                // EXCLUSION 3: Not on the same team
+                if (isTeamBattle && deadPlayer != null)
+                {
+                    if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
+                }
+                RainMeadow.Debug($"Found GetAllAlivePlayers playerNumber {session.arenaSitting.players[i].playerNumber}");
+                allAlivePlayers = [.. allAlivePlayers, session.arenaSitting.players[i].playerNumber];
+            }
+            RainMeadow.Debug("Finished GetAllAlivePlayers");
+            return allAlivePlayers;
+        }
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
             manager.arenaSitting.players = [];
@@ -264,13 +309,34 @@ namespace RainMeadow
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
         }
 
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)
+        {
+            if (A is not null && B is not null)
+            {
+                if (
+                    OnlineManager
+                        .lobby.clientSettings.TryGetValue(A, out var cA) && cA.TryGetData<ArenaTeamClientSettings>(out var tb1)
+                )
+                {
+                    if (
+                        OnlineManager
+                            .lobby.clientSettings.TryGetValue(B, out var cB) && cB.TryGetData<ArenaTeamClientSettings>(out var tb2)
+                    )
+                    {
+                        return tb1.team == tb2.team;
+                    }
+                }
+            }
+            return false;
+        }
+
         public static bool CheckSameTeam(
-            ArenaOnlineGameMode arena,
-            OnlinePlayer? A,
-            OnlinePlayer? B,
-            Creature creature,
-            Creature friend
-        )
+    ArenaOnlineGameMode arena,
+    OnlinePlayer? A,
+    OnlinePlayer? B,
+    Creature creature,
+    Creature friend
+)
         {
             if (A is not null && B is not null)
             {
@@ -286,10 +352,6 @@ namespace RainMeadow
                             .TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
-                        if (tb1.team == tb2.team && !arena.friendlyFire)
-                        {
-                            RainMeadow.Debug("Same team! No hits");
-                        }
                         return tb1.team == tb2.team
                             && !arena.friendlyFire
                             && creature.State.alive

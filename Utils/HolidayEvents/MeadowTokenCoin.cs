@@ -45,6 +45,8 @@ namespace RainMeadow
                 sLeaser.sprites[0] = new FSprite("meadowcoin", true);
                 sLeaser.sprites[0].anchorX = 0.5f;
                 sLeaser.sprites[0].anchorY = 0.5f;
+                float size = 0.05f * Mathf.InverseLerp(0f, 0.5f, this.life);
+                sLeaser.sprites[0].scale = size;
 
                 if (this.underWater)
                 {
@@ -79,7 +81,8 @@ namespace RainMeadow
                 RoomCamera.SpriteLeaser sLeaser,
                 RoomCamera rCam,
                 RoomPalette palette
-            ) { }
+            )
+            { }
 
             public override void AddToContainer(
                 RoomCamera.SpriteLeaser sLeaser,

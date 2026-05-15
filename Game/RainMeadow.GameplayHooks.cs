@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -40,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -67,11 +67,74 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
             On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
+            IL.JokeRifle.Use += JokeRifle_Use;
+            On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
+        }
+
+        // Prevent ammo from duping
+        private void JokeRifle_Use(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+
+            // Bees and regular bullets are already set to not sync, this will cover everything else.
+
+            // Jump past first if statements, doesn't really matter where
+
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<JokeRifle>(nameof(JokeRifle.scareObj)),
+                i => i.MatchBrtrue(out _));
+
+
+            string[] ammoTypes =
+            {
+                // order matters
+                nameof(JokeRifle.AbstractRifle.AmmoType.Noodle),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Singularity),
+                nameof(JokeRifle.AbstractRifle.AmmoType.FireEgg),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Grenade),
+                nameof(JokeRifle.AbstractRifle.AmmoType.Light)
+            };
+
+            foreach (var ammoType in ammoTypes)
+            {
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<JokeRifle>("get_abstractRifle"),
+                    i => i.MatchLdfld<JokeRifle.AbstractRifle>(nameof(JokeRifle.AbstractRifle.ammoStyle)),
+                    i => i.MatchLdsfld<JokeRifle.AbstractRifle.AmmoType>(ammoType),
+                    i => i.MatchCall("ExtEnum`1<JokeRifle/AbstractRifle/AmmoType>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((JokeRifle self) =>
+                {
+                    return !self.IsLocal();
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+        }
+        public void Vulture_AccessSkyGate(On.Vulture.orig_AccessSkyGate orig, Vulture self, WorldCoordinate start, WorldCoordinate dest)
+        {
+
+            if (OnlineManager.lobby != null)
+            {
+                for (int i = 0; i < self.grasps.Length; i++)
+                {
+                    if (self.grasps[i]?.grabbed is Player player)
+                    {
+                        player.Die();
+                        player.State.alive = false;
+                    }
+                }
+            }
+            orig(self, start, dest);
+
         }
 
         private void DataPearl_InitiateSprites(On.DataPearl.orig_InitiateSprites orig, DataPearl self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
@@ -86,19 +149,63 @@ namespace RainMeadow
             }
         }
 
-        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private RealizedWeaponState? GetAppropriateWeaponState(OnlinePhysicalObject obj) => obj.apo.realizedObject switch
         {
-            if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
-            {
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+            Spear => new RealizedSpearState(obj),
+            Weapon => new RealizedWeaponState(obj),
+            _ => null
+        };
 
-                if (wep1 != null && wep2 != null)
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        {
+            RainMeadow.DebugMe();
+            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(self, obj);
+            orig(self, obj);
+            
+        }
+
+        private void BroacastParry(Weapon A, Weapon B)
+        {
+            RainMeadow.DebugMe();
+            OnlinePhysicalObject? wep1 = A.abstractPhysicalObject.GetOnlineObject();
+            OnlinePhysicalObject? wep2 = B.abstractPhysicalObject.GetOnlineObject();
+            if (wep1 == null || wep2 == null || !(wep1.isMine || wep2.isMine)) return;
+            RainMeadow.Debug($"Parry {wep1}, {wep1.owner}, {wep2}, {wep2.owner}");
+            
+            RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
+            if (realizedstatewep1 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
+                return;
+            } 
+
+            
+            RealizedWeaponState? realizedstatewep2 = GetAppropriateWeaponState(wep2);
+            if (realizedstatewep2 is null)
+            {
+                RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
+                return;
+            } 
+                
+
+            if (!wep1.isMine)
+            {
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
+            }
+
+            if (!wep2.isMine)
+            {
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
+            }
+            
+
+            foreach (OnlinePlayer p in wep1.roomSession?.participants ?? [])
+            {
+                if (p != wep1.owner && p != wep2.owner)
                 {
-                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state);
                 }
             }
-            orig(self, obj);
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
@@ -165,15 +272,6 @@ namespace RainMeadow
                 self.firstChunk.lastPos = firstFrameTraceFromPos.Value;
             }
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
-        }
-
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
-        {
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-            }
-            orig(self, obj);
         }
 
         bool WeaponIsDangerous(Weapon weapon)
@@ -528,7 +626,7 @@ namespace RainMeadow
                 return orig(self, result, eu);
             }
 
-            if (WeaponOnline.HittingRemotely)
+            if (RPCEvent.currentRPCEvent is not null)
             {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
                 if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
@@ -552,22 +650,21 @@ namespace RainMeadow
             }
             else if (WeaponOnline.isMine || WeaponOnline.isPending)
             {
-                RealizedPhysicalObjectState realizedstate = null!;
-                if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);
-                else realizedstate = new RealizedWeaponState(WeaponOnline);
-
-
-                BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
-                AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
-
-                if (!onlineHit.owner.isMe)
+                RealizedWeaponState? realizedstate = GetAppropriateWeaponState(WeaponOnline);
+                if (realizedstate != null)
                 {
-                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
-                        onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                    ));
-                }
+                    BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                    AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
-                return orig(self, result, eu);
+                    if (!onlineHit.owner.isMe)
+                    {
+                        onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                            onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                        ));
+                    }
+
+                    return orig(self, result, eu);
+                } else RainMeadow.Error($"Failed to create the appropriate weapon state for obj {WeaponOnline}");
             }
             return true;
         }
@@ -850,13 +947,13 @@ namespace RainMeadow
             {
                 foreach (var grasp in self.grasps)
                 {
-                    if (grasp == null) continue;
+                    if (grasp == null || grasp.grabbed == null) continue;
                     if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
                     {
                         Trace($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
                         continue;
                     }
-                    if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending && onlineGrabbed != null) // been leased to someone else
+                    if (onlineGrabbed != null && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending) // been leased to someone else
                     {
                         var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                         if (grabbersOtherThanMe.All(x => x.abstractPhysicalObject.GetOnlineObject(out var opo) && opo != null && opo.isMine))

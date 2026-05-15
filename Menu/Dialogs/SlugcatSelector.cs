@@ -206,6 +206,7 @@ namespace RainMeadow.UI
                 {
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
                     SpecialEvents.GainedMeadowCoin(1000);
+                    RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
                     return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
 
                 }
@@ -240,7 +241,7 @@ namespace RainMeadow.UI
                 continueButton.menuLabel.text = Translate(
                     $"{Translate("COINS:")} ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"
                 );
-            
+
             hasAlreadyRolled = true;
             if (myRollingCounter % startEndRollingOrderCounter == 0)
             {

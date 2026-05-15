@@ -15,11 +15,7 @@ namespace RainMeadow
         );
 
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return FFA.FFAMode; }
-            set { GetGameModeId = value; }
-        }
+        public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
 
         public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
         {
@@ -108,17 +104,6 @@ namespace RainMeadow
             }
         }
 
-        public override void LandSpear(
-            ArenaOnlineGameMode arena,
-            ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer
-        )
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
-        }
-
         public override string AddIcon(
             ArenaOnlineGameMode arena,
             OnlinePlayerDisplay display,
@@ -127,17 +112,17 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || ArenaHelpers.GetArenaClientSettings(player)!.gotSlugcat)
+
+            if (base.AddIcon(arena, display, owner, customization, player) != "")
             {
-                SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon is not null) display.slugIcon.scale = 0.08f;
-                return "meadowcoin";
+                return base.AddIcon(arena, display, owner, customization, player);
             }
+
             else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, display, owner, customization, player);
+            return "";
         }
 
         public override Color IconColor(

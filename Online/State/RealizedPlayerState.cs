@@ -126,7 +126,7 @@ namespace RainMeadow
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? slugcatRidingOnBack;
-        private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
+        // private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
@@ -296,29 +296,13 @@ namespace RainMeadow
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
 
-            if (p.slugOnBack != null)
+            if (p.slugOnBack != null && !onlineEntity.IsLocked("slugonback"))
             {
-                if (p.slugOnBack.slugcat != null)
+                Player? onback = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+                if (p.slugOnBack.slugcat != onback)
                 {
-                    slugcatOnBackTemp = p.slugOnBack.slugcat;
-                    p.slugOnBack.slugcat.onBack = p;
-                }
-
-                p.slugOnBack.slugcat = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
-
-                if (p.slugOnBack.slugcat == null && slugcatOnBackTemp != null)
-                {
-                    p.slugOnBack.slugcat = slugcatOnBackTemp;
-                    slugcatOnBackTemp.onBack = p;
-
                     p.slugOnBack.DropSlug();
-                    if (!slugcatOnBackTemp.isNPC && slugcatOnBackTemp.input[0].jmp && slugcatOnBackTemp.IsLocal())
-                    {
-                        slugcatOnBackTemp.jumpChunk = p.mainBodyChunk;
-                        slugcatOnBackTemp.JumpOnChunk();
-                    }
-                    slugcatOnBackTemp.onBack = null;
-                    slugcatOnBackTemp = null;
+                    p.slugOnBack.SlugToBack(onback);
                 }
             }
 

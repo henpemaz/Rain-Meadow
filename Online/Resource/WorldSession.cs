@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -25,11 +25,11 @@ namespace RainMeadow
         )
         {
             float startTime = UnityEngine.Time.time;
-            float timeoutSeconds = 5f;
+            float timeoutSeconds = 8f;
             bool cleanupTriggered = false;
 
             session.transitionInProgress = true;
-            bool isMeadow = OnlineManager.lobby.gameMode is MeadowGameMode;
+            bool canSkipWaitLoop = OnlineManager.lobby.gameMode is MeadowGameMode || RainMeadow.isStoryMode(out var story) && story.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
 
             while (true)
             {
@@ -39,15 +39,16 @@ namespace RainMeadow
 
                 // In Meadow, we only care about the extra condition.
                 // In Story/Arena, we wait for participants to be 0 AND the condition to be met.
+                // Except for Watcher because the loading in that is obscene
 
-                bool isDoneWaiting = isMeadow
+                bool isDoneWaiting = canSkipWaitLoop
                     ? conditionMet
                     : (participants.Count == 0 && conditionMet);
 
                 if (isDoneWaiting)
                     break;
 
-                if (!isMeadow && elapsed > timeoutSeconds && !cleanupTriggered)
+                if (!canSkipWaitLoop && elapsed > timeoutSeconds && !cleanupTriggered)
                 {
                     cleanupTriggered = true; // Only do this once
                     RainMeadow.Debug(

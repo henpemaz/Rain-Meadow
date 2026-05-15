@@ -499,7 +499,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     false
                 );
 
-            playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", playerBox.showGoldTemporarily);
+            playerBox.ToggleTextOverlay("SlugSlots<LINE>Winner!!", playerBox.showGoldTemporarily);
             if (clientSettings?.ready == true)
                 playerBox.ToggleTextOverlay(
                     Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!",

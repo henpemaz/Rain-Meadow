@@ -190,12 +190,6 @@ namespace RainMeadow
                 RainMeadow.Error("realized creature not found for: " + this);
                 return;
             }
-            if ((OnlineManager.lobby != null) && this.didParry)
-            {
-                RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
-                return;
-            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             RainMeadow.Debug($"{this} hit for {damage}");
@@ -207,8 +201,9 @@ namespace RainMeadow
 
 
         [RPCMethod]
-        public void HopOnBack(OnlineCreature uppyWanter)
+        public void HopOnBack(RPCEvent rpc, OnlineCreature uppyWanter)
         {
+            if (rpc.from != uppyWanter.owner) throw new InvalidOperationException("your not the owner of this slugcat");
             if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
             if (this.abstractCreature.realizedCreature is Player realizedPlayer)
             {
@@ -221,6 +216,25 @@ namespace RainMeadow
                     if (!realizedPlayer.slugOnBack.HasASlug)
                     {
                         realizedPlayer.slugOnBack.SlugToBack(realizedUppyWanter);
+                    }
+                }
+            }
+        }
+
+
+        [RPCMethod]
+        public void HopOffBack(RPCEvent rpc, OnlineCreature uppyNotWanter)
+        {
+            if (rpc.from != uppyNotWanter.owner) throw new InvalidOperationException("your not the owner of this slugcat");
+            if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
+            if (this.abstractCreature.realizedCreature is Player realizedPlayer)
+            {
+                if (realizedPlayer.slugOnBack is null) return;
+                if (uppyNotWanter.abstractCreature.realizedCreature is Player realizedUppyWanter)
+                {
+                    if (realizedPlayer.slugOnBack.slugcat == realizedUppyWanter)
+                    {
+                        realizedPlayer.slugOnBack.DropSlug();
                     }
                 }
             }

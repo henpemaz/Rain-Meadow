@@ -1,3 +1,4 @@
+using MoreSlugcats;
 using RainMeadow.Generics;
 using RWCustom;
 using System;
@@ -63,6 +64,23 @@ namespace RainMeadow
             creature.enteringShortCut = enteringShortcut;
             creature.NPCTransportationDestination = transportationDestination;
 
+            if (artificialIntelligenceState != null)
+            {
+                if (ModManager.MSC && creature.Template.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && creature is Player player)
+                {
+                    if (player.abstractCreature.abstractAI == null)
+                    {
+                        player.abstractCreature.abstractAI = new SlugNPCAbstractAI(player.abstractCreature.world, player.abstractCreature);
+                    }
+                    if (player.abstractCreature.abstractAI.RealAI == null)
+                    {
+                        player.abstractCreature.abstractAI.RealAI = new SlugNPCAI(player.abstractCreature, player.abstractCreature.world);
+                    }
+
+                    artificialIntelligenceState.ReadTo(player.AI);
+                }
+            }
+
             if (creature.grasps != null)
             {
                 bool[] found = new bool[creature.grasps.Length];
@@ -74,9 +92,8 @@ namespace RainMeadow
                     var grabbed = grasp.onlineGrabbed.FindEntity() as OnlinePhysicalObject; // lookup once, use multiple times
                     if (grabbed?.apo.realizedObject is null) continue;
 
-                    grabbed.graspLocked.RemoveAll(x => !x.to.OutgoingEvents.Contains(x));
-                    if (!grabbed.apo.realizedObject.grabbedBy.Any()) grabbed.graspLocked.Clear();
-                    if (grabbed.graspLocked.Select(x => x.to).Contains(onlineEntity.owner)) continue;
+                    if (!grabbed.apo.realizedObject.grabbedBy.Any()) grabbed.ClearLock("grasp");
+                    if (grabbed.IsLocked("grasp")) continue;
 
                     var foundat = Array.FindIndex(creature.grasps, s => grasp.EqualsGrasp(s, grabbed.apo.realizedObject));
                     if (foundat == -1)

@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using Menu;
-using RainMeadow;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
@@ -17,17 +14,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public int challengeID = RainMeadow.rainMeadowOptions.ChallengeID.Value;
 
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return ArenaChallengeMode.ChallengeMode; }
-            set { GetGameModeId = value; }
-        }
+
+        public override ArenaSetup.GameTypeID GetGameModeId => ChallengeMode;
+
 
         public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
             self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
+            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
         public static bool isChallengeMode(
@@ -58,7 +54,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             {
                 return self.gameSession.Players.Any(x => x.state.alive);
             }
-
             return false;
         }
 
@@ -69,12 +64,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override string TimerText()
         {
-            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());
+            return Utils.Translate("Survive,") + " " + Utils.Translate(PlayingAsText());
         }
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            if (arena?.session?.arenaSitting?.players != null && arena.session.arenaSitting.players.Count > 0 && (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
+            {
+                return arena.session.arenaSitting.players.Max(pl => pl.timeAlive);
+            }
+            return 0;
         }
 
         public override int TimerDuration
@@ -85,6 +84,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
+            if (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
+            {
+                return ++arena.setupTime;
+            }
             return --arena.setupTime;
         }
 
@@ -142,6 +145,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
             return base.IconColor(arena, display, owner, customization, player);
         }
+
+
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {

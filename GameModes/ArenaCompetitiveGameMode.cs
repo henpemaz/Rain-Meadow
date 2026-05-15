@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,11 +56,19 @@ namespace RainMeadow
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
-        public int spearScore = RainMeadow.rainMeadowOptions.ArenaSpearScore.Value;
+        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
+
+        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
+
+        public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
         public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
         public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
         public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
+        public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
+
+        public bool winByScore => killScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode;
+        public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -96,6 +104,14 @@ namespace RainMeadow
             new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+
+        // BEGIN POST-GAME PERSISTENT SCORING
+        public Dictionary<int, int> postGamePlayerNumberWithDeaths = new Dictionary<int, int>();
+        public Dictionary<int, int> postGamePlayerNumberWithWins = new Dictionary<int, int>();
+        public Dictionary<int, int> postGamePlayerTotScore = new Dictionary<int, int>();
+        public Dictionary<int, List<string>> postGamePlayerNumberWithTrophies = new Dictionary<int, List<string>>();
+        // END POST-GAME PERSISTENT SCORING
+
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
@@ -124,6 +140,8 @@ namespace RainMeadow
             .rainMeadowOptions
             .ArenaSaintAscendanceTimer
             .Value;
+
+        public int artiExplosionCount = ModManager.MSC ? MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value : 0;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
         public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
@@ -171,7 +189,8 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            spearScore = 0;
+            spearHitScore = 0;
+            killScore = 0;
             aliveScore = 0;
             hostLoadedOverlay = false;
 
@@ -540,6 +559,17 @@ namespace RainMeadow
             ResetRoundKills();
         }
 
+        public void ResetPlayerStats(ArenaSitting.ArenaPlayer player)
+        {
+            player.score = 0;
+            player.totScore = 0;
+            player.wins = 0;
+            player.deaths = 0;
+            player.wins = 0;
+            player.winner = false;
+            player.alive = false;
+        }
+
         public void RestartGame()
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
@@ -759,6 +789,42 @@ namespace RainMeadow
             }
         }
 
+        public void AddToPostGameStatsDialog()
+        {
+            foreach (var entry in playerNumberWithWins.ToList())
+            {
+                if (postGamePlayerNumberWithWins.TryGetValue(entry.Key, out int currentWins))
+                    postGamePlayerNumberWithWins[entry.Key] = currentWins + entry.Value;
+                else
+                    postGamePlayerNumberWithWins[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerNumberWithDeaths.ToList())
+            {
+                if (postGamePlayerNumberWithDeaths.TryGetValue(entry.Key, out int currentDeaths))
+                    postGamePlayerNumberWithDeaths[entry.Key] = currentDeaths + entry.Value;
+                else
+                    postGamePlayerNumberWithDeaths[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerTotScore.ToList())
+            {
+                if (postGamePlayerTotScore.TryGetValue(entry.Key, out int currentScore))
+                    postGamePlayerTotScore[entry.Key] = currentScore + entry.Value;
+                else
+                    postGamePlayerTotScore[entry.Key] = entry.Value;
+            }
+
+            foreach (var entry in playerNumberWithTrophies.ToList())
+            {
+                if (postGamePlayerNumberWithTrophies.TryGetValue(entry.Key, out var currentTrophies))
+                    currentTrophies.AddRange(entry.Value);
+                else
+                    postGamePlayerNumberWithTrophies[entry.Key] = entry.Value.ToList(); // Use .ToList() to prevent reference mutation
+            }
+
+        }
+
         public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
         {
             if (!playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
@@ -791,7 +857,7 @@ namespace RainMeadow
         {
             if (player == null || pl == null)
             {
-                RainMeadow.Debug("ReadFromStats failed: player or pl is null!");
+                RainMeadow.Error("ReadFromStats failed: player or pl is null!");
                 return;
             }
             RainMeadow.Debug(this);
@@ -830,7 +896,11 @@ namespace RainMeadow
 
         public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
-            if (pl == null) return;
+            if (pl == null) 
+            {
+               RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
+               return;
+            }
             int id = pl.inLobbyId;
 
             // Wins
@@ -859,10 +929,20 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
-                    arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
-                    arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
-                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
+                    if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out int currentWins) && currentWins < newArenaPlayer.wins)
+                        playerNumberWithWins[pl.inLobbyId] = newArenaPlayer.wins;
+
+                    // Deaths
+                    if (playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
+                        playerNumberWithDeaths[pl.inLobbyId] = newArenaPlayer.deaths;
+
+                    // Total Score
+                    if (playerTotScore.TryGetValue(pl.inLobbyId, out int currentTot) && currentTot < newArenaPlayer.totScore)
+                        playerTotScore[pl.inLobbyId] = newArenaPlayer.totScore;
+
+                    // Round Score
+                    if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out int currentScore) && currentScore < newArenaPlayer.score)
+                        playerNumberWithScore[pl.inLobbyId] = newArenaPlayer.score;
 
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
@@ -1077,6 +1157,7 @@ namespace RainMeadow
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            MoreSlugcatsEnums.AbstractObjectType.Bullet, // Too many spawned objects
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)

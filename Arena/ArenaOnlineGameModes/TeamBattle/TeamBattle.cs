@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
@@ -12,11 +12,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             register: false
         );
 
-        public override ArenaSetup.GameTypeID GetGameModeId
-        {
-            get { return TeamBattle; }
-            set { GetGameModeId = value; }
-        }
+        public override ArenaSetup.GameTypeID GetGameModeId => TeamBattle;
 
         public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)
         {
@@ -34,7 +30,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         private int _timerDuration;
 
-        public List<string> teamNameList;
+        // used for finalresult organization
+        public Dictionary<int, int> teamScores = [];
+        public Dictionary<int, int> playerToTeam = []; // Cache for sorting
+
+        public void ClearSortingDictionaries()
+        {
+            teamScores.Clear();
+            playerToTeam.Clear();
+        }
 
         public override void ResetOnSessionEnd()
         {
@@ -44,6 +48,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             dragonslayersSpawn = 0;
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
+
+            ClearSortingDictionaries();
+
         }
 
         public override bool IsExitsOpen(
@@ -169,16 +176,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public override void LandSpear(
-            ArenaOnlineGameMode arena,
-            ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer
-        )
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
-        }
 
         public override void ArenaSessionCtor(
             ArenaOnlineGameMode arena,
@@ -203,6 +200,99 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     );
                 }
             }
+            ClearSortingDictionaries();
+        }
+
+        public int CalculateTeamScoresAndWinner(
+    IEnumerable<ArenaSitting.ArenaPlayer> players,
+    ArenaMode arena,
+    bool winByScore, bool winByRoundScore, bool finalOverlay)
+        {
+            HashSet<int> teamsRemaining = new HashSet<int>();
+            int finalOverlayWinner = -1;
+
+            foreach (var player in players)
+            {
+                OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                if (pl == null) continue;
+
+                if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) &&
+                    clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                {
+                    int team = teamSettings.team;
+
+                    if (player.alive)
+                    {
+                        teamsRemaining.Add(team);
+                    }
+
+                    arena.ReadFromStats(player, pl);
+                    playerToTeam[player.playerNumber] = team; // Cache team assignment
+
+                    if (winByScore)
+                    {
+                        if (!teamScores.ContainsKey(team))
+                        {
+                            teamScores[team] = 0;
+                        }
+
+                        // Sum scores
+                        teamScores[team] += winByRoundScore ? player.score : player.totScore;
+                    }
+                    else if (finalOverlay)
+                    {
+                        int maxWins = players.Max(p => p.wins);
+
+                        var teamsWithMaxWins = players
+                            .Where(p => p.wins == maxWins)
+                            .Select(p => playerToTeam.TryGetValue(p.playerNumber, out int t) ? t : -1)
+                            .Where(t => t != -1) // Filter out players not assigned to a team
+                            .Distinct()
+                            .ToList();
+
+                        // 3. Return winner or tie in finalResult
+                        finalOverlayWinner = teamsWithMaxWins.Count == 1 ? teamsWithMaxWins[0] : -1;
+                    }
+                }
+            }
+
+            if (!winByScore)
+            {
+                if (finalOverlay)
+                {
+                    return finalOverlayWinner;
+                }
+                // If exactly one team is left, they win. 
+                if (teamsRemaining.Count == 1)
+                {
+                    return teamsRemaining.First();
+                }
+                return -1;
+            }
+
+            if (teamScores.Count == 0) return -1;
+
+            var sortedTeams = teamScores.Keys.ToList();
+            sortedTeams.Sort((t1, t2) => teamScores[t2].CompareTo(teamScores[t1]));
+
+            int topTeam = sortedTeams[0];
+            int topScore = teamScores[topTeam];
+
+            if (sortedTeams.Count > 1)
+            {
+                int secondTeam = sortedTeams[1];
+                if (topScore == teamScores[secondTeam])
+                {
+                    return -1; // Draw
+                }
+            }
+
+            if (topScore == 0)
+            {
+                return -1; // Draw
+            }
+
+            return topTeam;
         }
 
         public override bool PlayerSittingResultSort(
@@ -244,15 +334,72 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        if (aIsWinningTeam && bIsWinningTeam)
+                        if (teamA.team == teamB.team)
                         {
-                            return A.score > B.score; // If both are on winning team, sort by kill value
+                            if (A.alive != B.alive)
+                            {
+                                return A.alive;
+                            }
+                            if (A.score != B.score)
+                            {
+                                return A.score > B.score; // Sort by score
+                            }
+                            return A.deaths < B.deaths; // Sort by fewest deaths
                         }
                     }
                 }
             }
 
             return orig(self, A, B);
+        }
+
+        public override List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaMode arena, On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
+        {
+            var resultList = orig(self);
+
+            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            {
+                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.winByScore, false, true);
+
+                resultList.Sort((a, b) =>
+                {
+                    OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, a.playerNumber);
+                    OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, b.playerNumber);
+
+
+                    if (playerA != null && playerB != null)
+                    {
+                        OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
+                        OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
+
+
+                        // --- Tier 1: Winner Status ---
+                        // If there is a winning team, anyone on that team goes to the top.
+                        if (tb.winningTeam != -1)
+                        {
+                            bool aIsWinner = teamA.team == tb.winningTeam;
+                            bool bIsWinner = teamB.team == tb.winningTeam;
+
+                            if (aIsWinner != bIsWinner)
+                            {
+                                return aIsWinner ? -1 : 1;
+                            }
+                        }
+                    }
+
+                    // --- Tier 2: Individual Performance ---
+                    // This sorts teammates against each other, AND sorts all losers against each other.
+                    int indStatA = arena.winByScore ? a.totScore : a.wins;
+                    int indStatB = arena.winByScore ? b.totScore : b.wins;
+
+                    if (indStatA != indStatB)
+                        return indStatB.CompareTo(indStatA);
+
+                    return a.deaths.CompareTo(b.deaths); // Fewer deaths first
+                });
+            }
+
+            return resultList;
         }
 
         public override bool PlayerSessionResultSort(
@@ -265,78 +412,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = -1;
-                HashSet<int> teamsRemaining = new HashSet<int>();
-                foreach (var player in self.players)
-                {
-                    if (player.alive)
-                    {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool getPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (getPlayerTeam)
-                            {
-                                teamsRemaining.Add(playerTeam.team);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var player in self.players)
-                {
-                    if (teamsRemaining.Count == 1)
-                    {
-                        tb.winningTeam = teamsRemaining.First();
-
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                            arena,
-                            player.playerNumber
-                        );
-                        if (onlineP != null)
-                        {
-                            bool gotPlayerTeam = OnlineManager
-                                .lobby.clientSettings[onlineP]
-                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                            if (gotPlayerTeam)
-                            {
-                                player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        player.winner = false; // everyone's a loser. Kill your enemies!
-                    }
-                }
-
-                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    A.playerNumber
-                );
-                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    B.playerNumber
-                );
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
 
                 if (playerA != null && playerB != null)
                 {
-                    OnlineManager
-                        .lobby.clientSettings[playerA]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamA);
-                    OnlineManager
-                        .lobby.clientSettings[playerB]
-                        .TryGetData<ArenaTeamClientSettings>(out var teamB);
+                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
+                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
 
                     if (teamA != null && teamB != null)
                     {
-                        bool aIsWinningTeam = teamA.team == tb.winningTeam;
-                        bool bIsWinningTeam = teamB.team == tb.winningTeam;
+                        // Only consider them on the winning team if a winning team was actually decided (!= -1)
+                        bool aIsWinningTeam = (tb.winningTeam != -1) && (teamA.team == tb.winningTeam);
+                        bool bIsWinningTeam = (tb.winningTeam != -1) && (teamB.team == tb.winningTeam);
 
                         // Prioritize winning team
                         if (aIsWinningTeam != bIsWinningTeam)
@@ -344,30 +432,29 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return aIsWinningTeam; // If A is on winning team and B is not, A comes first
                         }
 
-                        if (aIsWinningTeam && bIsWinningTeam)
-                        { 
-                            if (A.alive != B.alive) {
+                        if (teamA.team == teamB.team)
+                        {
+                            if (A.alive != B.alive)
+                            {
                                 return A.alive;
                             }
                             if (A.score != B.score)
                             {
-                                return A.score > B.score; // If both are on winning team, sort by kill value
-
+                                return A.score > B.score; // Sort by score
                             }
-                            if (A.allKills.Count != B.allKills.Count)
-                            {
-                                return A.allKills.Count > B.allKills.Count;
-                            }
-                            
-                            
-                            return A.deaths < B.deaths;
-                            
+                            return A.deaths < B.deaths; // Sort by fewest deaths
                         }
                     }
                 }
             }
 
             return orig(self, A, B);
+        }
+
+        public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
+        {
+            base.ArenaSessionNextLevel(arena, orig, self, process);
+            ClearSortingDictionaries();
         }
 
         public override void ArenaSessionEnded(
@@ -541,6 +628,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             OnlinePlayer player
         )
         {
+
+            if (base.AddIcon(arena, display, owner, customization, player) != "")
+            {
+                return base.AddIcon(arena, display, owner, customization, player);
+            }
+
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
             {
                 return "";

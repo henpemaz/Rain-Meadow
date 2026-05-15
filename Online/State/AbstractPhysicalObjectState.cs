@@ -53,6 +53,7 @@ namespace RainMeadow
                 }
                 return new RealizedOracleState(onlineObject);
             }
+            if (onlineObject.apo.realizedObject is JokeRifle) return new JokeRifleState(onlineObject);
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is Watcher.BoxWorm.Larva) return new RealizedFireSpriteLarva(onlineObject);

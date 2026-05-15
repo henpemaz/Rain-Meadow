@@ -1,3 +1,58 @@
+# Release 1.14.1
+
+## Engine 
+- Improved parry netcode.
+- Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 
+
+## Chat
+- Fixed events not displaying while Global Mute was toggled
+- Fixed username color not updating between Arena games
+
+## Arena
+- Fixed Watcher Amoebas not appearing under certain conditions
+- Fixed score being granted for killing teammates 
+
+# Release 1.14.0
+
+## Engine
+- Fixed a scenario where transferring entities could lead to deadlocks
+- Fixed Joke Rifle bullets duping and consuming high bandwith.
+- Improved piggyback netcode
+- Added documentation to the GitHub wiki on OnlinEntity Locks() to manage state race conditions
+## Story
+- Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
+- Fixed duplication of some save records when loading on clients. This should fix save bloating that caused load slowdown over time.
+### Watcher
+- Fixed some scenarios where watcher warps were not working correctly
+- Fixed clients not being sucked into warps
+### Saint
+- Fixed some critical errors in Saint's ending
+## General
+- Added Global Mute toggle to Meadow Remix's "Gameplay" tab
+- Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
+- Fixed Vultures not properly killing players when taken off-screen
+- Fixed Saint ascensions not working reliably outside of Arena
+## Arena
+- Fixed scoring across all modes
+- Added import/export map playlists from clipboard
+- Added configurable Artificer explosion capacity
+- Added Spear Hit score config
+- Prevented Overseer from earning score
+- Synced more attributes in Challenge 70
+- Added additional flair for winning a secret minigame. Check Rain Meadow's Arena Remix page
+- Post-game stats now persist for duration of lobby life or reset as desired
+### Team Battle
+- Teammates will now see the location of Watcher while invisible
+### Modders
+-  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
+- Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
+
+# Release 1.13.2
+- Fixed Meadow crashing in single-player
+- Fixed Meadow initialization logs being lost
+- Fixed some arena menus running at twice the tickrate
+- Fixed an issue with the password resetting when a lobby's host changes
+
 # Release 1.13.1
 ## General
 - Fixed Hunter_Illness IL Hook

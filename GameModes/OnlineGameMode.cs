@@ -24,7 +24,7 @@ namespace RainMeadow
             {
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die<LINE>together." },
-                { Arena, "Fight against unforgiving creatues and foes where only the strong survive." },
+                { Arena, "Fight against unforgiving creatures and foes where only the strong survive." },
             };
         }
 
@@ -37,7 +37,7 @@ namespace RainMeadow
             Dictionary<string, int> configurableInts = new();
 
             if (ModManager.MMF && mode.nonGameplayRemixSettings != null)
-            {  
+            {
                 Type type = typeof(MoreSlugcats.MMF);
 
                 FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
@@ -212,16 +212,18 @@ namespace RainMeadow
 
         public virtual SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            if (OnlineManager.lobby.meadowTimeline == "") {
-            return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+            if (OnlineManager.lobby.meadowTimeline == "")
+            {
+                return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
             }
             return new SlugcatStats.Name(OnlineManager.lobby.meadowTimeline);
         }
 
         public virtual SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
         {
-            if (OnlineManager.lobby.meadowTimeline == "") {
-            return SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+            if (OnlineManager.lobby.meadowTimeline == "")
+            {
+                return SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
             }
             return new SlugcatStats.Timeline(OnlineManager.lobby.meadowTimeline);
 
@@ -251,12 +253,12 @@ namespace RainMeadow
 
         internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
         {
-            
+
         }
 
         internal virtual void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
         {
-            
+
         }
 
         public abstract void ConfigureAvatar(OnlineCreature onlineCreature);
@@ -288,12 +290,12 @@ namespace RainMeadow
 
         public virtual void EstablishWorlds(OverworldSession overworldSession)
         {
-            foreach(Region region in overworldSession.overWorld.regions)
+            foreach (Region region in overworldSession.overWorld.regions)
             {
                 overworldSession.EstablishWorld(region.name, checked((ushort)region.regionNumber));
             }
         }
-        
+
         public virtual WorldSession LinkWorld(World world)
         {
             OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession);
