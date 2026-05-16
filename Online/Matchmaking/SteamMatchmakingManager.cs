@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -32,6 +33,38 @@ namespace RainMeadow
         }
     }
 
+    public class SteamPlayerRep
+    {
+        public string Name { get; set; }
+        public string SteamID { get; set; }
+        public string SlugcatColor { get; set; }
+        public string Selected { get; set; }
+
+        public SteamPlayerRep(string name, string steamID, string slugcatColor, string selected)
+        {
+            Name = name;
+            SteamID = steamID;
+            SlugcatColor = slugcatColor;
+            Selected = selected;
+        }
+
+        public static SteamPlayerRep FromOnlinePlayer(OnlinePlayer player)
+        {
+            Color color = Color.white;
+
+            var cs = ArenaHelpers.GetArenaClientSettings(player);
+            if (cs is not null) {
+                color = cs.slugcatColor;
+            }
+
+            if (player.id is SteamMatchmakingManager.SteamPlayerId steamId)
+            {
+                return new(steamId.name, steamId.steamID.ToString(), Custom.colorToHex(color), cs?.playingAs.value ?? SlugcatStats.Name.White.value);
+            }
+            return new(player.id.name, "", Custom.colorToHex(color), cs?.playingAs.value ?? SlugcatStats.Name.White.value);
+        }
+    }
+
     public class SteamMatchmakingManager : MatchmakingManager
     {
         public class SteamPlayerId : MeadowPlayerId
@@ -50,6 +83,11 @@ namespace RainMeadow
             public override void CustomSerialize(Serializer serializer)
             {
                 serializer.Serialize(ref steamID.m_SteamID);
+            }
+
+            public override string GetRepresentation()
+            {
+                return $"{steamID.ToString()}\n{GetPersonaName()}";
             }
 
             public override bool Equals(MeadowPlayerId other)
@@ -109,6 +147,8 @@ namespace RainMeadow
             m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageReceived);
 
             filteringAvailable = SteamUtils.InitFilterText();
+
+            BanHammer.RefreshAll();
 
             me = SteamUser.GetSteamID();
         }
@@ -362,6 +402,8 @@ namespace RainMeadow
                     playerList.Add(new PlayerInfo(() => SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{player}"), SteamFriends.GetFriendPersonaName(player)));
                 }
                 OnPlayerListReceivedEvent(playerList.ToArray());
+
+                BanHammer.UpdateRecents(OnlineManager.players.ToArray());
             }
             catch (Exception e)
             {
@@ -397,6 +439,8 @@ namespace RainMeadow
             OnlineManager.players.Add(player);
 
             HandleJoin(player);
+
+            BanHammer.UpdateRecents(OnlineManager.players.ToArray());
         }
 
         private void PlayerLeft(CSteamID p)
