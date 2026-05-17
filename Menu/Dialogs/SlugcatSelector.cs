@@ -210,7 +210,8 @@ namespace RainMeadow.UI
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
                     SpecialEvents.GainedMeadowCoin(1000);
                     
-                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {
+                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
+                }
                 RainMeadow.rainMeadowOptions.config.Save();
                 return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
             }
