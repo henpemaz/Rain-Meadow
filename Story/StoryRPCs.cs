@@ -270,22 +270,6 @@ namespace RainMeadow
             script.TriggerFadeToEnding();
         }
 
-        [RPCMethod]
-        public static void RegionGateOrWarpMeetRequirement()
-        {
-            if (RainMeadow.isStoryMode(out var storyGameMode) && storyGameMode.readyForTransition == StoryGameMode.ReadyForTransition.Closed)
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
-                }
-                else
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RegionGateOrWarpMeetRequirement);
-                }
-            }
-        }
-
         static public bool RPCcloseShelter = false;
         [RPCMethod]
         public static void CloseAllShelters()
