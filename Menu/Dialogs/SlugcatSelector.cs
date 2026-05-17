@@ -204,7 +204,7 @@ namespace RainMeadow.UI
             { 
 
                 RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
-                RainMeadow.rainMeadowOptions.ArenaFlair.Value = 1;
+                RainMeadow.rainMeadowOptions.ArenaFlairActive.Value = 1;
                 if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                 {
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
