@@ -10,6 +10,7 @@ namespace RainMeadow
         public World world;
         public WorldLoader worldLoader;
         public static ConditionalWeakTable<World, WorldSession> map = new();
+        public override bool canDischarge => true;
 
         /// <summary>
         /// A centralized coroutine helper that waits for a WorldSession's participants to clear before proceeding.

@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public partial class OverworldSession : OnlineResource
     {
+        public override bool canDischarge => true;
         public OverWorld overWorld;
         public Dictionary<string, WorldSession> worldSessions = new();
         public OverworldSession(Lobby lobby) : base(lobby) { }

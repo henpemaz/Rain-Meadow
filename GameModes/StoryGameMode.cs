@@ -342,6 +342,13 @@ namespace RainMeadow
         {
             base.GameShutDown(game);
         }
+
+        public override void DischargedFromResource(OnlineResource OE, string reason)
+        {
+            // we're transitioning to a new world.
+            if (OE is WorldSession && storyClientData.readyForTransition) return;
+            base.DischargedFromResource(OE, reason);
+        }
     }
 
 }

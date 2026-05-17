@@ -34,6 +34,7 @@ namespace RainMeadow
             && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => EventMath.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
+        public virtual bool canDischarge => false;
 
         public OnlineResource(OnlineResource super)
         {
@@ -204,7 +205,14 @@ namespace RainMeadow
 
             foreach (var res in subresources)
             {
-                if (res.isActive) res.Deactivate();
+                if (res.canDischarge)
+                {
+                    foreach (OnlinePlayer p in res.participants.ToList())
+                    {
+                        if (!p.isMe) res.Discharge(p, "Resource deactivated");
+                    }
+                }
+                if (res.isActive) res.Deactivate(); 
             }
 
             isActive = false;
@@ -490,6 +498,14 @@ namespace RainMeadow
 
             if (newOwner != owner)
             {
+                if (newOwner == null && canDischarge)
+                {
+                    foreach (OnlinePlayer participant in participants.ToArray())
+                    {
+                        if (!participant.isMe) Discharge(participant, "discarded by owner");
+                    }
+                }
+
                 NewOwner(newOwner);
                 if (newOwner != null)
                 {

@@ -302,6 +302,26 @@ namespace RainMeadow
             return worldSession;
         }
 
+
+        public virtual void DischargedFromResource(OnlineResource OE, string reason)
+        {
+            switch (OE)
+            {
+                case OverworldSession:
+                case WorldSession:
+                    OE.NotNeeded();
+                    OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
+                    OnlineManager.instance.manager.ShowDialog(new Menu.DialogNotify($"You were removed from the game.{Environment.NewLine}{Environment.NewLine}{reason}", 
+                        OnlineManager.instance.manager, () => {}));
+                    break;
+
+                default: 
+                    // don't take unknown discharges lightly
+                    OnlineManager.QuitWithError($"Discharged from {OE}: {reason}");
+                    break;
+            }
+        }
+
         public virtual void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
         {
 
