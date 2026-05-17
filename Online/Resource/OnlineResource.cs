@@ -202,12 +202,12 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-
+            
             foreach (var res in subresources)
             {
-                if (res.canDischarge)
+                if (isSupervisor && res.canDischarge)
                 {
-                    foreach (OnlinePlayer p in res.participants.ToList())
+                    foreach (OnlinePlayer p in res.participants.ToArray())
                     {
                         if (!p.isMe) res.Discharge(p, "Resource deactivated");
                     }
@@ -373,6 +373,15 @@ namespace RainMeadow
         private void ParticipantLeft(OnlinePlayer participant)
         {
             if (!participants.Contains(participant)) return;
+            if (isActive)
+            {
+                foreach (OnlineResource resource in subresources.ToArray())
+                {
+                    if (resource == this) continue; // prevent any recursive nonsense
+                    resource.ParticipantLeft(participant);
+                }
+            }
+
             RainMeadow.Debug($"{this}-{participant}");
             participants.Remove(participant);
             LeaseModified();

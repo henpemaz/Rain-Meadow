@@ -89,6 +89,7 @@ namespace RainMeadow
         {
             if (request.from != this.super.owner) throw new InvalidOperationException("not supervisor");
             if (!canDischarge) throw new InvalidOperationException($"Can't discharge from resource {this}");
+            RainMeadow.Debug($"Discharged from {this}: {reason}");
             ParticipantLeft(OnlineManager.mePlayer);
             if (OnlineManager.lobby?.gameMode is OnlineGameMode og) og.DischargedFromResource(this, reason);
         }

@@ -310,9 +310,12 @@ namespace RainMeadow
                 case OverworldSession:
                 case WorldSession:
                     OE.NotNeeded();
-                    OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
-                    OnlineManager.instance.manager.ShowDialog(new Menu.DialogNotify($"You were removed from the game.{Environment.NewLine}{Environment.NewLine}{reason}", 
-                        OnlineManager.instance.manager, () => {}));
+                    if (OnlineManager.instance.manager.upcomingProcess is null)
+                    {
+                        OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
+                        OnlineManager.instance.manager.ShowDialog(new Menu.DialogNotify($"You were removed from the game.{Environment.NewLine}{Environment.NewLine}{reason}", 
+                            OnlineManager.instance.manager, () => {}));
+                    }
                     break;
 
                 default: 
