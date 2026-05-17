@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
@@ -201,16 +201,16 @@ namespace RainMeadow.UI
         {
             System.Random random = new();
             if (IsMatching)
-            {
+            { 
+
+                RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
+                RainMeadow.rainMeadowOptions.ArenaFlair.Value = 1;
                 if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                 {
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
                     SpecialEvents.GainedMeadowCoin(1000);
-                    RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
-                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
-
-                }
-                RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
+                    
+                    return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {
                 RainMeadow.rainMeadowOptions.config.Save();
                 return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
             }
