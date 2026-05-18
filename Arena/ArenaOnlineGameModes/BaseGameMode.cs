@@ -166,7 +166,27 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner)) return;
+            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner))
+            {
+                // time for punishment
+                int badTeammateNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, absPlayerCreature.owner);
+                int newScore = self.arenaSitting.players[badTeammateNumber].score -= arena.emptyKillTagScore;
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber);
+                    if (onlinePlayer == null) continue;
+
+                    if (absPlayerCreature.owner == onlinePlayer && onlinePlayer.isMe)
+                    {
+                        ArenaRPCs.UpdatePlayerScore(badTeammateNumber, newScore);
+                    }
+                    else
+                    {
+                        // Send the RPC to everyone else in the lobby
+                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, badTeammateNumber, newScore);
+                    }
+                }
+            }
 
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
@@ -985,7 +1005,7 @@ namespace RainMeadow
                     arena.ResetPlayerStats(arenaPlayer);
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                        arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
                     }
                     arena.ReadFromStats(arenaPlayer, onlinePlayer);
                     continue;
@@ -1032,7 +1052,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                    arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
                 }
                 arena.ReadFromStats(arenaPlayer, onlinePlayer);
             }
@@ -1124,7 +1144,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl);
+                    arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl, true);
                 }
             }
 

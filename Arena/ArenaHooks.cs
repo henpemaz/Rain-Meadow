@@ -987,7 +987,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl, false);
                     }
                     arena.ReadFromStats(player, pl);
                 }
