@@ -195,7 +195,7 @@ namespace RainMeadow
 
         // IEqu
         public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
-        public bool Equals(OnlinePlayer other)
+        public bool Equals(OnlinePlayer? other)
         {
             return other != null && id == other.id;
         }
@@ -204,10 +204,10 @@ namespace RainMeadow
         {
             return id is SteamMatchmakingManager.SteamPlayerId steamPlayerID ? steamPlayerID.steamID.m_SteamID.ToString() : inLobbyId.ToString();
         }
-        public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
+        public static bool operator ==(OnlinePlayer? lhs, OnlinePlayer? rhs)
         {
             return lhs is null ? rhs is null : lhs.Equals(rhs);
         }
-        public static bool operator !=(OnlinePlayer lhs, OnlinePlayer rhs) => !(lhs == rhs);
+        public static bool operator !=(OnlinePlayer? lhs, OnlinePlayer? rhs) => !(lhs == rhs);
     }
 }

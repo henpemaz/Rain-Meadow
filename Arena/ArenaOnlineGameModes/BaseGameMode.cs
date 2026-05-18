@@ -166,13 +166,13 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
+            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner)) return;
 
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
 
             // 4. Handle Trophies
-            // TOOD: Client can sometimes get wrong amount of trophies from one kill
             if (earnsTrophy)
             {
                 if (isLobbyOwner)
@@ -403,7 +403,7 @@ namespace RainMeadow
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                display.slugIcon?.scale = 0.08f;
+                if (display.slugIcon != null) display.slugIcon.scale = 0.08f;
                 return "meadowcoin";
             }
 
