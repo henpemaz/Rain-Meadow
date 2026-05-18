@@ -166,26 +166,27 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner))
+            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
             {
                 // time for punishment
                 int badTeammateNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, absPlayerCreature.owner);
-                int newScore = self.arenaSitting.players[badTeammateNumber].score -= arena.emptyKillTagScore;
+                int newScore = self.arenaSitting.players[badTeammateNumber].score - arena.killScore; // -2
+                ArenaRPCs.UpdatePlayerScore(badTeammateNumber, newScore);
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
                 {
                     OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber);
                     if (onlinePlayer == null) continue;
 
-                    if (absPlayerCreature.owner == onlinePlayer && onlinePlayer.isMe)
+                    if (onlineKilledCreature.owner == onlinePlayer)
                     {
-                        ArenaRPCs.UpdatePlayerScore(badTeammateNumber, newScore);
+                        continue;
                     }
                     else
                     {
-                        // Send the RPC to everyone else in the lobby
                         onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, badTeammateNumber, newScore);
                     }
                 }
+                return;
             }
 
 

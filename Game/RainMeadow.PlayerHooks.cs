@@ -1944,7 +1944,8 @@ public partial class RainMeadow
 
                 if (deadPlayerNumber != -1)
                 {
-                    int newScore = s.arenaSitting.players[deadPlayerNumber].score -= arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
+                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
+                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
                     for (int i = 0; i < s.arenaSitting.players.Count; i++)
                     {
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
@@ -1952,7 +1953,7 @@ public partial class RainMeadow
 
                         if (onlinePlayer.isMe)
                         {
-                            ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
+                            continue;
                         }
                         else
                         {
