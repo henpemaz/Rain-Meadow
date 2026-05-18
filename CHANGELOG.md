@@ -1,7 +1,7 @@
 # Release 1.15.0
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
-
+- Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
 # Release 1.14.1
 
 ## Engine 
