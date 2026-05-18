@@ -2158,7 +2158,18 @@ namespace RainMeadow
                 // before metting the third echo; thus soft locking the game, this is a prevention
                 // for said case, it does not happen often, but it does happen.
                 var ret = (self.room.game.Players[0].realizedCreature is Player player && player.maxRippleLevel >= 1f) || orig(self);
-                if (ret) StoryRPCs.RegionGateOrWarpMeetRequirement();
+                if (OnlineManager.lobby.isOwner)
+                {
+                    if (ret) 
+                    {
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
+                    }
+                    else if (storyGameMode.readyForTransition == StoryGameMode.ReadyForTransition.MeetRequirement)
+                    {
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
+                    }
+                }
+                
                 return storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
             }
             return orig(self);

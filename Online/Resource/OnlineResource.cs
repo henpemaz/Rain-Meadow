@@ -34,6 +34,7 @@ namespace RainMeadow
             && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => EventMath.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
+        public virtual bool canDischarge => false;
 
         public OnlineResource(OnlineResource super)
         {
@@ -201,10 +202,17 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-
+            
             foreach (var res in subresources)
             {
-                if (res.isActive) res.Deactivate();
+                if (isSupervisor && res.canDischarge)
+                {
+                    foreach (OnlinePlayer p in res.participants.ToArray())
+                    {
+                        if (!p.isMe) res.Discharge(p, "supervisor-deactivated");
+                    }
+                }
+                if (res.isActive) res.Deactivate(); 
             }
 
             isActive = false;
@@ -365,6 +373,15 @@ namespace RainMeadow
         private void ParticipantLeft(OnlinePlayer participant)
         {
             if (!participants.Contains(participant)) return;
+            if (isActive)
+            {
+                foreach (OnlineResource resource in subresources.ToArray())
+                {
+                    if (resource == this) continue; // prevent any recursive nonsense
+                    resource.ParticipantLeft(participant);
+                }
+            }
+
             RainMeadow.Debug($"{this}-{participant}");
             participants.Remove(participant);
             LeaseModified();
@@ -490,6 +507,14 @@ namespace RainMeadow
 
             if (newOwner != owner)
             {
+                if (newOwner == null && canDischarge)
+                {
+                    foreach (OnlinePlayer participant in participants.ToArray())
+                    {
+                        if (!participant.isMe) Discharge(participant, "no-suitable-inheritor");
+                    }
+                }
+
                 NewOwner(newOwner);
                 if (newOwner != null)
                 {
