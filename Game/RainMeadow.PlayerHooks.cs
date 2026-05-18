@@ -1935,18 +1935,19 @@ public partial class RainMeadow
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         // Inside player_die hook
+
         if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
         {
             OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
 
-            if (self?.room?.game?.session != null && self?.room?.game?.session is ArenaGameSession s) // this shouldn't be possible but
+            if (self.room.game.session is ArenaGameSession s)
             {
-                int excludedPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+                int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
                     ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
 
-                if (excludedPlayerNumber != -1)
+                if (deadPlayerNumber != -1)
                 {
-                    int[] alivePlayerNumbers = ArenaHelpers.GetAllAlivePlayers(excludedPlayerNumber);
+                    int newScore = s.arenaSitting.players[deadPlayerNumber].score -= arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
                     for (int i = 0; i < s.arenaSitting.players.Count; i++)
                     {
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
@@ -1954,14 +1955,12 @@ public partial class RainMeadow
 
                         if (onlinePlayer.isMe)
                         {
-                            // Execute locally for the dying player
-                            ArenaRPCs.DistributeEmptyKillScores(alivePlayerNumbers);
-
+                            ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
                         }
                         else
                         {
                             // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, alivePlayerNumbers);
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, newScore);
                         }
                     }
                 }
