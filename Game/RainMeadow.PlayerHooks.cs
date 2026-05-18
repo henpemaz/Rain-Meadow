@@ -1935,38 +1935,37 @@ public partial class RainMeadow
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         // Inside player_die hook
-        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
+        
+            if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
+{
+    OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
+
+    if (self.room.game.session is ArenaGameSession s)
+    {
+        int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+            ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
+
+        if (deadPlayerNumber != -1)
         {
-            OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
-
-            if (self?.room?.game?.session != null && self?.room?.game?.session is ArenaGameSession s) // this shouldn't be possible but
+            for (int i = 0; i < s.arenaSitting.players.Count; i++)
             {
-                int excludedPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
-                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
+                if (onlinePlayer == null) continue;
 
-                if (excludedPlayerNumber != -1)
+                if (onlinePlayer.isMe)
                 {
-                    int[] alivePlayerNumbers = ArenaHelpers.GetAllAlivePlayers(excludedPlayerNumber);
-                    for (int i = 0; i < s.arenaSitting.players.Count; i++)
-                    {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
-                        if (onlinePlayer == null) continue;
-
-                        if (onlinePlayer.isMe)
-                        {
-                            // Execute locally for the dying player
-                            ArenaRPCs.DistributeEmptyKillScores(alivePlayerNumbers);
-
-                        }
-                        else
-                        {
-                            // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, alivePlayerNumbers);
-                        }
-                    }
+                    // Execute locally for the dying player
+                    // Assumes UpdatePlayerScore takes (playerNumber, scoreDelta)
+                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, -arena.emptyKillTagScore);
+                }
+                else
+                {
+                    // Send the RPC to everyone else in the lobby
+                    onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, -arena.emptyKillTagScore);
                 }
             }
         }
+    }
 
         orig(self);
     }
