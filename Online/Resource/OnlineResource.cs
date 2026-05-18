@@ -209,7 +209,7 @@ namespace RainMeadow
                 {
                     foreach (OnlinePlayer p in res.participants.ToArray())
                     {
-                        if (!p.isMe) res.Discharge(p, "Resource deactivated");
+                        if (!p.isMe) res.Discharge(p, "supervisor-deactivated");
                     }
                 }
                 if (res.isActive) res.Deactivate(); 
@@ -511,7 +511,7 @@ namespace RainMeadow
                 {
                     foreach (OnlinePlayer participant in participants.ToArray())
                     {
-                        if (!participant.isMe) Discharge(participant, "discarded by owner");
+                        if (!participant.isMe) Discharge(participant, "no-suitable-inheritor");
                     }
                 }
 

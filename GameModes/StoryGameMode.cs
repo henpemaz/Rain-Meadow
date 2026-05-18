@@ -346,7 +346,7 @@ namespace RainMeadow
         public override void DischargedFromResource(OnlineResource OE, string reason)
         {
             // we're transitioning to a new world.
-            if (OE is WorldSession && storyClientData.readyForTransition) return;
+            if (OE is WorldSession && storyClientData.readyForTransition && reason == "no-suitable-inheritor") return;
             base.DischargedFromResource(OE, reason);
         }
     }

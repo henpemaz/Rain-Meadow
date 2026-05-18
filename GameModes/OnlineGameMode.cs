@@ -320,7 +320,7 @@ namespace RainMeadow
 
                 default: 
                     // don't take unknown discharges lightly
-                    OnlineManager.QuitWithError($"Discharged from {OE}: {reason}");
+                    OnlineManager.QuitWithError($"Unhandled discharge from {OE}: {reason}");
                     break;
             }
         }
