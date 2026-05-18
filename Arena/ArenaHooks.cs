@@ -442,11 +442,11 @@ namespace RainMeadow
         }
 
         public void Player_SpawnDynamicWarpPoint(
-            On.Player.orig_SpawnDynamicWarpPoint orig,
-            Player self,
-            string forcedDestination,
-            Vector2? forcedDestinationPosition
-        )
+    On.Player.orig_SpawnDynamicWarpPoint orig,
+    Player self,
+    string forcedDestination,
+    Vector2? forcedDestinationPosition
+)
         {
             if (!isArenaMode(out var arena))
             {
@@ -470,6 +470,8 @@ namespace RainMeadow
                 return;
 
             var room = self.room;
+
+            RainMeadow.sSpawningNonTransferable = true;
             AbstractPhysicalObject apo = new(
                 room.world,
                 Watcher.WatcherEnums.AbstractObjectType.RippleSpawn,
@@ -488,6 +490,8 @@ namespace RainMeadow
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);
+            RainMeadow.sSpawningNonTransferable = false;
+
             voidSpawn.abstractPhysicalObject.Realize();
             voidSpawn.abstractPhysicalObject.realizedObject.PlaceInRoom(room);
             voidSpawn.PlaceInRoom(room);
@@ -576,6 +580,9 @@ namespace RainMeadow
                     if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
                         continue;
                 }
+
+                if (player.realizedCreature != null && player.realizedCreature.State.dead)
+                    continue;
 
                 int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
                 int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
@@ -797,8 +804,11 @@ namespace RainMeadow
             Vector2 B
         )
         {
-            if (isArenaMode(out _))
+            if (isArenaMode(out var arena))
+            {
+                if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)?.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) return 1;
                 return 1 * self.playerGlowVision; //keep it visible to creator
+            }
             return orig(self, A, B);
         }
 

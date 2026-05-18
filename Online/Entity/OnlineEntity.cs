@@ -508,43 +508,44 @@ namespace RainMeadow
             return lastState;
         }
 
-        private Dictionary<string, List<RPCEvent>> Locks = new();
+        private readonly Dictionary<string, List<RPCEvent>> locks = new();
         public void Lock(string key, RPCEvent @event)
         {
-            if (!Locks.ContainsKey(key))
+            RainMeadow.Debug($"{this}: Locked {key}:{@event}");
+            if (!locks.ContainsKey(key))
             {
-                Locks.Add(key, [ @event ]);
+                locks.Add(key, [ @event ]);
             }
             else
             {
-                Locks[key].Add(@event);
+                locks[key].Add(@event);
             }
 
-            @event.Then(_ => {
-                if (Locks.ContainsKey(key))
-                {
-                    Locks[key].Remove(@event);
-                }
-            });
+            @event.Then(_ => Unlock(key, @event));
+        }
+
+        public void TraceLocks()
+        {
+            RainMeadow.Trace($"{this}: locks");
+            foreach (string _lock in locks.Keys)
+            {
+                RainMeadow.Trace($"{_lock}, [ {string.Join(", ", locks[_lock].Select(x => x.ToString()))} ]");
+            }
         }
 
         public void ClearLock(string key) 
         {
-            if (Locks.ContainsKey(key)) 
-            {
-                Locks[key].Clear();
-            }
+            RainMeadow.Debug($"{this}: Cleared Key {key}");
+            if (locks.TryGetValue(key, out var list)) list.Clear();
         }
 
         public void Unlock(string key, RPCEvent @event) 
         {
-            if (Locks.ContainsKey(key)) 
-            {
-                Locks[key].Remove(@event);
-            }
+            RainMeadow.Debug($"{this}: Unlocked {key}:{@event}");
+            if (locks.TryGetValue(key, out var list)) list.Remove(@event);
         }
 
-        public bool IsLocked(string key) => Locks.ContainsKey(key) && Locks[key].Any();
+        public bool IsLocked(string key) => locks.TryGetValue(key, out var list) && list.Any();
         
 
 
