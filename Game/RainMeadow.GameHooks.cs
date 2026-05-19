@@ -17,6 +17,8 @@ namespace RainMeadow
         // prevent creature spawns
         private void GameHooks()
         {
+            MeadowExtEnumSync.ApplyHooks();
+
             On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
             On.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor2;
