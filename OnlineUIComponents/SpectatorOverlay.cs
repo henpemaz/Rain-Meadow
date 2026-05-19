@@ -203,6 +203,7 @@ namespace RainMeadow
             }
             public override void RemoveSprites()
             {
+                slugIcon?.RemoveSprites();
                 base.RemoveSprites();
                 this.ClearMenuObject(ref kickbutton);
             }
@@ -212,6 +213,17 @@ namespace RainMeadow
                 BanClickedOnce = menu.selectedObject == kickbutton && BanClickedOnce;
                 if (kickbutton != null)
                     kickbutton.buttonBehav.greyedOut = forceKickGreyOut;
+
+                if (slugIcon == null)
+                {
+                    var id = OnlineManager.lobby.clientSettings[player].avatars.FirstOrDefault();
+                    if (id.FindEntity(true) is OnlineCreature spectatee && spectatee.TryGetData<SlugcatCustomization>(out var customization))
+                    {
+                        slugIcon = new(menu, this, new(0, 0), customization.playingAs, new() { customization.SlugcatColor(), customization.eyeColor, customization.currentColors.Count > 2 ? customization.currentColors[2] : Color.white }, false);
+                        slugIcon.Scale = 1.4f;
+                        this.SafeAddSubobjects(slugIcon);
+                    }
+                }
             }
 
             public bool banClickedOnce, forceKickGreyOut;
@@ -220,6 +232,8 @@ namespace RainMeadow
             public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => !avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead));
             public List<OnlineCreature> avatars;
             public SimplerSymbolButton? kickbutton;
+
+            public SlugIcon? slugIcon;
         }
     }
 }
