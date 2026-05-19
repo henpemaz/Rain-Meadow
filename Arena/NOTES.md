@@ -1,9 +1,8 @@
 # Arena Development Notes
 
-## Executive Summary
+## Summary
 * **Coding Style:** The codebase favors index-based iterations and manual null checking over LINQ cuz I was more familiar with that.
 * **Player Identification:** Player numbering and identity are determined by a combo of the `InLobbyId` index position and `ArenaSitting` setup.
-* **Scoring Logic:** Current technical debt requires an IL hook for negative integers to properly handle suicide deductions without awarding points to opponents.
 * **Killing Mechanism:** The `Killing` hook acts as the central source of truth for combat violence and uses specific logic to revert to base game scoring when needed.
 * **NextLevel Flow:** A host-initiated handshake and an 8-second deadlock timer in `WorldSession` protect the lobby from crashing due to failed resource exits.
 * **Arena Helpers:** This class manages critical player-finding functions and contains static logic, some of which should eventually be moved into external modes.
@@ -17,13 +16,6 @@ One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player
 
 > [!WARNING]
 > **Technical Debt Alert:** When addressing the suicide point deduction request for tournaments, points were granted to *everyone else* instead of deducting from the victim. This caused a bug in Team Battle where members gain points when an opponent suicides. 
-
-**The Fix:**
-* **Do not** just update the `teamsScore` dictionary. 
-* **Use an IL hook** to support negative integers.
-* Update `DistributeEmptyKillScore` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaRPCs.cs#L38) to remove score from the target player directly.
-* Right now, `UpdatePlayerScore` only checks if current score is less than incoming score. [Drown PR](https://github.com/henpemaz/Rain-Meadow/pull/1448/files) renames it to `IncreasePlayerScore` and adds `UpdatePlayerScore` without this check. 
-* It was too close to tournament to make any changes to this, so thats why two RPCs will exist.
 
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**
