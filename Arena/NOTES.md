@@ -12,10 +12,7 @@
 ---
 
 ## Scoring
-One of the biggest pain points was redundant logic in `ArenaOverlay` and `Player.specificMultiplayerHud` that clamped points to 0 if they dropped below that threshold. 
-
-> [!WARNING]
-> **Technical Debt Alert:** When addressing the suicide point deduction request for tournaments, points were granted to *everyone else* instead of deducting from the victim. This caused a bug in Team Battle where members gain points when an opponent suicides. 
+Newest logic (1.14.1) now checks if users have "winByScore" set to true (which is a getter for if any scores > 0) to determine how scoring behavior should work across game modes. Ex: If you're playing drown and you have killScore set to 2, you'll net 2 points per kill regardless of creature's kill value. 
 
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**
