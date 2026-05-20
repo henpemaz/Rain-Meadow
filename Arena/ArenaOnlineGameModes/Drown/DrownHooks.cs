@@ -47,42 +47,49 @@ namespace RainMeadow
 
         private int ArenaGameSession_PlayersStillActiveDrown(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
         {
-            // 1. ALWAYS run orig first. This allows native alive-time tracking to process 
-            // and gives us the baseline count of alive players.
+            // 1. ALWAYS run orig first. 
             int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
 
             if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
             {
                 int canRespawnCount = 0;
                 bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+
                 // If dens are opened, nobody can respawn. Let native logic decide the end state.
                 if (drown.openedDen || self.sessionEnded)
                 {
                     return activeCount;
                 }
 
-
                 // Ensure the Players list is not null before iterating
                 if (self.arenaSitting.players != null)
                 {
-                    // Use the sitting players as the primary loop
                     for (int i = 0; i < self.arenaSitting.players.Count; i++)
                     {
-                        // 1. Check if this specific player index is currently "Alive" in the session
-                        // We check if they are in self.Players and if that creature is alive.
-                        bool isPhysicallyAlive = false;
+                        bool isConsideredActiveByVanilla = false;
+
                         if (i < self.Players.Count && self.Players[i] != null)
                         {
                             var absCrit = self.Players[i];
-                            if (absCrit.state.alive || (absCrit.realizedCreature != null && absCrit.realizedCreature.State.alive))
+
+                            // Base check: are they alive at all?
+                            if (absCrit.state.alive)
                             {
-                                isPhysicallyAlive = true;
+                                isConsideredActiveByVanilla = true;
+
+                                // Check if they are physically spawned and in danger
+                                if (absCrit.realizedCreature is Player player)
+                                {
+                                    if (player.DangerPos != null || player.slatedForDeletetion)
+                                    {
+                                        isConsideredActiveByVanilla = false;
+                                    }
+                                }
                             }
                         }
 
-                        // 2. If they aren't physically alive (dead, fell out of map, or despawned)
                         // Check if they have the resources to come back.
-                        if (!isPhysicallyAlive)
+                        if (!isConsideredActiveByVanilla)
                         {
                             int score = teamWork ? drown.teamPoints : self.arenaSitting.players[i].score;
                             if (score >= drown.respCost)
@@ -93,8 +100,6 @@ namespace RainMeadow
                     }
                 }
 
-                // By adding the dead-but-respawnable players to the active count,
-                // we trick the session into staying alive as long as there are contenders left.
                 return activeCount + canRespawnCount;
             }
 
