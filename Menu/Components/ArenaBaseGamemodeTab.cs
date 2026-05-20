@@ -6,11 +6,9 @@ using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
-using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
-using Newtonsoft.Json.Serialization;
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -221,11 +219,9 @@ namespace RainMeadow.UI.Components
             challengeDenEjectionCheckbox.Change();
 
 
-            // Layout tweaks for side-by-side buttons
             float btnWidth = 90f; // Cut down from 180f
             float btnGap = 6f;    // Small spacing between Copy and Import
 
-            // ==================== PLAYLIST CATEGORY (Row 8) ====================
 
             arenaImportExportLabel = new(menu, this, menu.Translate("Playlist:"),
                 new(leftMargin, topOffset - rowHeight * 8), new(labelWidth, 20f), false);
@@ -313,7 +309,7 @@ namespace RainMeadow.UI.Components
                 }
             };
 
-            // Import Settings (Shifted right by button width + gap)
+            // Import Settings 
             arenaSettingsImportButton = new(new Vector2(boxMargin + btnWidth + btnGap, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Import"));
             arenaSettingsImportButton.OnClick += (_) =>
             {
