@@ -1937,7 +1937,7 @@ public partial class RainMeadow
         {
             OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
 
-            if (self.room.game.session is ArenaGameSession s)
+            if (self.room?.game?.session != null && self.room.game.session is ArenaGameSession s)
             {
                 int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
                     ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
