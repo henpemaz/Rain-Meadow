@@ -114,6 +114,11 @@ namespace RainMeadow
             isWaitingForState = false;
             isAvailable = true;
 
+            foreach (var participant in participants)
+            {
+                if (!participant.isMe) Subscribed(participant);
+            }
+
             AvailableImpl();
 
             OnlineManager.lobby.gameMode.ResourceAvailable(this);
@@ -185,6 +190,11 @@ namespace RainMeadow
                 }
             }
 
+            foreach (var participant in participants)
+            {
+                if (!participant.isMe) Unsubscribed(participant);
+            }
+
             UnavailableImpl();
 
             ClearIncommingBuffers();
@@ -221,7 +231,6 @@ namespace RainMeadow
             {
                 ent.Deactivated(this);
             }
-            OnlineManager.RemoveFeeds(this);
 
             subresources.Clear();
             registeredEntities.Clear();
@@ -273,7 +282,6 @@ namespace RainMeadow
             if (isOwner)
             {
                 NewVersion();
-                OnlineManager.RemoveFeeds(this); // do not send data to myself
 
                 if (!isAvailable) // I am the authority for the state of this
                 {
@@ -284,19 +292,6 @@ namespace RainMeadow
                 {
                     SanitizeSubresources();
                 }
-
-                if (isAvailable)
-                {
-                    foreach (var player in participants)
-                    {
-                        if (player.isMe || player.hasLeft) continue;
-                        Subscribed(player);
-                    }
-                }
-            }
-            else if (oldOwner != null && oldOwner.isMe) // no longer responsible for sending data
-            {
-                OnlineManager.RemoveSubscriptions(this);
             }
 
             if (isActive)
@@ -348,7 +343,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this}-{newParticipant}");
             participants.Add(newParticipant);
             LeaseModified();
-            if (isAvailable && isOwner && !newParticipant.isMe)
+            if (isAvailable && !newParticipant.isMe)
             {
                 Subscribed(newParticipant);
             }
@@ -388,7 +383,7 @@ namespace RainMeadow
             {
                 PickNewOwner();
             }
-            if (isAvailable && isOwner && !participant.isMe)
+            if (isAvailable && !participant.isMe)
             {
                 Unsubscribed(participant);
                 if (isActive) SanitizeSubresources();
@@ -526,7 +521,6 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this.ToString() + " - " + player.ToString());
             if (!isAvailable) throw new InvalidOperationException("not available");
-            if (!isOwner) throw new InvalidOperationException("not owner");
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
             OnlineManager.AddSubscription(this, player);

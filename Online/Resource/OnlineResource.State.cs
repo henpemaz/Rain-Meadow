@@ -7,18 +7,24 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        protected ResourceState latestState;
+        protected ParticipantResourceState latestState;
 
-        public ResourceState? state { get => isAvailable ? latestState : null; }
+        public ParticipantResourceState? state { get => isAvailable ? latestState : null; }
 
-        public ResourceState GetState(uint ts)
+        public ParticipantResourceState GetState(uint ts)
         {
-            if (!isOwner) { throw new InvalidProgrammerException("not owner"); }
             if (latestState == null || latestState.tick != ts)
             {
                 try
                 {
-                    latestState = MakeState(ts);
+                    if (isOwner)
+                    {
+                        latestState = MakeState(ts);
+                    }
+                    else
+                    {
+                        latestState = new ParticipantResourceState(this, ts);
+                    }
                 }
                 catch (Exception)
                 {
@@ -30,79 +36,156 @@ namespace RainMeadow
             return latestState;
         }
 
-        protected Queue<ResourceState> incomingState = new(8);
+
+        protected Dictionary<OnlinePlayer, Queue<ParticipantResourceState>> incomingState = new();
         protected abstract ResourceState MakeState(uint ts);
-        public void ReadState(ResourceState newState)
+        public void ReadState(ParticipantResourceState newState)
         {
             RainMeadow.Trace(this);
+
             if (!isAvailable && !isWaitingForState && !isPending)
             {
                 RainMeadow.Trace($"received state for inactive resource");
                 return;
             }
-            if (newState.from != owner)
+
+            if (newState is ResourceState && newState.from != owner)
             {
                 RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
                 return;
             }
+
+            if (!incomingState.ContainsKey(newState.from)) incomingState.Add(newState.from, new Queue<ParticipantResourceState>(8));
+            var incomingStates = incomingState[newState.from];
+
             RainMeadow.Trace($"processing received state {newState} in resource {this}");
             if (newState.IsDelta)
             {
                 RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (incomingState.Count > 0 && EventMath.IsNewer(newState.baseline, incomingState.Peek().tick))
+                
+
+                while (incomingStates.Count > 0 && EventMath.IsNewer(newState.baseline, incomingStates.Peek().tick))
                 {
-                    var discarded = incomingState.Dequeue();
+                    var discarded = incomingStates.Dequeue();
                     RainMeadow.Trace("discarding old state from tick " + discarded.tick);
                 }
-                if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
+
+                if (incomingStates.Count == 0 || newState.baseline != incomingStates.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Select(s => s.tick))}]");
-                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
-                    {
-                        newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
-                    }
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingStates.Select(s => s.tick))}]");
+                    newState.from.InvokeOnceRPC(RPCs.DeltaReset, this, null);
                     return;
                 }
-                newState = (ResourceState)incomingState.Peek().ApplyDelta(newState);
+
+                newState = (ParticipantResourceState)incomingStates.Peek().ApplyDelta(newState);
             }
             else
             {
                 RainMeadow.Trace($"received absolute state from {newState.from} for tick " + newState.tick);
             }
-            incomingState.Enqueue(newState);
-            latestState = newState;
+
+            incomingStates.Enqueue(newState);
+            // latestState = newState;
+
             if (isWaitingForState || isAvailable) newState.ReadTo(this);
-            if (isWaitingForState)
+            if (newState is ResourceState)
             {
-                Available();
+                if (isWaitingForState)
+                {
+                    Available();
+                }
             }
         }
 
-        public abstract class ResourceState : RootDeltaState
+        // Sent by the owner and participants
+        public class ParticipantResourceState : RootDeltaState
         {
             [OnlineField(always = true)]
             public OnlineResource resource;
+
+            [OnlineField(nullable = true, group = "entities")]
+            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
+            public ParticipantResourceState() : base() { }
+            public ParticipantResourceState(OnlineResource resource, uint ts) : base(ts)
+            {
+                this.resource = resource;
+                entityStates = new(resource.activeEntities.Where(x => x.isMine).Select(e => e.GetState(ts, resource)).ToList());
+            }
+
+            public virtual void ReadTo(OnlineResource resource)
+            {
+                if (resource.isActive)
+                {
+                    if (entityStates != null)
+                    {
+                        foreach (var entityState in entityStates.list)
+                        {
+                            if (entityState != null)
+                            {
+                                var entity = entityState.entityId.FindEntity();
+
+                                if (entity == null)
+                                {
+                                    RainMeadow.Error("got state for missing onlineEntity " + entityState.entityId);
+                                    continue;
+                                }
+
+                                if (!entity.isMine && !entity.isTransfering)
+                                {
+                                    if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
+                                    {
+                                        // bandaid for mismatched entity IDs
+                                        if (!entity.CanReadTo(entityState, resource, tick))
+                                        {
+                                            continue;
+                                        }
+                                        try
+                                        {
+                                            entity.ReadState(entityState, resource);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
+                                            RainMeadow.Error(e);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Error("got null state, maybe it was not an EntityState");
+                            }
+                        }
+                    }
+                    
+                }
+                
+            }
+        }
+
+        // Sent by only the owner
+        public abstract class ResourceState : ParticipantResourceState
+        {
             [OnlineField(nullable = true, group = "entitydefs")]
             public DynamicIdentifiablesICustomSerializables<EntityMembership, OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
             public DeltaStates<OnlineEntity.EntityDefinition, OnlineEntity.EntityId> registeredEntities;
-            [OnlineField(nullable = true, group = "entities")]
-            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
+            
             [OnlineField(nullable = true, group = "data")]
             public DeltaDataStates<ResourceData.ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
-            protected ResourceState(OnlineResource resource, uint ts) : base(ts)
+            protected ResourceState(OnlineResource resource, uint ts) : base(resource, ts)
             {
                 this.resource = resource;
                 registeredEntities = new(resource.registeredEntities.Values.ToList());
                 entitiesJoined = new(resource.joinedEntities.Values.ToList());
-                entityStates = new(resource.activeEntities.Select(e => e.GetState(ts, resource)).ToList());
                 resourceDataStates = new(resource.resourceData.Values.Select(d => d.MakeState(resource)).Where(s => s != null).ToList());
             }
-            public virtual void ReadTo(OnlineResource resource)
+            public override void ReadTo(OnlineResource resource)
             {
+                base.ReadTo(resource);
                 if (resource.isActive)
                 {
                     foreach (var def in registeredEntities.list)
@@ -198,43 +281,6 @@ namespace RainMeadow
                         }
                     }
 
-                    foreach (var entityState in entityStates.list)
-                    {
-                        if (entityState != null)
-                        {
-                            var entity = entityState.entityId.FindEntity();
-                            if (entity == null)
-                            {
-                                RainMeadow.Error("got state for missing onlineEntity " + entityState.entityId);
-                                continue;
-                            }
-                            if (!entity.isMine && !entity.isTransfering)
-                            {
-                                if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
-                                {
-
-                                    // bandaid for mismatched entity IDs
-                                    if (!entity.CanReadTo(entityState, resource, tick))
-                                    {
-                                        continue;
-                                    }
-                                    try
-                                    {
-                                        entity.ReadState(entityState, resource);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
-                                        RainMeadow.Error(e);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            RainMeadow.Error("got null state, maybe it was not an EntityState");
-                        }
-                    }
                 }
                 resourceDataStates.list.ForEach(ds => ds.ReadTo(resource.TryGetData(ds.GetDataType(), out var d) ? d : resource.AddData(ds.MakeData(resource)), resource));
             }

@@ -62,7 +62,7 @@ namespace RainMeadow
                 lineSprite2.anchorX = 0;
                 lineSprite2.scaleX = 15;
                 lineSprite2.scaleY = 2;
-                lineSprite2.color = OnlineManager.feeds.Exists(sub => sub.resource == resource) ? Color.green : Color.white;
+                lineSprite2.color = Color.white;
 
                 lines = 0;
                 entityCount = 0;

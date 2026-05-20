@@ -63,11 +63,8 @@ namespace RainMeadow
             {
                 switch (stateMessage.state)
                 {
-                    case EntityFeedState entityFeedState:
-                        RainMeadow.Trace($"{entityFeedState}:{entityFeedState.entityState.ID} for {this}");
-                        break;
-                    case OnlineResource.ResourceState resourceState:
-                        RainMeadow.Trace($"{resourceState}:{resourceState.resource.Id()} for {this}");
+                    case OnlineResource.ParticipantResourceState resourceState:
+                        RainMeadow.Trace($"{resourceState}:{resourceState.resource.Id()} for {this}, owner: {resourceState is OnlineResource.ResourceState}");
                         break;
                     default:
                         RainMeadow.Trace($"{stateMessage.state} for {this}");

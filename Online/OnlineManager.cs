@@ -17,7 +17,6 @@ namespace RainMeadow
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
-        public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static List<FieldInfo> recentFailedComparisons = new();
         public static float lastSend;
@@ -79,7 +78,6 @@ namespace RainMeadow
             lobby = null;
 
             subscriptions = new();
-            feeds = new();
             recentEntities = new();
 
             WorldSession.map = new();
@@ -154,13 +152,6 @@ namespace RainMeadow
                 {
                     subscription.Update(mePlayer.tick);
                 }
-
-                foreach (var feed in feeds)
-                {
-                    feed.Update(mePlayer.tick);
-                    
-                }
-
 
                 // Outgoing messages
                 foreach (var player in players)
@@ -265,7 +256,7 @@ namespace RainMeadow
         {
             try
             {
-                if (state is OnlineResource.ResourceState resourceState)
+                if (state is OnlineResource.ParticipantResourceState resourceState)
                 {
                     if (resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
                     {
@@ -275,26 +266,6 @@ namespace RainMeadow
                     else // resource unloaded or not available
                     {
                         RainMeadow.Trace($"Couldn't process {resourceState} for {resourceState.resource?.ToString() ?? "null"}");
-                    }
-                }
-                else if (state is EntityFeedState entityFeedState)
-                {
-                    if (entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
-                    {
-                        var ent = entityFeedState.entityState.entityId.FindEntity();
-                        if (ent != null)
-                        {
-                            RainMeadow.Trace($"Processing {entityFeedState} for {ent}");
-                            ent.ReadState(entityFeedState);
-                        }
-                        else
-                        {
-                            RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
-                        }
-                    }
-                    else // resource unloaded or not available
-                    {
-                        RainMeadow.Trace($"Couldn't process {entityFeedState} for {entityFeedState.inResource?.ToString() ?? "null"}");
                     }
                 }
                 else
@@ -308,14 +279,6 @@ namespace RainMeadow
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
                 {
                     RainMeadow.Error(resourceState.resource);
-                }
-                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
-                {
-                    var ent = entityFeedState.entityState.entityId.FindEntity();
-                    RainMeadow.Error(entityFeedState.inResource);
-                    RainMeadow.Error(entityFeedState.entityState);
-                    RainMeadow.Error(entityFeedState.entityState.entityId);
-                    RainMeadow.Error(ent);
                 }
                 RainMeadow.Error(e);
             }
@@ -334,22 +297,6 @@ namespace RainMeadow
         public static void RemoveSubscriptions(OnlineResource onlineResource)
         {
             subscriptions.RemoveAll(s => s.resource == onlineResource);
-        }
-
-        public static void AddFeed(OnlineResource resource, OnlineEntity oe)
-        {
-            feeds.Add(new EntityFeed(resource, oe));
-            
-        }
-
-        public static void RemoveFeed(OnlineResource resource, OnlineEntity oe)
-        {
-            feeds.RemoveAll(f => f.resource == resource && f.entity == oe);
-        }
-
-        public static void RemoveFeeds(OnlineResource resource)
-        {
-            feeds.RemoveAll(f => f.resource == resource);
         }
 
         // this smells

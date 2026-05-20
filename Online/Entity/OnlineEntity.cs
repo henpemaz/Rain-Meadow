@@ -209,7 +209,6 @@ namespace RainMeadow
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
-            incomingState.Add(inResource, new Queue<EntityState>());
 
             if (!isMine)
             {
@@ -220,8 +219,6 @@ namespace RainMeadow
 
             if (isMine)
             {
-                if (!inResource.isOwner)
-                    OnlineManager.AddFeed(inResource, this);
                 JoinOrLeavePending();
             }
         }
@@ -241,13 +238,11 @@ namespace RainMeadow
 
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
-            incomingState.Remove(inResource);
 
             if (!isMine) LeaveImpl(inResource);
 
             if (isMine)
             {
-                OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
             }
             if (primaryResource == null && !isPending)
@@ -285,27 +280,7 @@ namespace RainMeadow
             if (wasOwner == newOwner) { RainMeadow.Debug($"assigned to same owner"); return; }
             owner = newOwner;
             primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
-
-            foreach (var key in incomingState.Keys.ToList())
-            {
-                incomingState[key] = new Queue<EntityState>();
-            }
             lastStates.Clear();
-
-            if (wasOwner.isMe)
-            {
-                foreach (var res in joinedResources)
-                {
-                    OnlineManager.RemoveFeed(res, this);
-                }
-            }
-            if (newOwner.isMe)
-            {
-                foreach (var res in joinedResources)
-                {
-                    if (!res.isOwner) OnlineManager.AddFeed(res, this);
-                }
-            }
 
             if (newOwner.isMe || wasOwner.isMe)
             {
@@ -341,11 +316,9 @@ namespace RainMeadow
 
             joinedResources.Remove(onlineResource);
             lastStates.Remove(onlineResource);
-            incomingState.Remove(onlineResource);
 
             if (isMine)
             {
-                OnlineManager.RemoveFeed(onlineResource, this);
                 JoinOrLeavePending();
             }
 
@@ -401,16 +374,6 @@ namespace RainMeadow
                 }
             }
         }
-
-        public virtual void ReadState(EntityState entityState, OnlineResource inResource)
-        {
-            lastStates[inResource] = entityState;
-            StateProfiler.Instance?.Push(entityState.GetType());
-            entityState.ReadTo(this);
-            StateProfiler.Instance?.Pop(entityState.GetType());
-
-        }
-
         public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick)
         {
             var entity = entityState.entityId.FindEntity();
@@ -435,55 +398,24 @@ namespace RainMeadow
 
             return entityState.GetType().IsAssignableFrom(localState.GetType());
         }
-        public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
-        public virtual void ReadState(EntityFeedState entityFeedState)
+        public virtual void ReadState(EntityState newState, OnlineResource inResource)
         {
-            var newState = entityFeedState.entityState;
-            var inResource = entityFeedState.inResource;
-            if (!incomingState.ContainsKey(inResource))
+            if (!joinedResources.Contains(inResource))
             {
                 RainMeadow.Trace($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
                 return;
             }
+
             if (newState.from != owner)
             {
                 RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
                 return;
             }
-            RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
-            var stateQueue = incomingState[inResource];
-            if (newState.IsDelta)
-            {
-                RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (stateQueue.Count > 0 && EventMath.IsNewer(newState.baseline, stateQueue.Peek().tick))
-                {
-                    var discarded = stateQueue.Dequeue();
-                    RainMeadow.Trace("discarding old event from tick " + discarded.tick);
-                }
-                if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
-                {
-                    RainMeadow.Error($"Received unprocessable delta for {this} in {entityFeedState.inResource} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Select(s => s.tick))}]");
-                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, inResource, this.id)))
-                    {
-                        newState.from.InvokeRPC(RPCs.DeltaReset, inResource, this.id);
-                    }
-                    return;
-                }
-                newState = (EntityState)stateQueue.Peek().ApplyDelta(newState);
-            }
-            else
-            {
-                RainMeadow.Trace("received absolute state for tick " + newState.tick);
-            }
-            stateQueue.Enqueue(newState);
-            if (inResource != currentlyJoinedResource)
-            {
-                RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
-                lastStates[inResource] = newState;
-                return;
-            }
-            ReadState(newState, inResource);
+
+            lastStates[inResource] = newState;
+            StateProfiler.Instance?.Push(newState.GetType());
+            newState.ReadTo(this);
+            StateProfiler.Instance?.Pop(newState.GetType());
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);

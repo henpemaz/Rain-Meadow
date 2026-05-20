@@ -9,7 +9,7 @@ namespace RainMeadow
         public OnlineResource resource;
         public OnlinePlayer player;
         public Queue<OnlineStateMessage> OutgoingStates = new(32);
-        public OnlineResource.ResourceState lastAcknoledgedState;
+        public OnlineResource.ParticipantResourceState lastAcknoledgedState;
         private int basecooldown;
         private int cooldown;
 
@@ -25,7 +25,6 @@ namespace RainMeadow
         public void Update(uint tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
-            if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
 
             if (EventMath.IsNewerOrEqual(player.latestTickAck, resource.lastModified)) // player has acked latest relevant changes
@@ -50,7 +49,7 @@ namespace RainMeadow
                 while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Considering candidate:" + OutgoingStates.Peek().tick);
-                    lastAcknoledgedState = (OnlineResource.ResourceState)OutgoingStates.Dequeue().sourceState; // use most recent available
+                    lastAcknoledgedState = (OnlineResource.ParticipantResourceState)OutgoingStates.Dequeue().sourceState; // use most recent available
                 }
             }
 
@@ -58,7 +57,7 @@ namespace RainMeadow
             if (lastAcknoledgedState != null)
             {
                 RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick}");
-                var delta = (OnlineResource.ResourceState)newState.Delta(lastAcknoledgedState);
+                var delta = (OnlineResource.ParticipantResourceState)newState.Delta(lastAcknoledgedState);
                 //RainMeadow.Trace("Sending delta:\n" + delta.DebugPrint(0));
                 OutgoingStates.Enqueue(player.QueueStateMessage(new OnlineStateMessage(delta, newState, this, true, tick, delta.baseline)));
             }
