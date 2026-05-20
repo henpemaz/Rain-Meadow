@@ -1,3 +1,10 @@
+# Release 1.15.0
+
+## Arena
+- Made Artificer and Gourmand's parry defencer side.
+- Added a MSC setting to change Artificer's parry range.
+- Fixed parried spears not bouncing back on late parries
+
 # Release 1.14.1
 
 ## Engine 
