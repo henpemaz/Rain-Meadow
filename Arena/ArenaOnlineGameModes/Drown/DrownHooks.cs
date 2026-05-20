@@ -61,7 +61,6 @@ namespace RainMeadow
                     return activeCount;
                 }
 
-                // Ensure the Players list is not null before iterating
                 if (self.arenaSitting.players != null)
                 {
                     for (int i = 0; i < self.arenaSitting.players.Count; i++)
