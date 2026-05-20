@@ -71,7 +71,7 @@ namespace RainMeadow.UI.Components
         {
             if (ModManager.MSC)
             {
-                mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
+                mscSettingsTab = new(menu, this, new(0f, 40f), paincatName);
                 AddSettingsTab(mscSettingsTab, MSCSETTINGS);
             }
             if (ModManager.Watcher)
@@ -122,8 +122,8 @@ namespace RainMeadow.UI.Components
             public MenuLabel saintAscendanceTimerLabel;
 
 
-            public OpTextBox artiExplosionTextBox;
-            public MenuLabel artiExplosionLabel;
+            public OpTextBox artiExplosionTextBox, artiParryDistanceTextBox;
+            public MenuLabel artiExplosionLabel, artiParryDistanceLabel;
 
             public RestorableCheckbox blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
             public override string Name => "MSC Settings";
@@ -147,10 +147,26 @@ namespace RainMeadow.UI.Components
                 artiExplosionLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, artiExplosionTextBox);
 
-                blockMaulCheckBox = new(menu, this, this, positioner - spacing * 2, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
-                blockArtiStunCheckBox = new(menu, this, this, positioner - spacing, textSpacing, Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, Translate("Prevent Artificer from stunning other players"));
-                sainotCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
-                saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
+                artiParryDistanceTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArtificerParryDistance.Value), positioner - spacing * 1 + new Vector2(-7.5f, 0), 40)
+                {
+                    alignment = FLabelAlignment.Center,
+                    description = Translate("How many unit Artificer can parry from (300 units in MSC). 20 units is a tile. Default : 150."),
+                    accept = OpTextBox.Accept.Int
+
+                };
+                artiParryDistanceTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.artiParryDistance = artiParryDistanceTextBox.valueInt;
+                };
+                artiParryDistanceLabel = new(menu, this, Translate("Artificer Parry Range"), artiParryDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                artiParryDistanceLabel.label.alignment = FLabelAlignment.Left;
+                new PatchedUIelementWrapper(tabWrapper, artiParryDistanceTextBox);
+
+                blockArtiStunCheckBox = new(menu, this, this, positioner - spacing * 2, textSpacing, Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, Translate("Prevent Artificer from stunning other players"));
+                blockMaulCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
+                sainotCheckBox = new(menu, this, this, positioner - spacing * 4, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
+                saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
                     description = Translate("How long Saint's ascendance ability lasts for. Default: 3s")
@@ -163,10 +179,10 @@ namespace RainMeadow.UI.Components
                 saintAscendanceTimerLabel = new(menu, this, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 saintAscendanceTimerLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
-                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 5, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
-                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 6, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
-                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 7, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
-                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox, artiExplosionLabel);
+                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 6, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
+                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 7, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
+                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 8, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
+                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox, artiExplosionLabel, artiParryDistanceLabel);
                 string Translate(string s) => menu.LongTranslate(s).Replace("<PAINCATNAME>", painCatName);
             }
             public void SyncMenuObjectStatus(MenuObject obj)
@@ -177,6 +193,7 @@ namespace RainMeadow.UI.Components
             public override void SaveInterfaceOptions()
             {
                 MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value = artiExplosionTextBox.valueInt;
+                RainMeadow.rainMeadowOptions.ArtificerParryDistance.Value = artiParryDistanceTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.BlockMaul.Value = blockMaulCheckBox.Checked;
                 RainMeadow.rainMeadowOptions.BlockArtiStun.Value = blockArtiStunCheckBox.Checked;
                 RainMeadow.rainMeadowOptions.ArenaSAINOT.Value = sainotCheckBox.Checked;
@@ -192,6 +209,7 @@ namespace RainMeadow.UI.Components
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
                 arena.artiExplosionCount = artiExplosionTextBox.valueInt;
+                arena.artiParryDistance = artiParryDistanceTextBox.valueInt;
             }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
@@ -219,6 +237,7 @@ namespace RainMeadow.UI.Components
                 {
                     ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
                     ShowSyncInTextbox(artiExplosionTextBox, greyoutAll, arena.artiExplosionCount);
+                    ShowSyncInTextbox(artiParryDistanceTextBox, greyoutAll, arena.artiParryDistance);
                 }
 
             }
@@ -228,6 +247,7 @@ namespace RainMeadow.UI.Components
                 if (IsActuallyHidden) return;
                 saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.rect.colorEdge;
                 artiExplosionLabel.label.color = artiExplosionTextBox.rect.colorEdge;
+                artiParryDistanceLabel.label.color = artiParryDistanceTextBox.rect.colorEdge;
 
             }
             public bool GetChecked(CheckBox box)

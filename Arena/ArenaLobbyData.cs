@@ -159,6 +159,10 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
 
+
+            [OnlineField(group = "arenaSetup")]
+            public int artiParryDistance;
+
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -282,7 +286,7 @@ namespace RainMeadow
                 challengeDenEjection = arena.challengeDenEjection;
 
                 artiExplosionCapacity = arena.artiExplosionCount;
-
+                artiParryDistance = arena.artiParryDistance;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -377,6 +381,7 @@ playerNumberWithTrophiesPerRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
+                (lobby.gameMode as ArenaOnlineGameMode).artiParryDistance = artiParryDistance;
 
             }
 

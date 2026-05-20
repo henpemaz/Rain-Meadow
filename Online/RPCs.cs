@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -28,6 +29,32 @@ namespace RainMeadow
                 game.globalRain.deathRain.progression = 0f;
                 game.globalRain.deathRain.timeInThisMode = timeInThisMode;
                 game.globalRain.deathRain.calmBeforeStormSunlight = calmBeforeStornSunlight;
+            }
+        }
+
+        [RPCMethod]
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, bool silentDeflect)
+        {
+            if (weapon.IsLocked("parry")) return;
+            
+            try
+            {
+                if (weapon.apo.realizedObject is Spear spear)
+                {
+                    if (weapon.isMine) // to act on the owner, but have the sound for everyone
+                    {
+                        realizedWeaponState.ReadTo(weapon);
+                    }
+                    if (!silentDeflect) // artificer's deflect is silent, the parry sound is loud enough
+                    {
+                        spear.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, spear.firstChunk);
+                        spear.vibrate = 20;
+                    }
+                }
+            }
+            finally
+            {
+                // UnityEngine.Random.state = state;
             }
         }
 

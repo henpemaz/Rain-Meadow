@@ -142,6 +142,7 @@ namespace RainMeadow
             .Value;
 
         public int artiExplosionCount = ModManager.MSC ? MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value : 0;
+        public int artiParryDistance = RainMeadow.rainMeadowOptions.ArtificerParryDistance.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
         public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
