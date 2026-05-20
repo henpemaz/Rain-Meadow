@@ -289,7 +289,6 @@ namespace RainMeadow.UI.Components
                 new(leftMargin, topOffset - rowHeight * 9), new(labelWidth, 20f), false);
             arenaSettingsImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            // Copy Settings
             arenaSettingsExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Copy"));
             arenaSettingsExportButton.OnClick += (_) =>
             {
