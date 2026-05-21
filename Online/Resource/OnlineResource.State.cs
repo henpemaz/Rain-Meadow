@@ -127,6 +127,12 @@ namespace RainMeadow
                                     continue;
                                 }
 
+                                if (from != entity.owner)
+                                {
+                                    RainMeadow.Trace($"skipping state from {from}, wanted {entity.owner}");
+                                    continue;
+                                }
+
                                 if (!entity.isMine && !entity.isTransfering)
                                 {
                                     if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider

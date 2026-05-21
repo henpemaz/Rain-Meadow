@@ -232,7 +232,7 @@ namespace RainMeadow
             }
         }
 
-        public override void ReadState(EntityState entityState, OnlineResource inResource, bool initialState = false)
+        public override void ReadState(EntityState entityState, OnlineResource inResource)
         {
             AllMoving(true);
             base.ReadState(entityState, inResource);

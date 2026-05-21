@@ -217,7 +217,7 @@ namespace RainMeadow
             if (!isMine)
             {
                 EnterResource(inResource);
-                ReadState(initialState, inResource, true);
+                ReadState(initialState, inResource);
                 JoinImpl(inResource, initialState);
             }
 
@@ -402,17 +402,11 @@ namespace RainMeadow
 
             return entityState.GetType().IsAssignableFrom(localState.GetType());
         }
-        public virtual void ReadState(EntityState newState, OnlineResource inResource, bool initialState = false)
+        public virtual void ReadState(EntityState newState, OnlineResource inResource)
         {
             if (!joinedResources.Contains(inResource))
             {
                 RainMeadow.Trace($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
-                return;
-            }
-
-            if (newState.from != owner && !initialState)
-            {
-                RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
                 return;
             }
 
