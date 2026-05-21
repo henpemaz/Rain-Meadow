@@ -79,7 +79,7 @@ namespace RainMeadow
                                 // Check if they are physically spawned and in danger
                                 if (absCrit.realizedCreature is Player player)
                                 {
-                                    if (player.DangerPos != null || player.slatedForDeletetion)
+                                    if (player.dangerGrasp != null || player.slatedForDeletetion)
                                     {
                                         isConsideredActiveByVanilla = false;
                                     }

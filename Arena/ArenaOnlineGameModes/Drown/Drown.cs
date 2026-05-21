@@ -1,16 +1,13 @@
 using Menu;
-using Menu.Remix;
-using RainMeadow;
 using RainMeadow.UI.Components;
 using System.Linq;
 using UnityEngine;
-using Menu.Remix.MixedUI;
-using System.Collections.Generic;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using RainMeadow.UI;
 using Drown;
-
+using System;
+using System.Text;
+using System.Collections.Generic;
 namespace RainMeadow
 {
     public partial class DrownMode : ExternalArenaGameMode
@@ -36,12 +33,12 @@ namespace RainMeadow
 
         }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Toggle Spear Hits for teams or FFA"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
-        public static bool isDrownMode(ArenaOnlineGameMode arena, out DrownMode mode)
+        public static bool isDrownMode(ArenaMode arena, out DrownMode mode)
         {
             mode = null;
             if (arena.currentGameMode == Drown.value)
@@ -80,7 +77,7 @@ namespace RainMeadow
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitsOpen(ArenaMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             return openedDen;
 
@@ -92,7 +89,7 @@ namespace RainMeadow
             return false;
         }
 
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionCtor(ArenaMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
             openedDen = false;
@@ -161,7 +158,7 @@ namespace RainMeadow
             return $": {text}: {timerPoints}. Current Wave: {currentWave}. Next wave: {waveTimer}";
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaMode arena)
         {
             return arena.setupTime = 1;
         }
@@ -178,7 +175,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override int TimerDirection(ArenaMode arena, int timer)
         {
             if (!openedDen)
             {
@@ -199,18 +196,18 @@ namespace RainMeadow
         }
 
 
-        public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
+        public override void HUD_InitMultiplayerHud(ArenaMode arena, HUD.HUD self, ArenaGameSession session)
         {
             base.HUD_InitMultiplayerHud(arena, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaMode arena)
         {
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public override string AddIcon(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override string AddIcon(ArenaMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (player != null)
             {
@@ -359,7 +356,7 @@ namespace RainMeadow
 
 
 
-        private void CreatureCleanup(ArenaOnlineGameMode arena, ArenaGameSession session)
+        private void CreatureCleanup(ArenaMode arena, ArenaGameSession session)
         {
             if (RoomSession.map.TryGetValue(session.room.abstractRoom, out var roomSession))
             {
@@ -379,6 +376,98 @@ namespace RainMeadow
                         oe.RemoveEntityFromGame();
                     }
                 }
+            }
+        }
+
+        public override string ExportLocalSettings(ArenaMode arena)
+        {
+            string baseExport = base.ExportLocalSettings(arena);
+            string decodedBase = string.IsNullOrEmpty(baseExport) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(baseExport));
+
+            var pairs = new List<string>
+            {
+                $"bombCost={bombCost}",
+                $"boomerangeCost={boomerangeCost}",
+                $"creatureCleanupWaves={creatureCleanupWaves}",
+                $"denCost={denCost}",
+                $"electricSpearCost={electricSpearCost}",
+                $"maxCreatures={maxCreatures}",
+                $"respCost={respCost}",
+                $"rockCost={rockCost}",
+                $"spearCost={spearCost}",
+                $"spearExplCost={spearExplCost}",
+            };
+
+            string combined = string.Join("|", pairs);
+
+            if (!string.IsNullOrEmpty(decodedBase))
+            {
+                combined = decodedBase + "|" + combined;
+            }
+
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
+        }
+
+        public override bool ImportLocalSettings(ArenaMode arena, string base64Data)
+        {
+            if (string.IsNullOrEmpty(base64Data)) return false;
+            bool success = base.ImportLocalSettings(arena, base64Data);
+            if (!success) return false;
+
+            try
+            {
+                string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
+                string[] pairs = decoded.Split('|');
+
+                foreach (string pair in pairs)
+                {
+                    string[] kvp = pair.Split('=');
+                    if (kvp.Length != 2) continue;
+
+                    string key = kvp[0];
+                    string val = kvp[1];
+
+                    // Sorted alphanumerically
+                    switch (key)
+                    {
+                        case "bombCost":
+                            if (int.TryParse(val, out int i1)) bombCost = i1;
+                            break;
+                        case "boomerangeCost":
+                            if (int.TryParse(val, out int i2)) boomerangeCost = i2;
+                            break;
+                        case "creatureCleanupWaves":
+                            if (int.TryParse(val, out int i3)) creatureCleanupWaves = i3;
+                            break;
+                        case "denCost":
+                            if (int.TryParse(val, out int i4)) denCost = i4;
+                            break;
+                        case "electricSpearCost":
+                            if (int.TryParse(val, out int i5)) electricSpearCost = i5;
+                            break;
+                        case "maxCreatures":
+                            if (int.TryParse(val, out int i6)) maxCreatures = i6;
+                            break;
+                        case "respCost":
+                            if (int.TryParse(val, out int i7)) respCost = i7;
+                            break;
+                        case "rockCost":
+                            if (int.TryParse(val, out int i8)) rockCost = i8;
+                            break;
+                        case "spearCost":
+                            if (int.TryParse(val, out int i9)) spearCost = i9;
+                            break;
+                        case "spearExplCost":
+                            if (int.TryParse(val, out int i10)) spearExplCost = i10;
+                            break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                return false;
             }
         }
 
