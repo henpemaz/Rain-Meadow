@@ -110,6 +110,13 @@ namespace RainMeadow
                     } 
                     
                     onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true));
+                    foreach (OnlinePlayer otherplayer in onlineWeapon.roomSession?.participants ?? [])
+                    {
+                        if (otherplayer is not null && otherplayer != onlineWeapon.owner && !otherplayer.isMe)
+                        {
+                            otherplayer.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false);
+                        }
+                    }
                 });
             }
             catch (Exception e)

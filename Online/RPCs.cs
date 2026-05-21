@@ -41,10 +41,7 @@ namespace RainMeadow
             {
                 if (weapon.apo.realizedObject is Spear spear)
                 {
-                    if (weapon.isMine) // to act on the owner, but have the sound for everyone
-                    {
-                        realizedWeaponState.ReadTo(weapon);
-                    }
+                    realizedWeaponState.ReadTo(weapon);  // actually, let everyone enjoy the spectacle.
                     if (!silentDeflect) // artificer's deflect is silent, the parry sound is loud enough
                     {
                         spear.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, spear.firstChunk);
