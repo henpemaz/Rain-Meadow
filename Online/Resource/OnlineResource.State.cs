@@ -196,7 +196,7 @@ namespace RainMeadow
                         {
                             try
                             {
-                                resource.OnNewRemoteEntity(def, def.initialState);
+                                resource.OnNewRemoteEntity(def);
                             }
                             catch (Exception e)
                             {

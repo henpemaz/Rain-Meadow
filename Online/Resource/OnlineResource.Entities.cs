@@ -42,7 +42,7 @@ namespace RainMeadow
 
             if (isOwner) // I control this, enter right away
             {
-                EntityRegisteredInResource(oe, oe.MakeDefinition(this), null);
+                EntityRegisteredInResource(oe, oe.MakeDefinition(this));
             }
             else if (owner != null && !owner.hasLeft) // request to register
             {
@@ -52,12 +52,12 @@ namespace RainMeadow
 
         // as owner, from other
         [RPCMethod]
-        public void OnEntityRegisterRequest(RPCEvent rpcEvent, OnlineEntity.EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
+        public void OnEntityRegisterRequest(RPCEvent rpcEvent, OnlineEntity.EntityDefinition newEntityEvent)
         {
             RainMeadow.Debug($"{newEntityEvent} : {this}");
             if (isOwner && isActive && !isReleasing)
             {
-                OnNewRemoteEntity(newEntityEvent, initialState);
+                OnNewRemoteEntity(newEntityEvent);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
             else
@@ -71,7 +71,6 @@ namespace RainMeadow
         public void OnRegisterResolve(GenericResult registerResult)
         {
             var nee = ((registerResult.referencedEvent as RPCEvent).args[0]) as OnlineEntity.EntityDefinition;
-            var ini = ((registerResult.referencedEvent as RPCEvent).args[1]) as OnlineEntity.EntityState;
             var oe = nee.entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
@@ -81,7 +80,7 @@ namespace RainMeadow
             {
                 if (isActive)
                 {
-                    EntityRegisteredInResource(oe, nee, ini);
+                    EntityRegisteredInResource(oe, nee);
                 }
             }
             else if (registerResult is GenericResult.Error) // retry
