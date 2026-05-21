@@ -6,7 +6,6 @@ using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
-using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
@@ -42,9 +41,12 @@ namespace RainMeadow.UI.Components
             nextButton;
         public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
         public MenuLabel arenaImportExportLabel;
+        public MenuLabel arenaSettingsImportExportLabel;
+
         public OpSimpleButton arenaPlaylistImportButton;
         public OpSimpleButton arenaPlaylistExportButton;
-
+        public OpSimpleButton arenaSettingsExportButton;
+        public OpSimpleButton arenaSettingsImportButton;
 
 
         public bool AllSettingsDisabled =>
@@ -217,34 +219,35 @@ namespace RainMeadow.UI.Components
             challengeDenEjectionCheckbox.Change();
 
 
+            float btnWidth = 90f; // Cut down from 180f
+            float btnGap = 6f;    // Small spacing between Copy and Import
+
+
             arenaImportExportLabel = new(menu, this, menu.Translate("Playlist:"),
                 new(leftMargin, topOffset - rowHeight * 8), new(labelWidth, 20f), false);
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
+            // Copy Playlist
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Copy"));
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
                 {
-
                     var arenaMenu = menu as ArenaOnlineLobbyMenu;
                     string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
-                    // Copy the code to the user's clipboard
                     GUIUtility.systemCopyBuffer = result;
                     arenaImportExportLabel.text = menu.Translate("Copied");
                     arenaImportExportLabel.label.color = Color.green;
-
                 }
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
                     arenaImportExportLabel.text = menu.Translate("Failed");
                     arenaImportExportLabel.label.color = Color.red;
-
                 }
             };
 
-            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
+            arenaPlaylistImportButton = new(new Vector2(boxMargin + btnWidth + btnGap, topOffset - (rowHeight * 8) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Import"));
             arenaPlaylistImportButton.OnClick += (_) =>
             {
                 try
@@ -269,7 +272,6 @@ namespace RainMeadow.UI.Components
                         }
                         arenaImportExportLabel.text = menu.Translate("Imported");
                         arenaImportExportLabel.label.color = Color.green;
-
                     }
                 }
                 catch (Exception e)
@@ -277,10 +279,65 @@ namespace RainMeadow.UI.Components
                     RainMeadow.Error(e);
                     arenaImportExportLabel.text = menu.Translate("Failed import");
                     arenaImportExportLabel.label.color = Color.red;
-
                 }
             };
 
+
+
+            // Copy Settings
+            arenaSettingsImportExportLabel = new(menu, this, menu.Translate("Settings:"),
+                new(leftMargin, topOffset - rowHeight * 9), new(labelWidth, 20f), false);
+            arenaSettingsImportExportLabel.label.alignment = FLabelAlignment.Left;
+
+            arenaSettingsExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Copy"));
+            arenaSettingsExportButton.OnClick += (_) =>
+            {
+                try
+                {
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string result = ExportLocalSettings();
+                    GUIUtility.systemCopyBuffer = result;
+                    arenaSettingsImportExportLabel.text = menu.Translate("Copied");
+                    arenaSettingsImportExportLabel.label.color = Color.green;
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                    arenaSettingsImportExportLabel.label.color = Color.red;
+                }
+            };
+
+            // Import Settings 
+            arenaSettingsImportButton = new(new Vector2(boxMargin + btnWidth + btnGap, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Import"));
+            arenaSettingsImportButton.OnClick += (_) =>
+            {
+                try
+                {
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string clipboardText = UnityEngine.GUIUtility.systemCopyBuffer;
+
+                    if (!string.IsNullOrEmpty(clipboardText))
+                    {
+                        bool success = ImportLocalSettings(clipboardText);
+                        if (!success)
+                        {
+                            arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                            arenaSettingsImportExportLabel.label.color = Color.red;
+                            return;
+                        }
+
+                        arenaSettingsImportExportLabel.text = menu.Translate("Imported");
+                        arenaSettingsImportExportLabel.label.color = Color.green;
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                    arenaSettingsImportExportLabel.label.color = Color.red;
+                }
+            };
 
 
 
@@ -294,7 +351,8 @@ namespace RainMeadow.UI.Components
                 denScoreLabel,
                 emptyKillTagScoreLabel,
                 challengeDenEjectionLabel,
-                arenaImportExportLabel
+                arenaImportExportLabel,
+                arenaSettingsImportExportLabel
             );
             new PatchedUIelementWrapper(tabWrapper, foodScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, spearHitScoreTextBox);
@@ -306,6 +364,9 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportButton);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistImportButton);
+            new PatchedUIelementWrapper(tabWrapper, arenaSettingsImportButton);
+            new PatchedUIelementWrapper(tabWrapper, arenaSettingsExportButton);
+
 
 
         }
@@ -469,6 +530,22 @@ namespace RainMeadow.UI.Components
             {
                 arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
             }
+
+            if (arenaSettingsImportExportLabel.text != "Settings:")
+            {
+                timeToClearMessage--;
+                if (timeToClearMessage <= 0)
+                {
+                    arenaSettingsImportExportLabel.text = "Settings:";
+                    arenaSettingsImportExportLabel.label.color = Color.white;
+
+                    timeToClearMessage = 120;
+                }
+            }
+            if (arenaSettingsImportButton != null)
+            {
+                arenaSettingsImportButton.greyedOut = OwnerSettingsDisabled;
+            }
         }
 
         /// <summary>
@@ -510,6 +587,106 @@ namespace RainMeadow.UI.Components
             {
                 Debug.LogError("Failed to load playlist: The provided string is not a valid Base64 format.");
                 return new List<string>();
+            }
+        }
+
+        public string ExportLocalSettings()
+        {
+            var pairs = new List<string>
+    {
+        $"aliveScore={arena.aliveScore}",
+        $"allowJoiningMidRound={arena.allowJoiningMidRound}",
+        $"amoebaControl={arena.amoebaControl}",
+        $"amoebaDuration={arena.amoebaDuration}",
+        $"arenaSaintAscendanceTimer={arena.arenaSaintAscendanceTimer}",
+        $"artiExplosionCount={arena.artiExplosionCount}",
+        $"challengeDenEjection={arena.challengeDenEjection}",
+        $"denScore={arena.denScore}",
+        $"disableArtiStun={arena.disableArtiStun}",
+        $"disableMaul={arena.disableMaul}",
+        $"emptyKillTagScore={arena.emptyKillTagScore}",
+        $"enableBees={arena.enableBees}",
+        $"enableBombs={arena.enableBombs}",
+        $"enableCorpseGrab={arena.enableCorpseGrab}",
+        $"enableOverseer={arena.enableOverseer}",
+        $"foodScore={arena.foodScore}",
+        $"friendlyFire={arena.friendlyFire}",
+        $"itemSteal={arena.itemSteal}",
+        $"killScore={arena.killScore}",
+        $"painCatEgg={arena.painCatEgg}",
+        $"painCatLizard={arena.painCatLizard}",
+        $"painCatThrows={arena.painCatThrows}",
+        $"piggyBack={arena.piggyBack}",
+        $"sainot={arena.sainot}",
+        $"setupTime={arena.setupTime}",
+        $"spearHitScore={arena.spearHitScore}",
+        $"voidMasterEnabled={arena.voidMasterEnabled}",
+        $"watcherCamoTimer={arena.watcherCamoTimer}",
+        $"watcherRippleLevel={arena.watcherRippleLevel}",
+        $"weaponCollisionFix={arena.weaponCollisionFix}",
+    };
+
+            string combined = string.Join("|", pairs);
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
+        }
+
+        public bool ImportLocalSettings(string base64Data)
+        {
+            if (string.IsNullOrEmpty(base64Data)) return false;
+
+            try
+            {
+                string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
+                string[] pairs = decoded.Split('|');
+
+                foreach (string pair in pairs)
+                {
+                    string[] kvp = pair.Split('=');
+                    if (kvp.Length != 2) continue;
+
+                    string key = kvp[0];
+                    string val = kvp[1];
+
+                    switch (key)
+                    {
+                        case "aliveScore": if (int.TryParse(val, out int i1)) arena.aliveScore = i1; break;
+                        case "allowJoiningMidRound": if (bool.TryParse(val, out bool b1)) arena.allowJoiningMidRound = b1; break;
+                        case "amoebaControl": if (bool.TryParse(val, out bool b2)) arena.amoebaControl = b2; break;
+                        case "amoebaDuration": if (int.TryParse(val, out int i2)) arena.amoebaDuration = i2; break;
+                        case "arenaSaintAscendanceTimer": if (int.TryParse(val, out int i3)) arena.arenaSaintAscendanceTimer = i3; break;
+                        case "artiExplosionCount": if (int.TryParse(val, out int i4)) arena.artiExplosionCount = i4; break;
+                        case "challengeDenEjection": if (bool.TryParse(val, out bool b3)) arena.challengeDenEjection = b3; break;
+                        case "denScore": if (int.TryParse(val, out int i5)) arena.denScore = i5; break;
+                        case "disableArtiStun": if (bool.TryParse(val, out bool b4)) arena.disableArtiStun = b4; break;
+                        case "disableMaul": if (bool.TryParse(val, out bool b5)) arena.disableMaul = b5; break;
+                        case "emptyKillTagScore": if (int.TryParse(val, out int i6)) arena.emptyKillTagScore = i6; break;
+                        case "enableBees": if (bool.TryParse(val, out bool b6)) arena.enableBees = b6; break;
+                        case "enableBombs": if (bool.TryParse(val, out bool b7)) arena.enableBombs = b7; break;
+                        case "enableCorpseGrab": if (bool.TryParse(val, out bool b8)) arena.enableCorpseGrab = b8; break;
+                        case "enableOverseer": if (bool.TryParse(val, out bool b9)) arena.enableOverseer = b9; break;
+                        case "foodScore": if (int.TryParse(val, out int i7)) arena.foodScore = i7; break;
+                        case "friendlyFire": if (bool.TryParse(val, out bool b10)) arena.friendlyFire = b10; break;
+                        case "itemSteal": if (bool.TryParse(val, out bool b11)) arena.itemSteal = b11; break;
+                        case "killScore": if (int.TryParse(val, out int i8)) arena.killScore = i8; break;
+                        case "painCatEgg": if (bool.TryParse(val, out bool b12)) arena.painCatEgg = b12; break;
+                        case "painCatLizard": if (bool.TryParse(val, out bool b13)) arena.painCatLizard = b13; break;
+                        case "painCatThrows": if (bool.TryParse(val, out bool b14)) arena.painCatThrows = b14; break;
+                        case "piggyBack": if (bool.TryParse(val, out bool b15)) arena.piggyBack = b15; break;
+                        case "sainot": if (bool.TryParse(val, out bool b16)) arena.sainot = b16; break;
+                        case "setupTime": if (int.TryParse(val, out int i9)) arena.setupTime = i9; break;
+                        case "spearHitScore": if (int.TryParse(val, out int i10)) arena.spearHitScore = i10; break;
+                        case "voidMasterEnabled": if (bool.TryParse(val, out bool b17)) arena.voidMasterEnabled = b17; break;
+                        case "watcherCamoTimer": if (int.TryParse(val, out int i11)) arena.watcherCamoTimer = i11; break;
+                        case "watcherRippleLevel": if (int.TryParse(val, out int i12)) arena.watcherRippleLevel = i12; break;
+                        case "weaponCollisionFix": if (bool.TryParse(val, out bool b18)) arena.weaponCollisionFix = b18; break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                return false;
             }
         }
     }

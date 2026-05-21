@@ -184,6 +184,7 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
+            DrownHooks();
         }
 
         public void PlayerSpecificOnlineHud_Update(ILContext il)
@@ -986,7 +987,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl, false);
                     }
                     arena.ReadFromStats(player, pl);
                 }

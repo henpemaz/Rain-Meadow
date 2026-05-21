@@ -166,7 +166,28 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner)) return;
+            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
+            {
+                // time for punishment
+                int badTeammateNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, absPlayerCreature.owner);
+                int newScore = self.arenaSitting.players[badTeammateNumber].score - arena.killScore; // -2
+                ArenaRPCs.UpdatePlayerScore(badTeammateNumber, newScore);
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber);
+                    if (onlinePlayer == null) continue;
+
+                    if (onlineKilledCreature.owner == onlinePlayer)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, badTeammateNumber, newScore);
+                    }
+                }
+                return;
+            }
 
 
             ushort lobbyId = absPlayerCreature.owner.inLobbyId;
@@ -214,12 +235,12 @@ namespace RainMeadow
             int scoreToAdd = arena.killScore;
             if (killedCrit.Template.type != CreatureTemplate.Type.Slugcat)
             {
-                if (self.arenaSitting.gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+                if (self.arenaSitting.gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && arena.externalArenaGameMode is FFA or TeamBattleMode)
                 {
                     scoreToAdd = 0; // creature got in somehow
                 }
             }
-            if (arena.externalArenaGameMode is ArenaChallengeMode)
+            if (arena.externalArenaGameMode is ArenaChallengeMode || arena.killScore == 0)
             {
                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
@@ -227,14 +248,14 @@ namespace RainMeadow
 
             // this is set locally because we return if the victim is not ours, so we need to notify everyone of this update
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
-            if (isLobbyOwner) // host creature was killed
+            if (onlineKilledCreature.owner == OnlineManager.lobby.owner) // host creature was killed
             {
                 arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                onlineKilledCreature.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
             }
             else // my creature, not host - tell the room
             {
-                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, self.arenaSitting.players[targetPlayerNumber].score);
             }
 
             // 7.
@@ -314,11 +335,11 @@ namespace RainMeadow
                 {
                     arena.playerNumberWithScore[onlinePlayer.inLobbyId] = aPlayer.score;
                 }
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
             }
             else
             {
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.UpdatePlayerScore, aPlayer.playerNumber, aPlayer.score);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, aPlayer.score);
             }
         }
 
@@ -985,7 +1006,7 @@ namespace RainMeadow
                     arena.ResetPlayerStats(arenaPlayer);
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                        arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
                     }
                     arena.ReadFromStats(arenaPlayer, onlinePlayer);
                     continue;
@@ -1032,7 +1053,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer);
+                    arena.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
                 }
                 arena.ReadFromStats(arenaPlayer, onlinePlayer);
             }
@@ -1124,7 +1145,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl);
+                    arena.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl, true);
                 }
             }
 
