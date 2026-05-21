@@ -14,7 +14,7 @@
                 this.originallyDead = onlineSeedCob.AbstractSeedCob.dead;
             }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineSeedCob(this, inResource, (OnlineSeedCobState)initialState);
             }

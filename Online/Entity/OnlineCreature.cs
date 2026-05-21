@@ -85,7 +85,7 @@ namespace RainMeadow
                     );
             }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineCreature(this, inResource, (AbstractCreatureState)initialState);
             }

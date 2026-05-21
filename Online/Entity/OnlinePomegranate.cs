@@ -59,7 +59,7 @@ namespace RainMeadow
             originallyDisconnected = onlinePomegranate.AbstractPomegranate.disconnected;
             originallyStabbed = onlinePomegranate.AbstractPomegranate.spearmasterStabbed;
         }
-        public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
+        public override OnlineEntity MakeEntity(OnlineResource inResource)
         {
             return new OnlinePomegranate(this, inResource, (OnlinePomegranateState)initialState);
         }

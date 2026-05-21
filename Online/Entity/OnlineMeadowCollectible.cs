@@ -10,7 +10,7 @@ namespace RainMeadow
 
             public Definition(OnlineMeadowCollectible onlineMeadowCollectible, OnlineResource inResource) : base(onlineMeadowCollectible, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineMeadowCollectible(this, inResource, (MeadowCollectibleState)initialState);
             }

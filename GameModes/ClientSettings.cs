@@ -10,7 +10,7 @@ namespace RainMeadow
             public Definition() : base() { }
             public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new ClientSettings(this, inResource, initialState);
             }

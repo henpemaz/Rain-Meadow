@@ -26,7 +26,7 @@ namespace RainMeadow
                 return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}", base.MakeSerializedObjectNoExtras(initialState), originRoom, placedObjectIndex);
             }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineConsumable(this, inResource, (OnlineConsumableState)initialState);
             }

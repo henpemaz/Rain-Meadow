@@ -23,7 +23,7 @@
                 this.needle = onlineSpear.AbstractSpear.needle;
             }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineSpear(this, inResource, (OnlineSpearState)initialState);
             }

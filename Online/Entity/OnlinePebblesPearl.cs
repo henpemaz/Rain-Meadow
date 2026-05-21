@@ -18,7 +18,7 @@
                 this.originalNumber = (short)onlinePebblesPearl.AbstractPebblesPearl.number;
             }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlinePebblesPearl(this, inResource, (OnlineConsumableState)initialState);
             }

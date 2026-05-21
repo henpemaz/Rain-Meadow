@@ -8,7 +8,7 @@
 
             public OnlineSporePlantDefinition(OnlineSporePlant onlineSporePlant, OnlineResource inResource) : base(onlineSporePlant, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineSporePlant(this, inResource, (OnlineSporePlantState)initialState);
             }

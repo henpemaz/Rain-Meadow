@@ -92,7 +92,7 @@ namespace RainMeadow
         }
 
         // recreate from event
-        public void OnNewRemoteEntity(OnlineEntity.EntityDefinition entityDefinition, OnlineEntity.EntityState initialState)
+        public void OnNewRemoteEntity(OnlineEntity.EntityDefinition entityDefinition)
         {
             if (OnlineManager.lobby.PlayerFromId(entityDefinition.owner) == null)
             {
@@ -103,7 +103,7 @@ namespace RainMeadow
             OnlineEntity oe = null;
             try
             {
-                oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
+                oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this);
             }
             catch (Exception e)
             {
@@ -117,7 +117,7 @@ namespace RainMeadow
             {
                     RainMeadow.Error($"ID {oe.id} is already taken. Purging old {oe.GetType().Name} for new");
                     // Try again
-                    oe = entityDefinition.MakeEntity(this, initialState);
+                    oe = entityDefinition.MakeEntity(this);
                     return;
             }
 
@@ -133,15 +133,15 @@ namespace RainMeadow
                 oe.everRegistered = true;
                 OnlineManager.lobby.gameMode.NewEntity(oe, this);
             }
-            EntityRegisteredInResource(oe, entityDefinition, initialState);
+            EntityRegisteredInResource(oe, entityDefinition);
         }
 
         // registering new entity
-        private void EntityRegisteredInResource(OnlineEntity oe, OnlineEntity.EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
+        private void EntityRegisteredInResource(OnlineEntity oe, OnlineEntity.EntityDefinition newEntityEvent)
         {
             RainMeadow.Debug($"{oe} : {this}");
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
-            EntityJoinedResource(oe, initialState);
+            EntityJoinedResource(oe, newEntityEvent.initialState);
         }
 
 

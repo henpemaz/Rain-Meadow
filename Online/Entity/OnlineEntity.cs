@@ -37,7 +37,7 @@ namespace RainMeadow
                 this.initialState = entity.GetState(entity.owner.tick, inResource);
             }
 
-            public abstract OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState);
+            public abstract OnlineEntity MakeEntity(OnlineResource inResource);
 
             public OnlineEntity.EntityId ID => entityId;
 

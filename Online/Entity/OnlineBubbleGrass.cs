@@ -9,7 +9,7 @@ namespace RainMeadow
 
             public OnlineBubbleGrassDefinition(OnlineConsumable onlineConsumable, OnlineResource inResource) : base(onlineConsumable, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
                 return new OnlineBubbleGrass(this, inResource, (OnlineBubbleGrassState)initialState);
             }
