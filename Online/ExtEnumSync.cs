@@ -132,10 +132,11 @@ public abstract class CompressedExtEnumBase
     internal string[] storedCompressedValues = [];
     internal byte clarificationAttempt = 0;
     internal const byte Patience = 3; // max clarification attempt
+    public bool IsLongTable => entriesMap.Count >= byte.MaxValue + 1; // TODO : maybe add something to allow 256+ items enums to be synced ?
 
     // Compress the entries into whatever shape you find best
     public abstract string[] GetCompressedEntries();
-    // Decompress it and give the result of the decompression. Be sure to add an exception if you find the exact wording (so it doesn't count as an ambiguity or a miss)
+    // Decompress it and give the result of the decompression. Use ProcessCompression for a standarized process
     public abstract DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries);
 
     internal void LogMappedExtEnum()
@@ -207,20 +208,95 @@ public abstract class CompressedExtEnumBase
         }        
     }
     
-    public class DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum) : Serializer.ICustomSerializable
+    /* 
+        Match compressed strings and returns the decompression result. 
+        "matchingAlgorithm" and "ambiguousAlgorithm" both take a candidate (a string that may bethe value) and a compressed value. They return true if it match.
+        "matchingAlgorithm" should match any string that could be compressed into the string given as second argument.
+        "ambiguousAlgorithm" should be able to get ONE result from a bunch of candidate from "matchingAlgorithm". Mainly used from edge case or exact matching.
+        This function can recognize exact match found by "matchingAlgorithm".
+    */
+    protected DecompressionResult ProcessCompression(string[] compressedEntries, Func<string, string, bool> matchingAlgorithm, Func<string, string, bool>? ambiguousAlgorithm = null)
     {
-        public DecompressionResult() : this([], new ExtEnumEntry[0]) {}
-        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum) 
-            : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray()) {}
+        List<string> oldEntries = this.entriesMap.Keys.ToList();
+        List<ExtEnumEntry> missingExtEnum = [], ambiguousExtEnum = [], additionnalEnum = [];
+        Dictionary<string, int> newEntries = [];
 
+        for (int i = 0; i < compressedEntries.Length; i++)
+        {
+            List<string> search = oldEntries.FindAll(x => matchingAlgorithm(x, compressedEntries[i]));
+            if (search.Count == 1)
+            {
+                newEntries.Add(search[0], i);
+            }
+            else if (search.Count == 0)
+            {
+                RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
+                missingExtEnum.Add(new(compressedEntries[i], i));
+            }
+            else
+            {
+                int exactFindIndex = search.FindIndex(x => x  == compressedEntries[i]);
+                if (exactFindIndex > -1)
+                {
+                    newEntries.Add(search[exactFindIndex], i);
+                }
+                else
+                {   
+                    int compressedExactFindIndex = ambiguousAlgorithm is not null ? search.FindIndex(x => ambiguousAlgorithm(x, compressedEntries[i])) : -1;
+                    if (compressedExactFindIndex > -1)
+                    {
+                        newEntries.Add(search[exactFindIndex], i);
+                    }
+                    else
+                    {
+                        RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}");
+                        ambiguousExtEnum.Add(new(compressedEntries[i], i));
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < oldEntries.Count; i++)
+        {
+            if (!newEntries.Keys.Contains(oldEntries[i]))
+            {
+                RainMeadow.Debug($"Found additionnal enum of {enumType.FullName} : {oldEntries[i]}. Assigning it place {newEntries.Count}.");
+                additionnalEnum.Add(new(oldEntries[i], newEntries.Count));
+                newEntries.Add(oldEntries[i], newEntries.Count);
+            }
+        }
+
+        DecompressionResult result = new(missingExtEnum, ambiguousExtEnum, additionnalEnum, enumType.FullName);
+        if (result.IsOK) { this.entriesMap = newEntries; }
+        return result;
+    }
+
+    public class DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, ExtEnumEntry[] additionnalExtEnum, string typeFullName = "") : Serializer.ICustomSerializable
+    {
+        public DecompressionResult()
+             : this([], new ExtEnumEntry[0]) {}
+        public DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, string typeFullName = "")
+             : this(missingExtEnum, ambiguousExtEnum, [], typeFullName) {}
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, List<ExtEnumEntry> additionnalExtEnum, string typeFullName = "") 
+            : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), additionnalExtEnum.ToArray(), typeFullName) {}
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, string typeFullName = "") 
+            : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), typeFullName) {}
+
+        // This part need to be synced for clarification
+        public string TypeFullName = typeFullName;
         private byte MissingExtEnumSize = (byte)missingExtEnum.Length;
         public ExtEnumEntry[] MissingExtEnum { get; private set; } = missingExtEnum;
         private byte AmbiguousExtEnumSize = (byte)ambiguousExtEnum.Length;
         public ExtEnumEntry[] AmbiguousExtEnum { get; private set; } = ambiguousExtEnum;
+        
+        // This part doesn't need to be synced at all
+        public ExtEnumEntry[] AdditionnalExtEnum { get; private set; } = additionnalExtEnum;
+
         public bool IsOK { get; private set; } = missingExtEnum.Length == 0 && ambiguousExtEnum.Length == 0;
 
         public void CustomSerialize(Serializer serializer)
         {
+            serializer.Serialize(ref this.TypeFullName);
             if (serializer.IsWriting)
             {  
                 serializer.Serialize(ref this.MissingExtEnumSize);
@@ -332,47 +408,8 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
     }
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        List<string> oldEntries = this.entriesMap.Keys.ToList();
-        List<ExtEnumEntry> missingExtEnum = [], ambiguousExtEnum = [];
-        Dictionary<string, int> newEntries = [];
-        for (int i = 0; i < compressedEntries.Length; i++)
-        {
-            List<string> search = oldEntries.FindAll(x => DoesStringMatchCompressed(x, compressedEntries[i]));
-            if (search.Count == 1)
-            {
-                newEntries.Add(search[0], i);
-            }
-            else if (search.Count == 0)
-            {
-                RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
-                missingExtEnum.Add(new(compressedEntries[i], i));
-            }
-            else
-            {
-                int exactFindIndex = search.FindIndex(x => x  == compressedEntries[i]);
-                if (exactFindIndex == -1)
-                {
-                    RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}");
-                    ambiguousExtEnum.Add(new(compressedEntries[i], i));
-                }
-                else
-                {
-                    newEntries.Add(search[exactFindIndex], i);
-                }
-            }
-        }
-
-        for (int i = 0; i < oldEntries.Count; i++)
-        {
-            if (!newEntries.Keys.Contains(oldEntries[i]))
-            {
-                newEntries.Add(oldEntries[i], newEntries.Count);
-            }
-        }
-
-        DecompressionResult result = new(missingExtEnum, ambiguousExtEnum);
-        if (result.IsOK) { this.entriesMap = newEntries; }
-        return result;
+        return ProcessCompression(compressedEntries, 
+            (x,y) => DoesStringMatchCompressed(x, y));
     }
 }
 // compress by sorting by size, put it as a char at the start and then removing the extra letters needed to guess the enum
@@ -441,56 +478,9 @@ public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtE
 
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        List<string> oldEntries = this.entriesMap.Keys.ToList();
-        List<ExtEnumEntry> missingExtEnum = [], ambiguousExtEnum = [];
-        Dictionary<string, int> newEntries = [];
-
-        for (int i = 0; i < compressedEntries.Length; i++)
-        {
-            List<string> search = oldEntries.FindAll(x => DoesStringMatchCompressed(x, compressedEntries[i]));
-            if (search.Count == 1)
-            {
-                newEntries.Add(search[0], i);
-            }
-            else if (search.Count == 0)
-            {
-                RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
-                missingExtEnum.Add(new(compressedEntries[i], i));
-            }
-            else
-            {
-                int exactFindIndex = search.FindIndex(x => x  == compressedEntries[i]);
-                if (exactFindIndex > -1)
-                {
-                    newEntries.Add(search[exactFindIndex], i);
-                }
-                else
-                {
-                    int compressedExactFindIndex = search.FindIndex(x => x  == compressedEntries[i].Substring(1));
-                    if (compressedExactFindIndex > -1)
-                    {
-                        newEntries.Add(search[exactFindIndex], i);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}");
-                        ambiguousExtEnum.Add(new(compressedEntries[i], i));
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < oldEntries.Count; i++)
-        {
-            if (!newEntries.Keys.Contains(oldEntries[i]))
-            {
-                newEntries.Add(oldEntries[i], newEntries.Count);
-            }
-        }
-
-        DecompressionResult result = new(missingExtEnum, ambiguousExtEnum);
-        if (result.IsOK) { this.entriesMap = newEntries; }
-        return result;
+        return ProcessCompression(compressedEntries, 
+            (x,y) => DoesStringMatchCompressed(x, y), 
+            (x,y) => x == y.Substring(1));
     }
 }
 
@@ -617,56 +607,9 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
     }
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        List<string> oldEntries = this.entriesMap.Keys.ToList();
-        List<ExtEnumEntry> missingExtEnum = [], ambiguousExtEnum = [];
-        Dictionary<string, int> newEntries = [];
-
-        for (int i = 0; i < compressedEntries.Length; i++)
-        {
-            List<string> search = oldEntries.FindAll(x => DoesStringMatchCompressed(x, compressedEntries[i], separator));
-            if (search.Count == 1)
-            {
-                newEntries.Add(search[0], i);
-            }
-            else if (search.Count == 0)
-            {
-                RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
-                missingExtEnum.Add(new(compressedEntries[i], i));
-            }
-            else
-            {
-                int exactFindIndex = search.FindIndex(x => x  == compressedEntries[i]);
-                if (exactFindIndex > -1)
-                {
-                    newEntries.Add(search[exactFindIndex], i);
-                }
-                else
-                {
-                    int compressedExactFindIndex = search.FindIndex(x => x.Split(separator).Last() == compressedEntries[i].Split(separator).Last().Substring(1));
-                    if (compressedExactFindIndex > -1)
-                    {
-                        newEntries.Add(search[exactFindIndex], i);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}");
-                        ambiguousExtEnum.Add(new(compressedEntries[i], i));
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < oldEntries.Count; i++)
-        {
-            if (!newEntries.Keys.Contains(oldEntries[i]))
-            {
-                newEntries.Add(oldEntries[i], newEntries.Count);
-            }
-        }
-
-        DecompressionResult result = new(missingExtEnum, ambiguousExtEnum);
-        if (result.IsOK) { this.entriesMap = newEntries; }
-        return result;
+        return ProcessCompression(compressedEntries, 
+            (x,y) => DoesStringMatchCompressed(x, y, separator), 
+            (x,y) => x.Split(separator).Last() == y.Split(separator).Last().Substring(1));
     }
 }
 
@@ -703,7 +646,7 @@ public static class MeadowExtEnumSync
     // --------------------- Methods and Attributes
 
     // I don't want to assume that the order of SyncedExtEnumList is the same. I'll leave it public if some mods want to sync more enums here.
-    // Also, having it static initialized is no biggies ! We take back the values later.
+    // Also, having it static initialized is no biggies ! We'll assign the values later.
     public static List<CompressedExtEnumBase> SyncedExtEnumList = new()
     {
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Name)),
@@ -756,31 +699,6 @@ public static class MeadowExtEnumSync
         return entry is null ? ExtEnum<T>.values.GetEntry(index) : entry;
     }
 
-    // TODO : find a better place for this
-    public static bool IsDictionary(this Type type, out Type? dictInterface)
-    {
-        dictInterface = null;
-
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
-        {
-            dictInterface = type;
-            return true;
-        }
-        else
-        {
-            foreach (var i in type.GetInterfaces())
-            {
-                if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>))
-                {
-                    dictInterface = i;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     // --------------------- Tests and logs
     
     internal static void LogTestCompression()
@@ -814,6 +732,9 @@ public static class MeadowExtEnumSync
     public static void SendToSyncCompressedExtEnums(RPCEvent rpc, Dictionary<string, string> compressedExtEnumTable)
     {
         if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner) { return; }
+
+        List<CompressedExtEnumBase.DecompressionResult> clarificationTable = [];
+
         foreach (var compressedExtEnumKeyPair in compressedExtEnumTable)
         {
             int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == compressedExtEnumKeyPair.Key);
@@ -828,79 +749,101 @@ public static class MeadowExtEnumSync
                 {
                     SyncedExtEnumList[i].storedCompressedValues = compressedExtEnum;
                     SyncedExtEnumList[i].clarificationAttempt = 0;
-                    rpc.from.InvokeRPC(AskFromClarification, compressedExtEnumKeyPair.Key, result);
+                    clarificationTable.Add(result);
                 }
             }
         }
-    }
-    [RPCMethod] 
-    public static void AskFromClarification(RPCEvent rpc, string extEnumName, CompressedExtEnumBase.DecompressionResult resultErrors)
-    {
-        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner || resultErrors.IsOK) { return; }
-        int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == extEnumName);
-        if (i > -1)
-        {
-            ExtEnumEntry[] clarifiedMissingExtEnum = new ExtEnumEntry[resultErrors.MissingExtEnum.Length];
-            ExtEnumEntry[] clarifiedAmbiguousExtEnum = new ExtEnumEntry[resultErrors.AmbiguousExtEnum.Length];
 
-            // there we can directly assume that the index matches, since... you were the one sending it a few ticks ago
-            for (int j = 0; j < resultErrors.MissingExtEnum.Length; j++)
-            {
-                clarifiedMissingExtEnum[j] = new(
-                    SyncedExtEnumList[i].entriesMap[resultErrors.MissingExtEnum[j].value], 
-                    resultErrors.MissingExtEnum[j].value
-                );
-            }
-            for (int j = 0; j < resultErrors.AmbiguousExtEnum.Length; j++)
-            {
-                clarifiedAmbiguousExtEnum[j] = new(
-                    SyncedExtEnumList[i].entriesMap[resultErrors.AmbiguousExtEnum[j].value], 
-                    resultErrors.AmbiguousExtEnum[j].value
-                );
-            }            
-            
-            CompressedExtEnumBase.DecompressionResult result = new(clarifiedMissingExtEnum, clarifiedAmbiguousExtEnum);
-            rpc.from.InvokeRPC(SendToSyncClarification, extEnumName, result);
+        if (clarificationTable.Count > 0)
+        {
+            rpc.from.InvokeRPC(AskFromClarification, clarificationTable);
         }
     }
     [RPCMethod] 
-    public static void SendToSyncClarification(RPCEvent rpc, string extEnumName, CompressedExtEnumBase.DecompressionResult resultClarification)
+    public static void AskFromClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> clarificationTable)
+    {
+        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) { return; }
+
+        List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable = [];
+
+        foreach (var unclearTab in clarificationTable)
+        {
+            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == unclearTab.TypeFullName);
+            if (i > -1)
+            {
+                CompressedExtEnumBase.DecompressionResult resultErrors = unclearTab;
+                ExtEnumEntry[] clarifiedMissingExtEnum = new ExtEnumEntry[resultErrors.MissingExtEnum.Length];
+                ExtEnumEntry[] clarifiedAmbiguousExtEnum = new ExtEnumEntry[resultErrors.AmbiguousExtEnum.Length];
+
+                // there we can directly assume that the index matches, since... you were the one sending it a few ticks ago
+                for (int j = 0; j < resultErrors.MissingExtEnum.Length; j++)
+                {
+                    clarifiedMissingExtEnum[j] = new(
+                        SyncedExtEnumList[i].entriesMap[resultErrors.MissingExtEnum[j].value], 
+                        resultErrors.MissingExtEnum[j].value
+                    );
+                }
+                for (int j = 0; j < resultErrors.AmbiguousExtEnum.Length; j++)
+                {
+                    clarifiedAmbiguousExtEnum[j] = new(
+                        SyncedExtEnumList[i].entriesMap[resultErrors.AmbiguousExtEnum[j].value], 
+                        resultErrors.AmbiguousExtEnum[j].value
+                    );
+                }            
+                
+                CompressedExtEnumBase.DecompressionResult result = new(clarifiedMissingExtEnum, clarifiedAmbiguousExtEnum);
+                thingsThatShoubldBeClearerTable.Add(result);
+            }
+        }
+        rpc.from.InvokeRPC(SendToSyncClarification, thingsThatShoubldBeClearerTable);
+        
+    }
+    [RPCMethod] 
+    public static void SendToSyncClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable)
     {
         if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner) { return; }
-        int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == extEnumName);
-        if (i > -1)
-        {
-            if (SyncedExtEnumList[i].storedCompressedValues.Length == 0) { return; } // you never asked for clarification, cmon, you know what you were doing !
-            
-            for (int j = 0; j < resultClarification.MissingExtEnum.Length; j++)
-            {
-                // This is technically creating enums if some are missings ? That's such a rare case, I don't think it'd cause error anyway.
-                SyncedExtEnumList[i].entriesMap.Add(resultClarification.MissingExtEnum[j].value, SyncedExtEnumList[i].entriesMap.Count);
-            }
-            for (int j = 0; j < resultClarification.AmbiguousExtEnum.Length; j++)
-            {
-                // Putting the exact value so it's more clear :D
-                SyncedExtEnumList[i].storedCompressedValues[resultClarification.AmbiguousExtEnum[j].position] = resultClarification.AmbiguousExtEnum[j].value;
-            }
+        List<CompressedExtEnumBase.DecompressionResult> reclarificationTable = [];
 
-            CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(SyncedExtEnumList[i].storedCompressedValues);
-            RainMeadow.Debug($"Read and Synced ExtEnum {extEnumName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Status OK ? {result.IsOK}");
-            if (!result.IsOK)
+        foreach (var clearTab in thingsThatShoubldBeClearerTable)
+        {
+            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == clearTab.TypeFullName);
+            if (i > -1)
             {
-                // We don't want this to run indefinetly !
-                SyncedExtEnumList[i].clarificationAttempt++;
-                if (SyncedExtEnumList[i].clarificationAttempt >= CompressedExtEnumBase.Patience)
+                CompressedExtEnumBase.DecompressionResult resultClarification = clearTab;
+                if (SyncedExtEnumList[i].storedCompressedValues.Length == 0) { return; } // you never asked for clarification, cmon, you know what you were doing !
+                
+                for (int j = 0; j < resultClarification.MissingExtEnum.Length; j++)
                 {
-                    RainMeadow.Error($"Tried to clarify {extEnumName} more than {CompressedExtEnumBase.Patience} times ! Not syncing enum.");
+                    // This is technically creating enums if some are missings ? That's such a rare case, I don't think it'd cause error anyway.
+                    SyncedExtEnumList[i].entriesMap.Add(resultClarification.MissingExtEnum[j].value, SyncedExtEnumList[i].entriesMap.Count);
                 }
-                else
+                for (int j = 0; j < resultClarification.AmbiguousExtEnum.Length; j++)
                 {
-                    rpc.from.InvokeRPC(AskFromClarification, extEnumName, result);
-                    return;
+                    // Putting the exact value so it's more clear :D
+                    SyncedExtEnumList[i].storedCompressedValues[resultClarification.AmbiguousExtEnum[j].position] = resultClarification.AmbiguousExtEnum[j].value;
                 }
+
+                CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(SyncedExtEnumList[i].storedCompressedValues);
+                RainMeadow.Debug($"Read and Synced ExtEnum {clearTab.TypeFullName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Status OK ? {result.IsOK}");
+                if (!result.IsOK)
+                {
+                    // We don't want this to run indefinetly !
+                    SyncedExtEnumList[i].clarificationAttempt++;
+                    if (SyncedExtEnumList[i].clarificationAttempt >= CompressedExtEnumBase.Patience)
+                    {
+                        RainMeadow.Error($"Tried to clarify {clearTab.TypeFullName} more than {CompressedExtEnumBase.Patience} times ! Not syncing enum.");
+                    }
+                    else
+                    {
+                        reclarificationTable.Add(result);
+                        continue;
+                    }
+                }
+                SyncedExtEnumList[i].storedCompressedValues = [];
             }
-            SyncedExtEnumList[i].storedCompressedValues = [];
         }
+
+        rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
     }
 
 }
