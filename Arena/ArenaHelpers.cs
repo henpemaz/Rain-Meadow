@@ -290,14 +290,15 @@ namespace RainMeadow
                 RainMeadow.Error("Lobby is null!");
                 return null;
             }
-            if (player == null)
-                return null;
-            return OnlineManager.lobby.clientSettings.TryGetValue(
-                player,
-                out ClientSettings settings
-            )
-                ? settings.GetData<T>()
-                : null;
+
+            if (player == null) return null;
+            
+            if (OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) && settings.TryGetData<T>(out T data))
+            {
+                return data;
+            }
+
+            return null;
         }
 
         public static void ParseArenaSetupSaveString(string text, Action<string[]> action)

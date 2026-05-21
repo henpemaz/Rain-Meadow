@@ -21,6 +21,9 @@ namespace RainMeadow
             [OnlineField]
             public ushort version;
 
+            [OnlineField(polymorphic: true)]
+            public EntityState initialState;
+
             public bool failedToSpawn; // tracked locally
 
             public EntityDefinition() : base() { }
@@ -31,6 +34,7 @@ namespace RainMeadow
                 this.owner = entity.owner.inLobbyId;
                 this.isTransferable = entity.isTransferable;
                 this.version = entity.version;
+                this.initialState = entity.GetState(entity.owner.tick, inResource);
             }
 
             public abstract OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState);
@@ -213,7 +217,7 @@ namespace RainMeadow
             if (!isMine)
             {
                 EnterResource(inResource);
-                ReadState(initialState, inResource);
+                ReadState(initialState, inResource, true);
                 JoinImpl(inResource, initialState);
             }
 
@@ -398,7 +402,7 @@ namespace RainMeadow
 
             return entityState.GetType().IsAssignableFrom(localState.GetType());
         }
-        public virtual void ReadState(EntityState newState, OnlineResource inResource)
+        public virtual void ReadState(EntityState newState, OnlineResource inResource, bool initialState = false)
         {
             if (!joinedResources.Contains(inResource))
             {
@@ -406,7 +410,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (newState.from != owner)
+            if (newState.from != owner && !initialState)
             {
                 RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
                 return;

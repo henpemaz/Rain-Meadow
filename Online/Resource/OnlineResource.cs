@@ -141,14 +141,14 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            if (latestState != null && !isOwner) // re-read since now resources are enumerated
+            if (latestResourceState != null && !isOwner) // re-read since now resources are enumerated
             {
-                if (latestState is ResourceWithSubresourcesState withSubresources && withSubresources.subleaseState.list.Count != subresources.Count)
+                if (latestResourceState is ResourceWithSubresourcesState withSubresources && withSubresources.subleaseState.list.Count != subresources.Count)
                 {
                     OnlineManager.QuitWithError("subresources missmatch");
                     return;
                 }
-                latestState.ReadTo(this);
+                latestResourceState.ReadTo(this);
 
                 // sanitize subresources
                 for (int i = 0; i < subresources.Count; i++)
@@ -199,7 +199,7 @@ namespace RainMeadow
 
             ClearIncommingBuffers();
             OnlineManager.RemoveSubscriptions(this);
-            latestState = null;
+            latestResourceState = null;
 
             super.SubresourcesUnloaded(); // I've released, notify super if super is waiting
         }

@@ -7,23 +7,26 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        protected ParticipantResourceState latestState;
 
-        public ParticipantResourceState? state { get => isAvailable ? latestState : null; }
+        protected ResourceState latestResourceState;
+        protected ParticipantResourceState latestOutgoingState;
+
+        public ParticipantResourceState? state { get => isAvailable ? latestOutgoingState : null; }
 
         public ParticipantResourceState GetState(uint ts)
         {
-            if (latestState == null || latestState.tick != ts)
+            if (latestOutgoingState == null || latestOutgoingState.tick != ts)
             {
                 try
                 {
                     if (isOwner)
                     {
-                        latestState = MakeState(ts);
+                        latestResourceState = MakeState(ts);
+                        latestOutgoingState = latestResourceState;
                     }
                     else
                     {
-                        latestState = new ParticipantResourceState(this, ts);
+                        latestOutgoingState = new ParticipantResourceState(this, ts);
                     }
                 }
                 catch (Exception)
@@ -33,7 +36,7 @@ namespace RainMeadow
                 }
             }
 
-            return latestState;
+            return latestOutgoingState;
         }
 
 
@@ -86,16 +89,9 @@ namespace RainMeadow
             }
 
             incomingStates.Enqueue(newState);
-            // latestState = newState;
-
+            if (newState is ResourceState rs) latestResourceState = rs;
             if (isWaitingForState || isAvailable) newState.ReadTo(this);
-            if (newState is ResourceState)
-            {
-                if (isWaitingForState)
-                {
-                    Available();
-                }
-            }
+            if (newState is ResourceState && isWaitingForState) Available();
         }
 
         // Sent by the owner and participants
@@ -194,7 +190,7 @@ namespace RainMeadow
                         {
                             try
                             {
-                                resource.OnNewRemoteEntity(def, entityStates.list.Find(es => es.entityId == def.entityId));
+                                resource.OnNewRemoteEntity(def, def.initialState);
                             }
                             catch (Exception e)
                             {
@@ -219,7 +215,7 @@ namespace RainMeadow
                                 {
                                     try
                                     {
-                                        resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityJoin.entityId));
+                                        resource.EntityJoinedResource(ent, ent.lastStates[inResource]);
                                     }
                                     catch (Exception e)
                                     {
@@ -265,7 +261,6 @@ namespace RainMeadow
                                 RainMeadow.Debug("new owner for " + ent);
                                 try
                                 {
-                                    if (newOwner.isMe) ent.ReadState(entityStates.lookup[ent.id], resource);
                                     ent.NewOwner(newOwner);
                                 }
                                 catch (Exception e)
