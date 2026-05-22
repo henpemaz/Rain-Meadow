@@ -271,27 +271,24 @@ public abstract class CompressedExtEnumBase
         return result;
     }
 
-    public class DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, ExtEnumEntry[] additionnalExtEnum, string typeFullName = "") : Serializer.ICustomSerializable
+    public class DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, ExtEnumEntry[] additionnalExtEnum, string typeFullName) : Serializer.ICustomSerializable
     {
         public DecompressionResult()
-             : this([], new ExtEnumEntry[0]) {}
-        public DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, string typeFullName = "")
+             : this([], new ExtEnumEntry[0], "wawa") {}
+        public DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, string typeFullName)
              : this(missingExtEnum, ambiguousExtEnum, [], typeFullName) {}
-        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, List<ExtEnumEntry> additionnalExtEnum, string typeFullName = "") 
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, List<ExtEnumEntry> additionnalExtEnum, string typeFullName) 
             : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), additionnalExtEnum.ToArray(), typeFullName) {}
-        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, string typeFullName = "") 
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, string typeFullName) 
             : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), typeFullName) {}
 
         // This part need to be synced for clarification
         public string TypeFullName = typeFullName;
-        private byte MissingExtEnumSize = (byte)missingExtEnum.Length;
         public ExtEnumEntry[] MissingExtEnum { get; private set; } = missingExtEnum;
-        private byte AmbiguousExtEnumSize = (byte)ambiguousExtEnum.Length;
         public ExtEnumEntry[] AmbiguousExtEnum { get; private set; } = ambiguousExtEnum;
         
         // This part doesn't need to be synced at all
         public ExtEnumEntry[] AdditionnalExtEnum { get; private set; } = additionnalExtEnum;
-
         public bool IsOK { get; private set; } = missingExtEnum.Length == 0 && ambiguousExtEnum.Length == 0;
 
         public void CustomSerialize(Serializer serializer)
@@ -299,15 +296,17 @@ public abstract class CompressedExtEnumBase
             serializer.Serialize(ref this.TypeFullName);
             if (serializer.IsWriting)
             {  
-                serializer.Serialize(ref this.MissingExtEnumSize);
-                for (int i = 0; i < this.MissingExtEnumSize; i++)
+                byte tabSize = (byte)this.MissingExtEnum.Length;
+                serializer.Serialize(ref tabSize);
+                for (int i = 0; i < tabSize; i++)
                 {
                     serializer.Serialize(ref this.MissingExtEnum[i].position);
                     serializer.Serialize(ref this.MissingExtEnum[i].value);
                 }
                 
-                serializer.Serialize(ref this.AmbiguousExtEnumSize);
-                for (int i = 0; i < this.AmbiguousExtEnumSize; i++)
+                tabSize = (byte)this.AmbiguousExtEnum.Length;
+                serializer.Serialize(ref tabSize);
+                for (int i = 0; i < tabSize; i++)
                 {
                     serializer.Serialize(ref this.AmbiguousExtEnum[i].position);
                     serializer.Serialize(ref this.AmbiguousExtEnum[i].value);
@@ -315,9 +314,10 @@ public abstract class CompressedExtEnumBase
             }
             else if (serializer.IsReading)
             {
-                serializer.Serialize(ref this.MissingExtEnumSize);
-                MissingExtEnum = new ExtEnumEntry[this.MissingExtEnumSize];
-                for (int i = 0; i < this.MissingExtEnumSize; i++)
+                byte tabSize = 0;
+                serializer.Serialize(ref tabSize);
+                MissingExtEnum = new ExtEnumEntry[tabSize];
+                for (int i = 0; i < tabSize; i++)
                 {
                     ExtEnumEntry data = new("", 0);
                     serializer.Serialize(ref data.position);
@@ -325,9 +325,9 @@ public abstract class CompressedExtEnumBase
                     MissingExtEnum[i] = data;
                 }
                 
-                serializer.Serialize(ref this.AmbiguousExtEnumSize);
-                MissingExtEnum = new ExtEnumEntry[this.AmbiguousExtEnumSize];
-                for (int i = 0; i < this.AmbiguousExtEnumSize; i++)
+                serializer.Serialize(ref tabSize);
+                AmbiguousExtEnum = new ExtEnumEntry[tabSize];
+                for (int i = 0; i < tabSize; i++)
                 {
                     ExtEnumEntry data = new("", 0);
                     serializer.Serialize(ref data.position);
@@ -337,6 +337,7 @@ public abstract class CompressedExtEnumBase
 
                 this.IsOK = this.MissingExtEnum.Length == 0 && this.AmbiguousExtEnum.Length == 0;
             }
+            // RainMeadow.Debug($"Serialized compression result of enum {this.TypeFullName}, missing enums : {this.MissingExtEnum.Length}, ambiguous enums : {this.AmbiguousExtEnum.Length}. Reading ? {serializer.IsReading}");
         }
     }
 }
@@ -628,12 +629,12 @@ public static class MeadowExtEnumSync
             {
                 for (int i = 0; i < SyncedExtEnumList.Count; i++)
                 {
-                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); // ordering them alphabetically to reduce ordeer mismatch chances
+                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(); // ordering them alphabetically to reduce ordeer mismatch chances
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
                     // Uh have fun ig ? Not much to do there
-                    LogTestCompression();
+                    // LogTestCompression();
                 }
                 else
                 {
@@ -689,14 +690,17 @@ public static class MeadowExtEnumSync
             return (byte)extEnum.Index;
         }
     }
-    public static string GetExtEnumValue<T>(byte index) where T : ExtEnum<T>
+    public static string? GetExtEnumValue<T>(byte index) where T : ExtEnum<T>
     {
         string? entry = null;
-        if (OnlineManager.lobby is not null && IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
+        bool mapped = IsSyncedExtEnum(typeof(T), out var compressedExtEnum);
+        if (OnlineManager.lobby is not null && mapped)
         {
             entry = compressedExtEnum.GetValueFromIndex(index);
         }
-        return entry is null ? ExtEnum<T>.values.GetEntry(index) : entry;
+        entry = entry is null ? ExtEnum<T>.values.GetEntry(index) : entry;
+        if (entry is null) { RainMeadow.Error($"Couldn't find enum index {index} from enum type {typeof(T).FullName}. Mapped Enum ? {mapped}. Numbers of entries : {(mapped ? compressedExtEnum.entriesMap.Count : ExtEnum<T>.values.Count)}"); }
+        return entry;
     }
 
     // --------------------- Tests and logs
@@ -743,7 +747,7 @@ public static class MeadowExtEnumSync
                 string[] compressedExtEnum = CompressedExtEnumStringToArray(compressedExtEnumKeyPair.Value);
                 // SyncedExtEnumList[i].LogMappedExtEnum();
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(compressedExtEnum);
-                RainMeadow.Debug($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Status OK ? {result.IsOK}");
+                RainMeadow.Debug($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
                 // SyncedExtEnumList[i].LogMappedExtEnum();
                 if (!result.IsOK)
                 {
@@ -756,6 +760,7 @@ public static class MeadowExtEnumSync
 
         if (clarificationTable.Count > 0)
         {
+            RainMeadow.Debug($"Asking clarification for {clarificationTable.Count} enums : [{string.Join(", ", clarificationTable.Select(x => x.TypeFullName))}]");
             rpc.from.InvokeRPC(AskFromClarification, clarificationTable);
         }
     }
@@ -766,12 +771,11 @@ public static class MeadowExtEnumSync
 
         List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable = [];
 
-        foreach (var unclearTab in clarificationTable)
+        foreach (var resultErrors in clarificationTable)
         {
-            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == unclearTab.TypeFullName);
+            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == resultErrors.TypeFullName);
             if (i > -1)
             {
-                CompressedExtEnumBase.DecompressionResult resultErrors = unclearTab;
                 ExtEnumEntry[] clarifiedMissingExtEnum = new ExtEnumEntry[resultErrors.MissingExtEnum.Length];
                 ExtEnumEntry[] clarifiedAmbiguousExtEnum = new ExtEnumEntry[resultErrors.AmbiguousExtEnum.Length];
 
@@ -779,24 +783,28 @@ public static class MeadowExtEnumSync
                 for (int j = 0; j < resultErrors.MissingExtEnum.Length; j++)
                 {
                     clarifiedMissingExtEnum[j] = new(
-                        SyncedExtEnumList[i].entriesMap[resultErrors.MissingExtEnum[j].value], 
-                        resultErrors.MissingExtEnum[j].value
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.MissingExtEnum[j].position), 
+                        resultErrors.MissingExtEnum[j].position
                     );
                 }
                 for (int j = 0; j < resultErrors.AmbiguousExtEnum.Length; j++)
                 {
                     clarifiedAmbiguousExtEnum[j] = new(
-                        SyncedExtEnumList[i].entriesMap[resultErrors.AmbiguousExtEnum[j].value], 
-                        resultErrors.AmbiguousExtEnum[j].value
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.AmbiguousExtEnum[j].position), 
+                        resultErrors.AmbiguousExtEnum[j].position
                     );
                 }            
                 
-                CompressedExtEnumBase.DecompressionResult result = new(clarifiedMissingExtEnum, clarifiedAmbiguousExtEnum);
+                CompressedExtEnumBase.DecompressionResult result = new(clarifiedMissingExtEnum, clarifiedAmbiguousExtEnum, resultErrors.TypeFullName);
                 thingsThatShoubldBeClearerTable.Add(result);
             }
+            else
+            {
+                RainMeadow.Error($"Couldn't find Enum to clarify : {resultErrors.TypeFullName} ! Will ignore it.");
+            }
         }
+        RainMeadow.Debug($"Sending clarification for {thingsThatShoubldBeClearerTable.Count} enums : [{string.Join(", ", thingsThatShoubldBeClearerTable.Select(x => x.TypeFullName))}]");
         rpc.from.InvokeRPC(SendToSyncClarification, thingsThatShoubldBeClearerTable);
-        
     }
     [RPCMethod] 
     public static void SendToSyncClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable)
@@ -804,12 +812,11 @@ public static class MeadowExtEnumSync
         if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner) { return; }
         List<CompressedExtEnumBase.DecompressionResult> reclarificationTable = [];
 
-        foreach (var clearTab in thingsThatShoubldBeClearerTable)
+        foreach (var resultClarification in thingsThatShoubldBeClearerTable)
         {
-            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == clearTab.TypeFullName);
+            int i = SyncedExtEnumList.FindIndex(x => x.enumType.FullName == resultClarification.TypeFullName);
             if (i > -1)
             {
-                CompressedExtEnumBase.DecompressionResult resultClarification = clearTab;
                 if (SyncedExtEnumList[i].storedCompressedValues.Length == 0) { return; } // you never asked for clarification, cmon, you know what you were doing !
                 
                 for (int j = 0; j < resultClarification.MissingExtEnum.Length; j++)
@@ -824,14 +831,14 @@ public static class MeadowExtEnumSync
                 }
 
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(SyncedExtEnumList[i].storedCompressedValues);
-                RainMeadow.Debug($"Read and Synced ExtEnum {clearTab.TypeFullName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Status OK ? {result.IsOK}");
+                RainMeadow.Debug($"Read and Synced ExtEnum {resultClarification.TypeFullName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
                 if (!result.IsOK)
                 {
                     // We don't want this to run indefinetly !
                     SyncedExtEnumList[i].clarificationAttempt++;
                     if (SyncedExtEnumList[i].clarificationAttempt >= CompressedExtEnumBase.Patience)
                     {
-                        RainMeadow.Error($"Tried to clarify {clearTab.TypeFullName} more than {CompressedExtEnumBase.Patience} times ! Not syncing enum.");
+                        RainMeadow.Error($"Tried to clarify {resultClarification.TypeFullName} more than {CompressedExtEnumBase.Patience} times ! Not syncing enum.");
                     }
                     else
                     {
@@ -841,9 +848,17 @@ public static class MeadowExtEnumSync
                 }
                 SyncedExtEnumList[i].storedCompressedValues = [];
             }
+            else
+            {
+                RainMeadow.Error($"Couldn't find Enum to sync : {resultClarification.TypeFullName} ! Will ignore it.");
+            }
         }
 
-        rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
+        if (reclarificationTable.Count > 0)
+        {
+            RainMeadow.Debug($"Asking clarification again for {reclarificationTable.Count} enums : [{string.Join(", ", reclarificationTable.Select(x => x.TypeFullName))}]");
+            rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
+        }
     }
 
 }
