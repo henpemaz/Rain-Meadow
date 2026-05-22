@@ -617,3 +617,79 @@ Exit to Lobby Select|ロビー選択に戻る
 
 /// arena invite buton description (this is already exist at Meadow tab but not it not worked)
 Invite friends|フレンドを招待
+
+/// snuggles additions, Meadow Version 0.1.14.1 
+
+/// remix settings
+
+/// General Tab
+Lobby Music|ロビー音楽
+Cape Colors|マントのカラー
+Log Level|ログレベル
+
+/// Arena Tab
+Flair|フレア
+
+/// Gameplay Tab
+Global Mute|チャットミュート
+Profanity Filter|チャットフィルター
+Sound on Mention|メンション音
+Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|プレイヤーリストのスクロール速度。標準:10
+Chat Inactivity Opacity|チャット不活性状態の混濁
+Chat Inactivity Timer|チャット不活性状態のタイマー
+Streamer Mode|配信モード
+
+///death messages
+blew up.|爆発した。
+fell into the abyss thanks to|は深淵に投げ込まれた。死因:
+blew up thanks to|は爆発された。死因:
+
+///Arena 
+LOADING :|ロード :
+//char select
+THE OVERSEER|監視者
+Observe without peril|危険なく見つめる
+//match settings tab
+Overseers Show:|監視者可視:
+Overseer Spectators spawn in-game|マッチ中に監視者がスポーンする
+Overseer Spectator do not spawn in-game|マッチ中に監視者はスポーンしない
+Challenge|チャレンジ
+Players can grab dead players|死んだプレイヤーを捕まえることは禁止しません
+Players cannot grab dead players|死んだプレイヤーを捕まえることは禁止します
+No scavenger bombs spawn|手榴弾は生まれない
+Scavenger bombs follow vanilla spawn behavior|手榴弾は通常のスポーンロジックに従います
+No beehives spawn|蜂の巣は生まれない
+Bee hives follow vanilla spawn behavior|蜂の巣は通常のスポーンロジックに従います
+//arena settings tab
+Arena Settings|アリーナ設定
+Food Score:|食物スコア:
+Food points multiplier|食物ポイント乗数
+Spear Hit Score:|スピアスコア:
+Points a spear is worth (non-lethal)|非致死性槍のポイント
+Kill Score:|キルスコア:
+Points a kill is worth|キル価値のあるポイントの量
+Survival Score:|生存スコア:
+Points for surviving inside the shelter|避難所で生き残ったポイントの量は価値があります
+Empty Kill Score:|空キルスコア:
+Points for other players if someone dies without a killer|プレイヤーが不明な手段で殺されたときに獲得したポイント
+Unlock Dens:|雨宿オープン
+Points required to unlock dens|雨宿の入力に必要なポイント
+Den Entry:|雨宿エントリ
+Den entry behavior|雨宿エントリのロジック
+Den Ejection:|雨宿駆出
+Dens eject and block players after some time|雨宿はプレイヤーを取り出し、しばらくしてエントリーをブロックする
+Normal den behavior|通常ロジック
+Playlist:|プレイリスト
+Copy playlist to clipboard|プレイリストをコピー
+Copied|コピー!
+Imported|読み込む
+Failed|不合格
+Import playlist from clipboard|クリップボードを読み込
+Score|スコア
+Standard|通常
+Always|常に
+Friendly Fire:|フレンドリーファイヤー
+RESET|リセット
+//challenge settings tab
+Challenge Settings|チャレンジ設定
+Challenge ID|チャレンジID
