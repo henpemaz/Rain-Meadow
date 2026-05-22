@@ -629,7 +629,7 @@ public static class MeadowExtEnumSync
             {
                 for (int i = 0; i < SyncedExtEnumList.Count; i++)
                 {
-                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(); // ordering them alphabetically to reduce ordeer mismatch chances
+                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); // ordering them alphabetically to reduce order mismatch chances
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
