@@ -1,3 +1,8 @@
+# Release 1.15.0
+
+## Engine
+- Added Enum mapping to enums likely to create desync
+
 # Release 1.14.1
 
 ## Engine 
