@@ -302,7 +302,7 @@ namespace RainMeadow
                 if (p.slugOnBack.slugcat != onback)
                 {
                     p.slugOnBack.DropSlug();
-                    p.slugOnBack.SlugToBack(onback);
+                    if (onback != null) p.slugOnBack.SlugToBack(onback);
                 }
             }
 
