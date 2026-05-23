@@ -4,6 +4,7 @@
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
 - Fixed a thing that should happen when you win that hidden thing
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
+- Slightly improved Void Amoeba's swim speed
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 # Release 1.14.1
