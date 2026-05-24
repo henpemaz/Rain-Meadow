@@ -309,7 +309,7 @@ public partial class RainMeadow
             ILCursor c = new(il);
             ILLabel label = null;
 
-            // --- 1. EXISTING HOOK: Proximity & slow down logic ---
+            // Proximity & slow down logic ---
             c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, 4);
@@ -328,6 +328,7 @@ public partial class RainMeadow
             });
             c.Emit(OpCodes.Brfalse, label);
 
+            // Lethality
             c.Index = 0;
             if (c.TryGotoNext(MoveType.Before,
                 x => x.MatchLdfld<Player>("rippleDeathIntensity"),
