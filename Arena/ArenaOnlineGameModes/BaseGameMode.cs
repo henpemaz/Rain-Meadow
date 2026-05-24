@@ -1333,6 +1333,7 @@ namespace RainMeadow
         $"setupTime={arena.setupTime}",
         $"spearHitScore={arena.spearHitScore}",
         $"voidMasterEnabled={arena.voidMasterEnabled}",
+        $"voidSpawnLethalityFactor={arena.voidSpawnLethalityFactor}",
         $"watcherCamoTimer={arena.watcherCamoTimer}",
         $"watcherRippleLevel={arena.watcherRippleLevel}",
         $"weaponCollisionFix={arena.weaponCollisionFix}",
@@ -1391,6 +1392,7 @@ namespace RainMeadow
                         case "watcherCamoTimer": if (int.TryParse(val, out int i11)) arena.watcherCamoTimer = i11; break;
                         case "watcherRippleLevel": if (int.TryParse(val, out int i12)) arena.watcherRippleLevel = i12; break;
                         case "weaponCollisionFix": if (bool.TryParse(val, out bool b18)) arena.weaponCollisionFix = b18; break;
+                        case "voidSpawnLethalityFactor": if (float.TryParse(val, out float b19)) arena.voidSpawnLethalityFactor = b19; break;
                     }
                 }
                 return true;

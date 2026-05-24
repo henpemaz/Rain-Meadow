@@ -308,6 +308,8 @@ public partial class RainMeadow
         {
             ILCursor c = new(il);
             ILLabel label = null;
+
+            // --- 1. EXISTING HOOK: Proximity & slow down logic ---
             c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, 4);
@@ -325,6 +327,31 @@ public partial class RainMeadow
                 return true;
             });
             c.Emit(OpCodes.Brfalse, label);
+
+            c.Index = 0;
+            if (c.TryGotoNext(MoveType.Before,
+                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                x => x.MatchLdcR4(out _), // Captures whatever float is here, even if modded
+                x => x.MatchAdd(),        // Ensures we only hit the +=, not the -= block below it
+                x => x.MatchStfld<Player>("rippleDeathIntensity")))
+            {
+                // c.Index is currently at the Ldfld. 
+                // We add 2 to move the cursor right AFTER the float is loaded, 
+                // but BEFORE the Add instruction executes.
+                c.Index += 2;
+
+                c.EmitDelegate((float originalIncrement) =>
+                {
+                    if (isArenaMode(out var arena))
+                    {
+                        // Instead of returning a hardcoded 0.024f, we multiply whatever 
+                        // the current value is by 3. This ensures that if another mod 
+                        // changes the base speed, your mod respects and scales it!
+                        return originalIncrement * arena.voidSpawnLethalityFactor;
+                    }
+                    return originalIncrement;
+                });
+            }
         }
         catch (Exception ex)
         {

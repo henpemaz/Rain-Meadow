@@ -260,8 +260,8 @@ namespace RainMeadow.UI.Components
         {
             public SimplerButton? backButton;
             public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel;
-            public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox;
+            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel, amoebaLethalityFactorLabel;
+            public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox, amoebaLethalityFactorTextBox;
             public OpCheckBox weaverWatcherCheckBox, voidMasterCheckbox, amoebaControlCheckbox;
             public override string Name => "Watcher Settings";
             public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
@@ -334,7 +334,6 @@ namespace RainMeadow.UI.Components
                 {
                     alignment = FLabelAlignment.Center,
                     description = menu.Translate("Amoeba duration time in seconds")
-
                 };
                 amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
@@ -345,23 +344,40 @@ namespace RainMeadow.UI.Components
                 amoebaDurationLabel = new(menu, this, menu.Translate("Voidkeeper Amoeba Duration:"), amoebaLifespanTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 amoebaDurationLabel.label.alignment = FLabelAlignment.Left;
 
-
                 amoebaLifespanTextBox.Change();
 
-                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 5);
+                //Amoeba Lethality Factor 
+                amoebaLethalityFactorTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
+                {
+                    alignment = FLabelAlignment.Center,
+                    description = menu.Translate("Multiplier for amoeba lethality")
+                };
+                amoebaLethalityFactorTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.voidSpawnLethalityFactor = amoebaLethalityFactorTextBox.valueFloat;
+                };
+                new PatchedUIelementWrapper(tabWrapper, amoebaLethalityFactorTextBox);
+                amoebaLethalityFactorLabel = new(menu, this, menu.Translate("Amoeba Lethality Factor:"), amoebaLethalityFactorTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                amoebaLethalityFactorLabel.label.alignment = FLabelAlignment.Left;
+
+                amoebaLethalityFactorTextBox.Change();
+
+                //Void's Vengeance (pointing control)
+                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 6);
                 amoebaControlCheckbox.OnChange += () =>
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                     arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
                     amoebaControlCheckbox.description = amoebaControlCheckbox.GetValueBool() ? menu.Translate("Amoeba's direction is influenced by pointing") : menu.Translate("Amoebas chase targets at-will");
-
                 };
                 new PatchedUIelementWrapper(tabWrapper, amoebaControlCheckbox);
                 amoebaControlLabel = new(menu, this, menu.Translate("Void's Vengeance:"), amoebaControlCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 amoebaControlLabel.label.alignment = FLabelAlignment.Left;
 
                 amoebaControlCheckbox.Change();
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel);
+
+                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaLethalityFactorLabel, amoebaControlLabel);
 
             }
             public override void SaveInterfaceOptions()
@@ -417,6 +433,7 @@ namespace RainMeadow.UI.Components
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
 
                 ShowSyncInRemixCheckbox(voidMasterCheckbox, greyoutall, arena.voidMasterEnabled);
+                ShowSyncInTextbox(amoebaLethalityFactorTextBox, greyoutall, arena.voidSpawnLethalityFactor);
 
                 bool lockvoidmastersettings = !voidMasterCheckbox.GetValueBool() || greyoutall;
                 ShowSyncInRemixCheckbox(amoebaControlCheckbox, lockvoidmastersettings, arena.amoebaControl);
@@ -432,6 +449,8 @@ namespace RainMeadow.UI.Components
                 voidMasterLabel.label.color = voidMasterCheckbox.rect.colorEdge;
                 amoebaDurationLabel.label.color = amoebaLifespanTextBox.rect.colorEdge;
                 amoebaControlLabel.label.color = amoebaControlCheckbox.rect.colorEdge;
+                amoebaLethalityFactorLabel.label.color = amoebaLethalityFactorTextBox.rect.colorEdge;
+
             }
         }
         public class SelectSettingsPage : SettingsPage
