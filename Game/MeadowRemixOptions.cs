@@ -36,6 +36,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> WeaverWatcher;
     public readonly Configurable<bool> VoidMaster;
+    public readonly Configurable<float> VoidSpawnLethalityFactor;
 
     public readonly Configurable<int> AmoebaDuration;
     public readonly Configurable<bool> AmoebaControl;
@@ -196,6 +197,7 @@ public class RainMeadowOptions : OptionInterface
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
+        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 4f);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
         FriendlyFire = config.Bind("FriendlyFire", false);

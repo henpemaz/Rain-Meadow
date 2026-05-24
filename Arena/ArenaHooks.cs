@@ -555,6 +555,7 @@ namespace RainMeadow
             VoidSpawn.ChasePlayer self
         )
         {
+            
             if (!isArenaMode(out var arena))
                 return orig(self);
             //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced

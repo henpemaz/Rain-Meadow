@@ -38,6 +38,9 @@ namespace RainMeadow
         public bool leaveToRestart;
 
         public bool voidMasterEnabled = RainMeadow.rainMeadowOptions.VoidMaster.Value;
+
+        public float voidSpawnLethalityFactor = RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value;
+
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
