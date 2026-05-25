@@ -1,3 +1,8 @@
+# Release 1.15.0
+
+## Meadow
+- Fixed creatures being able to get injured.
+
 # Release 1.14.1
 
 ## Engine 
