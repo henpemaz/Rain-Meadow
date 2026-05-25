@@ -493,8 +493,13 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
     {
         if (arrangedValues.Count == 0) return [];
 
+        // RainMeadow.Debug("Logging list mid-compression");
+        // for (int j = 0; j < arrangedValues.Count; j++)
+        // {
+        //     RainMeadow.Debug($"   > <{arrangedValues[j].position}> {arrangedValues[j].value}");
+        // }
+
         // Assuming that they have the same amount of separator
-        arrangedValues.Sort((x, y) => x.value.Split(separator).First().CompareTo(y.value.Split(separator).First()));
         if (arrangedValues.First().value.Count(x => separator == x) == 0)
         {
             arrangedValues = SizeAndFirstLetterCompressedExtEnum.Compression(arrangedValues);
@@ -505,6 +510,7 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
         }
         else
         {
+            arrangedValues.Sort((x, y) => x.value.Split(separator).First().CompareTo(y.value.Split(separator).First()));
             List<List<ExtEnumEntry>> cuttedList = []; 
             List<ExtEnumEntry> uniquePrefix = []; // ExtEnumEntry to pass it into the blender- uh the compresser
             for (int i = 0; i < arrangedValues.Count; i++)
@@ -544,9 +550,17 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
                 for (int j = 0; j < cuttedList[i].Count; j++)
                 {
                     cuttedList[i][j].value = uniquePrefix[currentUniquePrefixIndex].value + separator + withoutPrefixCut[j].value;
+                    cuttedList[i][j].position = withoutPrefixCut[j].position; // somehow the shuffling makes a mess in the positions, so we have to set it back
                 }
             }
         }
+
+        // RainMeadow.Debug("To :");
+        // for (int j = 0; j < arrangedValues.Count; j++)
+        // {
+        //     RainMeadow.Debug($"   > <{arrangedValues[j].position}> {arrangedValues[j].value}");
+        // }
+
         return arrangedValues;
     }
     public static List<ExtEnumEntry> Compression(List<ExtEnumEntry> arrangedValues, char separator)
@@ -616,32 +630,15 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
 
 public static class MeadowExtEnumSync
 {
-    // --------------------- Hooks
-    internal static void ApplyHooks()
+    public static void ResetEnumEntriesMapping()
     {
-        MatchmakingManager.OnLobbyJoined += MatchmakingManager_BTWVersionChecker_OnLobbyJoined;
-    }
-    private static void MatchmakingManager_BTWVersionChecker_OnLobbyJoined(bool ok, string error)
-    {
-        if (ok)
+        for (int i = 0; i < SyncedExtEnumList.Count; i++)
         {
-            if (OnlineManager.lobby is not null)
-            {
-                for (int i = 0; i < SyncedExtEnumList.Count; i++)
-                {
-                    SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); // ordering them alphabetically to reduce order mismatch chances
-                }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    // Uh have fun ig ? Not much to do there
-                    // LogTestCompression();
-                }
-                else
-                {
-                    OnlineManager.lobby.owner?.InvokeRPC(RequestCompressedExtEnums);
-                }
-            }
+            // ordering them alphabetically to reduce order mismatch chances
+            SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); 
+            // SyncedExtEnumList[i].LogMappedExtEnum();
         }
+        RainMeadow.Debug($"Enum entries map reset for <{SyncedExtEnumList.Count}> enums : [{string.Join(", ", SyncedExtEnumList.Select(x => x.enumType.FullName))}]");
     }
 
     // --------------------- Methods and Attributes
@@ -715,27 +712,52 @@ public static class MeadowExtEnumSync
     
     // --------------------- RPCS
 
-    // Quite a heavy RPC, even with the compression, I hope this isn't too much of an issue.
+    // Quite heavy RPCs, even with the compression, I hope this isn't too much of an issue.
     // Heh, this is for the greater good.
-    [RPCMethod]
-    public static void RequestCompressedExtEnums(RPCEvent rpc)
+
+    [RPCMethod(security = RPCSecurity.NoSecurity)] // Asking the owner for the compressed list of the enums. Client -> Owner
+    public static void RequestCompressedExtEnums(RPCEvent request)
     {
-        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) { return; }
+        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) 
+        { 
+            RainMeadow.Error($"False request of enums : {(OnlineManager.lobby is null ? "Lobby is null" : "I am not the owner")} !");
+            request.from.QueueEvent(new GenericResult.Fail(request));
+            return; 
+        }
 
         Dictionary<string, string> compressedExtEnumTable = [];
-        for (int i = 0; i < SyncedExtEnumList.Count; i++)
+        try
         {
-            compressedExtEnumTable.Add(
-                SyncedExtEnumList[i].enumType.FullName, 
-                CompressedExtEnumArrayToString(SyncedExtEnumList[i].GetCompressedEntries())
-            );
+            for (int i = 0; i < SyncedExtEnumList.Count; i++)
+            {
+                compressedExtEnumTable.Add(
+                    SyncedExtEnumList[i].enumType.FullName, 
+                    CompressedExtEnumArrayToString(SyncedExtEnumList[i].GetCompressedEntries())
+                );
+            }
+            // foreach (var compressedstuff in compressedExtEnumTable)
+            // {
+            //     RainMeadow.Debug("Logging compressed set of "+ compressedstuff.Key);
+            //     string[] listofcompressedstuff = CompressedExtEnumStringToArray(compressedstuff.Value);
+            //     for (int j = 0; j < listofcompressedstuff.Length; j++)
+            //     {
+            //         RainMeadow.Debug($"   > <{j}> {listofcompressedstuff[j]}");
+            //     }
+            // }
         }
-        rpc.from.InvokeRPC(SendToSyncCompressedExtEnums, compressedExtEnumTable);
+        catch (System.Exception er)
+        {
+            RainMeadow.Error("Failed to send compressed enums : " + er);
+            request.from.QueueEvent(new GenericResult.Error(request));
+            return;
+        }
+        request.from.QueueEvent(new GenericResult.Ok(request));
+        request.from.InvokeRPC(SendToSyncCompressedExtEnums, compressedExtEnumTable);
     }
-    [RPCMethod]
+    [RPCMethod(security = RPCSecurity.NoSecurity)] // Checking and syncing the enums recieved, also ask for clarification if necessary. Owner -> Client
     public static void SendToSyncCompressedExtEnums(RPCEvent rpc, Dictionary<string, string> compressedExtEnumTable)
     {
-        if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner) { return; }
+        if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner || OnlineManager.lobby.enumsChecked) { return; }
 
         List<CompressedExtEnumBase.DecompressionResult> clarificationTable = [];
 
@@ -745,10 +767,8 @@ public static class MeadowExtEnumSync
             if (i > -1)
             {
                 string[] compressedExtEnum = CompressedExtEnumStringToArray(compressedExtEnumKeyPair.Value);
-                // SyncedExtEnumList[i].LogMappedExtEnum();
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(compressedExtEnum);
                 RainMeadow.Debug($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
-                // SyncedExtEnumList[i].LogMappedExtEnum();
                 if (!result.IsOK)
                 {
                     SyncedExtEnumList[i].storedCompressedValues = compressedExtEnum;
@@ -763,8 +783,12 @@ public static class MeadowExtEnumSync
             RainMeadow.Debug($"Asking clarification for {clarificationTable.Count} enums : [{string.Join(", ", clarificationTable.Select(x => x.TypeFullName))}]");
             rpc.from.InvokeRPC(AskFromClarification, clarificationTable);
         }
+        else
+        {
+            OnlineManager.lobby.OnEnumSyncSuccessful();
+        }
     }
-    [RPCMethod] 
+    [RPCMethod(security = RPCSecurity.NoSecurity)] // Asking the owner for clarification on some enums in their compressed form. The owner will send them back in full. Client -> Owner
     public static void AskFromClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> clarificationTable)
     {
         if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) { return; }
@@ -806,10 +830,10 @@ public static class MeadowExtEnumSync
         RainMeadow.Debug($"Sending clarification for {thingsThatShoubldBeClearerTable.Count} enums : [{string.Join(", ", thingsThatShoubldBeClearerTable.Select(x => x.TypeFullName))}]");
         rpc.from.InvokeRPC(SendToSyncClarification, thingsThatShoubldBeClearerTable);
     }
-    [RPCMethod] 
+    [RPCMethod(security = RPCSecurity.NoSecurity)]  // Checking and syncing (again) the enums clarified. If everything goes right, the client should have everything clear and done here. Owner -> Client
     public static void SendToSyncClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable)
     {
-        if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner) { return; }
+        if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner || OnlineManager.lobby.enumsChecked) { return; }
         List<CompressedExtEnumBase.DecompressionResult> reclarificationTable = [];
 
         foreach (var resultClarification in thingsThatShoubldBeClearerTable)
@@ -858,6 +882,10 @@ public static class MeadowExtEnumSync
         {
             RainMeadow.Debug($"Asking clarification again for {reclarificationTable.Count} enums : [{string.Join(", ", reclarificationTable.Select(x => x.TypeFullName))}]");
             rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
+        }
+        else
+        {
+            OnlineManager.lobby.OnEnumSyncSuccessful();
         }
     }
 
