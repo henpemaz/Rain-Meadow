@@ -170,7 +170,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
-        ArtificerParryDistance = config.Bind("ArtificerParryDistance", 150);
+        ArtificerParryDistance = config.Bind("ArtificerParryDistance", 90);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
