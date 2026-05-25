@@ -386,6 +386,7 @@ namespace RainMeadow.UI.Components
                 RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value = watcherRippleLevelTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
                 RainMeadow.rainMeadowOptions.VoidMaster.Value = voidMasterCheckbox.GetValueBool();
+                RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value = amoebaLethalityFactorTextBox.valueFloat;
                 RainMeadow.rainMeadowOptions.AmoebaDuration.Value = amoebaLifespanTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.AmoebaControl.Value = amoebaControlCheckbox.GetValueBool();
 
