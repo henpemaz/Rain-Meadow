@@ -972,7 +972,6 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                Debug("Creature violence, but this is meadow mode.");
                 return;
             }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)
@@ -1040,7 +1039,7 @@ namespace RainMeadow
             {
                 return;
             }
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)
             {
                 Error($"Target {self} doesn't exist in online space!");
                 orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
