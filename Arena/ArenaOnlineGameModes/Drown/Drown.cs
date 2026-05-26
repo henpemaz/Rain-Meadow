@@ -329,7 +329,7 @@ namespace RainMeadow
                         var creatureAlive = 0;
                         for (int i = 0; i < self.room.abstractRoom.creatures.Count; i++)
                         {
-                            if (self.room.abstractRoom.creatures[i].state.alive)
+                            if (self.room.abstractRoom.creatures[i].state.alive && self.room.abstractRoom.creatures[i].creatureTemplate.type != CreatureTemplate.Type.Slugcat)
                             {
                                 creatureAlive++;
                             }
