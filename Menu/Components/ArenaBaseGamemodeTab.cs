@@ -257,9 +257,18 @@ namespace RainMeadow.UI.Components
 
                     if (!string.IsNullOrEmpty(clipboardText))
                     {
+                        // Validate that the clipboard text contains maps with ";"
+                        if (!clipboardText.Contains(";"))
+                        {
+                            arenaImportExportLabel.text = menu.Translate("Invalid format");
+                            arenaImportExportLabel.label.color = Color.red;
+                            return;
+                        }
+
                         arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
                         List<string> playlist = DecodePlaylist(clipboardText);
-                        if (playlist.Count == 0)
+
+                        if (playlist == null || playlist.Count == 0)
                         {
                             arenaImportExportLabel.text = menu.Translate("Failed");
                             arenaImportExportLabel.label.color = Color.red;
@@ -270,6 +279,7 @@ namespace RainMeadow.UI.Components
                         {
                             arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
                         }
+
                         arenaImportExportLabel.text = menu.Translate("Imported");
                         arenaImportExportLabel.label.color = Color.green;
                     }

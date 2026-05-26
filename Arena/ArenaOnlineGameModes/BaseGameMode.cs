@@ -1347,6 +1347,12 @@ namespace RainMeadow
         {
             if (string.IsNullOrEmpty(base64Data)) return false;
 
+            if (!base64Data.Contains(";"))
+            {
+                return false;
+            }
+
+
             try
             {
                 string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
