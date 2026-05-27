@@ -150,7 +150,7 @@ namespace RainMeadow.UI.Components
                 artiParryDistanceTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArtificerParryDistance.Value), positioner - spacing * 1 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
-                    description = Translate("How far Artificer can parry from. Vanilla default: 300. Online default: 90."),
+                    description = Translate("How far Artificer can parry from. 0 disables it. Vanilla default: 300. Online default: 90."),
                     accept = OpTextBox.Accept.Int
 
                 };

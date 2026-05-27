@@ -189,19 +189,67 @@ namespace RainMeadow
         }
         
         // Restrict Artificer's parry range in arena
+        private const float VANILLA_ARTI_PARRY_RANGE = 300f;
         private void Player_ArtificerParryRange(ILContext il)
         {
             try
             {
                 var cursor = new ILCursor(il);
-                cursor.GotoNext(moveType: MoveType.After,
+                ILLabel? label = null;
+                
+                // Disable parry feature if the range is set to 0 
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    i => i.MatchLdfld<Player>(nameof(Player.pyroParryCooldown)),
+                    i => i.MatchLdcR4(0),
+                    i => i.MatchBgtUn(out label)
+                )) { throw new KeyNotFoundException("Couldn't find the key 1 of IL hook"); }
+                
+                cursor.EmitDelegate(() =>
+                {
+                    return !isArenaMode(out var arenaOnline) || arenaOnline.artiParryDistance > 0 || !arenaOnline.disableArtiStun;
+                });
+                cursor.Emit(OpCodes.Brfalse, label);
+
+                // Change the light explosion range (purely cosmetic, will not throw if fail)
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>()) 
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) ) 
+                { 
+                    cursor.EmitDelegate((float orig) =>
+                    {
+                        return isArenaMode(out var arenaOnline) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistance / VANILLA_ARTI_PARRY_RANGE), 0.2f, 2f) 
+                            : orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find the key 4 of IL hook");
+                }
+
+                // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>()) 
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) ) 
+                { 
+                    cursor.EmitDelegate((float orig) =>
+                    {
+                        return isArenaMode(out var arenaOnline) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistance / VANILLA_ARTI_PARRY_RANGE), 0.2f, 2f) 
+                            : orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find the key 5 of IL hook");
+                }
+
+                // Change the throw detection value
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchCallvirt(typeof(Weapon).GetProperty(nameof(Weapon.mode)).GetGetMethod()),
-                    x => x.MatchLdsfld<Weapon>(nameof(Weapon.Thrown))
-                );
-                cursor.GotoNext(moveType: MoveType.After,
-                    x => x.MatchLdcR4(300)
-                );
-                // We go to the throw detection, then where the 300 value is located
+                    x => x.MatchLdsfld<Weapon.Mode>(nameof(Weapon.Mode.Thrown))
+                )) { throw new KeyNotFoundException("Couldn't find the key 2 of IL hook"); }
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchLdcR4(VANILLA_ARTI_PARRY_RANGE)
+                )) { throw new KeyNotFoundException("Couldn't find the key 3 of IL hook"); }
 
                 cursor.EmitDelegate((float orig) =>
                 {
@@ -210,7 +258,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                Logger.LogError(e);
+                RainMeadow.Error(e);
             }
         }
 

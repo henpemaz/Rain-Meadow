@@ -82,7 +82,8 @@ namespace RainMeadow
         {
             try
             {
-                var cursor = new ILCursor(il);
+                ILCursor cursor = new ILCursor(il);
+
                 cursor.GotoNext(moveType: MoveType.After,
                     i => i.MatchCallvirt<Weapon>(nameof(Weapon.SetRandomSpin))
                 );
@@ -121,7 +122,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                Logger.LogError(e);
+                RainMeadow.Error(e);
             }
         }
 
