@@ -47,7 +47,7 @@ namespace RainMeadow.UI.Components
             tabWrapper = new(menu, this);
             DROWN = drown;
 
-            var pointsForRockLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to buy a ... rock?", new Vector2(10f, 400), new Vector2(0, 20), false);
+            var pointsForRockLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy a ... rock?"), new Vector2(10f, 400), new Vector2(0, 20), false);
             pointsForRockTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.PointsForRock.Value), new Vector2(10, pointsForRockLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -61,7 +61,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForRockWrapper = new UIelementWrapper(tabWrapper, pointsForRockTextBox);
 
-            var pointsForSpearLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to buy a spear", new Vector2(10f, pointsForRockTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForSpearLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy a spear"), new Vector2(10f, pointsForRockTextBox.pos.y - 15), new Vector2(0, 20), false);
             pointsForSpearTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.PointsForSpear.Value), new Vector2(10, pointsForSpearLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -75,7 +75,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForSpearTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForSpearTextBox);
 
-            var pointsForExplSpearLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to buy an explosive spear", new Vector2(10f, pointsForSpearTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForExplSpearLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy an explosive spear"), new Vector2(10f, pointsForSpearTextBox.pos.y - 15), new Vector2(0, 20), false);
             pointsForExplSpearTextBox = new(new Configurable<int>(drown.spearExplCost), new Vector2(10, pointsForExplSpearLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -90,7 +90,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForExplSpearTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForExplSpearTextBox);
 
-            var pointsForBombLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to buy a scav bomb", new Vector2(10f, pointsForExplSpearTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForBombLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy a scav bomb"), new Vector2(10f, pointsForExplSpearTextBox.pos.y - 15), new Vector2(0, 20), false);
             pointsForBombTextBox = new(new Configurable<int>(drown.bombCost), new Vector2(10, pointsForBombLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -104,7 +104,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForBombTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForBombTextBox);
 
-            var pointsForElectricSpear = new ProperlyAlignedMenuLabel(menu, owner, "[MSC]: Points required to buy an electric spear", new Vector2(10f, pointsForBombTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForElectricSpear = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("[MSC]: Points required to buy an electric spear"), new Vector2(10f, pointsForBombTextBox.pos.y - 15), new Vector2(0, 20), false);
             pointsForElecSpear = new(new Configurable<int>(drown.electricSpearCost), new Vector2(10, pointsForElectricSpear.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -120,7 +120,7 @@ namespace RainMeadow.UI.Components
             UIelementWrapper pointsForElectricWrapper = new UIelementWrapper(tabWrapper, pointsForElecSpear);
 
 
-            var pointsForBoomerang = new ProperlyAlignedMenuLabel(menu, owner, "[Watcher]: Points required to buy a boomerang", new Vector2(10f, pointsForElecSpear.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForBoomerang = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("[Watcher]: Points required to buy a boomerang"), new Vector2(10f, pointsForElecSpear.pos.y - 15), new Vector2(0, 20), false);
             pointsForBoomerangText = new(new Configurable<int>(drown.boomerangeCost), new Vector2(10, pointsForBoomerang.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -136,7 +136,7 @@ namespace RainMeadow.UI.Components
             UIelementWrapper pointsForBoomerangWrapper = new UIelementWrapper(tabWrapper, pointsForBoomerangText);
 
 
-            var pointsForRespawnLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to buy a respawn", new Vector2(10f, pointsForBoomerangText.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForRespawnLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy a respawn"), new Vector2(10f, pointsForBoomerangText.pos.y - 15), new Vector2(0, 20), false);
             pointsForRespawnTextBox = new(new Configurable<int>(drown.respCost), new Vector2(10, pointsForRespawnLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -150,7 +150,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForRespawnTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForRespawnTextBox);
 
-            var pointsForDenOpenLabel = new ProperlyAlignedMenuLabel(menu, owner, "Points required to open dens", new Vector2(10f, pointsForRespawnTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var pointsForDenOpenLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to open dens"), new Vector2(10f, pointsForRespawnTextBox.pos.y - 15), new Vector2(0, 20), false);
             pointsForDenOpenTextBox = new(new Configurable<int>(drown.denCost), new Vector2(10, pointsForDenOpenLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -164,7 +164,7 @@ namespace RainMeadow.UI.Components
             };
             UIelementWrapper pointsForDenOpenTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForDenOpenTextBox);
 
-            var creatureCleanupsLabel = new ProperlyAlignedMenuLabel(menu, owner, "How many waves before creature cleanup", new Vector2(10f, pointsForDenOpenTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var creatureCleanupsLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("How many waves before creature cleanup"), new Vector2(10f, pointsForDenOpenTextBox.pos.y - 15), new Vector2(0, 20), false);
             creatureCleanupsTextBox = new(new Configurable<int>(drown.creatureCleanupWaves), new Vector2(10, creatureCleanupsLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -179,7 +179,7 @@ namespace RainMeadow.UI.Components
             UIelementWrapper creatureCleanupsTextBoxWrapper = new UIelementWrapper(tabWrapper, creatureCleanupsTextBox);
 
 
-            var maxCLLabel = new ProperlyAlignedMenuLabel(menu, owner, "Max creatures in level", new Vector2(10f, creatureCleanupsTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var maxCLLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Max creatures in level"), new Vector2(10f, creatureCleanupsTextBox.pos.y - 15), new Vector2(0, 20), false);
             maxCTextBox = new(new Configurable<int>(drown.maxCreatures), new Vector2(10, maxCLLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,

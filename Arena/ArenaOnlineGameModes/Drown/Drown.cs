@@ -124,7 +124,7 @@ namespace RainMeadow
             self.survivalScore = arena.aliveScore;
             self.spearHitScore = arena.spearHitScore;
             self.repeatSingleLevelForever = false;
-            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+            self.denEntryRule = arena.denEntryRule;
             self.rainWhenOnePlayerLeft = false;
             self.levelItems = true;
             self.fliesSpawn = true;
@@ -143,11 +143,7 @@ namespace RainMeadow
 
             RainMeadow.isArenaMode(out var arena);
             var text = !spearHits ? "Team points" : "Current points";
-
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && arena.setupTime > 0)
-            {
-                return Utils.Translate("Prepare to drown in violence,") + " " + Utils.Translate(PlayingAsText());
-            }
+            var waveText = "";
 
             var waveTimer = ArenaPrepTimer.FormatTime(currentWaveTimer);
             OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
@@ -167,15 +163,15 @@ namespace RainMeadow
                     }
                 }
             }
-            return $": {text}: {timerPoints}. Current Wave: {currentWave}. Next wave: {waveTimer}";
+            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+            {
+                waveText = $"Current Wave: {currentWave}. Next wave: {waveTimer}";
+            }
+            return $": {text}: {timerPoints}. {waveText}";
         }
 
         public override int SetTimer(ArenaMode arena)
         {
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
-            {
-                return base.SetTimer(arena);
-            }
             return arena.setupTime = 1;
         }
 
@@ -193,11 +189,6 @@ namespace RainMeadow
 
         public override int TimerDirection(ArenaMode arena, int timer)
         {
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
-            {
-                return --arena.setupTime;
-
-            }
             if (!openedDen)
             {
 
@@ -225,10 +216,6 @@ namespace RainMeadow
 
         public override bool HoldFireWhileTimerIsActive(ArenaMode arena)
         {
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
-            {
-                return base.HoldFireWhileTimerIsActive(arena);
-            }
             return arena.countdownInitiatedHoldFire = false;
         }
 
