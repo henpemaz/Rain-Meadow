@@ -260,7 +260,7 @@ namespace RainMeadow.UI.Components
                         // Validate that the clipboard text contains maps with ";"
                         if (!clipboardText.Contains(";"))
                         {
-                            arenaImportExportLabel.text = menu.Translate("Invalid format");
+                            arenaImportExportLabel.text = menu.Translate("Failed");
                             arenaImportExportLabel.label.color = Color.red;
                             return;
                         }

@@ -116,17 +116,18 @@ public class RainMeadowOptions : OptionInterface
 
 
     // DROWN
-    public readonly Configurable<int> MaxCreatureCount;
-    public readonly Configurable<int> PointsForSpear;
-    public readonly Configurable<int> PointsForExplSpear;
-    public readonly Configurable<int> PointsForBomb;
-    public readonly Configurable<int> PointsForElectricSpear;
-    public readonly Configurable<int> PointsForBoomerang;
+    public readonly Configurable<int> DrownMaxCreatureCount;
+    public readonly Configurable<int> DrownPointsForSpear;
+    public readonly Configurable<int> DrownPointsForExplSpear;
+    public readonly Configurable<int> DrownPointsForBomb;
+    public readonly Configurable<int> DrownPointsForElectricSpear;
+    public readonly Configurable<int> DrownPointsForBoomerang;
 
-    public readonly Configurable<int> PointsForRespawn;
-    public readonly Configurable<int> PointsForDenOpen;
-    public readonly Configurable<int> CreatureCleanup;
-    public readonly Configurable<int> PointsForRock;
+    public readonly Configurable<int> DrownPointsForRespawn;
+    public readonly Configurable<int> DrownPointsForDenOpen;
+    public readonly Configurable<int> DrownCreatureCleanup;
+    public readonly Configurable<int> DrownPointsForRock;
+    public readonly Configurable<KeyCode> DrownStoreKey;
 
 
     public readonly Configurable<KeyCode> StoreItem1;
@@ -277,18 +278,19 @@ public class RainMeadowOptions : OptionInterface
         ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
 
         //DROWN
-        MaxCreatureCount = config.Bind("DrownMaxCreatures", 10);
-        PointsForSpear = config.Bind("DrownPointsForSpear", 1);
-        PointsForExplSpear = config.Bind("DrownPointsForExplSpear", 10);
-        PointsForBomb = config.Bind("DrownPointsForBomb", 10);
-        PointsForElectricSpear = config.Bind("PointsForElectricSpear", 12);
+        DrownMaxCreatureCount = config.Bind("DrownMaxCreatures", 10);
+        DrownPointsForSpear = config.Bind("DrownPointsForSpear", 1);
+        DrownPointsForExplSpear = config.Bind("DrownPointsForExplSpear", 10);
+        DrownPointsForBomb = config.Bind("DrownPointsForBomb", 10);
+        DrownPointsForElectricSpear = config.Bind("PointsForElectricSpear", 12);
 
-        PointsForBoomerang = config.Bind("PointsForBoomerang", 15);
+        DrownPointsForBoomerang = config.Bind("PointsForBoomerang", 15);
 
-        PointsForRespawn = config.Bind("DrownPointsForRespawn", 25);
-        PointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
-        CreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
-        PointsForRock = config.Bind("PointsForRock", 0);
+        DrownPointsForRespawn = config.Bind("DrownPointsForRespawn", 25);
+        DrownPointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
+        DrownCreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
+        DrownPointsForRock = config.Bind("PointsForRock", 0);
+        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.Numlock);
 
 
         StoreItem1 = config.Bind("DrownStoreItem1", KeyCode.Alpha1);

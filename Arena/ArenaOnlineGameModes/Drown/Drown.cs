@@ -51,17 +51,17 @@ namespace RainMeadow
 
         private bool spearHits;
         public bool isInStore = false;
-        public int spearCost = RainMeadow.rainMeadowOptions.PointsForSpear.Value;
-        public int spearExplCost = RainMeadow.rainMeadowOptions.PointsForExplSpear.Value;
-        public int bombCost = RainMeadow.rainMeadowOptions.PointsForBomb.Value;
-        public int electricSpearCost = RainMeadow.rainMeadowOptions.PointsForElectricSpear.Value;
-        public int boomerangeCost = RainMeadow.rainMeadowOptions.PointsForBoomerang.Value;
-        public int respCost = RainMeadow.rainMeadowOptions.PointsForRespawn.Value;
-        public int rockCost = RainMeadow.rainMeadowOptions.PointsForRock.Value;
+        public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
+        public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
+        public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
+        public int electricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
+        public int boomerangeCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
+        public int respCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
+        public int rockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
 
-        public int denCost = RainMeadow.rainMeadowOptions.PointsForDenOpen.Value;
-        public int maxCreatures = RainMeadow.rainMeadowOptions.MaxCreatureCount.Value;
-        public int creatureCleanupWaves = RainMeadow.rainMeadowOptions.CreatureCleanup.Value;
+        public int denCost = RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value;
+        public int maxCreatures = RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value;
+        public int creatureCleanupWaves = RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value;
 
         private int _timerDuration;
         public bool openedDen = false;

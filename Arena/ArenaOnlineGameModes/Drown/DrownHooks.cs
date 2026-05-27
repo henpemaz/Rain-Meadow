@@ -177,7 +177,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode == arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == DrownMode.Drown.value).Value)
             {
-                text = text + $" - Press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to access the store";
+                text = text + $" - Press {RainMeadow.rainMeadowOptions.DrownStoreKey.Value} to access the store";
                 orig(self, text, wait, time, darken, hideHud);
             }
             else
