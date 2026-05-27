@@ -6,7 +6,7 @@ using Drown;
 
 namespace RainMeadow
 {
-    public class StoreOverlay : BaseStoreOverlay
+    public class DrownStoreOverlay : BaseStoreOverlay
     {
         public const string ElectricSpear = "Electric Spear";
         public const string Boomerang = "Boomerang";
@@ -20,9 +20,9 @@ namespace RainMeadow
         {
             public KeyCode hotkey;
             private int lastClickFrame = -1;
-            private StoreOverlay Store => (StoreOverlay)menu;
+            private DrownStoreOverlay Store => (DrownStoreOverlay)menu;
 
-            public ArenaItemButton(StoreOverlay menu, MenuObject owner, Vector2 pos, string itemName, int itemCost, KeyCode hotkey)
+            public ArenaItemButton(DrownStoreOverlay menu, MenuObject owner, Vector2 pos, string itemName, int itemCost, KeyCode hotkey)
                 : base(menu, owner, pos, itemName, itemCost)
             {
                 this.hotkey = hotkey;
@@ -40,7 +40,7 @@ namespace RainMeadow
             }
         }
 
-        public StoreOverlay(ProcessManager manager, RainWorldGame game, DrownMode drown, ArenaOnlineGameMode arena)
+        public DrownStoreOverlay(ProcessManager manager, RainWorldGame game, DrownMode drown, ArenaOnlineGameMode arena)
             : base(manager, game)
         {
             this.drown = drown;

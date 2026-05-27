@@ -9,7 +9,7 @@ namespace RainMeadow
         private RoomCamera camera;
         private RainWorldGame game;
         private DrownMode drown;
-        private StoreOverlay? storeOverlay;
+        private DrownStoreOverlay? storeOverlay;
         public bool active;
 
         public StoreHUD(HUD.HUD hud, RoomCamera camera, DrownMode drown) : base(hud)
@@ -29,7 +29,7 @@ namespace RainMeadow
                     if (storeOverlay == null)
                     {
                         RainMeadow.Debug("Creating storeOverlay overlay");
-                        storeOverlay = new StoreOverlay(game.manager, game, drown, arena);
+                        storeOverlay = new DrownStoreOverlay(game.manager, game, drown, arena);
                         this.active = true;
                         this.drown.isInStore = true;
                         OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
