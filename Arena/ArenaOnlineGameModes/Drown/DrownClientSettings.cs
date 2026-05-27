@@ -35,10 +35,12 @@ namespace Drown
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                var avatarSettings = (ArenaDrownClientSettings)entityData;
-                avatarSettings.isInStore = isInStore;
-                avatarSettings.iOpenedDen = iOpenedDen;
-
+                if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena != null && DrownMode.isDrownMode(arena, out var drown) && drown != null)
+                    {
+                        var avatarSettings = (ArenaDrownClientSettings)entityData;
+                        avatarSettings.isInStore = isInStore;
+                        avatarSettings.iOpenedDen = iOpenedDen;
+                    }
             }
 
             public override Type GetDataType() => typeof(ArenaDrownClientSettings);
