@@ -1347,7 +1347,8 @@ namespace RainMeadow
         $"watcherCamoTimer={arena.watcherCamoTimer}",
         $"watcherRippleLevel={arena.watcherRippleLevel}",
         $"weaponCollisionFix={arena.weaponCollisionFix}",
-    };
+        $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}"
+        };
 
             string combined = string.Join("|", pairs);
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
@@ -1357,15 +1358,13 @@ namespace RainMeadow
         {
             if (string.IsNullOrEmpty(base64Data)) return false;
 
-            if (!base64Data.Contains(";"))
-            {
-                return false;
-            }
-
-
             try
             {
                 string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
+                if (decoded.Contains(";"))
+                {
+                    return false; // NO MAPS
+                }
                 string[] pairs = decoded.Split('|');
 
                 foreach (string pair in pairs)
@@ -1409,6 +1408,11 @@ namespace RainMeadow
                         case "watcherRippleLevel": if (int.TryParse(val, out int i12)) arena.watcherRippleLevel = i12; break;
                         case "weaponCollisionFix": if (bool.TryParse(val, out bool b18)) arena.weaponCollisionFix = b18; break;
                         case "voidSpawnLethalityFactor": if (float.TryParse(val, out float b19)) arena.voidSpawnLethalityFactor = b19; break;
+                        case "bannedSlugs":
+                            arena.bannedSlugs = val.Split(',')
+                                                   .Select(s => int.TryParse(s.Trim(), out int result) ? result : 0)
+                                                   .ToList();
+                            break;
                     }
                 }
                 return true;
