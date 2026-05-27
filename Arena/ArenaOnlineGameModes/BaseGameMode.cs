@@ -424,12 +424,22 @@ namespace RainMeadow
                 return "Meadow_Menu_MutePlayerChat00";
             }
 
+            if (ModManager.MSC && owner.abstractPlayer != null && owner.abstractPlayer.realizedCreature != null && owner.abstractPlayer.realizedCreature is Player p && p.rippleDeathIntensity > 0.4f)
+            {
+                return "warpIconSealed";
+            }
+
             bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 if (display.slugIcon != null) display.slugIcon.scale = 0.08f;
                 return "meadowcoin";
+            }
+
+            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                return "Multiplayer_Star";
             }
 
             return "";

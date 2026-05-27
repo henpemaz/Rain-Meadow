@@ -218,11 +218,7 @@ namespace RainMeadow
                     }
                     else if (RainMeadow.isArenaMode(out var arena))
                     {
-                        if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
-                        {
-                            slugIcon.SetElementByName("Multiplayer_Star");
-                        }
-                        else if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
+                        if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
                         {
                             slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player));
                         }
