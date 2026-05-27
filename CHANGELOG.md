@@ -6,6 +6,7 @@
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
 - Slightly improved Void Amoeba's swim speed
 - Added configurable Void Amoeba lethality. Default multiplier is now 4x. You better run.
+- Added debuff icon for players with visual distortion from Amoeba
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 # Release 1.14.1
