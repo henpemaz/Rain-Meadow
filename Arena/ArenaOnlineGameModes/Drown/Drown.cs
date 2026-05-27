@@ -79,7 +79,7 @@ namespace RainMeadow
 
         public override bool IsExitsOpen(ArenaMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
-            if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1)
+            if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arena.setupTime > 10)
             {
                 return true;
             }
