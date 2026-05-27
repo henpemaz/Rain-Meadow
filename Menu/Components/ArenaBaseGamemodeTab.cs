@@ -6,7 +6,6 @@ using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
-using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
@@ -42,9 +41,12 @@ namespace RainMeadow.UI.Components
             nextButton;
         public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
         public MenuLabel arenaImportExportLabel;
+        public MenuLabel arenaSettingsImportExportLabel;
+
         public OpSimpleButton arenaPlaylistImportButton;
         public OpSimpleButton arenaPlaylistExportButton;
-
+        public OpSimpleButton arenaSettingsExportButton;
+        public OpSimpleButton arenaSettingsImportButton;
 
 
         public bool AllSettingsDisabled =>
@@ -217,34 +219,35 @@ namespace RainMeadow.UI.Components
             challengeDenEjectionCheckbox.Change();
 
 
+            float btnWidth = 90f; // Cut down from 180f
+            float btnGap = 6f;    // Small spacing between Copy and Import
+
+
             arenaImportExportLabel = new(menu, this, menu.Translate("Playlist:"),
                 new(leftMargin, topOffset - rowHeight * 8), new(labelWidth, 20f), false);
             arenaImportExportLabel.label.alignment = FLabelAlignment.Left;
 
-            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(180f, 30f), this.menu.Translate("Copy playlist to clipboard"));
+            // Copy Playlist
+            arenaPlaylistExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 8) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Copy"));
             arenaPlaylistExportButton.OnClick += (_) =>
             {
                 try
                 {
-
                     var arenaMenu = menu as ArenaOnlineLobbyMenu;
                     string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
-                    // Copy the code to the user's clipboard
                     GUIUtility.systemCopyBuffer = result;
                     arenaImportExportLabel.text = menu.Translate("Copied");
                     arenaImportExportLabel.label.color = Color.green;
-
                 }
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
                     arenaImportExportLabel.text = menu.Translate("Failed");
                     arenaImportExportLabel.label.color = Color.red;
-
                 }
             };
 
-            arenaPlaylistImportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(180f, 30f), this.menu.Translate("Import playlist from clipboard"));
+            arenaPlaylistImportButton = new(new Vector2(boxMargin + btnWidth + btnGap, topOffset - (rowHeight * 8) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Import"));
             arenaPlaylistImportButton.OnClick += (_) =>
             {
                 try
@@ -254,9 +257,18 @@ namespace RainMeadow.UI.Components
 
                     if (!string.IsNullOrEmpty(clipboardText))
                     {
+                        // Validate that the clipboard text contains maps with ";"
+                        if (!clipboardText.Contains(";"))
+                        {
+                            arenaImportExportLabel.text = menu.Translate("Invalid format");
+                            arenaImportExportLabel.label.color = Color.red;
+                            return;
+                        }
+
                         arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
                         List<string> playlist = DecodePlaylist(clipboardText);
-                        if (playlist.Count == 0)
+
+                        if (playlist == null || playlist.Count == 0)
                         {
                             arenaImportExportLabel.text = menu.Translate("Failed");
                             arenaImportExportLabel.label.color = Color.red;
@@ -267,9 +279,9 @@ namespace RainMeadow.UI.Components
                         {
                             arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
                         }
+
                         arenaImportExportLabel.text = menu.Translate("Imported");
                         arenaImportExportLabel.label.color = Color.green;
-
                     }
                 }
                 catch (Exception e)
@@ -277,10 +289,65 @@ namespace RainMeadow.UI.Components
                     RainMeadow.Error(e);
                     arenaImportExportLabel.text = menu.Translate("Failed import");
                     arenaImportExportLabel.label.color = Color.red;
-
                 }
             };
 
+
+
+            // Copy Settings
+            arenaSettingsImportExportLabel = new(menu, this, menu.Translate("Settings:"),
+                new(leftMargin, topOffset - rowHeight * 9), new(labelWidth, 20f), false);
+            arenaSettingsImportExportLabel.label.alignment = FLabelAlignment.Left;
+
+            arenaSettingsExportButton = new(new Vector2(boxMargin, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Copy"));
+            arenaSettingsExportButton.OnClick += (_) =>
+            {
+                try
+                {
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string result = arena.externalArenaGameMode.ExportLocalSettings(arena);
+                    GUIUtility.systemCopyBuffer = result;
+                    arenaSettingsImportExportLabel.text = menu.Translate("Copied");
+                    arenaSettingsImportExportLabel.label.color = Color.green;
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                    arenaSettingsImportExportLabel.label.color = Color.red;
+                }
+            };
+
+            // Import Settings 
+            arenaSettingsImportButton = new(new Vector2(boxMargin + btnWidth + btnGap, topOffset - (rowHeight * 9) - 2f), new Vector2(btnWidth, 30f), this.menu.Translate("Import"));
+            arenaSettingsImportButton.OnClick += (_) =>
+            {
+                try
+                {
+                    var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    string clipboardText = UnityEngine.GUIUtility.systemCopyBuffer;
+
+                    if (!string.IsNullOrEmpty(clipboardText))
+                    {
+                        bool success = arena.externalArenaGameMode.ImportLocalSettings(arena, clipboardText);
+                        if (!success)
+                        {
+                            arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                            arenaSettingsImportExportLabel.label.color = Color.red;
+                            return;
+                        }
+
+                        arenaSettingsImportExportLabel.text = menu.Translate("Imported");
+                        arenaSettingsImportExportLabel.label.color = Color.green;
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    arenaSettingsImportExportLabel.text = menu.Translate("Failed");
+                    arenaSettingsImportExportLabel.label.color = Color.red;
+                }
+            };
 
 
 
@@ -294,7 +361,8 @@ namespace RainMeadow.UI.Components
                 denScoreLabel,
                 emptyKillTagScoreLabel,
                 challengeDenEjectionLabel,
-                arenaImportExportLabel
+                arenaImportExportLabel,
+                arenaSettingsImportExportLabel
             );
             new PatchedUIelementWrapper(tabWrapper, foodScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, spearHitScoreTextBox);
@@ -306,6 +374,9 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportButton);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistImportButton);
+            new PatchedUIelementWrapper(tabWrapper, arenaSettingsImportButton);
+            new PatchedUIelementWrapper(tabWrapper, arenaSettingsExportButton);
+
 
 
         }
@@ -469,6 +540,22 @@ namespace RainMeadow.UI.Components
             {
                 arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
             }
+
+            if (arenaSettingsImportExportLabel.text != "Settings:")
+            {
+                timeToClearMessage--;
+                if (timeToClearMessage <= 0)
+                {
+                    arenaSettingsImportExportLabel.text = "Settings:";
+                    arenaSettingsImportExportLabel.label.color = Color.white;
+
+                    timeToClearMessage = 120;
+                }
+            }
+            if (arenaSettingsImportButton != null)
+            {
+                arenaSettingsImportButton.greyedOut = OwnerSettingsDisabled;
+            }
         }
 
         /// <summary>
@@ -512,5 +599,6 @@ namespace RainMeadow.UI.Components
                 return new List<string>();
             }
         }
+
     }
 }

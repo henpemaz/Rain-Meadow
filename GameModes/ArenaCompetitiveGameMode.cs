@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Drown;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
@@ -37,6 +38,9 @@ namespace RainMeadow
         public bool leaveToRestart;
 
         public bool voidMasterEnabled = RainMeadow.rainMeadowOptions.VoidMaster.Value;
+
+        public float voidSpawnLethalityFactor = RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value;
+
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
@@ -148,6 +152,7 @@ namespace RainMeadow
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
+        public ArenaDrownClientSettings arenaDrownClientSettings;
         public SlugcatCustomization avatarSettings;
 
 
@@ -168,6 +173,7 @@ namespace RainMeadow
             };
             arenaClientSettings = new ArenaClientSettings();
             arenaTeamClientSettings = new ArenaTeamClientSettings();
+            arenaDrownClientSettings = new ArenaDrownClientSettings();
 
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
@@ -429,6 +435,7 @@ namespace RainMeadow
             {
                 this.AddExternalGameModes(ArenaChallengeMode.ChallengeMode, new ArenaChallengeMode());
             }
+            this.AddExternalGameModes(DrownMode.Drown, new DrownMode());
         }
 
         public void ResetInvDetails()
@@ -894,12 +901,12 @@ namespace RainMeadow
 
         }
 
-        public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
+        public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl, bool calculateTotal)
         {
-            if (pl == null) 
+            if (pl == null)
             {
-               RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
-               return;
+                RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
+                return;
             }
             int id = pl.inLobbyId;
 
@@ -911,13 +918,17 @@ namespace RainMeadow
             if (playerNumberWithDeaths.TryGetValue(id, out int currentDeaths) && currentDeaths < player.deaths)
                 playerNumberWithDeaths[id] = player.deaths;
 
-            // Total Score
-            if (playerTotScore.TryGetValue(id, out int currentTot) && currentTot < player.totScore)
-                playerTotScore[id] = player.totScore;
+            // Score
+            if (playerNumberWithScore.TryGetValue(id, out _) && playerTotScore.ContainsKey(id))
+            {
 
-            // Round Score
-            if (playerNumberWithScore.TryGetValue(id, out int currentScore) && currentScore < player.score)
                 playerNumberWithScore[id] = player.score;
+                if (calculateTotal) // This function runs in a lot of spots, so I just set a bool to manage when we are done with calculations
+                {
+                    playerTotScore[id] += player.score;
+                }
+
+            }
         }
         public void AddOrInsertPlayerStats(
             ArenaOnlineGameMode arena,
@@ -936,13 +947,12 @@ namespace RainMeadow
                     if (playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
                         playerNumberWithDeaths[pl.inLobbyId] = newArenaPlayer.deaths;
 
-                    // Total Score
-                    if (playerTotScore.TryGetValue(pl.inLobbyId, out int currentTot) && currentTot < newArenaPlayer.totScore)
-                        playerTotScore[pl.inLobbyId] = newArenaPlayer.totScore;
 
                     // Round Score
-                    if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out int currentScore) && currentScore < newArenaPlayer.score)
+                    if (playerNumberWithScore.TryGetValue(pl.inLobbyId, out _) && playerTotScore.ContainsKey(pl.inLobbyId))
+                    {
                         playerNumberWithScore[pl.inLobbyId] = newArenaPlayer.score;
+                    }
 
                     if (
                         arena.playerNumberWithTrophies[pl.inLobbyId].Count
@@ -1316,6 +1326,7 @@ namespace RainMeadow
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
                 lobby.AddData(new ChallengeLobbyData());
+                lobby.AddData(new DrownData());
             }
         }
 
@@ -1323,6 +1334,7 @@ namespace RainMeadow
         {
             clientSettings.AddData(arenaClientSettings);
             clientSettings.AddData(arenaTeamClientSettings);
+            clientSettings.AddData(arenaDrownClientSettings);
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
