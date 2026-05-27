@@ -354,7 +354,7 @@ public partial class RainMeadow
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdfld<Player>("rippleDeathIntensity"),
                 x => x.MatchLdcR4(0f),
-                x => x.OpCode.FlowControl == FlowControl.Cond_Branch,
+                x => x.MatchBleUn(out _),
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<Player>("deathEffect"),
                 x => x.MatchBrtrue(out skipDeathEffectLabel)))
