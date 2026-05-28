@@ -636,9 +636,9 @@ public static class MeadowExtEnumSync
         {
             // ordering them alphabetically to reduce order mismatch chances
             SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); 
-            // SyncedExtEnumList[i].LogMappedExtEnum();
+            if (OnlineManager.lobby.isOwner) {SyncedExtEnumList[i].LogMappedExtEnum();}
         }
-        RainMeadow.Debug($"Enum entries map reset for <{SyncedExtEnumList.Count}> enums : [{string.Join(", ", SyncedExtEnumList.Select(x => x.enumType.FullName))}]");
+        RainMeadow.Info($"Enum entries map reset for <{SyncedExtEnumList.Count}> enums : [{string.Join(", ", SyncedExtEnumList.Select(x => x.enumType.FullName))}]");
     }
 
     // --------------------- Methods and Attributes
@@ -768,19 +768,23 @@ public static class MeadowExtEnumSync
             {
                 string[] compressedExtEnum = CompressedExtEnumStringToArray(compressedExtEnumKeyPair.Value);
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(compressedExtEnum);
-                RainMeadow.Debug($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
+                RainMeadow.Info($"Read and Synced ExtEnum {compressedExtEnumKeyPair.Key} of host ! Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
                 if (!result.IsOK)
                 {
                     SyncedExtEnumList[i].storedCompressedValues = compressedExtEnum;
                     SyncedExtEnumList[i].clarificationAttempt = 0;
                     clarificationTable.Add(result);
                 }
+                else
+                {
+                    SyncedExtEnumList[i].LogMappedExtEnum();
+                }
             }
         }
 
         if (clarificationTable.Count > 0)
         {
-            RainMeadow.Debug($"Asking clarification for {clarificationTable.Count} enums : [{string.Join(", ", clarificationTable.Select(x => x.TypeFullName))}]");
+            RainMeadow.Info($"Asking clarification for {clarificationTable.Count} enums : [{string.Join(", ", clarificationTable.Select(x => x.TypeFullName))}]");
             rpc.from.InvokeRPC(AskFromClarification, clarificationTable);
         }
         else
@@ -827,7 +831,7 @@ public static class MeadowExtEnumSync
                 RainMeadow.Error($"Couldn't find Enum to clarify : {resultErrors.TypeFullName} ! Will ignore it.");
             }
         }
-        RainMeadow.Debug($"Sending clarification for {thingsThatShoubldBeClearerTable.Count} enums : [{string.Join(", ", thingsThatShoubldBeClearerTable.Select(x => x.TypeFullName))}]");
+        RainMeadow.Info($"Sending clarification for {thingsThatShoubldBeClearerTable.Count} enums : [{string.Join(", ", thingsThatShoubldBeClearerTable.Select(x => x.TypeFullName))}]");
         rpc.from.InvokeRPC(SendToSyncClarification, thingsThatShoubldBeClearerTable);
     }
     [RPCMethod(security = RPCSecurity.NoSecurity)]  // Checking and syncing (again) the enums clarified. If everything goes right, the client should have everything clear and done here. Owner -> Client
@@ -855,7 +859,7 @@ public static class MeadowExtEnumSync
                 }
 
                 CompressedExtEnumBase.DecompressionResult result = SyncedExtEnumList[i].ReadAndSyncCompressedEntries(SyncedExtEnumList[i].storedCompressedValues);
-                RainMeadow.Debug($"Read and Synced ExtEnum {resultClarification.TypeFullName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
+                RainMeadow.Info($"Read and Synced ExtEnum {resultClarification.TypeFullName} of host again..! Attemps : {SyncedExtEnumList[i].clarificationAttempt + 1}, Missing enums : {result.MissingExtEnum.Length}, Ambiguous enums : {result.AmbiguousExtEnum.Length}, Extra enums : {result.AdditionnalExtEnum.Length}, Status OK ? {result.IsOK}");
                 if (!result.IsOK)
                 {
                     // We don't want this to run indefinetly !
@@ -871,6 +875,7 @@ public static class MeadowExtEnumSync
                     }
                 }
                 SyncedExtEnumList[i].storedCompressedValues = [];
+                SyncedExtEnumList[i].LogMappedExtEnum();
             }
             else
             {
@@ -880,7 +885,7 @@ public static class MeadowExtEnumSync
 
         if (reclarificationTable.Count > 0)
         {
-            RainMeadow.Debug($"Asking clarification again for {reclarificationTable.Count} enums : [{string.Join(", ", reclarificationTable.Select(x => x.TypeFullName))}]");
+            RainMeadow.Info($"Asking clarification again for {reclarificationTable.Count} enums : [{string.Join(", ", reclarificationTable.Select(x => x.TypeFullName))}]");
             rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
         }
         else
