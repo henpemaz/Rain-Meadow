@@ -7,6 +7,7 @@
 - Slightly improved Void Amoeba's swim speed
 - Added configurable Void Amoeba lethality. Default multiplier is now 4x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
+- Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 # Release 1.14.1
