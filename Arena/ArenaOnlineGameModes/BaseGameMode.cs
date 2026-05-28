@@ -419,15 +419,15 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+            if (ModManager.MSC && owner.abstractPlayer != null && owner.abstractPlayer.realizedCreature != null && owner.abstractPlayer.realizedCreature is Player p && p.rippleDeathIntensity > 0.4f)
+            {
+                return "warpIconSealed";
+            }
             if (customization.globalMute)
             {
                 return "Meadow_Menu_MutePlayerChat00";
             }
 
-            if (ModManager.MSC && owner.abstractPlayer != null && owner.abstractPlayer.realizedCreature != null && owner.abstractPlayer.realizedCreature is Player p && p.rippleDeathIntensity > 0.4f)
-            {
-                return "warpIconSealed";
-            }
 
             bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
@@ -742,7 +742,14 @@ namespace RainMeadow
                     == Watcher.WatcherEnums.SlugcatStatsName.Watcher
             )
             {
-                (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+                if ((abstractCreature.realizedCreature as Player).rippleLevel >= 3f)
+                {
+                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 80;
+                }
+                else
+                {
+                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+                }
             }
         }
 
@@ -1347,7 +1354,8 @@ namespace RainMeadow
         $"watcherCamoTimer={arena.watcherCamoTimer}",
         $"watcherRippleLevel={arena.watcherRippleLevel}",
         $"weaponCollisionFix={arena.weaponCollisionFix}",
-        $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}"
+        $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}",
+
         };
 
             string combined = string.Join("|", pairs);
