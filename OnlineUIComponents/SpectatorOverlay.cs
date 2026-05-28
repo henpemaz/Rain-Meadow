@@ -13,7 +13,7 @@ namespace RainMeadow
         public static float ButtonSize => 30;
         public static Vector2 MenuShift => new(-186f, 553f);
         private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x;
-        public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
+        public List<PlayerButton> PlayerButtons => scroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game, RoomCamera camera) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
             this.game = game;
@@ -26,8 +26,8 @@ namespace RainMeadow
             label = new(this, page, Translate("PLAYERS"), pos, new(110, 30), true);
             page.subObjects.Add(label);
 
-            playerScroller = new(this, page, new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
-            page.subObjects.Add(playerScroller);
+            scroller = new(this, page, new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
+            page.subObjects.Add(scroller);
 
             pages.Add(page);
         }
@@ -47,14 +47,14 @@ namespace RainMeadow
                     button.avatars = realizedPlayers.Where(x => x.owner == button.player).ToList();
                     continue;
                 }
-                playerScroller.RemoveButton(button, false);
+                scroller.RemoveButton(button, false);
             }
             foreach (OnlinePlayer player in newPlayers)
             {
-                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
-                playerScroller.AddScrollObjects(playerButton);
+                PlayerButton playerButton = new(this, scroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), scroller.GetIdealPosWithScrollForButton(scroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
+                scroller.AddScrollObjects(playerButton);
             }
-            playerScroller.ConstrainScroll();
+            scroller.ConstrainScroll();
             return true;
         }
         public override void Update()
@@ -76,7 +76,7 @@ namespace RainMeadow
             var page = pages[0];
             var pos = new Vector2(ScreenWidth, 0) + MenuShift - page.pos;
             label.pos = pos;
-            playerScroller.pos = new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)); // ugly: repeating the code :3
+            scroller.pos = new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)); // ugly: repeating the code :3
         }
         public override string UpdateInfoText()
         {
@@ -99,7 +99,7 @@ namespace RainMeadow
         public RainWorldGame game;
         public RoomCamera camera;
         public MenuLabel label;
-        public ButtonScroller playerScroller;
+        public ButtonScroller scroller; // previously "playerScroller"
         public bool forceNonMouseSelectFreeze = false;
         public class PlayerButton : ButtonScroller.ScrollerButton //makes sense to just remove the pos property
         {
