@@ -49,10 +49,10 @@ namespace RainMeadow
         }
         public override void Init()
         {
-            base.Init();
-
             Page page = new(this, null, "spectator", 0);
             pages.Add(page);
+
+            base.Init();
 
             var pos = new Vector2(ScreenSize.x, ScreenSize.y / 2) + MenuShift - page.pos;
 
@@ -65,6 +65,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
             UpdateList();
             foreach (PlayerButton button in PlayerButtons)
             {
