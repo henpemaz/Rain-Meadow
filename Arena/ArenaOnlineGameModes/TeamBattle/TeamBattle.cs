@@ -605,19 +605,22 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     arena.isInGame = true; // used for readied players at the beginning
                     arena.leaveForNextLevel = false;
-
-                    foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
+                    arena.playersLateWaitingInLobbyForNextRound.Clear();
+                    arena.hasPermissionToRejoin = false;
+                }
+                for (int x = 0; x < arena.arenaSittingOnlineOrder.Count; x++)
+                {
+                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[x]);
+                    if (getPlayer != null)
                     {
-                        OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            onlineArenaPlayer
-                        );
-                        if (getPlayer != null)
+                        if (OnlineManager.lobby.isOwner)
                         {
                             arena.CheckToAddPlayerStatsToDicts(getPlayer);
                         }
+                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;${ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
+                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};TEAM;{teamNames[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(getPlayer).team]}");
+
                     }
-                    arena.playersLateWaitingInLobbyForNextRound.Clear();
-                    arena.hasPermissionToRejoin = false;
                 }
             }
         }

@@ -265,7 +265,7 @@ namespace RainMeadow
             // 7.
             if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
             {
-                RainMeadow.Debug($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
+                RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
                 // Cash Money Slugs
                 ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(absPlayerCreature.owner);
                 if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
@@ -860,18 +860,20 @@ namespace RainMeadow
             {
                 arena.isInGame = true; // used for readied players at the beginning
                 arena.leaveForNextLevel = false;
-                foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
+                arena.playersLateWaitingInLobbyForNextRound.Clear();
+                arena.hasPermissionToRejoin = false;
+            }
+            for (int x = 0; x < arena.arenaSittingOnlineOrder.Count; x++)
+            {
+                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[x]);
+                if (getPlayer != null)
                 {
-                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                        onlineArenaPlayer
-                    );
-                    if (getPlayer != null)
+                    if (OnlineManager.lobby.isOwner)
                     {
                         arena.CheckToAddPlayerStatsToDicts(getPlayer);
                     }
+                    RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;{ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
                 }
-                arena.playersLateWaitingInLobbyForNextRound.Clear();
-                arena.hasPermissionToRejoin = false;
             }
 
             if (
