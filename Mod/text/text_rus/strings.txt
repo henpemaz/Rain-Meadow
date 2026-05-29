@@ -550,18 +550,15 @@ New character!|Новое существо!
 died.|умер.
 was crushed by the rain.|был раздавлен дождём.
 fell into the abyss.|упал в бездну.
-fell into the abyss thanks to|упал в бездну благодаря
 was drowned by|был утоплен существом
 drowned.|утонул.
 hit the ground too hard.|слишком сильно врезался в землю.
-hit the ground too hard thanks to|слишком сильно врезался в землю благодаря
 was killed through unknown means.|был убит неведомым методом.
 tried to swim in burning liquid.|пытался плавать в обжигающей жидкости.
 spontaneously combusted.|внезапно взорвался.
 froze to death.|замёрз до смерти.
 was swallowed by the grass.|был поглощён травой.
 was swallowed by the walls.|был поглощён стеной.
-was swallowed by the walls thanks to|был поглощён стеной благодаря
 was electrocuted.|был поражён электрическим током.
 licked the power.|лизнул источник питания.
 was consummed by the swarm.|был поглощён роем.
@@ -573,11 +570,11 @@ was consumed by locusts.|был съеден саранчой.
 swam with the ripples.|плыл вместе с рябью.
 experienced the force of fresh fruit.|прочувствовал силу свежих фруктов.
 was burnt to a crisp.|был поджарен до хрустящей косточки.
-was slain by|был повержен
-was ascended by|был вознесён
+was slain by|был(-а) повержен(-а)
+was ascended by|был(-а) вознесён(-а)
 was zapped by a|был поражён существом
 was taken by a|был захвачен существом
-was taken into the abyss by|был унесен в бездну
+was taken into the abyss by|был(-а) унесен(-а) в бездну
 was slain by a|был убит существом
 
 ///Имена существ для сообщений о смерти
