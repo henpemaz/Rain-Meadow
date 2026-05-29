@@ -35,7 +35,7 @@ namespace RainMeadow
 
         public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
         {
-            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Toggle Spear Hits for teams or FFA"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn of Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
         public static bool isDrownMode(ArenaMode arena, out DrownMode mode)
