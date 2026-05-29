@@ -10,8 +10,8 @@ namespace RainMeadow
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
-        public static Vector2 MenuShift => new(-186f, 553f);
-        private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x;
+        public static Vector2 MenuShift => new(-186f, 171f);
+        private Vector2 ScreenSize => manager.rainWorld.options.ScreenSize;
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game, RoomCamera camera) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
@@ -54,7 +54,7 @@ namespace RainMeadow
             Page page = new(this, null, "spectator", 0);
             pages.Add(page);
 
-            var pos = new Vector2(ScreenWidth, 0) + MenuShift - page.pos;
+            var pos = new Vector2(ScreenSize.x, ScreenSize.y / 2) + MenuShift - page.pos;
 
             MenuLabel label = new(this, page, Translate("PLAYERS"), pos, new(110, 30), true);
             page.subObjects.Add(label);
