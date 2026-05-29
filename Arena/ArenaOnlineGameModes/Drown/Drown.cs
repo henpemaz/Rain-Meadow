@@ -340,19 +340,19 @@ namespace RainMeadow
                     {
                         var creatureAlive = 0;
                         for (int i = 0; i < self.room.abstractRoom.creatures.Count; i++)
-{
-    var currentCreature = self.room.abstractRoom.creatures[i];
+                        {
+                            var currentCreature = self.room.abstractRoom.creatures[i];
 
-    // Check if the creature is actually realized in the room
-    if (currentCreature.realizedCreature != null)
-    {
-        // Check if it is alive and not a Slugcat
-        if (currentCreature.state.alive && currentCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat)
-        {
-            creatureAlive++;
-        }
-    }
-}
+                            // Check if the creature is actually realized in the room
+                            if (currentCreature.realizedCreature != null)
+                            {
+                                // Check if it is alive and not a Slugcat
+                                if (currentCreature.state.alive && currentCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat)
+                                {
+                                    creatureAlive++;
+                                }
+                            }
+                        }
                         if (creatureAlive < maxCreatures)
                         {
                             self.SpawnCreatures();
