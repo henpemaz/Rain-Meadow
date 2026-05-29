@@ -19,16 +19,7 @@ namespace RainMeadow
             this.camera = camera;
             selectedObject = null;
 
-            Page page = new(this, null, "spectator", 0);
-
-            var pos = new Vector2(ScreenWidth, 0) + MenuShift;
-            label = new(this, page, Translate("PLAYERS"), pos, new(110, 30), true);
-            page.subObjects.Add(label);
-
-            scroller = new(this, page, new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
-            page.subObjects.Add(scroller);
-
-            pages.Add(page);
+            scroller = null!;
         }
         private bool UpdateList()
         {
@@ -56,6 +47,21 @@ namespace RainMeadow
             scroller.ConstrainScroll();
             return true;
         }
+        public override void Init()
+        {
+            base.Init();
+
+            Page page = new(this, null, "spectator", 0);
+            pages.Add(page);
+
+            var pos = new Vector2(ScreenWidth, 0) + MenuShift - page.pos;
+
+            MenuLabel label = new(this, page, Translate("PLAYERS"), pos, new(110, 30), true);
+            page.subObjects.Add(label);
+
+            scroller = new(this, page, new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
+            page.subObjects.Add(scroller);
+        }
         public override void Update()
         {
             base.Update();
@@ -71,11 +77,6 @@ namespace RainMeadow
                 selectedObject = null;
 
             }
-
-            var page = pages[0];
-            var pos = new Vector2(ScreenWidth, 0) + MenuShift - page.pos;
-            label.pos = pos;
-            scroller.pos = new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)); // ugly: repeating the code :3
         }
         public override string UpdateInfoText()
         {
@@ -97,7 +98,6 @@ namespace RainMeadow
         public AbstractCreature? spectatee;
         public RainWorldGame game;
         public RoomCamera camera;
-        public MenuLabel label;
         public ButtonScroller scroller; // previously "playerScroller"
         public bool forceNonMouseSelectFreeze = false;
         public class PlayerButton : ButtonScroller.ScrollerButton //makes sense to just remove the pos property
