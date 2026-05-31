@@ -90,7 +90,7 @@ namespace RainMeadow
             public bool disableMaul;
 
             [OnlineField(group = "arenaSetup")]
-            public bool disableArtiStun;
+            public int artiStunDistance;
 
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
@@ -255,7 +255,7 @@ namespace RainMeadow
                 painCatThrows = arena.painCatThrows;
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
-                disableArtiStun = arena.disableArtiStun;
+                artiStunDistance = arena.artiStunDistance;
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
@@ -343,7 +343,7 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-                (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
+                (lobby.gameMode as ArenaOnlineGameMode).artiStunDistance = artiStunDistance;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
