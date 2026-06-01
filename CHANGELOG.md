@@ -9,6 +9,7 @@
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
 - Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
+- Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 # Release 1.14.1
