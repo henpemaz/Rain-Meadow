@@ -16,6 +16,7 @@ namespace RainMeadow
         public FLabel username;
         public List<FLabel> messageLabels = new();
         public FLabel pingLabel;
+        public FLabel? scoreLabel;
         public FSprite slugIcon;
         public OnlinePlayer player;
         public class Message
@@ -163,6 +164,15 @@ namespace RainMeadow
             this.arrowSprite.alpha = 0f;
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = lighter_color;
+
+            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.winByScore)
+            {
+                this.scoreLabel = new FLabel(Custom.GetFont(), "0");
+                owner.hud.fContainers[0].AddChild(this.scoreLabel);
+                this.scoreLabel.alpha = 0f;
+                this.scoreLabel.x = -1000f;
+                this.scoreLabel.color = Color.white;
+            }
 
             this.customization = customization;
 
@@ -364,6 +374,23 @@ namespace RainMeadow
             this.slugIcon.x = pos.x;
             this.slugIcon.y = pos.y;
 
+            if (RainMeadow.isArenaMode(out var arena) && this.scoreLabel != null)
+            {
+                this.scoreLabel.x = pos.x + 20f;
+                this.scoreLabel.y = pos.y;
+                this.scoreLabel.alpha = num;
+                int lobbyId = player.inLobbyId;
+                if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
+                    arena.playerNumberWithScore.TryGetValue(lobbyId, out int roundScore))
+                {
+                    bool sessionEnded = owner.hud.rainWorld.processManager.currentMainLoop is RainWorldGame g &&
+                                        g.session is ArenaGameSession s && s.sessionEnded;
+                    this.scoreLabel.text = sessionEnded
+                        ? totScore.ToString()
+                        : (totScore + roundScore).ToString();
+                }
+            }
+
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
             if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
@@ -409,6 +436,10 @@ namespace RainMeadow
             pingLabel.RemoveFromContainer();
             foreach (var label in this.messageLabels) label.RemoveFromContainer();
             this.slugIcon.RemoveFromContainer();
+            if (this.scoreLabel != null)
+            {
+                this.scoreLabel.RemoveFromContainer();
+            }
         }
     }
 }
