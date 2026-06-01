@@ -114,6 +114,8 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<int> ArenaFlairActive;
 
+    public readonly Configurable<bool> EnableMeadowCosmetics;
+
 
     // DROWN
     public readonly Configurable<int> DrownMaxCreatureCount;
@@ -276,6 +278,7 @@ public class RainMeadowOptions : OptionInterface
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
         GlobalMute = config.Bind("GlobalMute", false);
         ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
+        EnableMeadowCosmetics = config.Bind("EnableMeadowCosmetics", true);
 
         //DROWN
         DrownMaxCreatureCount = config.Bind("DrownMaxCreatures", 10);
@@ -635,6 +638,9 @@ public class RainMeadowOptions : OptionInterface
             {
                 colorEdge = Menu.MenuColorEffect.rgbWhite
             },
+
+            new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
+            new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
             ];
 
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];

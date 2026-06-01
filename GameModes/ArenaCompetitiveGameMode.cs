@@ -60,6 +60,8 @@ namespace RainMeadow
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
+        public bool enableMeadowCosmetics = RainMeadow.rainMeadowOptions.EnableMeadowCosmetics.Value;
+
         public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
 
         public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
@@ -1355,6 +1357,19 @@ namespace RainMeadow
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
             return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
+        }
+
+        public void DisableMeadowCosmetics()
+        {
+            if (enableMeadowCosmetics == false)
+            {
+                RainMeadow.rainMeadowOptions.ArenaFlairActive.Value = 0;
+                RainMeadow.rainMeadowOptions.WearingCape.Value = false;
+                RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = Color.red;
+                RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value = true;
+                avatarSettings.wearingCape = false;
+                avatarSettings.eventCape = null;
+            }
         }
     }
 }

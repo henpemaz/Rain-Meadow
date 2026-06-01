@@ -159,6 +159,9 @@ namespace RainMeadow
             public bool challengeDenEjection;
 
             [OnlineField(group = "arenaSetup")]
+            public bool enableMeadowCosmetics;
+
+            [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
 
             // Group: arenaGameplay
@@ -286,6 +289,8 @@ namespace RainMeadow
 
                 artiExplosionCapacity = arena.artiExplosionCount;
 
+                enableMeadowCosmetics = arena.enableMeadowCosmetics;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -382,6 +387,8 @@ playerNumberWithTrophiesPerRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
+
+                (lobby.gameMode as ArenaOnlineGameMode).enableMeadowCosmetics = enableMeadowCosmetics;
 
             }
 

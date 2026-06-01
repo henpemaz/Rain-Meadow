@@ -1357,6 +1357,7 @@ namespace RainMeadow
         $"watcherRippleLevel={arena.watcherRippleLevel}",
         $"weaponCollisionFix={arena.weaponCollisionFix}",
         $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}",
+        $"enableMeadowCosmetics={arena.enableMeadowCosmetics}",
 
         };
 
@@ -1423,6 +1424,7 @@ namespace RainMeadow
                                                    .Select(s => int.TryParse(s.Trim(), out int result) ? result : 0)
                                                    .ToList();
                             break;
+                        case "enableMeadowCosmetics": if (bool.TryParse(val, out bool b20)) arena.enableMeadowCosmetics = b20; break;
                     }
                 }
                 return true;
