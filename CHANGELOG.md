@@ -1,3 +1,8 @@
+# Release 1.15.0
+
+## General
+- Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+
 # Release 1.14.1
 
 ## Engine 
