@@ -78,8 +78,8 @@ namespace RainMeadow
             // spear.addPoles = stuckInWall.HasValue && !spear.hasHorizontalBeamState && !(spear is ExplosiveSpear);
 
             spear.spearmasterNeedle_hasConnection = needleActive;
-
-            if (stuckInChunk is not null)
+        
+            if (!onlineEntity.IsLocked("parry") && stuckInChunk is not null)
             {
                 spear.stuckInObject = stuckInChunk.owner;
                 spear.stuckInChunkIndex = stuckInChunk.index;

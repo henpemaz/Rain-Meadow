@@ -185,7 +185,7 @@ namespace RainMeadow
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
 
-            IL.Player.ClassMechanicsArtificer += Player_ArtificerParryNStunRange;
+            IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
         }
         
         // Restrict Artificer's parry and stun range in arena
@@ -193,16 +193,14 @@ namespace RainMeadow
         private const float VANILLA_ARTI_STUN_RANGE = 200f;
         private const float VANILLA_ARTI_STUNTHROUGH_RANGE = 60f;
         private const float ARTI_PARRY_MAX_COOLDOWN = 40f;
-        private const int ARTI_PARRY_EXTRA_FRAMES = 5;
-        private bool IsPlayerLocal(Player player) =>  
-            player.abstractCreature?.GetOnlineCreature() is not OnlineCreature onlineCreature 
-            || onlineCreature.isMine;
+        private const int ARTI_PARRY_EXTRA_FRAMES = 4;
         private bool IsArtiInExtraParryFrames(Player player) => isArenaMode(out var arenaOnline)
-            && IsPlayerLocal(player)
-            && arenaOnline.artiParryDistance > 0
+            && player.IsLocal()
+            && arenaOnline.artiParryLeniency
+            && arenaOnline.artiParryDistanceMult > 0
             && player.pyroParryCooldown < ARTI_PARRY_MAX_COOLDOWN 
             && player.pyroParryCooldown > (ARTI_PARRY_MAX_COOLDOWN - ARTI_PARRY_EXTRA_FRAMES);
-        private void Player_ArtificerParryNStunRange(ILContext il)
+        private void Player_ClassMechanicsArtificer_ArtificerConfiguration(ILContext il)
         {
             try
             {
@@ -254,7 +252,7 @@ namespace RainMeadow
                     cursor.EmitDelegate((float orig) =>
                     {
                         return isArenaMode(out var arenaOnline) 
-                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistance / VANILLA_ARTI_PARRY_RANGE), 0.5f, 2f) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
                             : orig;
                     });
                 }
@@ -270,7 +268,7 @@ namespace RainMeadow
                     cursor.EmitDelegate((float orig) =>
                     {
                         return isArenaMode(out var arenaOnline) 
-                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistance / VANILLA_ARTI_PARRY_RANGE), 0.5f, 2f) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
                             : orig;
                     });
                 }
@@ -291,7 +289,7 @@ namespace RainMeadow
 
                 cursor.EmitDelegate((float orig) =>
                 {
-                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiParryDistance : orig;
+                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiParryDistanceMult * VANILLA_ARTI_PARRY_RANGE : orig;
                 });
 
                 
@@ -302,7 +300,7 @@ namespace RainMeadow
                 
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloc, 20);
-                cursor.EmitDelegate((Player player, Weapon weapon) => weapon.thrownBy == player || !IsPlayerLocal(player));
+                cursor.EmitDelegate((Player player, Weapon weapon) => weapon.thrownBy == player || !player.IsLocal());
                 cursor.Emit(OpCodes.Brtrue, toAfterWeaponAddedToList);
 
                 // Change the stun range value
@@ -316,7 +314,7 @@ namespace RainMeadow
                 
                 cursor.EmitDelegate((float orig) =>
                 {
-                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiStunDistance : orig;
+                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiStunDistanceMult * VANILLA_ARTI_STUN_RANGE : orig;
                 });
 
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
@@ -325,7 +323,7 @@ namespace RainMeadow
                 
                 cursor.EmitDelegate((float orig) =>
                 {
-                    return isArenaMode(out var arenaOnline) ? orig * (arenaOnline.artiStunDistance/VANILLA_ARTI_STUN_RANGE) : orig;
+                    return isArenaMode(out var arenaOnline) ? orig * arenaOnline.artiStunDistanceMult : orig;
                 });
 
                 // Skip the death/stun part if we're in the frame leniency (it already happened)

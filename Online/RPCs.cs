@@ -33,19 +33,26 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Weapon_CreatureDeflect(OnlinePhysicalObject weapon, RealizedWeaponState realizedWeaponState, bool silentDeflect)
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject onlineWeapon, RealizedWeaponState realizedWeaponState, bool artificerParry = false, bool isSilent = false)
         {
-            if (weapon.IsLocked("parry")) return;
+            if (onlineWeapon.IsLocked("parry")) return;
             
             try
             {
-                if (weapon.apo.realizedObject is Spear spear)
+                if (onlineWeapon.apo.realizedObject is Weapon weapon)
                 {
-                    realizedWeaponState.ReadTo(weapon);  // actually, let everyone enjoy the spectacle.
-                    if (!silentDeflect) // artificer's deflect is silent, the parry sound is loud enough
+                    realizedWeaponState.ReadTo(onlineWeapon);  // actually, let everyone enjoy the spectacle.
+                    if (!isSilent)
                     {
-                        spear.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, spear.firstChunk);
-                        spear.vibrate = 20;
+                        if (artificerParry) 
+                        {
+                            RainMeadow.PlayArtiParryCustomSound(weapon);
+                        }
+                        else
+                        {
+                            weapon.room.PlaySound(weapon is Spear ? SoundID.Spear_Bounce_Off_Creauture_Shell : SoundID.Rock_Bounce_Off_Creature_Shell, weapon.firstChunk);
+                            weapon.vibrate = 20;
+                        }
                     }
                 }
             }

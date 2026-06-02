@@ -3,9 +3,11 @@
 ## Arena
 - Made Artificer's and Gourmand's parry defender side.
 - Added configurable setting to change Artificer's parry range.
-- Added configurable setting to change Artificer's stun range.
-- Fixed parried spears not being deflected on late parries
-- Gave Artificer parry frames leniency to allow a short range parry while keeping it ping friendly
+- Changed configurable setting for Artificer's stun to be a multiplier instead of an on and off checkbox.
+- Added configurable setting to give Artificer's parry some leniency.
+- Added a sound cue to Artificer's parry.
+- Fixed parried spears not being deflected on late parries.
+- Fixed explosive spears still damaging the player when parried.
 
 # Release 1.14.1
 

@@ -121,14 +121,18 @@ public partial class RainMeadow
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
 
         IL.Spear.HitSomething += Spear_HitSomething;
-        IL.Player.ClassMechanicsArtificer += Player_ArtificerParry;
+        IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_OnWeaponParried;
 
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
     }
     // sync Artificer's parry. Cmon she needs it.
-    private void Player_ArtificerParry(ILContext il)
+    public static void PlayArtiParryCustomSound(Weapon weapon) 
+    {
+        weapon.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, weapon.firstChunk, false, 1.2f, 2f);
+    }
+    private void Player_ClassMechanicsArtificer_OnWeaponParried(ILContext il)
     {
         try
         {
@@ -145,6 +149,7 @@ public partial class RainMeadow
             cursor.EmitDelegate((Player player, List<Weapon> weapons, int i) =>
             {
                 Weapon weapon = weapons[i]; // we grab the weapon from the local variables
+                if (OnlineManager.lobby != null && i == 0) {PlayArtiParryCustomSound(weapon);} // play only in Meadow, not in local
 
                 if (weapon.abstractPhysicalObject.GetOnlineObject() is not OnlinePhysicalObject onlineWeapon
                     || onlineWeapon.isMine // We don't need to do anything if the spear is ours
@@ -160,12 +165,12 @@ public partial class RainMeadow
                     return;
                 } 
                 
-                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true));
+                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true, i != 0));
                 foreach (OnlinePlayer otherplayer in onlineWeapon.roomSession?.participants ?? [])
                 {
                     if (otherplayer is not null && otherplayer != onlineWeapon.owner && !otherplayer.isMe)
                     {
-                        otherplayer.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false);
+                        otherplayer.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true, i != 0);
                     }
                 }
             });
@@ -207,13 +212,13 @@ public partial class RainMeadow
                     return;
                 } 
                 
-                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false));
+                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState));
                 
                 foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
                 {
                     if (player is not null && player != onlineWeapon.owner && !player.isMe)
                     {
-                        player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false);
+                        player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState);
                     }
                 }
             });
@@ -2370,7 +2375,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && (arena.countdownInitiatedHoldFire || arena.artiStunDistance <= 0)));
+            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && (arena.countdownInitiatedHoldFire || arena.artiStunDistanceMult <= 0)));
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);

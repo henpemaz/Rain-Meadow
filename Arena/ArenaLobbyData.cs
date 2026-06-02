@@ -89,8 +89,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool disableMaul;
 
-            [OnlineField(group = "arenaSetup")]
-            public int artiStunDistance;
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float artiStunDistance;
 
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
@@ -159,9 +159,12 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
 
-
+            
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float artiParryDistance;
+            
             [OnlineField(group = "arenaSetup")]
-            public int artiParryDistance;
+            public bool artiParryLeniency;
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -255,7 +258,7 @@ namespace RainMeadow
                 painCatThrows = arena.painCatThrows;
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
-                artiStunDistance = arena.artiStunDistance;
+                artiStunDistance = arena.artiStunDistanceMult;
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
@@ -286,7 +289,8 @@ namespace RainMeadow
                 challengeDenEjection = arena.challengeDenEjection;
 
                 artiExplosionCapacity = arena.artiExplosionCount;
-                artiParryDistance = arena.artiParryDistance;
+                artiParryDistance = arena.artiParryDistanceMult;
+                artiParryLeniency = arena.artiParryLeniency;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -343,7 +347,7 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-                (lobby.gameMode as ArenaOnlineGameMode).artiStunDistance = artiStunDistance;
+                (lobby.gameMode as ArenaOnlineGameMode).artiStunDistanceMult = artiStunDistance;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
@@ -381,8 +385,8 @@ playerNumberWithTrophiesPerRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
-                (lobby.gameMode as ArenaOnlineGameMode).artiParryDistance = artiParryDistance;
-
+                (lobby.gameMode as ArenaOnlineGameMode).artiParryDistanceMult = artiParryDistance;
+                (lobby.gameMode as ArenaOnlineGameMode).artiParryLeniency = artiParryLeniency;
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
