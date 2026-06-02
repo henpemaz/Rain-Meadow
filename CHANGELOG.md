@@ -1,3 +1,8 @@
+# Release 1.15.0
+
+# Arena
+- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+
 # Release 1.14.1
 
 ## Engine 
