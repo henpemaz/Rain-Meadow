@@ -33,20 +33,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldIn(self);
             return orig(self);
         }
-        private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(
-            On.ArenaSitting.orig_NextLevel orig,
-            ArenaSitting self,
-            ProcessManager manager,
-            WorldSession oldWorldSession
-        )
-        {
-
-            return WorldSession.WaitAndExecuteSession(
-                oldWorldSession,
-                null,
-                () => self.NextLevel(manager)
-            );
-        }
 
         private void ArenaSitting_NextLevel(
             On.ArenaSitting.orig_NextLevel orig,
@@ -73,11 +59,7 @@ namespace RainMeadow
                     : OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws2)
                         ? ws2
                     : null;
-                if (worldSession.transitionInProgress)
-                {
-                    return;
-                }
-
+                    
                 for (int i = arena.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
                 {
                     OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
@@ -118,32 +100,6 @@ namespace RainMeadow
 
                     overworld.Deactivate();
                     overworld.NotNeeded();
-                    
-
-                    // if (roomSession.worldSession.isActive)
-                    // {
-                    //     roomSession.worldSession.Deactivate();
-                    //     roomSession.worldSession.NotNeeded();
-                    // }
-
-                    // if (roomSession.worldSession.participants.Count > 0)
-                    // {
-                    //     if (OnlineManager.lobby.isOwner)
-                    //     {
-                    //         Debug(
-                    //             $"Waiting for {roomSession.worldSession.participants.Count} players to leave..."
-                    //         );
-                    //     }
-                    //     else
-                    //     {
-                    //         Debug($"Waiting for host  players to join new world...");
-                    //     }
-                    //     manager.rainWorld.StartCoroutine(
-                    //         ArenaNextLevel_WaitLoop(orig, self, manager, roomSession.worldSession)
-                    //     );
-                    //     roomSession.worldSession.transitionInProgress = true;
-                    //     return;
-                    // }
 
                     if (manager.currentMainLoop is RainWorldGame)
                     {
