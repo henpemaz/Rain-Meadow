@@ -212,13 +212,13 @@ public partial class RainMeadow
                     return;
                 } 
                 
-                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState));
+                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false));
                 
                 foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
                 {
                     if (player is not null && player != onlineWeapon.owner && !player.isMe)
                     {
-                        player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState);
+                        player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false);
                     }
                 }
             });

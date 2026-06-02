@@ -33,7 +33,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Weapon_CreatureDeflect(OnlinePhysicalObject onlineWeapon, RealizedWeaponState realizedWeaponState, bool artificerParry = false, bool isSilent = false)
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject onlineWeapon, RealizedWeaponState realizedWeaponState, bool artificerParry, bool isSilent)
         {
             if (onlineWeapon.IsLocked("parry")) return;
             
