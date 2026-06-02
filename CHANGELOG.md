@@ -1,5 +1,7 @@
 # Release 1.15.0
 
+## General
+- Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 # Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 
