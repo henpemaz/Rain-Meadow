@@ -33,6 +33,8 @@ namespace RainMeadow
 
         public abstract int TimerDuration { get; set; }
 
+        public virtual bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get; set; } = true;
+
         public virtual void ArenaSessionCtor(
             ArenaMode arena,
             On.ArenaGameSession.orig_ctor orig,
@@ -1085,7 +1087,7 @@ namespace RainMeadow
 
             if (isTeamMode)
             {
-                tb.winningTeam = tb.CalculateTeamScoresAndWinner(self.players, arena, arena.winByScore, true, false);
+                tb.winningTeam = tb.CalculateTeamScoresAndWinner(self.players, arena, arena.WinByScore, true, false);
             }
 
             // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)
@@ -1136,7 +1138,7 @@ namespace RainMeadow
                 else if (list.Count > 1)
                 {
                     // if survivalScore && killScore are 0, then this should skip 
-                    if (list[0].score > list[1].score && arena.winByScore)
+                    if (list[0].score > list[1].score && arena.WinByScore)
                     {
                         list[0].winner = true;
                     }
@@ -1197,7 +1199,7 @@ namespace RainMeadow
                 // Sort by score if spear score > 0
                 resultList.Sort((a, b) =>
                 {
-                    if (arena.winByScore && a.totScore != b.totScore)
+                    if (arena.WinByScore && a.totScore != b.totScore)
                     {
                         return b.totScore.CompareTo(a.totScore); // Higher score first
                     }
@@ -1211,8 +1213,8 @@ namespace RainMeadow
                 RainMeadow.Info($"Checking sc:{p1.totScore}, {p2.totScore} ");
 
 
-                bool winsStrictlyHigher = p1.wins > p2.wins && arena.winByScore == false;
-                bool scoreStrictlyHigher = p1.totScore > p2.totScore && arena.winByScore;
+                bool winsStrictlyHigher = p1.wins > p2.wins && arena.WinByScore == false;
+                bool scoreStrictlyHigher = p1.totScore > p2.totScore && arena.WinByScore;
                 RainMeadow.Info($"Checking wins:{winsStrictlyHigher}, {scoreStrictlyHigher}");
 
                 if (winsStrictlyHigher || scoreStrictlyHigher)
@@ -1230,7 +1232,7 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (A.score != B.score && arena.winByScore)
+            if (A.score != B.score && arena.WinByScore)
             {
                 return A.score > B.score;
             }

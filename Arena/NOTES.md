@@ -12,7 +12,7 @@
 ---
 
 ## Scoring
-Newest logic (1.14.1) now checks if users have "winByScore" set to true (which is a getter for if any scores > 0) to determine how scoring behavior should work across game modes. Ex: If you're playing drown and you have killScore set to 2, you'll net 2 points per kill regardless of creature's kill value. 
+Newest logic (1.14.1) now checks if users have "WinByScore" set to true (which is a getter for if any scores > 0) to determine how scoring behavior should work across game modes. Ex: If you're playing drown and you have killScore set to 2, you'll net 2 points per kill regardless of creature's kill value. 
 
 ## Killing
 The `BaseGameMode.Killing` hook has been rewritten about four times and is currently stable. **Change it sparingly.**

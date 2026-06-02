@@ -165,7 +165,7 @@ namespace RainMeadow
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = lighter_color;
 
-            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.winByScore)
+            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.WinByScore)
             {
                 this.scoreLabel = new FLabel(Custom.GetFont(), "0");
                 owner.hud.fContainers[0].AddChild(this.scoreLabel);
@@ -380,14 +380,19 @@ namespace RainMeadow
                 this.scoreLabel.y = pos.y;
                 this.scoreLabel.alpha = num;
                 int lobbyId = player.inLobbyId;
-                if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
-                    arena.playerNumberWithScore.TryGetValue(lobbyId, out int roundScore))
+                int playerNumber = -1;
+                if (arena.session != null && owner != null && owner.RealizedPlayer != null)
                 {
-                    bool sessionEnded = owner.hud.rainWorld.processManager.currentMainLoop is RainWorldGame g &&
-                                        g.session is ArenaGameSession s && s.sessionEnded;
-                    this.scoreLabel.text = sessionEnded
-                        ? totScore.ToString()
-                        : (totScore + roundScore).ToString();
+                    playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
+                    int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                    if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
+                        playerNumber != -1)
+                    {
+                        bool sessionEnded = arena.session.sessionEnded;
+                        this.scoreLabel.text = arena.externalArenaGameMode != null && arena.externalArenaGameMode.ShowAddedScoreBetweenRoundsInOnlinePlayerUI
+                            ? (sessionEnded ? totScore.ToString() : (totScore + score).ToString())
+                            : score.ToString();
+                    }
                 }
             }
 

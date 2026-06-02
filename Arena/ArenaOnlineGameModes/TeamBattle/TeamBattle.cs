@@ -208,7 +208,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int CalculateTeamScoresAndWinner(
     IEnumerable<ArenaSitting.ArenaPlayer> players,
     ArenaMode arena,
-    bool winByScore, bool winByRoundScore, bool finalOverlay)
+    bool WinByScore, bool winByRoundScore, bool finalOverlay)
         {
             HashSet<int> teamsRemaining = new HashSet<int>();
             int finalOverlayWinner = -1;
@@ -231,7 +231,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arena.ReadFromStats(player, pl);
                     playerToTeam[player.playerNumber] = team; // Cache team assignment
 
-                    if (winByScore)
+                    if (WinByScore)
                     {
                         if (!teamScores.ContainsKey(team))
                         {
@@ -258,7 +258,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
             }
 
-            if (!winByScore)
+            if (!WinByScore)
             {
                 if (finalOverlay)
                 {
@@ -361,7 +361,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.winByScore, false, true);
+                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.WinByScore, false, true);
 
                 resultList.Sort((a, b) =>
                 {
@@ -391,8 +391,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                     // --- Tier 2: Individual Performance ---
                     // This sorts teammates against each other, AND sorts all losers against each other.
-                    int indStatA = arena.winByScore ? a.totScore : a.wins;
-                    int indStatB = arena.winByScore ? b.totScore : b.wins;
+                    int indStatA = arena.WinByScore ? a.totScore : a.wins;
+                    int indStatB = arena.WinByScore ? b.totScore : b.wins;
 
                     if (indStatA != indStatB)
                         return indStatB.CompareTo(indStatA);
