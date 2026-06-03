@@ -3,6 +3,12 @@
 ## Engine
 - Added Enum mapping to enums likely to create desync
 
+## General
+- Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+
+# Arena
+- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+
 # Release 1.14.1
 
 ## Engine 
