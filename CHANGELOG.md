@@ -1,6 +1,7 @@
 # Release 1.15.0
 
 ## Arena
+- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
 - Added configurable setting to change Artificer's parry range.
 - Changed configurable setting for Artificer's stun to be a multiplier instead of an on and off checkbox.
@@ -8,6 +9,8 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
+## General
+- Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 
 # Release 1.14.1
 
