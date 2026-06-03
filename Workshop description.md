@@ -54,7 +54,7 @@ Rain Meadow is a true online multiplayer engine for Rain World! It includes both
 ---
 
 ## Modding
-Meadow features an extensive API which can be used by other mods to add network support, new features and even entire new gamemodes. Our API supports both game changing mods and mods that you might wanna sync but not necessarily require everyone to have. 
+Meadow features an extensive API which can be used by other mods to add network support, new features and even entire new gamemodes. Our API supports both game changing mods and mods that you might wanna sync but not necessarily require everyone to have. Plus you do not need to make Rain Meadow a required mod to use the API.
 
 ### If you're a mod developer looking to add support Rain Meadow in your mod check out our [wiki](https://github.com/henpemaz/Rain-Meadow/wiki/0-%E2%80%90-Home).
 
