@@ -58,16 +58,6 @@ Meadow features an extensive API which can be used by other mods to add network 
 
 ### If you're a mod developer looking to add support Rain Meadow in your mod check out our [wiki](https://github.com/henpemaz/Rain-Meadow/wiki/0-%E2%80%90-Home).
 
-Some examples of what is possible with Rain Meadow's API.
-
-* [Example of a custom "Tag" gamemode.](https://github.com/henpemaz/RemixMods/tree/master/Tag)
-* [Arena External Gamemode API.](https://github.com/6fears7/Arena-Online/tree/main)
-
-also check out some of the many mods made by the community that utilize the Rain Meadow API
-
-* [Hot Potato (TNT TAG)](https://steamcommunity.com/sharedfiles/filedetails/?id=3464862647)
-* [Pearlcat](https://steamcommunity.com/sharedfiles/filedetails/?id=3013739512)
-
 ---
 
 ## Credits
