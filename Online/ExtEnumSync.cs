@@ -648,6 +648,7 @@ public static class MeadowExtEnumSync
     public static List<CompressedExtEnumBase> SyncedExtEnumList = new()
     {
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Name)),
+        new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Timeline)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(AbstractPhysicalObject.AbstractObjectType)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(CreatureTemplate.Type)),
         new SeparatorCompressedExtEnum(typeof(OnlineState.StateType), '.'),
