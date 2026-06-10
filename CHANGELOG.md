@@ -10,8 +10,15 @@
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
 - Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
+- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+- Fixed Slugslot pseudo-random generator
+
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+
+## General
+- Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+
 # Release 1.14.1
 
 ## Engine 
