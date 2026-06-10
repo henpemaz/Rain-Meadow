@@ -30,6 +30,108 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Reference Include="0Harmony">
+	    <HintPath>..\lib\0Harmony.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Assembly-CSharp-firstpass">
+	    <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
+	  </Reference>
+	  <Reference Include="BepInEx">
+	    <HintPath>..\lib\BepInEx.dll</HintPath>
+	  </Reference>
+	  <Reference Include="BepInEx.Harmony">
+	    <HintPath>..\lib\BepInEx.Harmony.dll</HintPath>
+	  </Reference>
+	  <Reference Include="BepInEx.Preloader">
+	    <HintPath>..\lib\BepInEx.Preloader.dll</HintPath>
+	  </Reference>
+	  <Reference Include="com.rlabrecque.steamworks.net">
+	    <HintPath>..\lib\com.rlabrecque.steamworks.net.dll</HintPath>
+	  </Reference>
+	  <Reference Include="GoKit">
+	    <HintPath>..\lib\GoKit.dll</HintPath>
+	  </Reference>
+	  <Reference Include="HarmonyXInterop">
+	    <HintPath>..\lib\HarmonyXInterop.dll</HintPath>
+	  </Reference>
+	  <Reference Include="HOOKS-Assembly-CSharp">
+	    <HintPath>..\lib\HOOKS-Assembly-CSharp.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Mono.Cecil">
+	    <HintPath>..\lib\Mono.Cecil.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Mono.Cecil.Mdb">
+	    <HintPath>..\lib\Mono.Cecil.Mdb.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Mono.Cecil.Pdb">
+	    <HintPath>..\lib\Mono.Cecil.Pdb.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Mono.Cecil.Rocks">
+	    <HintPath>..\lib\Mono.Cecil.Rocks.dll</HintPath>
+	  </Reference>
+	  <Reference Include="MonoMod">
+	    <HintPath>..\lib\MonoMod.dll</HintPath>
+	  </Reference>
+	  <Reference Include="MonoMod.Common">
+	    <HintPath>..\lib\MonoMod.Common.dll</HintPath>
+	  </Reference>
+	  <Reference Include="MonoMod.RuntimeDetour">
+	    <HintPath>..\lib\MonoMod.RuntimeDetour.dll</HintPath>
+	  </Reference>
+	  <Reference Include="MonoMod.Utils">
+	    <HintPath>..\lib\MonoMod.Utils.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Newtonsoft.Json">
+	    <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Assembly-CSharp">
+	    <HintPath>..\lib\PUBLIC-Assembly-CSharp.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Rewired.Runtime">
+	    <HintPath>..\lib\Rewired.Runtime.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Rewired_Core">
+	    <HintPath>..\lib\Rewired_Core.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Unity.Mathematics">
+	    <HintPath>..\lib\Unity.Mathematics.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine">
+	    <HintPath>..\lib\UnityEngine.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.AssetBundleModule">
+	    <HintPath>..\lib\UnityEngine.AssetBundleModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.AudioModule">
+	    <HintPath>..\lib\UnityEngine.AudioModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.CoreModule">
+	    <HintPath>..\lib\UnityEngine.CoreModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.ImageConversionModule">
+	    <HintPath>..\lib\UnityEngine.ImageConversionModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.IMGUIModule">
+	    <HintPath>..\lib\UnityEngine.IMGUIModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.InputLegacyModule">
+	    <HintPath>..\lib\UnityEngine.InputLegacyModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.InputModule">
+	    <HintPath>..\lib\UnityEngine.InputModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.JSONSerializeModule">
+	    <HintPath>..\lib\UnityEngine.JSONSerializeModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.UI">
+	    <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.UnityWebRequestModule">
+	    <HintPath>..\lib\UnityEngine.UnityWebRequestModule.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Update="Properties\Settings.Designer.cs">
 			<DesignTimeSharedInput>True</DesignTimeSharedInput>
 			<AutoGen>True</AutoGen>
