@@ -4,6 +4,7 @@
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 # Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+- Fixed Slugslot pseudo-random generator
 
 # Release 1.14.1
 
