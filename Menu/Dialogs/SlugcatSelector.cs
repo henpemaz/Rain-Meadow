@@ -410,6 +410,7 @@ namespace RainMeadow.UI
             public SlugcatStats.Name[] slugcatList;
             public SlugcatColorableButton slugcatButton;
             public FLabel slugcatResult;
+            private static System.Random RandomGenerator = new();
 
             public SlugcatRandomizer(
                 Menu.Menu menu,
@@ -528,9 +529,8 @@ namespace RainMeadow.UI
                 rolling = false;
                 if (index == -1)
                 {
-                    System.Random random = new();
                     slugcatButton.LoadNewSlugcat(
-                        slugcatList[random.Next(slugcatList.Length)],
+                        slugcatList[RandomGenerator.Next(slugcatList.Length)],
                         false,
                         false
                     );
