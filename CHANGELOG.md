@@ -9,8 +9,10 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
+- Fixed Slugslot pseudo-random generator
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+
 
 # Release 1.14.1
 
