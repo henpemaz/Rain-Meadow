@@ -342,6 +342,17 @@ namespace RainMeadow
         {
             base.GameShutDown(game);
         }
+
+        public override void DischargedFromResource(OnlineResource OE, string reason)
+        {
+            // we're transitioning to a new world.
+            if (OE is WorldSession)
+            {
+                if (storyClientData.readyForTransition && reason == "no-suitable-inheritor") return;
+                if (reason == "warp") return; // TODO: alert clients when we're warping BEFORE we eject them from the resource.
+            }
+            base.DischargedFromResource(OE, reason);
+        }
     }
 
 }

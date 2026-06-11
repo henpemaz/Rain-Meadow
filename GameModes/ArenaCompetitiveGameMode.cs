@@ -1344,5 +1344,11 @@ namespace RainMeadow
         {
             return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
         }
+
+        public override void DischargedFromResource(OnlineResource OE, string reason)
+        {
+            if (OE is OverworldSession && reason == "next-level") return;
+            base.DischargedFromResource(OE, reason);
+        }
     }
 }

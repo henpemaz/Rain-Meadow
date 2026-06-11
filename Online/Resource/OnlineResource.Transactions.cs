@@ -70,6 +70,30 @@ namespace RainMeadow
             }
         }
 
+        public void Discharge(OnlinePlayer op, string reason)
+        {
+            if (!isSupervisor) throw new InvalidOperationException("not supervisor");
+            if (!canDischarge) throw new InvalidOperationException($"Can't discharge from resource {this}");
+            if (op.isMe) throw new InvalidOperationException("don't discharge yourself");
+
+            if (participants.Contains(op))
+            {
+                RainMeadow.Debug($"Discharging {op} from {this}: {reason}");
+                ParticipantLeft(op);
+                op.InvokeOnceRPC(this.Discharged, reason!);
+            }
+        }
+
+        [RPCMethod]
+        public void Discharged(RPCEvent request, string reason)
+        {
+            if (request.from != this.super.owner) throw new InvalidOperationException("not supervisor");
+            if (!canDischarge) throw new InvalidOperationException($"Can't discharge from resource {this}");
+            RainMeadow.Debug($"Discharged from {this}: {reason}");
+            ParticipantLeft(OnlineManager.mePlayer);
+            if (OnlineManager.lobby?.gameMode is OnlineGameMode og) og.DischargedFromResource(this, reason);
+        }
+
         // Someone requested this resource, if I supervise it I'll lease it
         [RPCMethod]
         protected void Requested(RPCEvent request)

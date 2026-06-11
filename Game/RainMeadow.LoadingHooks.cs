@@ -33,20 +33,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldIn(self);
             return orig(self);
         }
-        private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(
-    On.ArenaSitting.orig_NextLevel orig,
-    ArenaSitting self,
-    ProcessManager manager,
-    WorldSession oldWorldSession
-)
-        {
-
-            return WorldSession.WaitAndExecuteSession(
-                oldWorldSession,
-                null,
-                () => self.NextLevel(manager)
-            );
-        }
 
         private void ArenaSitting_NextLevel(
             On.ArenaSitting.orig_NextLevel orig,
@@ -73,11 +59,7 @@ namespace RainMeadow
                     : OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws2)
                         ? ws2
                     : null;
-                if (worldSession.transitionInProgress)
-                {
-                    return;
-                }
-
+                    
                 for (int i = arena.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
                 {
                     OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
@@ -105,31 +87,19 @@ namespace RainMeadow
                 {
                     // we go over all APOs in the room
                     Debug("Next level switching");
-                    RainMeadow.Debug("Unsubscribing from old world");
-                    if (roomSession.worldSession.isActive)
+                    RainMeadow.Debug("Unsubscribing everyone from the old overworld");
+                    
+                    OverworldSession overworld = OnlineManager.lobby.overworld;
+                    if (overworld.isSupervisor)
                     {
-                        roomSession.worldSession.Deactivate();
-                        roomSession.worldSession.NotNeeded();
-                    }
+                        foreach (OnlinePlayer p in overworld.participants)
+                        {
+                            if (!p.isMe) overworld.Discharge(p, "next-level");
+                        }
+                    }                    
 
-                    if (roomSession.worldSession.participants.Count > 0)
-                    {
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            Debug(
-                                $"Waiting for {roomSession.worldSession.participants.Count} players to leave..."
-                            );
-                        }
-                        else
-                        {
-                            Debug($"Waiting for host  players to join new world...");
-                        }
-                        manager.rainWorld.StartCoroutine(
-                            ArenaNextLevel_WaitLoop(orig, self, manager, roomSession.worldSession)
-                        );
-                        roomSession.worldSession.transitionInProgress = true;
-                        return;
-                    }
+                    overworld.Deactivate();
+                    overworld.NotNeeded();
 
                     if (manager.currentMainLoop is RainWorldGame)
                     {

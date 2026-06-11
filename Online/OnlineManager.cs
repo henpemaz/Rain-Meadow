@@ -279,7 +279,7 @@ namespace RainMeadow
                 }
                 else if (state is EntityFeedState entityFeedState)
                 {
-                    if (entityFeedState.inResource != null && entityFeedState.inResource.isAvailable && !entityFeedState.inResource.transitionInProgress)
+                    if (entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
                     {
                         var ent = entityFeedState.entityState.entityId.FindEntity();
                         if (ent != null)

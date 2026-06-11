@@ -27,13 +27,13 @@ namespace RainMeadow
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to by supervisor, waiting for owner
         public bool isReleasing { get; protected set; } // Ongoing release op
         public bool isPending => isRequesting || isReleasing || isWaitingForState; // Ongoing op
-        public bool transitionInProgress = false;
 
         public bool canRelease => !isPending // no ongoing transaction
             && (!isActive || !subresources.Any(s => s.isAvailable || s.isPending)) // no subresource available or pending
             && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => EventMath.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
+        public virtual bool canDischarge => false;
 
         public OnlineResource(OnlineResource super)
         {
@@ -201,10 +201,17 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-
+            
             foreach (var res in subresources)
             {
-                if (res.isActive) res.Deactivate();
+                if (isSupervisor && res.canDischarge)
+                {
+                    foreach (OnlinePlayer p in res.participants.ToArray())
+                    {
+                        if (!p.isMe) res.Discharge(p, "supervisor-deactivated");
+                    }
+                }
+                if (res.isActive) res.Deactivate(); 
             }
 
             isActive = false;
@@ -365,6 +372,15 @@ namespace RainMeadow
         private void ParticipantLeft(OnlinePlayer participant)
         {
             if (!participants.Contains(participant)) return;
+            if (isActive)
+            {
+                foreach (OnlineResource resource in subresources.ToArray())
+                {
+                    if (resource == this) continue; // prevent any recursive nonsense
+                    resource.ParticipantLeft(participant);
+                }
+            }
+
             RainMeadow.Debug($"{this}-{participant}");
             participants.Remove(participant);
             LeaseModified();
@@ -490,6 +506,14 @@ namespace RainMeadow
 
             if (newOwner != owner)
             {
+                if (newOwner == null && canDischarge)
+                {
+                    foreach (OnlinePlayer participant in participants.ToArray())
+                    {
+                        if (!participant.isMe) Discharge(participant, "no-suitable-inheritor");
+                    }
+                }
+
                 NewOwner(newOwner);
                 if (newOwner != null)
                 {

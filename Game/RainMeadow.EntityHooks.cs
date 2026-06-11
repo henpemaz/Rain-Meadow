@@ -536,37 +536,23 @@ namespace RainMeadow
                 Error(ex);
             }
         }
-
-        private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
-        {
-            System.Func<bool> waitCondition = null;
-
-            if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner))
-            {
-                waitCondition = () => !newWorldSession.isAvailable;
-            }
-
-            return WorldSession.WaitAndExecuteSession(
-                oldWorldSession,
-                waitCondition,
-                () => self.WorldLoaded(warpUsed)
-            );
-        }
-
-        private void DeactivateAndWait(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
+        private void DeactivateInactiveWorlds(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
         {
             RainMeadow.Debug(this);
             if (!isSameWorld && oldWorldSession.isActive)
-            { // there exists "warps" to the same world, twice, for some bloody reason
-                //this in fact probably is required for now because rain world devs DESPISE US
+            {
+                if (self.reportBackToGate == null)
+                {
+                    foreach (OnlinePlayer p in oldWorldSession.participants.ToArray())
+                    {
+                        if (!p.isMe) oldWorldSession.Discharge(p, "warp");
+                    } 
+                }
+
                 RainMeadow.Debug("Unsubscribing from old world");
                 oldWorldSession.Deactivate();
                 oldWorldSession.NotNeeded(); // done? let go
             }
-
-            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-            oldWorldSession.transitionInProgress = true;
-            return;
         }
         // world transition at gatesactiveEntities
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
@@ -580,9 +566,7 @@ namespace RainMeadow
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException("New world session not found.");
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession; // Do not throw for the old world to prevent error during coroutine
 
-                if (oldWorldSession.transitionInProgress) return;
-
-                bool isSameWorld = self.activeWorld.name == newWorld.name;
+                bool isSameWorld = newWorldSession == oldWorldSession;
                 bool isEchoWarp = self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null;
                 bool isFirstWarpWorld = false;
 
@@ -624,7 +608,7 @@ namespace RainMeadow
                         roomSession2.Activate();
                     }
 
-                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+                    DeactivateInactiveWorlds(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
 
                 }
                 else if (warpUsed)
@@ -659,13 +643,13 @@ namespace RainMeadow
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
 
-                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+                    DeactivateInactiveWorlds(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
                 else
                 {
                     // special warp, don't bother with room items
                     orig(self, warpUsed);
-                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+                    DeactivateInactiveWorlds(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
 
                 if (warpUsed)
