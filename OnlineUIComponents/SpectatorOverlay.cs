@@ -229,7 +229,7 @@ namespace RainMeadow
             public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
 
-            public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => !avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead));
+            public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => avatar.isMine || (!avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead)));
             public List<OnlineCreature> avatars;
             public SimplerSymbolButton? kickbutton;
         }
