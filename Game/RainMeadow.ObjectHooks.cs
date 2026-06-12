@@ -92,7 +92,16 @@ namespace RainMeadow
                 {
                     try
                     {
+                        bool devTools = room.game.devToolsActive;
+                        if (!OnlineManager.CheatsAllowed)
+                        {
+                            room.game.devToolsActive = false;
+                        }
                         uad.Update(room.game.evenUpdate);
+                        if (!OnlineManager.CheatsAllowed)
+                        {
+                            room.game.devToolsActive = devTools;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -144,7 +153,6 @@ namespace RainMeadow
                 return false;
             });
             c.Emit(OpCodes.Brtrue, skip);
-
         }
     }
 }

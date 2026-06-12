@@ -124,7 +124,16 @@ public partial class RainMeadow
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+
+        On.Player.ProcessDebugInputs += Player_ProcessDebugInputs;
     }
+
+    private void Player_ProcessDebugInputs(On.Player.orig_ProcessDebugInputs orig, Player self)
+    {
+        if (OnlineManager.lobby != null && !self.abstractPhysicalObject.IsLocal()) return;
+        orig(self);
+    }
+
     public bool BottomPlayerUsingSpearmasterAbility(Player spearmaster, out Player user)
     {
         user = null!;
