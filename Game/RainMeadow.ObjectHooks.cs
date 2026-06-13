@@ -10,6 +10,7 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        private static bool devTools = false;
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
@@ -65,6 +66,16 @@ namespace RainMeadow
                 i => i.MatchStfld<Room>("updateIndex")
                 );
 
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    devTools = self.game.devToolsActive;
+                    self.game.devToolsActive = false;
+                }
+            });
+
             // surround this update call with a trycatch if in lobby, otherwise run vanilla
             // if ([...] & !flag){
             //     uad.Update(this.game.evenUpdate);
@@ -92,16 +103,7 @@ namespace RainMeadow
                 {
                     try
                     {
-                        bool devTools = room.game.devToolsActive;
-                        if (!OnlineManager.CheatsAllowed)
-                        {
-                            room.game.devToolsActive = false;
-                        }
                         uad.Update(room.game.evenUpdate);
-                        if (!OnlineManager.CheatsAllowed)
-                        {
-                            room.game.devToolsActive = devTools;
-                        }
                     }
                     catch (Exception e)
                     {
@@ -153,6 +155,20 @@ namespace RainMeadow
                 return false;
             });
             c.Emit(OpCodes.Brtrue, skip);
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdcI4(int.MaxValue),
+                x => x.MatchStfld<Room>(nameof(Room.updateIndex)));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    self.game.devToolsActive = devTools;
+                }
+            });
         }
     }
 }
