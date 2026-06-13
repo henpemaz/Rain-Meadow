@@ -184,6 +184,7 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
+            DrownHooks();
 
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
         }
@@ -643,6 +644,7 @@ namespace RainMeadow
                 timeUntilFadeout = arena.amoebaDuration * 40,
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
+            voidSpawn.swimSpeed = 1f;
             room.abstractRoom.AddEntity(apo);
             RainMeadow.sSpawningNonTransferable = false;
 
@@ -708,6 +710,7 @@ namespace RainMeadow
             VoidSpawn.ChasePlayer self
         )
         {
+
             if (!isArenaMode(out var arena))
                 return orig(self);
             //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
@@ -1141,7 +1144,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl, false);
                     }
                     arena.ReadFromStats(player, pl);
                 }
@@ -1191,7 +1194,7 @@ namespace RainMeadow
                                 )
                             );
                     }
-                    if (arena.winByScore)
+                    if (arena.WinByScore)
                     {
                         foreach (var box in self.resultBoxes)
                         {
@@ -3041,7 +3044,7 @@ namespace RainMeadow
                             );
                     }
 
-                    if (arena.winByScore)
+                    if (arena.WinByScore)
                     {
                         foreach (var box in self.resultBoxes)
                         {

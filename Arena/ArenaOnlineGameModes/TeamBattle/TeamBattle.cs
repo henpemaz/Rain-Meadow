@@ -2,6 +2,8 @@
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
+using System;
+using System.Text;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
@@ -148,7 +150,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return Utils.Translate("Prepare for war,") + " " + Utils.Translate(PlayingAsText());
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
@@ -159,12 +161,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override int TimerDirection(ArenaMode arena, int timer)
         {
             return --arena.setupTime;
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaMode arena)
         {
             if (arena.setupTime > 0)
             {
@@ -206,7 +208,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int CalculateTeamScoresAndWinner(
     IEnumerable<ArenaSitting.ArenaPlayer> players,
     ArenaMode arena,
-    bool winByScore, bool winByRoundScore, bool finalOverlay)
+    bool WinByScore, bool winByRoundScore, bool finalOverlay)
         {
             HashSet<int> teamsRemaining = new HashSet<int>();
             int finalOverlayWinner = -1;
@@ -229,7 +231,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arena.ReadFromStats(player, pl);
                     playerToTeam[player.playerNumber] = team; // Cache team assignment
 
-                    if (winByScore)
+                    if (WinByScore)
                     {
                         if (!teamScores.ContainsKey(team))
                         {
@@ -256,7 +258,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
             }
 
-            if (!winByScore)
+            if (!WinByScore)
             {
                 if (finalOverlay)
                 {
@@ -359,7 +361,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.winByScore, false, true);
+                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.WinByScore, false, true);
 
                 resultList.Sort((a, b) =>
                 {
@@ -389,8 +391,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                     // --- Tier 2: Individual Performance ---
                     // This sorts teammates against each other, AND sorts all losers against each other.
-                    int indStatA = arena.winByScore ? a.totScore : a.wins;
-                    int indStatB = arena.winByScore ? b.totScore : b.wins;
+                    int indStatA = arena.WinByScore ? a.totScore : a.wins;
+                    int indStatB = arena.WinByScore ? b.totScore : b.wins;
 
                     if (indStatA != indStatB)
                         return indStatB.CompareTo(indStatA);
@@ -603,19 +605,22 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     arena.isInGame = true; // used for readied players at the beginning
                     arena.leaveForNextLevel = false;
-
-                    foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
+                    arena.playersLateWaitingInLobbyForNextRound.Clear();
+                    arena.hasPermissionToRejoin = false;
+                }
+                for (int x = 0; x < arena.arenaSittingOnlineOrder.Count; x++)
+                {
+                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[x]);
+                    if (getPlayer != null)
                     {
-                        OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            onlineArenaPlayer
-                        );
-                        if (getPlayer != null)
+                        if (OnlineManager.lobby.isOwner)
                         {
                             arena.CheckToAddPlayerStatsToDicts(getPlayer);
                         }
+                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;${ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
+                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};TEAM;{teamNames[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(getPlayer).team]}");
+
                     }
-                    arena.playersLateWaitingInLobbyForNextRound.Clear();
-                    arena.hasPermissionToRejoin = false;
                 }
             }
         }
@@ -678,6 +683,81 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
 
             return customization.bodyColor;
+        }
+
+        public override string ExportLocalSettings(ArenaMode arena)
+        {
+            string baseExport = base.ExportLocalSettings(arena);
+            string decodedBase = string.IsNullOrEmpty(baseExport) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(baseExport));
+
+            var pairs = new List<string>
+            {
+                $"chieftainsTeamNames={chieftainsTeamNames}",
+                $"dragonSlayersTeamNames={dragonSlayersTeamNames}",
+                $"lerp={lerp}",
+                $"martyrsTeamName={martyrsTeamName}",
+                $"outlawTeamNames={outlawTeamNames}",
+            };
+
+            string combined = string.Join("|", pairs);
+
+            if (!string.IsNullOrEmpty(decodedBase))
+            {
+                combined = decodedBase + "|" + combined;
+            }
+
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
+        }
+
+        public override bool ImportLocalSettings(ArenaMode arena, string base64Data)
+        {
+            bool success = base.ImportLocalSettings(arena, base64Data);
+            if (string.IsNullOrEmpty(base64Data)) return false;
+            if (!success) return false;
+
+            try
+            {
+                string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
+                string[] pairs = decoded.Split('|');
+
+                foreach (string pair in pairs)
+                {
+                    string[] kvp = pair.Split('=');
+                    if (kvp.Length != 2) continue;
+
+                    string key = kvp[0];
+                    string val = kvp[1];
+
+                    switch (key)
+                    {
+                        case "chieftainsTeamNames":
+                            chieftainsTeamNames = val;
+                            teamNames[3] = val;
+                            break;
+                        case "dragonSlayersTeamNames":
+                            dragonSlayersTeamNames = val;
+                            teamNames[2] = val;
+                            break;
+                        case "lerp":
+                            if (float.TryParse(val, out float f1)) lerp = f1;
+                            break;
+                        case "martyrsTeamName":
+                            martyrsTeamName = val;
+                            teamNames[0] = val;
+                            break;
+                        case "outlawTeamNames":
+                            outlawTeamNames = val;
+                            teamNames[1] = val;
+                            break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                return false;
+            }
         }
     }
 }

@@ -412,6 +412,8 @@ public partial class RainMeadow
         {
             ILCursor c = new(il);
             ILLabel label = null;
+
+            // --- 1. Proximity & slow down logic ---
             c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, 4);
@@ -429,6 +431,48 @@ public partial class RainMeadow
                 return true;
             });
             c.Emit(OpCodes.Brfalse, label);
+
+            // --- 2. Lethality ---
+            c.Index = 0;
+            if (c.TryGotoNext(MoveType.Before,
+                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                x => x.MatchLdcR4(out _),
+                x => x.MatchAdd(),
+                x => x.MatchStfld<Player>("rippleDeathIntensity")))
+            {
+                c.Index += 2;
+
+                c.EmitDelegate((float originalIncrement) =>
+                {
+                    if (isArenaMode(out var arena))
+                    {
+                        return originalIncrement * arena.voidSpawnLethalityFactor;
+                    }
+                    return originalIncrement;
+                });
+            }
+
+            // --- 3. RippleDeathEffect kept local ---
+            c.Index = 0;
+            ILLabel skipDeathEffectLabel = null;
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                x => x.MatchLdcR4(0f),
+                x => x.MatchBleUn(out _),
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>("deathEffect"),
+                x => x.MatchBrtrue(out skipDeathEffectLabel)))
+            {
+
+                c.Emit(OpCodes.Ldarg_0);
+
+                c.EmitDelegate(delegate (Player self)
+                {
+                    return self.IsLocal();
+                });
+
+                c.Emit(OpCodes.Brfalse, skipDeathEffectLabel);
+            }
         }
         catch (Exception ex)
         {
@@ -1258,7 +1302,6 @@ public partial class RainMeadow
         float wasSleepCurlUp = self.sleepCurlUp;
 
         orig(self, eu);
-
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
@@ -2036,18 +2079,20 @@ public partial class RainMeadow
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         // Inside player_die hook
+
         if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
         {
             OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
 
-            if (self.room.game.session is ArenaGameSession s)
+            if (self.room?.game?.session != null && self.room.game.session is ArenaGameSession s)
             {
-                int excludedPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+                int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
                     ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
 
-                if (excludedPlayerNumber != -1)
+                if (deadPlayerNumber != -1)
                 {
-                    int[] alivePlayerNumbers = ArenaHelpers.GetAllAlivePlayers(excludedPlayerNumber);
+                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
+                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
                     for (int i = 0; i < s.arenaSitting.players.Count; i++)
                     {
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
@@ -2055,14 +2100,12 @@ public partial class RainMeadow
 
                         if (onlinePlayer.isMe)
                         {
-                            // Execute locally for the dying player
-                            ArenaRPCs.DistributeEmptyKillScores(alivePlayerNumbers);
-
+                            continue;
                         }
                         else
                         {
                             // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, alivePlayerNumbers);
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, newScore);
                         }
                     }
                 }

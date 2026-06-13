@@ -1,6 +1,23 @@
 # Release 1.15.0
 
 ## Arena
+- Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
+- Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
+- Fixed a thing that should happen when you win that hidden thing
+- Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
+- Slightly improved Void Amoeba's swim speed
+- Added configurable Void Amoeba lethality. Default multiplier is now 4x. You better run.
+- Added debuff icon for players impacted by visual distortion from Amoeba
+- Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
+- Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
+- Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
+- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+- Fixed Slugslot pseudo-random generator
+
+### Modders
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+
+## Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
 - Added configurable setting to change Artificer's parry range.
