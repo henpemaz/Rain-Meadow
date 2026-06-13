@@ -1326,42 +1326,43 @@ namespace RainMeadow
         public virtual string ExportLocalSettings(ArenaMode arena)
         {
             var pairs = new List<string>
-    {
-        $"aliveScore={arena.aliveScore}",
-        $"allowJoiningMidRound={arena.allowJoiningMidRound}",
-        $"amoebaControl={arena.amoebaControl}",
-        $"amoebaDuration={arena.amoebaDuration}",
-        $"arenaSaintAscendanceTimer={arena.arenaSaintAscendanceTimer}",
-        $"artiExplosionCount={arena.artiExplosionCount}",
-        $"challengeDenEjection={arena.challengeDenEjection}",
-        $"denScore={arena.denScore}",
-        $"disableArtiStun={arena.disableArtiStun}",
-        $"disableMaul={arena.disableMaul}",
-        $"emptyKillTagScore={arena.emptyKillTagScore}",
-        $"enableBees={arena.enableBees}",
-        $"enableBombs={arena.enableBombs}",
-        $"enableCorpseGrab={arena.enableCorpseGrab}",
-        $"enableOverseer={arena.enableOverseer}",
-        $"foodScore={arena.foodScore}",
-        $"friendlyFire={arena.friendlyFire}",
-        $"itemSteal={arena.itemSteal}",
-        $"killScore={arena.killScore}",
-        $"painCatEgg={arena.painCatEgg}",
-        $"painCatLizard={arena.painCatLizard}",
-        $"painCatThrows={arena.painCatThrows}",
-        $"piggyBack={arena.piggyBack}",
-        $"sainot={arena.sainot}",
-        $"setupTime={arena.setupTime}",
-        $"spearHitScore={arena.spearHitScore}",
-        $"voidMasterEnabled={arena.voidMasterEnabled}",
-        $"voidSpawnLethalityFactor={arena.voidSpawnLethalityFactor}",
-        $"watcherCamoTimer={arena.watcherCamoTimer}",
-        $"watcherRippleLevel={arena.watcherRippleLevel}",
-        $"weaponCollisionFix={arena.weaponCollisionFix}",
-        $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}",
-        $"enableMeadowCosmetics={arena.enableMeadowCosmetics}",
-
-        };
+            {
+                $"aliveScore={arena.aliveScore}",
+                $"allowJoiningMidRound={arena.allowJoiningMidRound}",
+                $"amoebaControl={arena.amoebaControl}",
+                $"amoebaDuration={arena.amoebaDuration}",
+                $"arenaSaintAscendanceTimer={arena.arenaSaintAscendanceTimer}",
+                $"artiExplosionCount={arena.artiExplosionCount}",
+                $"artiStunDistanceMult={arena.artiStunDistanceMult}",
+                $"artiParryDistanceMult={arena.artiParryDistanceMult}",
+                $"artiParryLeniency={arena.artiParryLeniency}",
+                $"challengeDenEjection={arena.challengeDenEjection}",
+                $"denScore={arena.denScore}",
+                $"disableMaul={arena.disableMaul}",
+                $"emptyKillTagScore={arena.emptyKillTagScore}",
+                $"enableBees={arena.enableBees}",
+                $"enableBombs={arena.enableBombs}",
+                $"enableCorpseGrab={arena.enableCorpseGrab}",
+                $"enableOverseer={arena.enableOverseer}",
+                $"foodScore={arena.foodScore}",
+                $"friendlyFire={arena.friendlyFire}",
+                $"itemSteal={arena.itemSteal}",
+                $"killScore={arena.killScore}",
+                $"painCatEgg={arena.painCatEgg}",
+                $"painCatLizard={arena.painCatLizard}",
+                $"painCatThrows={arena.painCatThrows}",
+                $"piggyBack={arena.piggyBack}",
+                $"sainot={arena.sainot}",
+                $"setupTime={arena.setupTime}",
+                $"spearHitScore={arena.spearHitScore}",
+                $"voidMasterEnabled={arena.voidMasterEnabled}",
+                $"voidSpawnLethalityFactor={arena.voidSpawnLethalityFactor}",
+                $"watcherCamoTimer={arena.watcherCamoTimer}",
+                $"watcherRippleLevel={arena.watcherRippleLevel}",
+                $"weaponCollisionFix={arena.weaponCollisionFix}",
+                $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}",
+                $"enableMeadowCosmetics={arena.enableMeadowCosmetics}",
+            };
 
             string combined = string.Join("|", pairs);
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
@@ -1396,9 +1397,11 @@ namespace RainMeadow
                         case "amoebaDuration": if (int.TryParse(val, out int i2)) arena.amoebaDuration = i2; break;
                         case "arenaSaintAscendanceTimer": if (int.TryParse(val, out int i3)) arena.arenaSaintAscendanceTimer = i3; break;
                         case "artiExplosionCount": if (int.TryParse(val, out int i4)) arena.artiExplosionCount = i4; break;
+                        case "artiStunDistanceMult": if (float.TryParse(val, out float f1)) arena.artiStunDistanceMult = f1; break;
+                        case "artiParryDistanceMult": if (float.TryParse(val, out float f2)) arena.artiParryDistanceMult = f2; break;
+                        case "artiParryLeniency": if (bool.TryParse(val, out bool b21)) arena.artiParryLeniency = b21; break;
                         case "challengeDenEjection": if (bool.TryParse(val, out bool b3)) arena.challengeDenEjection = b3; break;
                         case "denScore": if (int.TryParse(val, out int i5)) arena.denScore = i5; break;
-                        case "disableArtiStun": if (bool.TryParse(val, out bool b4)) arena.disableArtiStun = b4; break;
                         case "disableMaul": if (bool.TryParse(val, out bool b5)) arena.disableMaul = b5; break;
                         case "emptyKillTagScore": if (int.TryParse(val, out int i6)) arena.emptyKillTagScore = i6; break;
                         case "enableBees": if (bool.TryParse(val, out bool b6)) arena.enableBees = b6; break;

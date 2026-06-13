@@ -184,9 +184,9 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
-            DrownHooks();
-
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
+            
+            DrownHooks();
         }
         
         // Restrict Artificer's parry and stun range in arena
