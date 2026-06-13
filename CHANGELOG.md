@@ -1,8 +1,7 @@
 # Release 1.15.0
 
 ## Engine
-- Added Enum mapping to enums likely to create desync
-
+- Improved some sources of desync (enums)
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 
