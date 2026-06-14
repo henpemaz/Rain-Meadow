@@ -389,7 +389,8 @@ namespace RainMeadow.UI.Components
                 amoebaLethalityFactorTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
-                    description = menu.Translate("Multiplier for amoeba lethality")
+                    description = menu.Translate("Multiplier for amoeba lethality"),
+                    accept = OpTextBox.Accept.Float
                 };
                 amoebaLethalityFactorTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
