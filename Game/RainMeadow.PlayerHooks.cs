@@ -121,12 +121,14 @@ public partial class RainMeadow
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
 
         IL.Spear.HitSomething += Spear_HitSomething;
+        On.Spear.ChangeMode += Spear_ChangeMode_RemoveDeflectMark;
         IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_OnWeaponParried;
 
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
     }
+
     // sync Artificer's parry. Cmon she needs it.
     public static void PlayArtiParryCustomSound(Weapon weapon) 
     {
@@ -182,6 +184,16 @@ public partial class RainMeadow
     }
 
     // sync Spear Deflect of creatures, notably by Gourmand, since sometimes creature.SpearStick() is too conditionnal to be 
+    private void Spear_ChangeMode_RemoveDeflectMark(On.Spear.orig_ChangeMode orig, Spear self, Weapon.Mode newMode)
+    {
+        orig(self, newMode);
+        if (newMode != Weapon.Mode.Free
+            && self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineWeapon
+            && onlineWeapon.IsLocked("deflected"))
+        {
+            onlineWeapon.ClearLock("deflected"); // remove deflect lock when not free anymore, avoiding latent lock junk
+        }
+    }
     private void Spear_HitSomething(ILContext il)
     {
         try
@@ -197,28 +209,35 @@ public partial class RainMeadow
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.EmitDelegate((Weapon weapon, SharedPhysics.CollisionResult result) =>
             {
-                if (weapon.abstractPhysicalObject.GetOnlineObject() is not OnlinePhysicalObject onlineWeapon
-                    || onlineWeapon.isMine // We don't need to do anything if the spear is ours
-                    || result.obj is not PhysicalObject target
-                    || target.abstractPhysicalObject.GetOnlineObject() is not OnlinePhysicalObject onlineTarget
-                    || !onlineTarget.isMine) return; // We limit that to only the case where the object is yours but the spear isn't
-                
-                RainMeadow.Debug($"Deflect ! {onlineWeapon}, {onlineWeapon.owner}");
-
-                RealizedWeaponState? realizedWeaponState = GetAppropriateWeaponState(onlineWeapon);
-                if (realizedWeaponState is null)
+                if (weapon.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineWeapon
+                    && result.obj is Creature target 
+                    && target.abstractCreature.GetOnlineCreature() is OnlineCreature onlineCreature)
                 {
-                    RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
-                    return;
-                } 
-                
-                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false));
-                
-                foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
-                {
-                    if (player is not null && player != onlineWeapon.owner && !player.isMe)
+                    if (!onlineCreature.isMine) 
                     {
-                        player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false);
+                        // spear was already deflected, if an RPC comes in, we'll ignore it
+                        onlineWeapon.Lock("deflected"); // Locking manually is abit sketchy, but it's kind of my only way.
+                        RainMeadow.Debug($"{onlineCreature} deflected {onlineWeapon} that isn't mine ! Will ignore the RPC incoming.");
+                    }
+                    else if (!onlineWeapon.isMine) // We don't need to do anything if the spear is ours
+                    {
+                        // We limit that to only the case where the creature is yours but the spear isn't
+                        RealizedWeaponState? realizedWeaponState = GetAppropriateWeaponState(onlineWeapon);
+                        if (realizedWeaponState is null)
+                        {
+                            RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
+                            return;
+                        } 
+                        
+                        onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false));
+                        
+                        foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
+                        {
+                            if (player is not null && player != onlineWeapon.owner && !player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false);
+                            }
+                        }
                     }
                 }
             });

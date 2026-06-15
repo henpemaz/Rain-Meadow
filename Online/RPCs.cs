@@ -41,6 +41,11 @@ namespace RainMeadow
             {
                 if (onlineWeapon.apo.realizedObject is Weapon weapon)
                 {
+                    if (onlineWeapon.IsLocked("deflected")) // weapon was already deflected, no need to do anything.
+                    {
+                        RainMeadow.Debug($"Recieved {onlineWeapon} deflect RPC but the weapon was already deflected ! Ignoring.");
+                        return;
+                    }
                     realizedWeaponState.ReadTo(onlineWeapon);  // actually, let everyone enjoy the spectacle.
                     if (!isSilent)
                     {
