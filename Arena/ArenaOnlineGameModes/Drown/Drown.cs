@@ -52,7 +52,6 @@ namespace RainMeadow
         }
 
         private bool spearHits;
-        public bool isInStore = false;
         public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
         public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
         public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
