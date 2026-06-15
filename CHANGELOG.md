@@ -2,11 +2,13 @@
 
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
-# Arena
+## Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed Slugslot pseudo-random generator
-# Story
+## Story
 - Allow players to spectate their own corpses as long as they still exist
+### Watcher
+- Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
 
