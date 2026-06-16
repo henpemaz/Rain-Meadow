@@ -1,385 +1,723 @@
+> Last Updated: **May 22nd, 2026**, <small>(v0.1.14.0)</small>
+
+> Warning: This documentation is still WIP. It is mostly complete but will have mistakes and unfinished sections.<br>
+> All known-to-be incomplete elements are marked with `TODO` or `(unfinished)` and a short description. If you have any suggestions or find any mistakes, please ping @OneLetterShor.
 # Arena API
 
 ## Background
-Your cool new gamemode must be added to the `arena.registeredGameModes`. You can do this using the method, `arena.AddExternalGameModes(string, ExternalOnlineGameMode)`. You can hook it pretty much anywhere as long as it's coming before the ArenaOnlineLobbyMenu ctor. Preferably, hook Meadow's  `ArenaOnlineGameMode` ctor and call the method at the end.
+Your cool new game mode must be added to `ArenaOnlineGameMode.registeredGameModes` via `ArenaOnlineGameMode.AddExternalGameModes`.<br>
+You can hook it pretty much anywhere as long as it comes before `ArenaOnlineLobbyMenu`'s constructor.
 
-## Registering a new game mode
+TODO: Add configurables used here for a quick reference.
 
-1. Make a new file that includes your hooks and plugin information:
-2. 
+## Registering Your Game Mode
+
+1. Preferably, hook Rain Meadow's `ArenaOnlineGameMode` constructor and call the method post-orig.
 ```csharp
-// MyCoolNewModPlugin.cs
-using BepInEx;
-using IL;
-using RainMeadow;
-using System;
-using System.Security.Permissions;
-using UnityEngine;
-
-//#pragma warning disable CS0618
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
-namespace MyNamespace
+// RainMeadowHooks.cs
+public static class RainMeadowHooks
 {
-    [BepInPlugin("YOUR_USERNAME.YOUR_PLUGIN_NAME", "FRIENDLY_PLUGIN_NAME", "0.1.0")]
-    public partial class MyMod : BaseUnityPlugin
+    internal static void Apply()
     {
-        public static MyMod instance;
-        private bool init;
-        private bool fullyInit;
-        private bool addedMod = false;
-        public void OnEnable()
+        _ = new Hook(
+            typeof(ArenaOnlineGameMode).GetConstructor(
+                BindingFlags.Public | BindingFlags.Instance,
+                null,
+                [ typeof(Lobby) ],
+                null
+            ),
+            On_RainMeadow_ArenaOnlineGameMode_ctor
+        );
+    }
+    
+    private static void On_RainMeadow_ArenaOnlineGameMode_ctor(
+        Action<ArenaOnlineGameMode, Lobby> orig,
+        ArenaOnlineGameMode self,
+        Lobby lobby)
+    {
+        orig(self, lobby);
+        self.AddExternalGameModes(SuperArenaMode.Id, new SuperArenaMode());
+    }
+}
+```
+
+2. Create a class that inherits `ExternalArenaGameMode`. You'll want a static reference to your `ArenaSetup.GameTypeID`, and a method that checks if the active game mode is your game mode.
+```csharp
+// SuperArenaMode.cs
+public sealed class SuperArenaMode : ExternalArenaGameMode
+{
+    public static ArenaSetup.GameTypeID Id { get; } = new(Plugin.Name); // Or whatever you want the game mode name to be.
+    
+    /// <exception cref="InvalidOperationException">Thrown if game mode is not registered.</exception>
+    public static bool IsSuperArenaMode(ArenaOnlineGameMode arenaOnline, out SuperArenaMode superArena)
+    {
+        string name = Id.value;
+        if (!arenaOnline.registeredGameModes.TryGetValue(name, out ExternalArenaGameMode registeredMode))
+            throw new InvalidOperationException($"Could not find game mode. registered: [ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]");
+        
+        superArena = null!;
+        if (arenaOnline.currentGameMode == name)
         {
-            instance = this;
-
-            On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-
-        }
-
-        private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
-        {
-            orig(self);
-            if (init) return;
-            init = true;
-
-            try
-            {
-               // Option 1: Hook the Lobby ctor 
-               new Hook(typeof(Lobby).GetMethod("ActivateImpl", BindingFlags.NonPublic | BindingFlags.Instance), (Action<Lobby> orig, Lobby self) =>
-                {
-                    orig(self);
-                    OnlineManager.lobby.AddData(new myNewGamemode());
-                });
-                new Hook(typeof(ArenaOnlineGameMode).GetMethod("AddClientData", BindingFlags.Public | BindingFlags.Instance), (Action<ArenaOnlineGameMode> orig, ArenaOnlineGameMode self) =>
-                {
-                    orig(self);
-                    self.clientSettings.AddData(new myNewGamemodeClientSettings()); // optional if you have client settings
-                });
-                // On.Menu.ctor += Menu_ctor;
-                fullyInit = true;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-                fullyInit = false;
-            }
-        }
-
-
-        // Option 2: Hook after Menu_ctor
-        private void Menu_ctor(On.Menu.Menu.orig_ctor orig, Menu.Menu self, ProcessManager manager, ProcessManager.ProcessID ID)
-        {
-            orig(self, manager, ID);
-            if (self is ArenaOnlineLobbyMenu)
-            {
-                AddNewMode();
-            }
-        }
-
-        private void AddNewMode()
-        {
-
-            if (RainMeadow.RainMeadow.isArenaMode(out var arena))
-            {
-                arena.AddExternalGameModes(MyNewExternalArenaGameMode.MyGameModeName, new myNewGamemode());
-            }
-
+            superArena = (SuperArenaMode)registeredMode;
+            return true;
         }
     }
 }
 ```
-3. Make a file that includes your mod's inheritance from Arena's ExternalGameMode:
-4. 
-```csharp
-// ExternalCoolGame.cs
-using RainMeadow;
-using System.Text.RegularExpressions;
-using Menu;
+> Note: Do not register your extenum unless you intend to make it playable outside Rain Meadow.
 
-namespace MyNamespace
-{
-    public class MyCoolNewGameMode : ExternalArenaGameMode
-    {
-        public static ArenaSetup.GameTypeID MyGameModeName = new ArenaSetup.GameTypeID("MyGameModeName", register: false);
-    }
-}
-```
-5. Override the arena.externalGameMode's `GetGameModeId`
-(**NOTE**: Must match enum's value you set in `arena.registeredGameModes`)
-6. 
+3. Add properties to get the custom data for your mode. These classes will be defined later, so don't worry about errors yet.
 ```csharp
-// in the class MyCoolNewGameMode
-public override ArenaSetup.GameTypeID GetGameModeId
-{
-    get
-    {
-        return MyGameModeName; // Set to YOUR cool game mode
-    }
-    set { GetGameModeId = value; }
-}
-```
-7. Your new game mode will now be accessible in the online Arena menu!
+// SuperArenaMode.cs
 
-## GameMode Check
-```csharp
-public static bool isMyCoolGameMode(ArenaOnlineGameMode arena, out MyCoolNewGameMode tb)
-{
-    tb = null;
-    if (arena.currentGameMode == MyGameModeName.value)
-    {
-        tb = (arena.registeredGameModes.FirstOrDefault(x => x.Key == MyGameModeName.value).Value as MyCoolNewGameMode);
-        return true;
-    }
-    return false;
-}
+/// <exception cref="KeyNotFoundException">Thrown if the lobby data is not registered yet.</exception>
+public SuperArenaLobbyData LobbyData => OnlineManager.lobby!.GetData<SuperArenaLobbyData>();
+
+/// <exception cref="KeyNotFoundException">Thrown if the client data is not registered yet.</exception>
+public SuperArenaClientData MyClientData => OnlineManager.lobby!
+                                                         .clientSettings[OnlineManager.mePlayer]
+                                                         .GetData<SuperArenaClientData>();
 ```
+
+4. Override the `GetGameModeId` property and other required members.
+```csharp
+// SuperArenaMode.cs
+public override ArenaSetup.GameTypeID GetGameModeId => Id;
+
+public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom) => throw new NotImplementedException();
+
+public override bool IsExitsOpen(
+    ArenaOnlineGameMode arena,
+    ExitManager.orig_ExitsOpen orig,
+    ArenaBehaviors.ExitManager self)
+{
+    throw new NotImplementedException();
+}
+
+```
+<br>
+
+Your new game mode will now be accessible in the online Arena menu! 🥳
+
+<br>
 
 # State Data
-For when you want to leverage the state-system for syncing variables. Consider adding "group=<someGroup>" to your state variable.
-## LobbyData
+If you want to leverage the state-system for syncing data look no further!<br>
+`OnlineField` and its subtypes are the main way to sync data.
 
+Quick Notes:
+- Using `OnlineField`'s `group` parameter can reduce network usage. (explained later in this section)
+- Rain Meadow only supports the most common types by default.
+  In some cases, such as enums, you may want to cast the type to a serializable type (most primitives work).
+  If that is not possible, you can define custom serialization via Rain Meadow's API.
+- `OnlineFieldHalf` halves the precision of floats to save network usage.
+  You will almost always want to use this for floats.
+
+## Lobby Data
+
+1. Hook `ArenaOnlineGameMode.ResourceAvailable` and add your data post-orig.
 ```csharp
-internal class MyCoolLobbyData : OnlineResource.ResourceData
+// RainMeadowHooks.cs
+internal static void Apply()
+{
+    _ = new Hook(
+        typeof(Lobby).GetMethod(
+            nameof(ArenaOnlineGameMode.ResourceAvailable),
+            BindingFlags.NonPublic | BindingFlags.Instance
+        ),
+        On_RainMeadow_ArenaOnlineGameMode_ResourceAvailable
+    );
+}
+
+private static void On_RainMeadow_ArenaOnlineGameMode_ResourceAvailable(
+    Action<ArenaOnlineGameMode, OnlineResource> orig,
+    ArenaOnlineGameMode self,
+    OnlineResource onlineResource)
+{
+    orig(self, onlineResource);
+    
+    if (onlineResource is Lobby lobby && lobby.isOwner) 
+        lobby.AddData(new SuperArenaLobbyData());
+}
+```
+
+2. Create a class that inherits from `OnlineResource.ResourceData`.
+```csharp
+// SuperArenaLobbyData.cs
+public sealed class SuperArenaLobbyData : OnlineResource.ResourceData
+{
+    
+}
+```
+
+3. Add setting properties as needed and the `ApplySetting` method to save to configurables.
+```csharp
+// SuperArenaLobbyData.cs
+
+/// <remarks>
+/// Settings are automatically saved unless
+/// <see cref="CanApplySettings"/> is <see langword="false"/>.
+/// </remarks>
+public sealed class SuperArenaLobbyData : OnlineResource.ResourceData
+{
+    public static bool CanApplySettings { get; set; } = true;
+    
+    public bool CanPlayersFly { get; set => ApplySetting(value, out field, Plugin.Options.CfgCanPlayersFly); } = Plugin.Options.CanPlayersFly;
+    
+    /// <summary>
+    /// Clamps the value based on <paramref name="configurable"/>
+    /// and writes to it if both the me player is the host and
+    /// <see cref="CanApplySettings"/> is <see langword="true"/>.
+    /// </summary>
+    private void ApplySetting<T>(T value, out T field, Configurable<T> configurable)
     {
-        public MyCoolLobbyData() { }
-
-        public override ResourceDataState MakeState(OnlineResource resource)
-        {
-            return new State(this, resource);
-
-        }
-
-        internal class State : ResourceDataState
-        {
-            [OnlineField(group = "myGroup")]
-            public bool isInGame;
-
-            public State() { }
-            
-            // takes the current value in the State
-            public State(MyCoolLobbyData data, OnlineResource onlineResource) 
-            {
-                ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                bool myMode = MyCoolNewGameMode.isMyCoolGameMode(arena, out var coolMode);
-                if (myMode)
-                {      
-                    this.isInGame = coolMode.isInGame;
-                }   
-            }
-            
-            // read the value in the State and applies it
-            public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource) 
-            {
-                var lobby = (resource as Lobby);
-                bool myMode = MyCoolNewGameMode.isMyCoolGameMode(arena, out var coolMode);
-                if (myMode)
-                {
-                    coolMode.isInGame = this.isInGame;
-                }
-            }
-
-            public override Type GetDataType() => typeof(MyCoolLobbyData);
-        }
+        value = configurable.ClampValue(value);
+        
+        if (CanApplySettings && OnlineManager.lobby!.isOwner)
+            configurable.Value = value;
+        
+        field = value;
     }
+}
 ```
-### What's with the "group='myGroup'"?
+
+4. Use `OnlineField`, `SuperArenaLobbyData.State.ctor`, and `SuperArenaLobbyData.State.ReadTo` to store, write, and read data repectively.
+```csharp
+// SuperArenaLobbyData.cs
+
+/// <remarks>
+/// Settings are automatically saved unless
+/// <see cref="CanApplySettings"/> is <see langword="false"/>.
+/// </remarks>
+public sealed class SuperArenaLobbyData : OnlineResource.ResourceData
+{
+    public static bool CanApplySettings { get; set; } = true;
+    
+    public bool CanPlayersFly { get; set => ApplySetting(value, out field, Plugin.Options.CfgCanPlayersFly); } = Plugin.Options.CanPlayersFly;
+    
+    /// <summary>
+    /// Clamps the value based on <paramref name="configurable"/>
+    /// and writes to it if both the me player is the host and
+    /// <see cref="CanApplySettings"/> is <see langword="true"/>.
+    /// </summary>
+    /// <exception cref="NullReferenceException">Thrown if there is no <see cref="Lobby"/>.</exception>
+    private void ApplySetting<T>(T value, out T field, Configurable<T> configurable)
+    {
+        value = configurable.ClampValue(value);
+        
+        if (CanApplySettings && OnlineManager.lobby!.isOwner)
+            configurable.Value = value;
+        
+        field = value;
+    }
+    
+    public override ResourceDataState MakeState(OnlineResource resource) => new State(this, (Lobby)resource);
+    
+    public sealed class State : ResourceDataState
+    {
+        private const string _settings = nameof(_settings);
+        
+        [OnlineField(group = _settings)]
+        public bool CanPlayersFly;
+        
+        /// <remarks>Rain Meadow requires a constructor with no parameters.</remarks>
+        public State() { }
+        
+        public State(SuperArenaLobbyData data, Lobby lobby)
+        {
+            ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)lobby.gameMode;
+            
+            if (!SuperArenaMode.IsSuperArenaMode(arenaOnline, out _)) return;
+            
+            CanPlayersFly = data.CanPlayersFly;
+        }
+        
+        public override void ReadTo(OnlineResource.ResourceData data_, Lobby lobby)
+        {
+            SuperArenaLobbyData data = (SuperArenaLobbyData)data_;
+            Lobby lobby = (Lobby)onlineResource;
+            ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)lobby.gameMode;
+            
+            if (!SuperArenaMode.IsSuperArenaMode(arenaOnline, out _)) return;
+            
+            data.CanPlayersFly = CanPlayersFly;
+        }
+        
+        public override Type GetDataType() => typeof(SuperArenaLobbyData);
+    }
+}
 ```
+
+## Client Data
+
+Creating client data is very similar to creating lobby data.
+Just note that `SuperArenaClientData.MakeState` and `SuperArenaClientData.State.ReadTo` are not called for the me player. TODO: Is this true?
+
+1. Hook `ArenaOnlineGameMode.AddClientData` and add your data post-orig.
+```csharp
+// RainMeadowHooks.cs
+internal static void Apply()
+{
+    _ = new Hook(
+        typeof(ArenaOnlineGameMode).GetMethod(
+            nameof(ArenaOnlineGameMode.AddClientData),
+            BindingFlags.Public | BindingFlags.Instance
+        ),
+        On_RainMeadow_ArenaOnlineGameMode_AddClientData
+    );
+}
+
+private static void On_RainMeadow_ArenaOnlineGameMode_AddClientData(Action<ArenaOnlineGameMode> orig, ArenaOnlineGameMode self)
+{
+    orig(self);
+    self.clientSettings.AddData(new SuperArenaClientData());
+}
+```
+
+2. Create a class that inherits `OnlineEntity.EntityData`.
+```csharp
+public sealed class SuperArenaClientData : OnlineEntity.EntityData
+{
+    
+}
+```
+
+3. Add setting properties as needed and the `ApplySetting` method to save to configurables. 
+   Note that only settings that should persist after the lobby is left should save to configurables (e.g., use `ApplySettings`).
+```csharp
+// SuperArenaLobbyData.cs
+
+/// <remarks>
+/// Settings are automatically saved unless
+/// <see cref="CanApplySettings"/> is <see langword="false"/>.
+/// </remarks>
+public sealed class SuperArenaClientData : OnlineEntity.EntityData
+{
+    public static bool CanApplySettings { get; set; } = true;
+    
+    public bool IsInjured { get; set; } = false; // This should not be remembered because it is a temperary effect that doesn't persist between rounds (and by extension, lobbies).
+    public bool CanGamble { get; set => ApplySetting(value, out field, Plugin.Options.CfgCanGamble); } = Plugin.Options.CanGamble; // This should be remembered because it is chosen by the player in the menu.
+    
+    /// <summary>
+    /// Clamps the value based on <paramref name="configurable"/>
+    /// and writes to it if both the client data is for the me player and
+    /// <see cref="CanApplySettings"/> is <see langword="true"/>.
+    /// </summary>
+    private void ApplySetting<T>(T value, out T field, Configurable<T> configurable)
+    {
+        value = configurable.ClampValue(value);
+        
+        // TODO: Only save if the client data is for the me player. 
+        if (CanApplySettings)
+            configurable.Value = value;
+        
+        field = value;
+    }
+}
+```
+
+4. Use `OnlineFieldAttribute`, `SuperArenaClientData.State.ctor`, and `SuperArenaClientData.State.ReadTo` to store, write, and read data respectively.
+```csharp
+// SuperArenaClientsData.cs
+
+/// <remarks>
+/// Settings are automatically saved unless
+/// <see cref="CanApplySettings"/> is <see langword="false"/>.
+/// </remarks>
+public sealed class SuperArenaClientData : OnlineEntity.EntityData
+{
+    public static bool CanApplySettings { get; set; } = true;
+    
+    public bool IsInjured { get; set; } = false; // This should not be remembered because it is a temperary effect that doesn't persist between rounds (and by extension, lobbies).
+    public bool CanGamble { get; set => ApplySetting(value, out field, Plugin.Options.CfgCanGamble); } = Plugin.Options.CanGamble; // This should be remembered because it is chosen by the player in the menu.
+    
+    /// <summary>
+    /// Clamps the value based on <paramref name="configurable"/>
+    /// and writes to it if both the client data is for the me player and
+    /// <see cref="CanApplySettings"/> is <see langword="true"/>.
+    /// </summary>
+    private void ApplySetting<T>(T value, out T field, Configurable<T> configurable)
+    {
+        value = configurable.ClampValue(value);
+        
+        // TODO: Only save if the client data is for the me player. 
+        if (CanApplySettings)
+            configurable.Value = value;
+        
+        field = value;
+    }
+    
+    public override EntityDataState MakeState(OnlineEntity entity, OnlineResource resource)
+    {
+        return new State(this);
+    }
+    
+    public sealed class State : EntityDataState
+    {
+        private const string _settings = nameof(_settings);
+        
+        [OnlineField(group = _settings)]
+        public bool IsInjured;
+        
+        [OnlineField(group = _settings)]
+        public bool CanGamble;
+        
+        /// <remarks>Rain Meadow requires a constructor with no parameters.</remarks>
+        public State() { }
+        
+        public State(SuperArenaClientData data)
+        {
+            IsInjured = data.IsInjured;
+            CanGamble = data.CanGamble;
+        }
+        
+        public override void ReadTo(OnlineEntity.EntityData data_, OnlineEntity onlineEntity)
+        {
+            SuperArenaClientData data = (SuperArenaClientData)data_;
+            data.IsInjured = IsInjured;
+            data.CanGamble = CanGamble;
+        }
+        
+        public override Type GetDataType() => typeof(SuperArenaClientData);
+    }
+}
+```
+<br>
+
+### What's with the "group = _settings"?
 Field-groups are a way to organize fields in groups that each have that boolean flag for sent-or-skipped.
 
 Each group means an extra bool that is continuously sent on every message about that resource/entity.
 
 If any field in the field-group has changed, that entire field-group will be re-sent (because that's more efficient that just supporting every single field be optional).
-```
 
-```csharp
-// in the class MyCoolNewGameMode
- public override void ResourceAvailable(OnlineResource onlineResource)
- {
-     base.ResourceAvailable(onlineResource);
+<br>
 
-     if (onlineResource is Lobby lobby)
-     {
-         lobby.AddData(new MyCoolLobbyData()); 
-     }
- }
-```
-Check [ArenaLobbyData](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaLobbyData.cs) for example utilization. 
-## ClientData
-
-```csharp
- public class MyClientSettings : OnlineEntity.EntityData
- {
-     public int someonesNumber;
-
-     public MyClientSettings() { }
-
-     public override EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource)
-     {
-         return new State(this);
-     }
-
-     public class State : EntityDataState
-     {
-         [OnlineField]
-         public int someonesNumber;
-        
-         public State() { }
-         public State(MyClientSettings onlineEntity) : base()
-         {
-             this.someonesNumber = onlineEntity.someonesNumber;
-         }
-
-         public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
-         {
-             var avatarSettings = (MyClientSettings)entityData;
-             avatarSettings.someonesNumber = this.someonesNumber;
-         }
-
-         public override Type GetDataType() => typeof(MyClientSettings);
-     }
- }
-```
-
-```
-// in the class MyCoolNewGameMode
-public override void AddClientData()
-{
-    clientSettings.AddData( new MyClientSettings());
-}
-```
 # UI
-
-## Menu
-### Adding Menu Objects
-ExternalArenaGameMode provides access to the ArenaOnlineLobbyMenu with the following methods:
-```
-OnUIEnabled, OnUIDisabled, OnUIUpdate, OnUIShutdowdn
-
-# NOTE: OnUIDisabled can be called from the menu's ctor, check for null references if used
-```
-
-### Adding Tabs
+## In-Lobby: Adding Custom Tabs
+1. Create a class that inherits `MenuObject`. Typically `TabContainer.Tab` is the most convenient class.
 ```csharp
-base.OnUIEnabled(menu);
-myTab = menu.arenaMainLobbyPage.tabContainer.AddTab("My Tab");
-myTab.AddObjects(myInterface = new MyCoolNewInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
-```
-
-### Remove Tabs
-```csharp
-base.OnUIDisabled(menu);
-myCoolNewInterface?.OnShutdown();
-if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
-myTab = null;
-foreach (ArenaPlayerBox playerBox in menu.arenaMainLobbyPage.playerDisplayer?.GetSpecificButtons<ArenaPlayerBox>() ?? [])
+// SuperArenaSettingsTab.cs
+public sealed class SuperArenaSettingsTab : TabContainer.Tab
 {
-    if (!playerBoxes.TryGetValue(playerBox, out IfIMadeCoolObjectsInPlayerBoxes customBoxStuff)) continue;
-    playerBox.ClearMenuObject(customBoxStuff);
-    playerBoxes.Remove(playerBox);
+    
 }
 ```
 
-### UI - In-Game: Adding or Updating Custom Icons
-Leverage ExternalArenaGameMode's virtual functions
+2. Create some properties to access common objects which are passed into the constructor.
 ```csharp
-    public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+// SuperArenaSettingsTab.cs
+public sealed class SuperArenaSettingsTab : TabContainer.Tab
+{
+    private ArenaOnlineGameMode ArenaOnline { get; }
+    private ArenaOnlineLobbyMenu ArenaOnlineMenu { get; }
+    private SuperArenaMode SuperArena { get; }
+    
+    public SuperArenaSettingsTab(
+        ArenaOnlineLobbyMenu menu,
+        ArenaOnlineGameMode arenaOnline,
+        SuperArenaMode superArena) : base(arenaOnlineMenu, arenaOnlineMenu.arenaMainLobbyPage.tabContainer)
+    {
+        ArenaOnline = arenaOnline;
+        SuperArena = superArena;
+        ArenaOnlineMenu = arenaOnlineMenu;
+    }
+}
+```
+
+3. Now you just need to create some UI elements.
+```csharp
+// SuperArenaSettingsTab.cs
+public sealed class SuperArenaSettingsTab : TabContainer.Tab
+{
+    private ArenaOnlineGameMode ArenaOnline { get; }
+    private ArenaOnlineLobbyMenu ArenaOnlineMenu { get; }
+    private SuperArenaMode SuperArena { get; }
+
+    public ProperlyAlignedMenuLabel ExampleLabel { get; }
+    public OpCheckBox CanPlayersFlyCheckBox { get; }
+    public OpCheckBox CanGambleCheckBox { get; }
+    
+    public SuperArenaSettingsTab(
+        ArenaOnlineLobbyMenu arenaOnlineMenu,
+        ArenaOnlineGameMode arenaOnline,
+        SuperArenaMode superArena) : base(arenaOnlineMenu, arenaOnlineMenu.arenaMainLobbyPage.tabContainer)
+    {
+        ArenaOnline = arenaOnline;
+        SuperArena = superArena;
+        ArenaOnlineMenu = arenaOnlineMenu;
+        
+        ExampleLabel = new ProperlyAlignedMenuLabel(
+            ArenaOnlineMenu,
+            this,
+            "This is an example of a label.",
+            new Vector2(50f, 300f),
+            new Vector2(100f, 25f),
+            false
+        );
+        
+        CanPlayersFlyCheckBox = new OpCheckBox(
+            new Configurable<bool>( // Clone configurable (with a default of the current value)
+                Plugin.Options.CanPlayersFly,
+                Plugin.Options.CfgCanPlayersFly.info
+            ),
+            new Vector2(50f, 50f)
+        );
+        CanPlayersFlyCheckBox.OnValueChanged += (_, _, _) =>
         {
-
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (OnlineManager.lobby!.isOwner)
+                SuperArena.LobbyData.CanPlayersFly = CanPlayersFlyCheckBox.GetValueBool();
+        };
+        
+        CanGambleCheckBox = new OpCheckBox(
+            new Configurable<bool>( // Clone configurable (with a default of the current value)
+                Plugin.Options.CanGamble,
+                Plugin.Options.CfgCanGamble.info
+            ),
+            new Vector2(100f, 50f)
+        );
+        CanGambleCheckBox.OnValueChanged += (_, _, _) =>
+        {
+            SuperArena.MyClientData.CanGamble = CanGambleCheckBox.GetValueBool();
+        };
+        
+        AddUIElements(CanPlayersFlyCheckBox, CanGambleCheckBox);
+        this.SafeAddSubobjects(ExampleLabel);
+        
+        return;
+        
+        void AddUIElements(params UIelement[] uiElements)
+        {
+            foreach (UIelement uiElement in uiElements)
             {
-                return "ChieftainA";
+                _ = new PatchedUIelementWrapper(
+                    myTabWrapper,
+                    uiElement
+                );
             }
-            return base.AddIcon(arena, owner, customization, player);
+        }
+    }
+}
+```
+> Note: It may be wise to create a helper method to make cloning easier to read. See Hide and Seek's helper method [here](https://github.com/One-Letter-Shor/HideAndSeek/blob/develop/src/HideAndSeek/Utils/ConfigurableHelper.cs).
 
+4. Finally, update your `UIelement`s and `MenuObject`s as needed.
+```csharp
+// SuperArenaSettingsTab.cs
+public override void Update()
+{
+    MyLobbySettingCheckBox.greyedOut = SettingDisabled;
+    MyClientSettingCheckBox.greyedOut = ArenaOnline.initiateLobbyCountdown;
+    
+    base.Update();
+
+    SeekerSelectionSelector.value = SuperArena.EnabledSeekerSelection.ToString();
+    TagResultSelector.value = SuperArena.EnabledTagResult.ToString();
+}
+```
+> Note: If you find yourself adding many `UIfocusable`s you may want to use collections for lobby and client settings. See Hide and Seek's usage of arrays (in the update method) [here](https://github.com/One-Letter-Shor/HideAndSeek/blob/develop/src/HideAndSeek/Arena/HideAndSeekSettingsTab.cs).
+
+<br>
+
+### Adding and Removing Tabs
+
+> Note: Because you are in the `SuperArenaMode` class but working on the UI, it is standard to make it a partial class and put UI-related members in `SuperArenaMode.UI.cs`.
+
+Now that you have a full tab class you simply need to add it in the `SuperArenaMode.OnUIEnabled` method.
+```csharp
+// SuperArenaMode.UI.cs into a
+public SuperArenaSettingsTab? SettingsTab { get; }
+
+public override void OnUIEnabled(ArenaOnlineLobbyMenu menu)
+{
+    ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)OnlineManager.lobby!.gameMode;
+        
+    base.OnUIEnabled(menu);
+    
+    SettingsTab = new SuperArenaSettingsTab(
+        menu,
+        arenaOnline,
+        this
+    );
+    
+    menu.arenaMainLobbyPage.tabContainer.AddTab(SettingsTab, Plugin.Name);
+}
+```
+
+Remember to remove it in `OnUIDisabled` and that `OnUIShutdown` calls `OnUIDisabled`.
+```csharp
+// SuperArenaMode.UI.cs
+public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
+{
+    if (SettingsTab is null) return;
+    
+    SettingsTab.RemoveSprites();
+    menu.arenaMainLobbyPage.tabContainer.RemoveTab(SettingsTab);
+    
+    SettingsTab = null;
+    base.OnUIDisabled(menu);
+}
+
+public override void OnUIShutDown(ArenaOnlineLobbyMenu menu) => OnUIDisabled(menu);
+```
+> Note: Because Rain Meadow will sometimes call `OnUIDisabled` and `OnUIShutDown` without calling `OnUIEnabled` inbetween, you must ensure you do not dereference null members in `OnUIDisabled`.<br>
+> The shutting down methods are only called back to back when <>.
+
+TODO: When are the methods called back to back? Is it when exiting a round early?
+
+<br>
+
+### In-Game: Adding and Updating Custom Icons
+Leverage `ExternalArenaGameMode`'s virtual functions to do things such as changing the sprite displayed above the players' head and the sprite's color.
+```csharp
+// SuperArenaMode.UI.cs
+public override string AddIcon(
+    ArenaOnlineGameMode arenaOnline,
+    OnlinePlayerDisplay display,
+    PlayerSpecificOnlineHud onlineHud,
+    SlugcatCustomization customization,
+    OnlinePlayer oPlayer)
+{
+    if (onlineHud.clientSettings.owner == OnlineManager.lobby!.owner)
+        return "ChieftainA";
+    
+    return base.AddIcon(arenaOnline, display, onlineHud, customization, oPlayer);
+}
+
+public override Color IconColor(
+    ArenaOnlineGameMode arenaOnline,
+    OnlinePlayerDisplay display,
+    PlayerSpecificOnlineHud onlineHud,
+    SlugcatCustomization customization,
+    OnlinePlayer oPlayer)
+{
+    if (onlineHud.PlayerConsideredDead)
+        return Color.grey;
+    if (arenaOnline.reigningChamps?.list?.Contains(oPlayer.id) == true)
+        return Color.yellow;
+    
+    return base.IconColor(arenaOnline, display, onlineHud, customization, oPlayer);
+}
+```
+<br>
+
+### Adding Slugcat Settings (TODO: Unfinished, view old docs.)
+Slugcat abilities tab has support to add your custom settings for slugcats.
+
+1. Create a class that inherits `SettingsPage`. (unfinished)
+```csharp
+public sealed class SuperArenaSettingsPage : SettingsPage
+{
+    private ArenaOnlineGameMode ArenaOnline { get; }
+    private SuperArenaMode SuperArena { get; }
+    private ArenaOnlineLobbyMenu ArenaOnlineMenu { get; }
+    
+    public override string Name => Plugin.Name; // This will appear on Select Settings Page.
+    
+    public OpUpdown FlightDurationSecondsUpdown { get; };
+    public SimpleButton BackButton { get; private set; };
+    
+    public SuperArenaSettingsPage(Menu.Menu menu, MenuObject owner) : base(menu, owner)
+    {
+        FlightDurationSeconds = new(
+            new Configurable<int>( // Clone configurable (with a default of the current value)
+                Plugin.Options.FlightDurationSeconds,
+                Plugin.Options.CfgFlightDurationSeconds.info,
+            ),
+            new Vector2(0f, 0f),
+            40f
+        );
+        
+        FlightDurationSecondsUpdown.OnValueChanged += (_, _, _) =>
+        {
+            Plugin.Options.FlightDurationSeconds = FlightDurationSecondsUpdown.GetValueInt();
+        };
+    }
+
+    public override void SelectAndCreateBackButtons(SettingsPage previousSettingPage, bool shouldSelectButton)
+    {
+        if (BackButton is null) // TODO: Test when this is null. Update nullable annotations accordingly.
+        {
+            BackButton = new SimpleButton(
+                menu,
+                this,
+                menu.Translate("BACK"),
+                OnlineSlugcatAbilitiesInterface.BACKTOSELECT, // Must OnlineSlugcatAbilitiesInterface.BACKTOSELECT to return to Select Settings Page.
+                new Vector2(30f, 30f),
+                new Vector2(80f, 30f)
+            );
+
+            AddObjects(BackButton);
         }
 
-    public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
-        {
-            if (owner.PlayerConsideredDead)
-            {
-                return Color.grey;
-            }
-            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
-            {
-                return Color.yellow;
-            }
-
-            return base.IconColor(arena, owner, customization, player);
-        }
-```
-
-### Adding Slugcat Settings
-Slugcat Abilities Tab has support to add your custom settings for slugcats. First make your class from `SettingsPage`
-```csharp
- public class MyCustomSettingsPage : SettingsPage
- {
-      public OpTextBox mySlugcatFlightDurationTextBox;
-      public SimpleButton backButton;
-
-      public override string Name => "My Custom Name"; //this will appear on Select Settings Page
-
-      public MyCustomSettingsPage(Menu.Menu menu, MenuObject owner) : base(menu, owner)
-      {
-           mySlugcatFlightDurationTextBox = new(new Configurable<int>(myOptionsSave.Value), new Vector2(0, 0), 40);
-           mySlugcatFlightDurationTextBox.OnValueUpdate += (UIconfig config, string lastValue, string newValue) =>
-           {
-                //Doesnt have to appear here, just make sure lobby data gets changed accordingly somewhere
-                MyCoolLobbyData data = GetMyLobbyData();
-                data.mySlugcatFlightDuration = mySlugcatFlightDurationTextBox.valueInt;
-           }; 
-      }
-      public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
-      {
-           if (backButton == null)
-           {
-               //Signal Text HAS to be OnlineSlugcatAbilitiesInterface.BACKTOSELECT to return to Select Settings Page
-               backButton = new SimpleButton(menu, this, menu.Translate("BACK"), OnlineSlugcatAbilitiesInterface.BACKTOSELECT, new Vector2(30, 30), new Vector2(80, 30));
-               AddObjects(backButton);
-           }
-           if (forceSelectedObject)
-               menu.selectedObject = backButton;
-      }
-      public override void CallForSync()
-      {
-            MyCoolLobbyData data = GetMyLobbyData();
-            data.mySlugcatFlightDuration = mySlugcatFlightDurationTextBox.valueInt;
-      }
-      public override void SaveInterfaceOptions()
-      {
-           myOptionsSave.mySlugcatFlightDuration.Value = mySlugcatFlightDurationTextBox.valueInt;
-      }
-      public override void Update()
-      {
-           MyCoolLobbyData data = GetMyLobbyData();
-           mySlugcatFlightDurationTextBox.greyedOut = SettingsDisabled
-           if (!mySlugcatFlightDurationTextBox.held)
-                  mySlugcatFlightDurationTextBox.valueInt = data.mySlugcatFlightDuration;
-      }
+        if (shouldSelectButton)
+            menu.selectedObject = BackButton;
+    }
+    
+    public override void Update()
+    {
+        FlightDurationSecondsUpdown.greyedOut = SettingsDisabled
+        
+        if (!FlightDurationSecondsUpdown.held)
+            FlightDurationSecondsUpdown.SetValueInt(SuperArena.FlightDurationSeconds);
+    }
 }
 ```
-You can check `OnlineSlugcatAbilitiesInterface.MSCSettings, OnlineSlugcatAbilitiesInterface.WatcherSettings` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Menu/Components/OnlineSlugcatAbilitiesInterface.cs) as an example
+You can check both `OnlineSlugcatAbilitiesInterface.MSCSettings` and `OnlineSlugcatAbilitiesInterface.WatcherSettings` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Menu/Components/OnlineSlugcatAbilitiesInterface.cs) as an example.
 
-Once you made the class, you can start hooking
+Once you made the class, you can start hooking. (unfinished)
 ```csharp
-public void ApplyHooks()
+// RainMeadowHooks.cs
+internal static void Apply()
 {
-      new Hook(typeof(OnlineSlugcatAbilitiesInterface).GetMethod("AddAllSettings"), OnlineSlugcatAbilitiesInterface_AddAllSettings);
-
-      new Hook(typeof(ArenaMainLobbyPage).GetMethod("ShouldOpenSlugcatAbilitiesTab"), ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab);
+    _ = new Hook(
+        typeof(OnlineSlugcatAbilitiesInterface).GetMethod(
+            nameof(OnlineSlugcatAbilitiesInterface.AddAllSettings),
+            BindingFlags.Public | BindingFlags.Instance
+        ),
+        On_RainMeadow_UI_Components_OnlineSlugcatAbilitiesInterface_AddAllSettings
+    );
+    
+    _ = new Hook(
+        typeof(ArenaMainLobbyPage).GetMethod(
+            nameof(ArenaMainLobbyPage.ShouldOpenSlugcatAbilitiesTab),
+            BindingFlags.Public | BindingFlags.Instance
+        ),
+        On_RainMeadow_UI_Pages_ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab
+    );
 }
-public void OnlineSlugcatAbilitiesInterface_AddAllSettings(Action<OnlineSlugcatAbilitiesInterface, string> orig, OnlineSlugcatAbilitiesInterface self, string painCatName)
- {
-      orig(self, painCatName);
-      MyCustomSettingsPage myCustomSettings = new(self.menu, self);
-      self.AddSettingsTab(myCustomSettings);
- }
 
-//This hook is optional. Slugcat Abilities Tab only appears when MSC or Watcher is on
-//Add this if you want your settings to appear without MSC AND Watcher
-public bool ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab(Func<ArenaMainLobbyPage, bool> orig, ArenaMainLobbyPage self)
- {
+private static void On_RainMeadow_UI_Components_OnlineSlugcatAbilitiesInterface_AddAllSettings(
+    Action<OnlineSlugcatAbilitiesInterface, string> orig,
+    OnlineSlugcatAbilitiesInterface self,
+    string painCatName)
+{
+    orig(self, painCatName);
+    self.AddSettingsTab(new SuperArenaSettingsPage(self.menu, self));
+}
+
+// This hook is optional. Slugcat Abilities Tab only appears when MSC or Watcher is on.
+// Add this if you want your settings to appear without MSC AND Watcher. TODO: Is this true?
+private static bool On_RainMeadow_UI_Pages_ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab(
+    Func<ArenaMainLobbyPage, bool> orig,
+    ArenaMainLobbyPage self)
+{
     return true;
- }
+}
 ```
+<br>
 
-## Beyond
-There are a number of virtual functions available for you  in ExternalArenaGameMode to leverage for Arena gameplay. Check the [BaseGameMode.cs](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaOnlineGameModes/BaseGameMode.cs) for a full list. They are added as a convenience. If you don't want to use them, hook your own. Best of luck, and ping @UO when you've made a new game mode! 
+# References
+
+- https://github.com/One-Letter-Shor/HideAndSeek — Hide 'N Seek<br>
+TODO: Link to a Rain Meadow arena template here.
+
+<br>
+
+# Beyond
+If you've found any syntax errors, logic errors, or just find anything hard to understand, please ping @OneLetterShor about the issue.<br>
+
+There are a number of virtual functions available for you in `ExternalArenaGameMode` to leverage for arena gameplay.
+Check out [BaseGameMode.cs](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaOnlineGameModes/BaseGameMode.cs) for a full list. They are added as a convenience. If you don't want to use them, hook your own.
+
+Best of luck, and ping @UO when you've made a new game mode!
