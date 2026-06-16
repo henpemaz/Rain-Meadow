@@ -1,7 +1,6 @@
 # Release 1.15.0
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
-
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -14,16 +13,15 @@
 - Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
-- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed the winning conditions for a secret thing
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
-
-# Story
+## Story
 - Allow players to spectate their own corpses as long as they still exist
+### Watcher
+- Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
-
 ## Engine 
 - Improved parry netcode.
 - Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 
