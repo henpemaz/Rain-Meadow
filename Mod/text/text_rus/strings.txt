@@ -353,7 +353,7 @@ Multiplier on how far Artificer can stun other players compared to vanilla range
 Artificer Parry Range Multiplier|Множитель расстояния отражений Техником:
 How far Artificer can parry from compared to vanilla range. Default: 0.3|На каком расстоянии Техник может отражать копья по сравнению с ванильным расстоянием. По умолчанию: 0.3 
 Artificer Parry Leniency:|Смягчение отражений копий Техником:
-Gives Artificer more leniency in her concussive blast's parry|Смягчает Технику отражения копий с помощью его оглушающего взрыва
+Gives Artificer more leniency frames in the concussive blast's parry|Смягчает Технику отражения копий с помощью оглушающего взрыва
 Disable Mauling:|Отключить Укус:
 Prevent Artificer and <PAINCATNAME> from mauling|Предотвратить укусы Техника и <PAINCATNAME>
 Disable Artificer Stun:|Отключить оглушение Техника:
