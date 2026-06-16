@@ -178,7 +178,7 @@ namespace RainMeadow.UI.Components
                 artiParryDistanceLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, artiParryDistanceTextBox);
 
-                artiParryLeniencyCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Artificer Parry Leniency:"), ARTIPARRYLENIENCY, false, Translate("Gives Artificer more leniency in her concussive blast's parry"));
+                artiParryLeniencyCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Artificer Parry Leniency:"), ARTIPARRYLENIENCY, false, Translate("Gives Artificer more leniency frames in the concussive blast's parry"));
                 blockMaulCheckBox = new(menu, this, this, positioner - spacing * 4, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
                 sainotCheckBox = new(menu, this, this, positioner - spacing * 5, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
                 saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 6 + new Vector2(-7.5f, 0), 40)
