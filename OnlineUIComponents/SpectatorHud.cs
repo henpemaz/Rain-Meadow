@@ -97,9 +97,6 @@ namespace RainMeadow
                         );
                         break;
                     }
-                    //return_to_player = ac;
-                    //RainMeadow.Debug($"Setting return to player to: {return_to_player}");
-                    //break;
                 }
             }
 
@@ -119,7 +116,9 @@ namespace RainMeadow
                     && camera.room.abstractRoom != return_to_player.Room
                 )
                 {
+                    var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
+                    AbstractizeIfSafe(oldRoom);
                 }
             }
         }
@@ -182,9 +181,33 @@ namespace RainMeadow
                         && camera.room.abstractRoom != spectatee.Room
                     )
                     {
+                        var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                        AbstractizeIfSafe(oldRoom);
                     }
                 }
+            }
+        }
+
+        // Unloads a room left behind by the spectator camera if no local players remain in it.
+        private void AbstractizeIfSafe(AbstractRoom oldRoom)
+        {
+            if (oldRoom == null || oldRoom.realizedRoom == null) return;
+
+            bool keepLoaded = false;
+            for (int i = 0; i < game.Players.Count; i++)
+            {
+                if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal())
+                {
+                    keepLoaded = true;
+                    break;
+                }
+            }
+
+            if (!keepLoaded)
+            {
+                RainMeadow.Debug($"Spectator leaving room {oldRoom.name}, abstractizing it to prevent leaks.");
+                oldRoom.Abstractize();
             }
         }
     }

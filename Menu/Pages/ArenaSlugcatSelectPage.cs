@@ -298,7 +298,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     {
         base.Update();
         lastBanSlugInput = banSlugInput;
-        banSlugInput = RWInput.PlayerInput(0).pckp;
+        banSlugInput = menu.manager.menuesMouseMode? Input.GetMouseButtonDown(0) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) : RWInput.PlayerInput(0).pckp;
         if (warningCounter >= 0) warningCounter++;
         if (readyWarning)
             warningCounter = Mathf.Max(warningCounter, 0);
