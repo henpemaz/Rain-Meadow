@@ -444,7 +444,7 @@ namespace RainMeadow
                 return "Multiplayer_Star";
             }
 
-            return "Kill_Slugcat";
+            return "";
         }
 
         public virtual Color IconColor(
