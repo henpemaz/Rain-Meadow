@@ -489,7 +489,7 @@ namespace RainMeadow
                 timeUntilFadeout = arena.amoebaDuration * 40,
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
-            voidSpawn.swimSpeed = 2f;
+            voidSpawn.swimSpeed = arena.voidSpawnLethalityFactor / 2;
             room.abstractRoom.AddEntity(apo);
             RainMeadow.sSpawningNonTransferable = false;
 

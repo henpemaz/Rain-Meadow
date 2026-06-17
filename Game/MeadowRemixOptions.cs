@@ -200,7 +200,7 @@ public class RainMeadowOptions : OptionInterface
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
-        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 4f);
+        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 3f);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
         FriendlyFire = config.Bind("FriendlyFire", false);
