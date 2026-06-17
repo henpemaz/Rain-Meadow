@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MoreSlugcats;
 using Drown;
+using System.CodeDom;
 
 namespace RainMeadow
 {
@@ -116,6 +117,7 @@ namespace RainMeadow
                 settings.iOpenedDen = true;
             }
             drown.openedDen = true;
+
 
             for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
             {

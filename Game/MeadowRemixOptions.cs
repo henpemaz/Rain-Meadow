@@ -293,7 +293,7 @@ public class RainMeadowOptions : OptionInterface
         DrownPointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
         DrownCreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
         DrownPointsForRock = config.Bind("PointsForRock", 0);
-        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.Numlock);
+        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.B);
 
 
         StoreItem1 = config.Bind("DrownStoreItem1", KeyCode.Alpha1);
