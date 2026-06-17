@@ -20,6 +20,21 @@ namespace RainMeadow
 
             new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
             new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
+
+            On.RoomRealizer.CanAbstractizeRoom += RoomRealizer_CanAbstractizeRoom2;
+        }
+
+        public bool RoomRealizer_CanAbstractizeRoom2(On.RoomRealizer.orig_CanAbstractizeRoom orig, RoomRealizer self, RoomRealizer.RealizedRoomTracker tracker)
+        {
+            if (OnlineManager.lobby != null && tracker.room.GetResource() is RoomSession roomSession)
+            {
+                if (roomSession.isActive)
+                {
+                    if (roomSession.activeEntities.Any(x => !x.isTransferable && x.isMine)) return false;
+                }
+            }
+
+            return orig(self, tracker);
         }
 
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)

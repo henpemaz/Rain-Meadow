@@ -2,6 +2,7 @@
 
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Prevent the Abstraction of rooms that contain player avatars
 ## Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed Slugslot pseudo-random generator
