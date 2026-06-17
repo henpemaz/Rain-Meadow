@@ -70,7 +70,7 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null || isTransfering;
         public OnlineEvent pendingRequest;
         public bool isTransfering; // set on request, cleared on error or ownership change (non-error comes from different player than ownership status)
-
+        public OnlineResource? pendingJoiningResource = null;
         protected OnlineEntity(EntityId id, OnlinePlayer owner, bool isTransferable)
         {
             this.id = id;
@@ -196,6 +196,7 @@ namespace RainMeadow
             }
         }
 
+        
         public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
             RainMeadow.Debug($"{this} joining {inResource}");
@@ -204,18 +205,26 @@ namespace RainMeadow
                 RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 return;
             }
-            if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
+            pendingJoiningResource = inResource;
+            try
             {
-                currentlyJoinedResource.EntityLeftResource(this);
-            }
-            joinedResources.Add(inResource);
-            incomingState.Add(inResource, new Queue<EntityState>());
+                if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
+                {
+                    currentlyJoinedResource.EntityLeftResource(this);
+                }
+                joinedResources.Add(inResource);
+                incomingState.Add(inResource, new Queue<EntityState>());
 
-            if (!isMine)
+                if (!isMine)
+                {
+                    EnterResource(inResource);
+                    ReadState(initialState, inResource);
+                    JoinImpl(inResource, initialState);
+                }
+            }
+            finally
             {
-                EnterResource(inResource);
-                ReadState(initialState, inResource);
-                JoinImpl(inResource, initialState);
+                pendingJoiningResource = null;
             }
 
             if (isMine)

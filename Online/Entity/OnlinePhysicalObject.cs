@@ -490,7 +490,14 @@ namespace RainMeadow
                 }
                 if (inResource is RoomSession rs)
                 {
-                    RemoveEntityFromRoom(true);
+                    if (apo.destroyOnAbstraction)
+                    {
+                        if (pendingJoiningResource is null || !inResource.IsSibling(pendingJoiningResource))
+                        {
+                            apo.Destroy();
+                        }
+                    }
+                    if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);                    
                 }
                 AllMoving(false);
             }

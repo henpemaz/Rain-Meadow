@@ -15,6 +15,8 @@ namespace RainMeadow
         public bool realized;
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
+        [OnlineField(group = "abstract")]
+        public bool destroyOnAbstraction;
 
         public AbstractPhysicalObjectState() : base() { }
         public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
@@ -38,6 +40,7 @@ namespace RainMeadow
             this.sticks = new(onlineEntity.apo.stuckObjects.Where(s => s.A == onlineEntity.apo).Select(s => AbstractObjStickRepr.map.GetValue(s, AbstractObjStickRepr.FromStick)).Where(s => s != null).ToList());
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
+            this.destroyOnAbstraction = onlineEntity.apo.destroyOnAbstraction;
             if (realizedState) this.realizedObjectState = GetRealizedState(onlineEntity);
         }
 
@@ -162,6 +165,7 @@ namespace RainMeadow
                 }
             }
 
+            apo.destroyOnAbstraction = destroyOnAbstraction;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)
             {
