@@ -41,6 +41,8 @@ Sort by Fullest Lobby|Сортировка по наиболее полным Л
 Sort by Emptiest Lobby|Сортировка по наименее полным Лобби
 Unknown Sorting Method|Неизвестный способ сортировки
 Refresh list|Обновить список
+Watcher|Созерцатель
+MSC + Watcher|MSC + Созерцатель
 
 Rain Meadow version |Версия 
  is now available.| Rain Meadow теперь доступна!
@@ -432,6 +434,14 @@ Points required to buy a respawn|Очков для покупки возрожд
 Points required to open dens|Очков для открытия убежищ
 How many waves before creature cleanup|Количество волн до очистки существ
 Max creatures in level|Максимальное количество существ в уровне
+STORE|МАГАЗИН
+Rock|Камень
+Electric Spear|Электр. копьё
+Boomerang|Бумеранг
+Respawn|Возрождение
+Open Dens|Открыть убеж.
+LOADING|ЗАГРУЗКА 
+
 
 ///Выбор персонажа в Арене
 Back To Lobby|Назад в лобби
@@ -449,7 +459,7 @@ Unknown|Неизвестный
 THE OVERSEER|НАБЛЮДАТЕЛЬ
 Observe without peril|Наблюдайте без риска
 ///Выживший
-Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Твои враги окружают тебя, но это не будет как в первый раз.<LINE>Хватай свои копье и камень.
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Твои враги окружают тебя, но это не будет как в первый раз.<LINE>Хватай свои копьё и камень.
 ///Монах
 Remember: they struck first, so you'll need to hit back harder.|Помни: они напали первыми. Ответь им ещё сильнее.
 ///Охотник
@@ -463,7 +473,7 @@ An explosive personality and unmatched anger.<LINE>Maul and detonate your way to
 A gnawing hunger grows inside you. Feed it with spears.|Внутри тебя растет грызущий голод. Насыти его копьями.
 In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|В мире, лишённом смысла, возможно, ты наконец-то нашел свой.<LINE>Действуй быстро, чтобы не упустить его.
 ///Святой
-The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|Копье — слабый сосуд. Формируй мир<LINE>по отпечаткам своего разума.
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|Копьё — слабый сосуд. Формируй мир<LINE>по отпечаткам своего разума.
 The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|Разум — слабый сосуд. Продемонстрируй свое мастерство<LINE>с помощью копья в твоей руке. 
 ///Слизнекотёнок
 Desperate. Fearful. Violent.|Отчаянный. Боязливый. Жестокий.
@@ -631,6 +641,7 @@ was zapped by a|был поражён существом
 was taken by a|был захвачен существом
 was taken into the abyss thanks to|был(-а) унесен(-а) в бездну благодаря
 was slain by a|был убит существом
+blew up.|взорвался.
 
 ///Имена существ для сообщений о смерти
 Pink Lizard|Розовый Ящер
@@ -787,8 +798,8 @@ Special event:|Особое событие:
 number:|номер:
 Event days remaining:|Дней осталось до конца:
 Spear|Копьё
-Explosive Spear|Взрывное копьё
-Scavenger Bomb|Бомба мусорщиков
+Explosive Spear|Взрывн. копьё
+Scavenger Bomb|Бомба
 Joke Rifle|Шуткоствол
 Meadow Coin|Meadow монета
 Silver Cape|Серебряный плащ
