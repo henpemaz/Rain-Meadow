@@ -241,7 +241,7 @@ namespace RainMeadow
         }
 
         // get real
-        private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord) where T : AbstractPhysicalObject
+        private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
         {
             if (OnlineManager.lobby != null && !self.CanMove()) return;
             bool wasdestroyonabstraction = self.destroyOnAbstraction;

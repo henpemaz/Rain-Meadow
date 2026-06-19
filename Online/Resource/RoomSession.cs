@@ -27,35 +27,27 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            if (isOwner && absroom.realizedRoom != null)
+            if (absroom.realizedRoom != null)
             {
-                foreach(var obj in absroom.realizedRoom.updateList)
+                if (isOwner)
                 {
-                    if (obj is ScavengerOutpost outpost && outpost.pearlStrings.Count == 0)
+                    foreach(var obj in absroom.realizedRoom.updateList)
                     {
-                        //initiate outpost pearl strings
-                        Random.State state = Random.state;
-                        Random.InitState((outpost.placedObj.data as PlacedObject.ScavengerOutpostData).pearlsSeed);
-                        int length = Random.Range(5, 15);
-                        for (int i = 0; i < length; i++)
+                        if (obj is HangingPearlString or ScavengerOutpost.PearlString)
                         {
-                            var pearlString = new ScavengerOutpost.PearlString(outpost.room, outpost, 20f + Mathf.Lerp(20f, 150f, Random.value) * Custom.LerpMap(length, 5f, 15f, 1f, 0.1f));
-                            outpost.room.AddObject(pearlString);
-                            outpost.pearlStrings.Add(pearlString);
-
-                            pearlString.Initiate();
+                            OnlinePearlString.InitializePearlString(obj);
                         }
-                        Random.state = state;
                     }
                 }
-                foreach(var obj in absroom.realizedRoom.roomSettings.placedObjects)
+                else
                 {
-                    if (obj.type == PlacedObject.Type.HangingPearls)
+                    foreach (var entity in activeEntities.OfType<OnlinePearlString>())
                     {
-                        absroom.realizedRoom.AddObject(new HangingPearlString(absroom.realizedRoom, Mathf.Lerp(60f, 180f, 0.5f + Mathf.Sin(obj.pos.x * 10f) / 2f), obj.pos));
+                        entity.FindPearlString(this);
                     }
                 }
             }
+            
         }
 
         protected override void ActivateImpl()

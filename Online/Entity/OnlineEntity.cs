@@ -141,7 +141,7 @@ namespace RainMeadow
 
         public void JoinOrLeavePending()
         {
-            if (!isMine) { throw new InvalidProgrammerException("not owner"); }
+            if (!isMine) { throw new InvalidProgrammerException("not owner"); }     
 
             // Sanitize
             for (int i = enteredResources.Count - 1; i >= 0; i--)
