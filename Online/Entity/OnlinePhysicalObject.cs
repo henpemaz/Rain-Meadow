@@ -228,7 +228,16 @@ namespace RainMeadow
             base.NewOwner(newOwner);
             if (newOwner.isMe)
             {
-                realized = apo.realizedObject != null; // owner is responsible for upkeeping this
+            
+                if (realized && apo.realizedObject is null && apo.destroyOnAbstraction)
+                {
+                    realized = false;
+                    apo.Destroy();
+                }
+                else
+                {
+                    realized = apo.realizedObject != null; // owner is responsible for upkeeping this
+                }
             }
         }
 
@@ -490,13 +499,6 @@ namespace RainMeadow
                 }
                 if (inResource is RoomSession rs)
                 {
-                    if (apo.destroyOnAbstraction)
-                    {
-                        if (pendingJoiningResource is null || !inResource.IsSibling(pendingJoiningResource))
-                        {
-                            apo.Destroy();
-                        }
-                    }
                     if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);                    
                 }
                 AllMoving(false);

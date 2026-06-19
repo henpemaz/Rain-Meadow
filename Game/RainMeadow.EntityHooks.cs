@@ -241,19 +241,27 @@ namespace RainMeadow
         }
 
         // get real
-        private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
+        private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord) where T : AbstractPhysicalObject
         {
             if (OnlineManager.lobby != null && !self.CanMove()) return;
             bool wasdestroyonabstraction = self.destroyOnAbstraction;
-            if (self.GetOnlineObject(out var oe) && oe.isTransferable) self.destroyOnAbstraction = false;
+            if (self.GetOnlineObject(out var oe) && (oe.isTransferable || !oe.isMine)) self.destroyOnAbstraction = false;
 
             orig(self, coord);
             
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && oe is not null)
             {
                 self.destroyOnAbstraction = wasdestroyonabstraction;
                 if (oe.realized && oe.isTransferable && !oe.isPending) oe.Release();
                 oe.realized = false;
+
+                if (self.destroyOnAbstraction && !self.slatedForDeletion)
+                {
+                    if (!oe.isPending && oe.isMine)
+                    {
+                        self.Destroy();
+                    }
+                } 
             }
         }
 
