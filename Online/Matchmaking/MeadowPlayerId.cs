@@ -23,6 +23,11 @@ namespace RainMeadow
             this.name = name;
         }
 
+        public virtual string GetRepresentation()
+        {
+            return GetPersonaName();
+        }
+
         public abstract void CustomSerialize(Serializer serializer);
         public abstract bool Equals(MeadowPlayerId other);
         public override bool Equals(object obj)
