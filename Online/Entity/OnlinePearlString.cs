@@ -36,7 +36,7 @@ namespace RainMeadow
                             pearlStringIndex = (ushort)room.updateList.OfType<ScavengerOutpost.PearlString>().ToList().IndexOf(outpostPearlString);
                             break;
                         case MoreSlugcats.HangingPearlString hangingPearlString:
-                            stringtype = (int)PearlStringType.OutpostPearlString;
+                            stringtype = (int)PearlStringType.HangingPearlString;
                             pearlStringIndex = (ushort)room.updateList.OfType<MoreSlugcats.HangingPearlString>().ToList().IndexOf(hangingPearlString);
                             break;
                         default:
@@ -68,22 +68,25 @@ namespace RainMeadow
 
         public static void InitializePearlString(UpdatableAndDeletable pearlString)
         {
+            RainMeadow.DebugMe();
             if (pearlString.room?.abstractRoom?.GetResource() is not RoomSession rs) return;
             if (!rs.isActive || !rs.isOwner) return;
             if (pearlStringMap.TryGetValue(pearlString, out _)) return;
-            var oe = new OnlinePearlString(pearlString, new EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.uad, pearlString.room.world.game.GetNewID().number), OnlineManager.mePlayer, true);
+            var entityID = new EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.uad, pearlString.room.world.game.GetNewID().number);
+            var oe = new OnlinePearlString(pearlString, entityID, OnlineManager.mePlayer, true);
+            RainMeadow.Debug(oe);
             oe.EnterResource(rs);
         }
 
 
         OnlinePearlStringDefinition? remotedefinition = null;
 
-        public static ConditionalWeakTable<UpdatableAndDeletable, OnlinePearlString> pearlStringMap;
+        public static ConditionalWeakTable<UpdatableAndDeletable, OnlinePearlString> pearlStringMap = new();
         public bool initializedPearls = false;
         public OnlinePearlString(OnlinePearlStringDefinition entityDefinition, OnlineResource inResource, PearlStringState initialState) : base(entityDefinition, inResource, initialState)
         {
             remotedefinition = entityDefinition;
-            FindPearlString(inResource);
+            OnlineManager.RunDeferred(() => FindPearlString(inResource));
         }
 
         public void FindPearlString(OnlineResource inResource)
@@ -95,14 +98,33 @@ namespace RainMeadow
             switch ((OnlinePearlStringDefinition.PearlStringType)remotedefinition.stringtype)
             {
                 case OnlinePearlStringDefinition.PearlStringType.OutpostPearlString:
-                    pearlString = room.updateList.OfType<ScavengerOutpost.PearlString>().ElementAt(remotedefinition.pearlStringIndex);
+                    pearlString = room.updateList.OfType<ScavengerOutpost.PearlString>().ElementAtOrDefault(remotedefinition.pearlStringIndex);
                     break;
 
                 case OnlinePearlStringDefinition.PearlStringType.HangingPearlString:
-                    pearlString = room.updateList.OfType<MoreSlugcats.HangingPearlString>().ElementAt(remotedefinition.pearlStringIndex);
+                    pearlString = room.updateList.OfType<MoreSlugcats.HangingPearlString>().ElementAtOrDefault(remotedefinition.pearlStringIndex);
                     break;
+                default:
+                    throw new InvalidProgrammerException("implement this");
             }
-            pearlStringMap.Add(pearlString, this);
+
+            
+
+            if (pearlString is not null)
+            {
+                pearlStringMap.Add(pearlString, this);
+            } 
+            else
+            {
+                RainMeadow.Debug($"Couldn't find pearl string {remotedefinition.pearlStringIndex}");
+            }
+
+            // read the last state again
+            if (lastStates.TryGetValue(inResource, out var lastState))
+            {
+                lastState.ReadTo(this);
+            }
+            
         }
 
         public UpdatableAndDeletable? pearlString;

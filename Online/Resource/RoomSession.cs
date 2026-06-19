@@ -27,27 +27,29 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            if (absroom.realizedRoom != null)
+            
+        }
+
+        public void LoadPearlStrings()
+        {
+            if (!isActive || !isAvailable) return;
+            if (absroom.realizedRoom == null) return;
+            RainMeadow.Debug("looking for pearls");
+            if (isOwner)
             {
-                if (isOwner)
+                foreach(var obj in absroom.realizedRoom.updateList)
                 {
-                    foreach(var obj in absroom.realizedRoom.updateList)
+                    if (obj is HangingPearlString or ScavengerOutpost.PearlString)
                     {
-                        if (obj is HangingPearlString or ScavengerOutpost.PearlString)
-                        {
-                            OnlinePearlString.InitializePearlString(obj);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var entity in activeEntities.OfType<OnlinePearlString>())
-                    {
-                        entity.FindPearlString(this);
+                        OnlinePearlString.InitializePearlString(obj);
                     }
                 }
             }
-            
+
+            foreach (var entity in activeEntities.OfType<OnlinePearlString>())
+            {
+                entity.FindPearlString(this);
+            }
         }
 
         protected override void ActivateImpl()
@@ -72,6 +74,8 @@ namespace RainMeadow
                     }
                 }
             }
+
+            LoadPearlStrings();
         }
 
         protected override void DeactivateImpl()

@@ -53,6 +53,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (!pearlEntityIDs.list.Any()) return;
             OnlinePearlString pearlString = onlineEntity as OnlinePearlString ?? throw new InvalidOperationException("not pearl string");
+            if (pearlString.pearlString is null) return;
             List<AbstractConsumable?> pearls = pearlEntityIDs.list.Select(x => (x.FindEntity() as OnlineConsumable)?.apo as AbstractConsumable).ToList();
             if (pearls.Contains(null)) return;
 
@@ -73,7 +74,11 @@ namespace RainMeadow
                     if (!pearlString.initializedPearls) 
                     {
                         pearlString.initializedPearls = true;
-                        foreach (var pearl in outpostPearlString.pearls) pearl.Destroy();
+                        foreach (var pearl in outpostPearlString.pearls) 
+                        {
+                            pearl.realizedObject?.Destroy();
+                            pearl.Destroy();
+                        }
                     }
                     outpostPearlString.pearls = pearls;
                     outpostPearlString.activeConnections = connected.ToList();
@@ -82,7 +87,11 @@ namespace RainMeadow
                     if (!pearlString.initializedPearls) 
                     {
                         pearlString.initializedPearls = true;
-                        foreach (var pearl in hangingPearlString.pearls)  pearl.Destroy();
+                        foreach (var pearl in hangingPearlString.pearls) 
+                        {
+                            pearl.realizedObject?.Destroy();
+                            pearl.Destroy();
+                        }
                     }
                     hangingPearlString.pearls = pearls;
                     hangingPearlString.activeConnections = connected.ToList();
