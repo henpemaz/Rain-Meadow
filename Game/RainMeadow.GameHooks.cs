@@ -758,6 +758,21 @@ namespace RainMeadow
                     c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
                     c.Emit(OpCodes.Brfalse, skipApo);
                 }
+
+                // preventing Princebulb duplication (ainda falta lidar com sync, tá gerando instancias extras invisiveis do prince, olhar pq bulb não entra em room resources)
+                c = new ILCursor(il);
+                var bulbskip = il.DefineLabel();
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdsfld<Watcher.WatcherEnums.PlacedObjectType>(nameof(Watcher.WatcherEnums.PlacedObjectType.PrinceBulb)),
+                    i => i.MatchCall("ExtEnum`1<PlacedObject/Type>", "op_Equality"),
+                    i => i.MatchBrfalse(out bulbskip));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Room room) =>
+                {
+                    return (OnlineManager.lobby != null) && room.world.GetResource().activeEntities.Any(
+                        x => x is OnlinePhysicalObject opo && opo.apo.type == Watcher.WatcherEnums.AbstractObjectType.PrinceBulb);
+                });
+                c.Emit(OpCodes.Brtrue, bulbskip);
             }
             catch (Exception e)
             {
