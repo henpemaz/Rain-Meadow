@@ -2,7 +2,13 @@
 
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
-- Prevent the Abstraction of rooms that contain player avatars
+- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
+- Fixed objects marked as destroyOnAbstraction not being detroyed.
+
+### ⚠️ Developers
+- The Debug Overlay has been changed to be able to track non physical object entities.
+
 ## Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed Slugslot pseudo-random generator
