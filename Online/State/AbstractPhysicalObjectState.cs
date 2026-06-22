@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -53,6 +54,7 @@ namespace RainMeadow
                 }
                 return new RealizedOracleState(onlineObject);
             }
+            if (onlineObject.apo.realizedObject is PrinceBulb) return new RealizedPrinceBulbState(onlineObject);
             if (onlineObject.apo.realizedObject is JokeRifle) return new JokeRifleState(onlineObject);
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);

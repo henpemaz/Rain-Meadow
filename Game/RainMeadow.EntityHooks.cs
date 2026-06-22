@@ -4,6 +4,7 @@ using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -39,10 +40,26 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
-            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+
+        private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
+        {
+
+                orig(self);
+            if (OnlineManager.lobby != null && !self.abstractPhysicalObject.GetOnlineObject(out _))
+            {
+                var apo = self.abstractPhysicalObject;
+                self.room.world.GetResource()?.ApoEnteringWorld(apo);
+                self.room.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
+                self.room.abstractRoom.AddEntity(self.prince.abstractPhysicalObject);
+            }
+
+        }
+
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try
@@ -342,7 +359,7 @@ namespace RainMeadow
 
 
 
-        // echo warps from the waher
+        // echo warps from the watcher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
             if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)
@@ -564,7 +581,7 @@ namespace RainMeadow
                 oldWorldSession.NotNeeded(); // done? let go
             }
 
-            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));            
+            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
             return;
         }
         // world transition at gatesactiveEntities

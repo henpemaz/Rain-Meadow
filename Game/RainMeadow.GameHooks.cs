@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Watcher;
 using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
@@ -36,7 +37,10 @@ namespace RainMeadow
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
             On.Room.Loaded += Room_LoadedCheck;
-            On.FliesRoomAI.MoveFlyToHive +=  MoveFlyToHive;
+            IL.Room.SpawnPrinceBulb += Room_SpawnPrinceBulb;
+            IL.Watcher.PrinceBehavior.Update += PrinceBehavior_Update;
+            On.Watcher.PrinceBehavior.Update += PrinceBehavior_Update1;            
+            On.FliesRoomAI.MoveFlyToHive += MoveFlyToHive;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
@@ -757,28 +761,96 @@ namespace RainMeadow
                     c.Emit(OpCodes.Ldarg_0);
                     c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
                     c.Emit(OpCodes.Brfalse, skipApo);
-                }
-
-                // preventing Princebulb duplication (ainda falta lidar com sync, tá gerando instancias extras invisiveis do prince, olhar pq bulb não entra em room resources)
-                c = new ILCursor(il);
-                var bulbskip = il.DefineLabel();
-                c.GotoNext(MoveType.After,
-                    i => i.MatchLdsfld<Watcher.WatcherEnums.PlacedObjectType>(nameof(Watcher.WatcherEnums.PlacedObjectType.PrinceBulb)),
-                    i => i.MatchCall("ExtEnum`1<PlacedObject/Type>", "op_Equality"),
-                    i => i.MatchBrfalse(out bulbskip));
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room room) =>
-                {
-                    return (OnlineManager.lobby != null) && room.world.GetResource().activeEntities.Any(
-                        x => x is OnlinePhysicalObject opo && opo.apo.type == Watcher.WatcherEnums.AbstractObjectType.PrinceBulb);
-                });
-                c.Emit(OpCodes.Brtrue, bulbskip);
+                }                
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
             }
         }
+
+        // add princebulb once
+        private void Room_SpawnPrinceBulb(ILContext il)
+        {
+            var c = new ILCursor(il);
+            var bulbskip = c.DefineLabel();
+            // this.AddObject(princeBulb);            
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(11),
+                i => i.MatchCall<Room>(nameof(Room.AddObject))
+                );
+
+            c.MarkLabel(bulbskip);
+
+            c = new ILCursor(il);
+            // var bulbskip = il.DefineLabel();
+            c.GotoNext(MoveType.After,
+                 i => i.MatchLdloc(7),
+                 i => i.MatchLdfld<DaddyCorruption>(nameof(DaddyCorruption.places)),
+                 i => i.MatchLdloc(9),
+                 i => i.MatchCallvirt(typeof(List<PlacedObject>).GetMethod(nameof(List<PlacedObject>.Add)))
+                 );
+
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room room) =>
+            {
+                return (OnlineManager.lobby != null) && room.world.GetResource().activeEntities.Any( // tá errado ainda, tem q ver de conferir pra não rolar raros casos de 2 spawns
+                             x => x is OnlinePhysicalObject opo && opo.apo.type == Watcher.WatcherEnums.AbstractObjectType.PrinceBulb);
+            });
+            c.Emit(OpCodes.Brtrue, bulbskip);
+        }
+        
+        // only changing lookpos directly if owner
+        private void PrinceBehavior_Update(ILContext il)
+        {          
+            var c = new ILCursor(il);
+            var skip1 = il.DefineLabel();
+            var skip2 = il.DefineLabel();
+
+            //if (this.paralyzed)            
+            // - this.lookPoint = new Vector2(this.GetToPos.x, this.GetToPos.y + 500f);
+            c.GotoNext(MoveType.After,
+                i => i.MatchStfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.lastDialogBoxMessage)),
+            i => i.MatchLdarg(0),
+            i => i.MatchLdfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.paralyzed)),
+            i => i.MatchBrfalse(out skip1));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((PrinceBehavior self) =>
+            {                
+                return (OnlineManager.lobby != null) || RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+            });
+            c.Emit(OpCodes.Brtrue, skip1);
+
+            // if (this.bestPlayer != null)            
+            // - this.lookPoint = this.bestPlayer.firstChunk.pos;
+            c.GotoNext(MoveType.After,
+                i => i.MatchBrfalse(out _),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.bestPlayer)),
+                i => i.MatchBrfalse(out skip2)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((PrinceBehavior self) =>
+            {
+                return (OnlineManager.lobby != null) || RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+            });
+            c.Emit(OpCodes.Brtrue, skip2);
+        }
+        // only changing gettopos and gettodir directly if owner
+        private void PrinceBehavior_Update1(On.Watcher.PrinceBehavior.orig_Update orig, PrinceBehavior self)
+        {
+            var toPos = self.GetToPos;
+            var toDir = self.GetToDir;
+            orig(self);
+            if (OnlineManager.lobby != null && (RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner))
+            {
+                self.GetToPos = toPos;
+                self.GetToDir = toDir;
+            }
+        }
+
 
         // please dont spawn flies
         private void FliesWorldAI_AddFlyToSwarmRoom(On.FliesWorldAI.orig_AddFlyToSwarmRoom orig, FliesWorldAI self, int spawnRoom)
