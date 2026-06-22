@@ -2,6 +2,12 @@
 
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Added the ability to enable or disable cheats when creating a lobby.
+  - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
+  - The host will still be allowed to use cheats but no other players can.
+  - A select few function such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
+  - This update completely disables cycle restarting via Dev Tools (R) whilst online.
+  - This update also fixes Dev Tools item spawning, restricting it to just the player spawning the item, and teleporting to exits trying to teleport everyone instead of just the local player.
 # Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed Slugslot pseudo-random generator
