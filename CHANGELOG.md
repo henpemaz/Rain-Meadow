@@ -9,6 +9,8 @@
 - Fixed Slugslot pseudo-random generator
 # Story
 - Allow players to spectate their own corpses as long as they still exist
+### Watcher
+- Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
 
