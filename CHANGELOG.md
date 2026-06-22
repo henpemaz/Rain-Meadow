@@ -8,11 +8,13 @@
   - A select few function such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
   - This update completely disables cycle restarting via Dev Tools (R) whilst online.
   - This update also fixes Dev Tools item spawning, restricting it to just the player spawning the item, and teleporting to exits trying to teleport everyone instead of just the local player.
-# Arena
+## Arena
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Fixed Slugslot pseudo-random generator
-# Story
+## Story
 - Allow players to spectate their own corpses as long as they still exist
+### Watcher
+- Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
 
