@@ -180,7 +180,162 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
+            IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
+            
             DrownHooks();
+        }
+        
+        // Restrict Artificer's parry and stun range in arena
+        private const float VANILLA_ARTI_PARRY_RANGE = 300f;
+        private const float VANILLA_ARTI_STUN_RANGE = 200f;
+        private const float VANILLA_ARTI_STUNTHROUGH_RANGE = 60f;
+        private const float ARTI_PARRY_MAX_COOLDOWN = 40f;
+        private const int ARTI_PARRY_EXTRA_FRAMES = 4;
+        private bool IsArtiInExtraParryFrames(Player player) => isArenaMode(out var arenaOnline)
+            && player.IsLocal()
+            && arenaOnline.artiParryLeniency
+            && arenaOnline.artiParryDistanceMult > 0
+            && player.pyroParryCooldown < ARTI_PARRY_MAX_COOLDOWN 
+            && player.pyroParryCooldown > (ARTI_PARRY_MAX_COOLDOWN - ARTI_PARRY_EXTRA_FRAMES);
+        private void Player_ClassMechanicsArtificer_ArtificerConfiguration(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                ILLabel toAfterParry = cursor.DefineLabel();
+                ILLabel toParryLoop = cursor.DefineLabel();
+                ILLabel toAfterWeaponAddedToList = cursor.DefineLabel();
+
+                // Sets a label to go directly in the parry loop, and corrects a local variable if a skip happened.
+                if (!cursor.TryGotoNext(moveType: MoveType.Before,
+                    x => x.MatchNewobj<List<Weapon>>(),
+                    x => x.MatchStloc(11)
+                )) { throw new KeyNotFoundException("Couldn't find the key 1 of IL hook"); }
+                
+                
+                toParryLoop = cursor.MarkLabel();
+                cursor.GotoNext(moveType: MoveType.After, x => x.MatchStloc(11));
+
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(IsArtiInExtraParryFrames);
+                cursor.Emit(OpCodes.Brfalse, cursor.Next);
+
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Player player) => player.firstChunk.pos); 
+                cursor.Emit(OpCodes.Stloc, 10); // set this variable correctly if we skipped some instructions
+                
+                
+                // Adds extra parry frames and skip directly to the parry loop
+                if (!cursor.TryGotoPrev(moveType: MoveType.Before,
+                    i => i.MatchLdfld<Player>(nameof(Player.pyroParryCooldown)),
+                    i => i.MatchLdcR4(0),
+                    i => i.MatchBgtUn(out toAfterParry)
+                )) { throw new KeyNotFoundException("Couldn't find the key 2 of IL hook"); }
+                
+                if (!cursor.TryGotoPrev(moveType: MoveType.Before,
+                    x => x.MatchLdloc(0),
+                    x => x.MatchBrfalse(out _)
+                )) { throw new KeyNotFoundException("Couldn't find the key 3 of IL hook"); }
+                
+                cursor.MoveAfterLabels();
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(IsArtiInExtraParryFrames);
+                cursor.Emit(OpCodes.Brtrue, toParryLoop);
+
+                // Change the light explosion range (purely cosmetic, will not throw if fail)
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>()) 
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) ) 
+                { 
+                    cursor.EmitDelegate((float orig) =>
+                    {
+                        return isArenaMode(out var arenaOnline) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
+                            : orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find the key 4 of IL hook");
+                }
+
+                // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>()) 
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) ) 
+                { 
+                    cursor.EmitDelegate((float orig) =>
+                    {
+                        return isArenaMode(out var arenaOnline) 
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
+                            : orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find the key 5 of IL hook");
+                }
+
+                // Change the throw detection value
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchCallvirt(typeof(Weapon).GetProperty(nameof(Weapon.mode)).GetGetMethod()),
+                    x => x.MatchLdsfld<Weapon.Mode>(nameof(Weapon.Mode.Thrown))
+                )) { throw new KeyNotFoundException("Couldn't find the key 6 of IL hook"); }
+                
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchLdcR4(VANILLA_ARTI_PARRY_RANGE)
+                )) { throw new KeyNotFoundException("Couldn't find the key 7 of IL hook"); }
+
+                cursor.EmitDelegate((float orig) =>
+                {
+                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiParryDistanceMult * VANILLA_ARTI_PARRY_RANGE : orig;
+                });
+
+                
+                // Stops Artificer from parrying their own weapon. Also stops Artficer to parry weapons if it isn't local.
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchBgeUn(out toAfterWeaponAddedToList)
+                )) { throw new KeyNotFoundException("Couldn't find the key 8 of IL hook"); }
+                
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc, 20);
+                cursor.EmitDelegate((Player player, Weapon weapon) => weapon.thrownBy == player || !player.IsLocal());
+                cursor.Emit(OpCodes.Brtrue, toAfterWeaponAddedToList);
+
+                // Change the stun range value
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchStloc(21))
+                ) { throw new KeyNotFoundException("Couldn't find the key 9 of IL hook"); }
+                
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchLdcR4(VANILLA_ARTI_STUN_RANGE)
+                )) { throw new KeyNotFoundException("Couldn't find the key 10 of IL hook"); }
+                
+                cursor.EmitDelegate((float orig) =>
+                {
+                    return isArenaMode(out var arenaOnline) ? arenaOnline.artiStunDistanceMult * VANILLA_ARTI_STUN_RANGE : orig;
+                });
+
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchLdcR4(VANILLA_ARTI_STUNTHROUGH_RANGE)
+                )) { throw new KeyNotFoundException("Couldn't find the key 11 of IL hook"); }
+                
+                cursor.EmitDelegate((float orig) =>
+                {
+                    return isArenaMode(out var arenaOnline) ? orig * arenaOnline.artiStunDistanceMult : orig;
+                });
+
+                // Skip the death/stun part if we're in the frame leniency (it already happened)
+                if (!cursor.TryGotoNext(moveType: MoveType.After,
+                    x => x.MatchStloc(12) // it's not the optimal anchor but it's the safest
+                )) { throw new KeyNotFoundException("Couldn't find the key 12 of IL hook"); }
+                
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(IsArtiInExtraParryFrames);
+                cursor.Emit(OpCodes.Brtrue, toAfterParry);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
         }
 
         public void PlayerSpecificOnlineHud_Update(ILContext il)

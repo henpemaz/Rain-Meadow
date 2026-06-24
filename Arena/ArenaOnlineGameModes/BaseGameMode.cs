@@ -10,6 +10,8 @@ using UnityEngine;
 using System;
 using System.Text;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
+using System.Reflection;
+using System.Collections;
 
 namespace RainMeadow
 
@@ -1353,45 +1355,59 @@ namespace RainMeadow
             return new ArenaPostGameStatsDialog(menu.manager, arena);
         }
 
+        public List<ExternalArenaGameModeSetting> savedSettings =
+        [
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.aliveScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.allowJoiningMidRound)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaControl)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaDuration)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.arenaSaintAscendanceTimer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiExplosionCount)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiStunDistanceMult)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiParryDistanceMult)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiParryLeniency)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.challengeDenEjection)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.denScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.disableMaul)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.emptyKillTagScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableMeadowCosmetics)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableBees)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableBombs)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableCorpseGrab)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableOverseer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.foodScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.friendlyFire)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.itemSteal)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.killScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatEgg)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatLizard)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatThrows)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.piggyBack)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.sainot)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.setupTime)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.spearHitScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.voidMasterEnabled)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.voidSpawnLethalityFactor)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.watcherCamoTimer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.watcherRippleLevel)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.weaponCollisionFix)),
+
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.bannedSlugs)),
+
+            new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.ROOMREPEAT),
+            new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.SESSIONLENGTH),
+            new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.WILDLIFE),
+        ];
+
         public virtual string ExportLocalSettings(ArenaMode arena)
         {
-            var pairs = new List<string>
-    {
-        $"aliveScore={arena.aliveScore}",
-        $"allowJoiningMidRound={arena.allowJoiningMidRound}",
-        $"amoebaControl={arena.amoebaControl}",
-        $"amoebaDuration={arena.amoebaDuration}",
-        $"arenaSaintAscendanceTimer={arena.arenaSaintAscendanceTimer}",
-        $"artiExplosionCount={arena.artiExplosionCount}",
-        $"challengeDenEjection={arena.challengeDenEjection}",
-        $"denScore={arena.denScore}",
-        $"disableArtiStun={arena.disableArtiStun}",
-        $"disableMaul={arena.disableMaul}",
-        $"emptyKillTagScore={arena.emptyKillTagScore}",
-        $"enableBees={arena.enableBees}",
-        $"enableBombs={arena.enableBombs}",
-        $"enableCorpseGrab={arena.enableCorpseGrab}",
-        $"enableOverseer={arena.enableOverseer}",
-        $"foodScore={arena.foodScore}",
-        $"friendlyFire={arena.friendlyFire}",
-        $"itemSteal={arena.itemSteal}",
-        $"killScore={arena.killScore}",
-        $"painCatEgg={arena.painCatEgg}",
-        $"painCatLizard={arena.painCatLizard}",
-        $"painCatThrows={arena.painCatThrows}",
-        $"piggyBack={arena.piggyBack}",
-        $"sainot={arena.sainot}",
-        $"setupTime={arena.setupTime}",
-        $"spearHitScore={arena.spearHitScore}",
-        $"voidMasterEnabled={arena.voidMasterEnabled}",
-        $"voidSpawnLethalityFactor={arena.voidSpawnLethalityFactor}",
-        $"watcherCamoTimer={arena.watcherCamoTimer}",
-        $"watcherRippleLevel={arena.watcherRippleLevel}",
-        $"weaponCollisionFix={arena.weaponCollisionFix}",
-        $"bannedSlugs={(arena.bannedSlugs.Count > 0 ? string.Join(",", arena.bannedSlugs) : "")}",
-        $"enableMeadowCosmetics={arena.enableMeadowCosmetics}",
-
-        };
+            List<string> pairs = new();
+            for (int i = 0; i < savedSettings.Count; i++)
+            {
+                string val = savedSettings[i].GetSaveString(arena);
+                pairs.Add($"{savedSettings[i].settingNickname}={val}");
+                RainMeadow.Debug($"Copy setting {savedSettings[i].settingNickname} at {val}");
+            }
 
             string combined = string.Join("|", pairs);
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
@@ -1417,46 +1433,12 @@ namespace RainMeadow
 
                     string key = kvp[0];
                     string val = kvp[1];
-
-                    switch (key)
+                    
+                    int index = savedSettings.FindIndex(x => x.settingNickname == key);
+                    RainMeadow.Debug($"Reading setting {key}, found index {index}, read value is {val}");
+                    if (index >= 0)
                     {
-                        case "aliveScore": if (int.TryParse(val, out int i1)) arena.aliveScore = i1; break;
-                        case "allowJoiningMidRound": if (bool.TryParse(val, out bool b1)) arena.allowJoiningMidRound = b1; break;
-                        case "amoebaControl": if (bool.TryParse(val, out bool b2)) arena.amoebaControl = b2; break;
-                        case "amoebaDuration": if (int.TryParse(val, out int i2)) arena.amoebaDuration = i2; break;
-                        case "arenaSaintAscendanceTimer": if (int.TryParse(val, out int i3)) arena.arenaSaintAscendanceTimer = i3; break;
-                        case "artiExplosionCount": if (int.TryParse(val, out int i4)) arena.artiExplosionCount = i4; break;
-                        case "challengeDenEjection": if (bool.TryParse(val, out bool b3)) arena.challengeDenEjection = b3; break;
-                        case "denScore": if (int.TryParse(val, out int i5)) arena.denScore = i5; break;
-                        case "disableArtiStun": if (bool.TryParse(val, out bool b4)) arena.disableArtiStun = b4; break;
-                        case "disableMaul": if (bool.TryParse(val, out bool b5)) arena.disableMaul = b5; break;
-                        case "emptyKillTagScore": if (int.TryParse(val, out int i6)) arena.emptyKillTagScore = i6; break;
-                        case "enableBees": if (bool.TryParse(val, out bool b6)) arena.enableBees = b6; break;
-                        case "enableBombs": if (bool.TryParse(val, out bool b7)) arena.enableBombs = b7; break;
-                        case "enableCorpseGrab": if (bool.TryParse(val, out bool b8)) arena.enableCorpseGrab = b8; break;
-                        case "enableOverseer": if (bool.TryParse(val, out bool b9)) arena.enableOverseer = b9; break;
-                        case "foodScore": if (int.TryParse(val, out int i7)) arena.foodScore = i7; break;
-                        case "friendlyFire": if (bool.TryParse(val, out bool b10)) arena.friendlyFire = b10; break;
-                        case "itemSteal": if (bool.TryParse(val, out bool b11)) arena.itemSteal = b11; break;
-                        case "killScore": if (int.TryParse(val, out int i8)) arena.killScore = i8; break;
-                        case "painCatEgg": if (bool.TryParse(val, out bool b12)) arena.painCatEgg = b12; break;
-                        case "painCatLizard": if (bool.TryParse(val, out bool b13)) arena.painCatLizard = b13; break;
-                        case "painCatThrows": if (bool.TryParse(val, out bool b14)) arena.painCatThrows = b14; break;
-                        case "piggyBack": if (bool.TryParse(val, out bool b15)) arena.piggyBack = b15; break;
-                        case "sainot": if (bool.TryParse(val, out bool b16)) arena.sainot = b16; break;
-                        case "setupTime": if (int.TryParse(val, out int i9)) arena.setupTime = i9; break;
-                        case "spearHitScore": if (int.TryParse(val, out int i10)) arena.spearHitScore = i10; break;
-                        case "voidMasterEnabled": if (bool.TryParse(val, out bool b17)) arena.voidMasterEnabled = b17; break;
-                        case "watcherCamoTimer": if (int.TryParse(val, out int i11)) arena.watcherCamoTimer = i11; break;
-                        case "watcherRippleLevel": if (int.TryParse(val, out int i12)) arena.watcherRippleLevel = i12; break;
-                        case "weaponCollisionFix": if (bool.TryParse(val, out bool b18)) arena.weaponCollisionFix = b18; break;
-                        case "voidSpawnLethalityFactor": if (float.TryParse(val, out float b19)) arena.voidSpawnLethalityFactor = b19; break;
-                        case "bannedSlugs":
-                            arena.bannedSlugs = val.Split(',')
-                                                   .Select(s => int.TryParse(s.Trim(), out int result) ? result : 0)
-                                                   .ToList();
-                            break;
-                        case "enableMeadowCosmetics": if (bool.TryParse(val, out bool b20)) arena.enableMeadowCosmetics = b20; break;
+                        savedSettings[index].SetValueFromString(val, arena);
                     }
                 }
                 return true;
@@ -1466,6 +1448,125 @@ namespace RainMeadow
                 RainMeadow.Error(e);
                 return false;
             }
+        }
+    }
+    public abstract class ExternalArenaGameModeSetting(string settingID, string settingNickname = "")
+    {
+        public abstract object GetValueFromString(string value);
+        public abstract void SetValueFromString(string value, ArenaMode arenaMode);
+        public abstract object GetValueFromArenaMode(ArenaMode arenaMode);
+        public abstract string GetSaveString(ArenaMode arenaMode);
+        public string settingID { get; } = settingID;
+        public string settingNickname { get; } = settingNickname == "" ? settingID : settingNickname;
+    }
+
+    public class ExternalArenaGameModeFieldSetting(string settingID, string settingNickname = "") 
+        : ExternalArenaGameModeSetting(settingID, settingNickname)
+    {
+        // For now, suppost simple values (with IConvertible) and list of simple values.
+        protected static bool TryParseSimpleType(object value, Type type, out object? result)
+        {
+            try
+            {
+                result = Convert.ChangeType(value, type);
+                return true;
+            }
+            catch
+            {
+                RainMeadow.Debug($"Value {value} couldn't be converted in {type}");
+                result = null;
+                return false;
+            }
+        }
+        protected static object ParseOrDefaultSimpleType(object value, Type type)
+        {
+            return TryParseSimpleType(value, type, out var result) && result is not null 
+                ? result 
+                : Activator.CreateInstance(type);
+        }
+        protected const char SEPARATOR = ',';
+        public override object GetValueFromString(string value)
+        {
+            if (settingType.IsGenericType && typeof(IEnumerable).IsAssignableFrom(settingType))
+            {
+                Type ListingType = settingType.GetGenericArguments()[0];
+                IEnumerable<object> elements = string.IsNullOrWhiteSpace(value) 
+                    ? [] 
+                    : value.Split(SEPARATOR).Select(s => ParseOrDefaultSimpleType(s, ListingType));
+                
+                RainMeadow.Debug($"Found enumerable {settingType}:{ListingType}, converted values are {string.Join(",", elements)}");
+                if (settingType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    IList list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(ListingType));
+                    foreach (object item in elements)
+                    {
+                        list.Add(ParseOrDefaultSimpleType(item, ListingType));
+                    }
+                    return list;
+                }
+                return elements;
+            }
+            else if (TryParseSimpleType(value, settingType, out var result) && result is not null)
+            {
+                RainMeadow.Debug($"Found simple type {settingType}, converted value to {result}");
+                return result;
+            }
+            throw new ArgumentException($"Couldn't find a solution for type {settingType}");
+        }
+        public override void SetValueFromString(string value, ArenaMode arenaMode)
+        {
+            try
+            {
+                settingField.SetValue(arenaMode, GetValueFromString(value));
+            }
+            catch (System.Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+        }
+        public override object GetValueFromArenaMode(ArenaMode arenaMode)
+        {
+            return settingField.GetValue(arenaMode);
+        }
+        public override string GetSaveString(ArenaMode arenaMode)
+        {
+            var value = GetValueFromArenaMode(arenaMode);
+
+            if (value is IEnumerable enumerable && value is not string)
+            {
+                return string.Join(SEPARATOR.ToString(), enumerable.Cast<object>());
+            }
+            return settingField.GetValue(arenaMode).ToString();
+        }
+        public FieldInfo settingField {get;} = typeof(ArenaMode).GetField(settingID);
+        public Type settingType {get;} = typeof(ArenaMode).GetField(settingID).FieldType;
+    }
+    public class ExternalArenaGameModeInterfaceMultiChoiceSetting(string settingID, string settingNickname = "") 
+        : ExternalArenaGameModeSetting(settingID, settingNickname)
+    {
+        public override object GetValueFromArenaMode(ArenaMode arenaMode)
+        {
+            return arenaMode.onlineArenaSettingsInterfaceMultiChoice[settingID];
+        }
+
+        public override object GetValueFromString(string value)
+        {
+            return int.TryParse(value, out var result) ? result : 0;
+        }
+        public override void SetValueFromString(string value, ArenaMode arenaMode)
+        {
+            try
+            {
+                arenaMode.onlineArenaSettingsInterfaceMultiChoice[settingID] = (int)GetValueFromString(value);
+            }
+            catch (System.Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+        }
+        public override string GetSaveString(ArenaMode arenaMode)
+        {
+            return arenaMode.onlineArenaSettingsInterfaceMultiChoice[settingID].ToString();
         }
     }
 }

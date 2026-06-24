@@ -43,8 +43,11 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> FriendlyFire;
 
 
+    public readonly Configurable<float> ArtificerParryDistanceMult;
+    public readonly Configurable<float> ArtificerStunDistanceMult;
+    public readonly Configurable<bool> ArtificerParryLeniency;
     public readonly Configurable<bool> BlockMaul;
-    public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
+    public readonly Configurable<bool> ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
@@ -196,8 +199,10 @@ public class RainMeadowOptions : OptionInterface
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
+        ArtificerParryDistanceMult = config.Bind("ArtificerParryDistanceMult", 0.3f);
+        ArtificerStunDistanceMult = config.Bind("ArtificerStunDistanceMult", 0.5f);
+        ArtificerParryLeniency = config.Bind("ArtificerParryLeniency", true);
         BlockMaul = config.Bind("BlockMaul", false);
-        BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
         VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 3f);
