@@ -29,7 +29,6 @@
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
-
 ## Engine 
 - Improved parry netcode.
 - Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 

@@ -37,11 +37,11 @@ namespace RainMeadow
             orig(self);
             if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var _) && self.IsLocal())
             {
-                if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                    && (hud.parts.OfType<StoreHUD>().Any(x => x.active == true)))
+                if (ArenaHelpers.GetDataSettings<ArenaDrownClientSettings>(self.abstractCreature.GetOnlineCreature()?.owner)?.isInStore == true)
                 {
                     GameplayOverrides.StopPlayerMovement(self);
                 }
+
             }
         }
 

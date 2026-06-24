@@ -10,7 +10,6 @@ namespace RainMeadow
         private RainWorldGame game;
         private DrownMode drown;
         private DrownStoreOverlay? storeOverlay;
-        public bool active;
 
         public StoreHUD(HUD.HUD hud, RoomCamera camera, DrownMode drown) : base(hud)
         {
@@ -30,47 +29,22 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Creating storeOverlay overlay");
                         storeOverlay = new DrownStoreOverlay(game.manager, game, drown, arena);
-                        this.active = true;
-                        this.drown.isInStore = true;
-                        OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                        if (cs != null)
-                        {
-
-                            cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                            if (clientSettings != null)
-                            {
-                                clientSettings.isInStore = true;
-                            }
-                        }
-
-
                     }
                     else
                     {
                         RainMeadow.Debug("storeOverlay destroy!");
-                        this.drown.isInStore = false;
-                        this.active = false;
-                        OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                        if (cs != null)
-                        {
-
-                            cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                            if (clientSettings != null)
-                            {
-                                clientSettings.isInStore = false;
-
-                            }
-                        }
                         storeOverlay.ShutDownProcess();
                         storeOverlay = null;
                     }
                 }
+
+                if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs) && cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
+                {
+                    clientSettings.isInStore = this.storeOverlay != null;
+                }
+                storeOverlay?.GrafUpdate(timeStacker);
             }
 
-            if (storeOverlay != null)
-            {
-                storeOverlay.GrafUpdate(timeStacker);
-            }
         }
 
         public override void Update()
@@ -84,7 +58,6 @@ namespace RainMeadow
                     if (game.arenaOverlay != null || game.pauseMenu != null || game.manager.upcomingProcess != null)
                     {
                         RainMeadow.Debug("Shutting down storeOverlay overlay due to another process request");
-                        this.drown.isInStore = false;
                         storeOverlay.ShutDownProcess();
                         storeOverlay = null;
                         return;

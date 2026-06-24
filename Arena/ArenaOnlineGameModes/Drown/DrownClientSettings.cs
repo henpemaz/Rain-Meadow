@@ -26,21 +26,17 @@ namespace Drown
 
             public State(ArenaDrownClientSettings onlineEntity) : base()
             {
-                if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena != null && DrownMode.isDrownMode(arena, out var drown) && drown != null)
-                {
-                    isInStore = drown.isInStore;
-                    iOpenedDen = onlineEntity.iOpenedDen;
-                }
+
+                isInStore = onlineEntity.isInStore;
+                iOpenedDen = onlineEntity.iOpenedDen;
+
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena != null && DrownMode.isDrownMode(arena, out var drown) && drown != null)
-                    {
-                        var avatarSettings = (ArenaDrownClientSettings)entityData;
-                        avatarSettings.isInStore = isInStore;
-                        avatarSettings.iOpenedDen = iOpenedDen;
-                    }
+                var avatarSettings = (ArenaDrownClientSettings)entityData;
+                avatarSettings.isInStore = isInStore;
+                avatarSettings.iOpenedDen = iOpenedDen;
             }
 
             public override Type GetDataType() => typeof(ArenaDrownClientSettings);

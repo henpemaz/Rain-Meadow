@@ -173,10 +173,6 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
-            new Hook(
-                typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
-                this.OverseerBodyColor
-            );
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
 
@@ -499,19 +495,6 @@ namespace RainMeadow
             orig(self, placedIconData);
         }
 
-
-
-
-        public Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
-        {
-            if (isArenaMode(out var arena) && self.overseer.IsLocal())
-            {
-                return RainMeadow.rainMeadowOptions.BodyColor.Value;
-            }
-
-            return orig(self);
-        }
-
         public void IL_Arena_Overlay_Update(ILContext il)
         {
             try
@@ -644,7 +627,7 @@ namespace RainMeadow
                 timeUntilFadeout = arena.amoebaDuration * 40,
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
-            voidSpawn.swimSpeed = 1f;
+            voidSpawn.swimSpeed = arena.voidSpawnLethalityFactor / 2;
             room.abstractRoom.AddEntity(apo);
             RainMeadow.sSpawningNonTransferable = false;
 

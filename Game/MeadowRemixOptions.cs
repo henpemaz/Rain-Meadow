@@ -205,7 +205,7 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
-        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 4f);
+        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 3f);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
         FriendlyFire = config.Bind("FriendlyFire", false);
@@ -298,7 +298,7 @@ public class RainMeadowOptions : OptionInterface
         DrownPointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
         DrownCreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
         DrownPointsForRock = config.Bind("PointsForRock", 0);
-        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.Numlock);
+        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.B);
 
 
         StoreItem1 = config.Bind("DrownStoreItem1", KeyCode.Alpha1);
