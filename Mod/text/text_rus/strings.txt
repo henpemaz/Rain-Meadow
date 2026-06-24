@@ -347,6 +347,8 @@ Amoeba summoning is disabled lobby-wide|Призывание амёб выклю
 Voidkeeper Amoeba Duration:|Длительность амёбы Хранителя Пустоты:
 Amoeba duration time in seconds|Длительность амёбы в секундах:
 Void's Vengeance:|Месть пустоты:
+Amoeba Lethality Factor:|Фактор летальности амёб:
+Multiplier for amoeba lethality|Множитель летальности амёб
 Amoeba's direction is influenced by pointing|Направление амёбы зависит от указания лапой
 Amoebas chase targets at-will|Амёбы сами преследуют цели
 How many explosions Artificer can use before cooldown|Количество взрывов которых может использовать Техник до перезарядки
@@ -440,7 +442,8 @@ Electric Spear|Электр. копьё
 Boomerang|Бумеранг
 Respawn|Возрождение
 Open Dens|Открыть убеж.
-LOADING|ЗАГРУЗКА 
+LOADING|ЗАГРУЗКА
+Cheats are disabled in this lobby.|Читы отключены в этом лобби.
 
 
 ///Выбор персонажа в Арене
