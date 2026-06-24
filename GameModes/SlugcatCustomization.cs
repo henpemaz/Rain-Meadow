@@ -12,7 +12,7 @@ namespace RainMeadow
 
         public bool globalMute { get; set; } = RainMeadow.rainMeadowOptions.GlobalMute.Value;
 
-        public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
+        public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value && RainMeadow.rainMeadowOptions.EnableMeadowCosmetics.Value;
         public ICapeColor? eventCape { get; set; } = SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>() ? new RainbowCapeColor() : RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value ? null : new SolidCapeColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value);
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
