@@ -118,11 +118,15 @@ namespace RainMeadow
                 return base.AddIcon(arena, display, owner, customization, player);
             }
 
-            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 return "ChieftainA";
             }
-            return "";
+            else
+            {
+                return "Kill_Slugcat";
+            }
+
         }
 
         public override Color IconColor(
