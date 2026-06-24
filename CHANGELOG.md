@@ -1,17 +1,34 @@
 # Release 1.15.0
-
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 ## Arena
+- Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
+- Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
+- Fixed a thing that should happen when you win that hidden thing
+- Fixed winning conditions on that hidden thing
+- Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
+- Slightly improved Void Amoeba's swim speed
+- Added configurable Void Amoeba lethality. Default multiplier is now 4x. You better run.
+- Added debuff icon for players impacted by visual distortion from Amoeba
+- Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
+- Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
+- Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
-- Fixed Slugslot pseudo-random generator
+- Made Artificer's and Gourmand's parry defender side.
+- Added configurable setting to change Artificer's parry range.
+- Changed configurable setting for Artificer's stun to be a multiplier instead of an on and off checkbox.
+- Added configurable setting to give Artificer's parry some leniency.
+- Added a sound cue to Artificer's parry.
+- Fixed parried spears not being deflected on late parries.
+- Fixed explosive spears still damaging the player when parried.
+### Modders
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Story
 - Allow players to spectate their own corpses as long as they still exist
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 
 # Release 1.14.1
-
 ## Engine 
 - Improved parry netcode.
 - Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 

@@ -7,6 +7,12 @@ using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
+    public interface ICustomEmoteDisplayer
+    {
+        public void AddEmoteRemote(EmoteDisplayer d, Emote e);
+        public bool AddEmoteLocal(EmoteDisplayer d, Emote e);
+    }
+
     public class EmoteDisplayer
     {
         public Creature owner;
@@ -161,6 +167,12 @@ namespace RainMeadow
                 this.creatureData.emotesLife = timeToLive;
             }
 
+            if (this.creatureController is ICustomEmoteDisplayer displayer)
+            {
+                return displayer.AddEmoteLocal(this, emoteType);
+            }
+
+
             var tile = new EmoteTile(emoteType, this.tiles.Count, this);
             owner.abstractPhysicalObject.Room.realizedRoom.AddObject(tile);
             this.creatureData.emotes.Add(emoteType);
@@ -178,6 +190,12 @@ namespace RainMeadow
             if (tiles.Count >= maxEmoteCount) return;
             if (owner.abstractPhysicalObject.realizedObject == null) return;
             if (owner.abstractPhysicalObject.Room.realizedRoom == null) return;
+            if (this.creatureController is ICustomEmoteDisplayer displayer)
+            {
+                displayer.AddEmoteRemote(this, emoteType);
+                return;
+            }
+
 
             var tile = new EmoteTile(emoteType, this.tiles.Count, this);
             owner.abstractPhysicalObject.Room.realizedRoom.AddObject(tile);

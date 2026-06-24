@@ -36,14 +36,18 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> WeaverWatcher;
     public readonly Configurable<bool> VoidMaster;
+    public readonly Configurable<float> VoidSpawnLethalityFactor;
 
     public readonly Configurable<int> AmoebaDuration;
     public readonly Configurable<bool> AmoebaControl;
     public readonly Configurable<bool> FriendlyFire;
 
 
+    public readonly Configurable<float> ArtificerParryDistanceMult;
+    public readonly Configurable<float> ArtificerStunDistanceMult;
+    public readonly Configurable<bool> ArtificerParryLeniency;
     public readonly Configurable<bool> BlockMaul;
-    public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
+    public readonly Configurable<bool> ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
@@ -113,6 +117,32 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<int> ArenaFlairActive;
 
+    public readonly Configurable<bool> EnableMeadowCosmetics;
+
+
+    // DROWN
+    public readonly Configurable<int> DrownMaxCreatureCount;
+    public readonly Configurable<int> DrownPointsForSpear;
+    public readonly Configurable<int> DrownPointsForExplSpear;
+    public readonly Configurable<int> DrownPointsForBomb;
+    public readonly Configurable<int> DrownPointsForElectricSpear;
+    public readonly Configurable<int> DrownPointsForBoomerang;
+
+    public readonly Configurable<int> DrownPointsForRespawn;
+    public readonly Configurable<int> DrownPointsForDenOpen;
+    public readonly Configurable<int> DrownCreatureCleanup;
+    public readonly Configurable<int> DrownPointsForRock;
+    public readonly Configurable<KeyCode> DrownStoreKey;
+
+
+    public readonly Configurable<KeyCode> StoreItem1;
+    public readonly Configurable<KeyCode> StoreItem2;
+    public readonly Configurable<KeyCode> StoreItem3;
+    public readonly Configurable<KeyCode> StoreItem4;
+    public readonly Configurable<KeyCode> StoreItem5;
+    public readonly Configurable<KeyCode> StoreItem6;
+    public readonly Configurable<KeyCode> StoreItem7;
+    public readonly Configurable<KeyCode> StoreItem8;
 
     public enum IntroRoll
     {
@@ -169,10 +199,13 @@ public class RainMeadowOptions : OptionInterface
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
+        ArtificerParryDistanceMult = config.Bind("ArtificerParryDistanceMult", 0.3f);
+        ArtificerStunDistanceMult = config.Bind("ArtificerStunDistanceMult", 0.5f);
+        ArtificerParryLeniency = config.Bind("ArtificerParryLeniency", true);
         BlockMaul = config.Bind("BlockMaul", false);
-        BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
+        VoidSpawnLethalityFactor = config.Bind("VoidSpawnLethalityFactor", 3f);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
         FriendlyFire = config.Bind("FriendlyFire", false);
@@ -250,7 +283,32 @@ public class RainMeadowOptions : OptionInterface
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
         GlobalMute = config.Bind("GlobalMute", false);
         ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
+        EnableMeadowCosmetics = config.Bind("EnableMeadowCosmetics", true);
 
+        //DROWN
+        DrownMaxCreatureCount = config.Bind("DrownMaxCreatures", 10);
+        DrownPointsForSpear = config.Bind("DrownPointsForSpear", 1);
+        DrownPointsForExplSpear = config.Bind("DrownPointsForExplSpear", 10);
+        DrownPointsForBomb = config.Bind("DrownPointsForBomb", 10);
+        DrownPointsForElectricSpear = config.Bind("PointsForElectricSpear", 12);
+
+        DrownPointsForBoomerang = config.Bind("PointsForBoomerang", 15);
+
+        DrownPointsForRespawn = config.Bind("DrownPointsForRespawn", 25);
+        DrownPointsForDenOpen = config.Bind("DrownPointsForDenOpen", 100);
+        DrownCreatureCleanup = config.Bind("DrownCreatureCleanup", 3);
+        DrownPointsForRock = config.Bind("PointsForRock", 0);
+        DrownStoreKey = config.Bind("DrownStoreKey", KeyCode.B);
+
+
+        StoreItem1 = config.Bind("DrownStoreItem1", KeyCode.Alpha1);
+        StoreItem2 = config.Bind("DrownStoreItem2", KeyCode.Alpha2);
+        StoreItem3 = config.Bind("DrownStoreItem3", KeyCode.Alpha3);
+        StoreItem4 = config.Bind("DrownStoreItem4", KeyCode.Alpha4);
+        StoreItem5 = config.Bind("DrownStoreItem5", KeyCode.Alpha5);
+        StoreItem6 = config.Bind("DrownStoreItem6", KeyCode.Alpha6);
+        StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
+        StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
     }
     List<ListItem> capeList = new List<ListItem>
 {
@@ -585,6 +643,9 @@ public class RainMeadowOptions : OptionInterface
             {
                 colorEdge = Menu.MenuColorEffect.rgbWhite
             },
+
+            new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
+            new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
             ];
 
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
