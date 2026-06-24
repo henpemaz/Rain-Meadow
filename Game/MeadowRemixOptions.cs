@@ -87,12 +87,10 @@ public class RainMeadowOptions : OptionInterface
     private readonly Configurable<string> LobbyMusic;
     public readonly Configurable<int> MeadowCoins;
 
-    public readonly Configurable<bool> boughtSilverCape;
-    public readonly Configurable<bool> boughtGoldenCape;
     public readonly Configurable<bool> boughtGoldenSkin;
     public readonly Configurable<bool> boughtRainbowCape;
-    public readonly Configurable<bool> wantsDefaultCapeColor;
-    public readonly Configurable<Color> currentlyActiveCapeColor;
+    public readonly Configurable<bool> wantsRainbowCape;
+    public readonly Configurable<string> currentlyActiveCapeColor;
     public readonly Configurable<int> ChallengeID;
 
 
@@ -263,10 +261,8 @@ public class RainMeadowOptions : OptionInterface
         MeadowCoins = config.Bind("MeadowCoins", 0);
 
         boughtGoldenSkin = config.Bind("BoughtGoldenSkin", false);
-        boughtSilverCape = config.Bind("BoughtSilverCape", false);
-        boughtGoldenCape = config.Bind("BoughtGoldenCape", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
-        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", Color.red);
+        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", "FF0000");
 
         ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
         ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
@@ -276,7 +272,7 @@ public class RainMeadowOptions : OptionInterface
 
         ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
-        wantsDefaultCapeColor = config.Bind("WantsDefaultCapeColor", true);
+        wantsRainbowCape = config.Bind("WantsRainbowCape", true);
         CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
         ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
@@ -310,12 +306,6 @@ public class RainMeadowOptions : OptionInterface
         StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
         StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
     }
-    List<ListItem> capeList = new List<ListItem>
-{
-    new ListItem(Menu.MenuColorEffect.ColorToHex(Color.red), "Default"),
-    new ListItem(Menu.MenuColorEffect.ColorToHex(new Color(0.863f, 0.918f, 0.941f)), "Silver"),
-    new ListItem(Menu.MenuColorEffect.ColorToHex(RainWorld.SaturatedGold.SafeColorRange()), "Gold")
-};
 
     List<ListItem> arenaFlairList = new List<ListItem>
 {
@@ -443,7 +433,10 @@ public class RainMeadowOptions : OptionInterface
             meadowTab.AddItems(OnlineMeadowSettings);
 
             OpComboBox2 introroll;
-            OpComboBox2 capeColor;
+            OpTextBox capeColor;
+            OpRect capeColorPreview;
+            OpCheckBox rainbowCape;
+            OpLabel rainbowCapeLabel;
             OpComboBox2 arenaFlair;
 
 
@@ -481,21 +474,12 @@ public class RainMeadowOptions : OptionInterface
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
                 // --- New Cape Options Section ---
-                new OpLabel(10f, 180f, Translate("Cape Colors")),
+                new OpLabel(10f, 180f, Translate("Cape Color")),
 
-            capeColor = new OpComboBox2(
-                currentlyActiveCapeColor,
-                new Vector2(10f, 150f),
-                160f,
-                capeList.Where(i =>
-                    (i.displayName == "Default") ||
-                    (i.displayName == "Silver" && boughtSilverCape.Value) ||
-                    (i.displayName == "Gold" && boughtGoldenCape.Value)
-                ).ToList()
-            )
-            {
-                colorEdge = Menu.MenuColorEffect.rgbWhite
-            },
+            capeColor = new OpTextBox(currentlyActiveCapeColor, new Vector2(10f, 150f), 130f),
+            capeColorPreview = new OpRect(new Vector2(146f, 150f), new Vector2(24f, 24f), 1f),
+            rainbowCape = new OpCheckBox(wantsRainbowCape, 185f, 150f),
+            rainbowCapeLabel = new OpLabel(185f, 180f, Translate("Rainbow Cape")),
             new OpLabel(10f, 100f, Translate("Log Level")),
 
         new OpComboBox2(
@@ -515,13 +499,20 @@ public class RainMeadowOptions : OptionInterface
             }
             capeColor.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
-                var selectedItem = capeList.FirstOrDefault(i => i.name == value);
-
-                if (selectedItem != null)
+                if (value.Length > 6)
                 {
-                    currentlyActiveCapeColor.Value = Menu.MenuColorEffect.HexToColor(value);
-                    wantsDefaultCapeColor.Value = selectedItem.displayName == "Default";
+                    capeColor.value = value.Remove(6, value.Length - 6);
                 }
+                else if (value.Length < 6)
+                {
+                    capeColor.value = oldValue;
+                }
+                if (value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
+                {
+                    capeColor.value = oldValue;
+                }
+                currentlyActiveCapeColor.Value = capeColor.value;
+                capeColorPreview.colorFill = Menu.MenuColorEffect.HexToColor(capeColor.value);
             };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
@@ -536,6 +527,13 @@ public class RainMeadowOptions : OptionInterface
                 }
                 else watcherWarning.Hide();
             };
+            rainbowCape.Hidden = true;
+            rainbowCapeLabel.Hidden = true;
+            if (SpecialEvents.IsSpecialEvent)
+            {
+                rainbowCape.Hidden = false;
+                rainbowCapeLabel.Hidden = false;
+            }
             downpourWarning.Hidden = true;
             watcherWarning.Hidden = true;
             if (!ModManager.MSC && introroll.value == "Downpour")
