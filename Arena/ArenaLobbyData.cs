@@ -103,6 +103,8 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaSetup")]
             public bool voidMasterEnabled;
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float voidSpawnLethalityFactor;
 
             [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
@@ -155,6 +157,9 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaSetup")]
             public bool challengeDenEjection;
+
+            [OnlineField(group = "arenaSetup")]
+            public bool enableMeadowCosmetics;
 
             [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
@@ -265,6 +270,7 @@ namespace RainMeadow
 
                 bannedSlugs = new(arena.bannedSlugs);
                 voidMasterEnabled = arena.voidMasterEnabled;
+                voidSpawnLethalityFactor = arena.voidSpawnLethalityFactor;
                 amoebaDuration = arena.amoebaDuration;
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
@@ -282,6 +288,8 @@ namespace RainMeadow
                 challengeDenEjection = arena.challengeDenEjection;
 
                 artiExplosionCapacity = arena.artiExplosionCount;
+
+                enableMeadowCosmetics = arena.enableMeadowCosmetics;
 
             }
 
@@ -358,6 +366,8 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
                 (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled = voidMasterEnabled;
+                (lobby.gameMode as ArenaOnlineGameMode).voidSpawnLethalityFactor = voidSpawnLethalityFactor;
+
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration = amoebaDuration;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
@@ -377,6 +387,8 @@ playerNumberWithTrophiesPerRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
+
+                (lobby.gameMode as ArenaOnlineGameMode).enableMeadowCosmetics = enableMeadowCosmetics;
 
             }
 

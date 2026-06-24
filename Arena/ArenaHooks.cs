@@ -173,10 +173,6 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
-            new Hook(
-                typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(),
-                this.OverseerBodyColor
-            );
             On.SandboxGameSession.SpawnEntityAfterRoomLoad += SandboxGameSession_SpawnEntityAfterRoomLoad;
             On.SandboxGameSession.SpawnEntity += SandboxGameSession_SpawnEntity;
 
@@ -184,6 +180,7 @@ namespace RainMeadow
             IL.ArenaGameSession.ctor += ArenaGameSession_ctor_IL;
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
+            DrownHooks();
         }
 
         public void PlayerSpecificOnlineHud_Update(ILContext il)
@@ -343,19 +340,6 @@ namespace RainMeadow
             orig(self, placedIconData);
         }
 
-
-
-
-        public Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
-        {
-            if (isArenaMode(out var arena) && self.overseer.IsLocal())
-            {
-                return RainMeadow.rainMeadowOptions.BodyColor.Value;
-            }
-
-            return orig(self);
-        }
-
         public void IL_Arena_Overlay_Update(ILContext il)
         {
             try
@@ -488,6 +472,7 @@ namespace RainMeadow
                 timeUntilFadeout = arena.amoebaDuration * 40,
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
+            voidSpawn.swimSpeed = arena.voidSpawnLethalityFactor / 2;
             room.abstractRoom.AddEntity(apo);
             RainMeadow.sSpawningNonTransferable = false;
 
@@ -553,6 +538,7 @@ namespace RainMeadow
             VoidSpawn.ChasePlayer self
         )
         {
+
             if (!isArenaMode(out var arena))
                 return orig(self);
             //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
@@ -986,7 +972,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(player, pl);
+                        arena.SetPlayerStatsFromLocalPlayer(player, pl, false);
                     }
                     arena.ReadFromStats(player, pl);
                 }
@@ -1036,7 +1022,7 @@ namespace RainMeadow
                                 )
                             );
                     }
-                    if (arena.winByScore)
+                    if (arena.WinByScore)
                     {
                         foreach (var box in self.resultBoxes)
                         {
@@ -2886,7 +2872,7 @@ namespace RainMeadow
                             );
                     }
 
-                    if (arena.winByScore)
+                    if (arena.WinByScore)
                     {
                         foreach (var box in self.resultBoxes)
                         {
