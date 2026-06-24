@@ -111,6 +111,7 @@ public abstract class CompressedExtEnumBase
                 entriesMap.Add(sortedList[i], i);
             }
         }
+        ++this.version;
     }
     public int GetIndex(string value) => entriesMap[value];
     public int GetIndex<T>(T extEnum) where T : ExtEnum<T> => GetIndex(extEnum.value);
@@ -129,6 +130,7 @@ public abstract class CompressedExtEnumBase
     public Type enumType {get;}
     public ExtEnumType enumEntries {get;}
     public Dictionary<string, int> entriesMap = [];
+    public int version;
     internal string[] storedCompressedValues = [];
     internal byte clarificationAttempt = 0;
     internal const byte Patience = 3; // max clarification attempt
@@ -267,10 +269,9 @@ public abstract class CompressedExtEnumBase
         }
 
         DecompressionResult result = new(missingExtEnum, ambiguousExtEnum, additionnalEnum, enumType.FullName);
-        if (result.IsOK) { this.entriesMap = newEntries; }
+        if (result.IsOK) { this.entriesMap = newEntries; ++this.version; }
         return result;
     }
-
     public class DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, ExtEnumEntry[] additionnalExtEnum, string typeFullName) : Serializer.ICustomSerializable
     {
         public DecompressionResult()
@@ -645,13 +646,14 @@ public static class MeadowExtEnumSync
 
     // I don't want to assume that the order of SyncedExtEnumList is the same. I'll leave it public if some mods want to sync more enums here.
     // Also, having it static initialized is no biggies ! We'll assign the values later.
+    public static SeparatorCompressedExtEnum OnlineStateTypeMap {get;}
     public static List<CompressedExtEnumBase> SyncedExtEnumList = new()
     {
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Name)),
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Timeline)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(AbstractPhysicalObject.AbstractObjectType)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(CreatureTemplate.Type)),
-        new SeparatorCompressedExtEnum(typeof(OnlineState.StateType), '.'),
+        (OnlineStateTypeMap = new SeparatorCompressedExtEnum(typeof(OnlineState.StateType), '.')),
     };
 
     // We need a double special character for the trim since the compressed value can have ANY character in it

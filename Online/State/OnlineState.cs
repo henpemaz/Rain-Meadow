@@ -267,11 +267,18 @@ namespace RainMeadow
             public Func<OnlineState, OnlineState, OnlineState> delta;
             public Func<OnlineState, OnlineState, OnlineState> applydelta;
             public int ngroups;
+            private byte _stateTypeIndex;
+            private int _stateTypeIndexVersion;
             public byte StateTypeIndex
             {
                 get
                 {
-                    return this.stateType.MeadowIndex();
+                    if (MeadowExtEnumSync.OnlineStateTypeMap.version != _stateTypeIndexVersion)
+                    {
+                        _stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
+                        _stateTypeIndex = this.stateType.MeadowIndex();
+                    }
+                    return _stateTypeIndex;
                 }
             }
 
@@ -299,6 +306,8 @@ namespace RainMeadow
                 {
                     if (!type.IsValueType && !type.IsClass) throw new InvalidProgrammerException("not class or struct");
                     this.stateType = stateType;
+                    this._stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
+                    this._stateTypeIndex = stateType.MeadowIndex();
                     this.type = type;
                     this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 
