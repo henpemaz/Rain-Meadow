@@ -1,6 +1,8 @@
 # Release 1.15.0
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
+- Added a checkbox for Rainbow Cape that's only active during events
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -8,7 +10,7 @@
 - Fixed winning conditions on that hidden thing
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
 - Slightly improved Void Amoeba's swim speed
-- Added configurable Void Amoeba lethality. Default multiplier is now 4x. You better run.
+- Added configurable Void Amoeba lethality. Default multiplier is now 3x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
 - Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
