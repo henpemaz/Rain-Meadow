@@ -1,4 +1,5 @@
 # Release 1.15.0
+
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 - Added the ability to enable or disable cheats when creating a lobby.
@@ -29,6 +30,8 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
+## Meadow
+- Fixed creatures being able to get injured.
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Story
