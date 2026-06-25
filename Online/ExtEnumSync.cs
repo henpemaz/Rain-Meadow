@@ -130,17 +130,32 @@ public abstract class CompressedExtEnumBase
     public Type enumType {get;}
     public ExtEnumType enumEntries {get;}
     public Dictionary<string, int> entriesMap = [];
-    public int version;
+    private int _version = 0;
+    public int version {get => _version; set{_version = value; OnVersionUpdate();}}
+    public string[] cachedCompressedMap = [];
     internal string[] storedCompressedValues = [];
     internal byte clarificationAttempt = 0;
     internal const byte Patience = 3; // max clarification attempt
     public bool IsLongTable => entriesMap.Count >= byte.MaxValue + 1; // TODO : maybe add something to allow 256+ items enums to be synced ?
 
     // Compress the entries into whatever shape you find best
-    public abstract string[] GetCompressedEntries();
+    protected abstract string[] GetCompressedEntries();
+    public string[] GetAndCacheCompressedEntries()
+    {
+        if (this.cachedCompressedMap.Length <= 0)
+        {                
+            RainMeadow.Debug($"Cached compressed entries of enum {this.enumType.FullName} !");
+            this.cachedCompressedMap = this.GetCompressedEntries();
+        }
+        return this.cachedCompressedMap;
+    }
     // Decompress it and give the result of the decompression. Use ProcessCompression for a standarized process
     public abstract DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries);
 
+    public void OnVersionUpdate()
+    {
+        cachedCompressedMap = [];
+    }
     internal void LogMappedExtEnum()
     {
         RainMeadow.Debug($"Logging currently mapped of {enumType.FullName} ExtEnum :");
@@ -399,7 +414,7 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
     }
     public static bool DoesStringMatchCompressed(string value, string compressedValue) 
         => value.Length >= compressedValue.Length && value.Substring(0, compressedValue.Length) == compressedValue;
-    public override string[] GetCompressedEntries()
+    protected override string[] GetCompressedEntries()
     {
         List<ExtEnumEntry> sortedValues = ExtEnumEntry.ToExtEnumEntryList(this.entriesMap);
         if (sortedValues.Count == 0) return [];
@@ -473,7 +488,7 @@ public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtE
         // if (FirstLetterCompressedExtEnum.DoesStringMatchCompressed(value, compressedValue)) { RainMeadow.Debug($"Matching {value} and <{size}> {compressedValue} ({compressedValueNSize})"); }
         return FirstLetterCompressedExtEnum.DoesStringMatchCompressed(value, compressedValue);
     }
-    public override string[] GetCompressedEntries()
+    protected override string[] GetCompressedEntries()
     {
         return ExtEnumEntry.ExtEnumEntryToArray(Compression(ExtEnumEntry.ToExtEnumEntryList(this.entriesMap)));
     }
@@ -617,7 +632,7 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
         return false;
     }
     
-    public override string[] GetCompressedEntries()
+    protected override string[] GetCompressedEntries()
     {
         return ExtEnumEntry.ExtEnumEntryToArray(Compression(ExtEnumEntry.ToExtEnumEntryList(this.entriesMap), separator));
     }
@@ -732,21 +747,12 @@ public static class MeadowExtEnumSync
         try
         {
             for (int i = 0; i < SyncedExtEnumList.Count; i++)
-            {
+            {                
                 compressedExtEnumTable.Add(
                     SyncedExtEnumList[i].enumType.FullName, 
-                    CompressedExtEnumArrayToString(SyncedExtEnumList[i].GetCompressedEntries())
+                    CompressedExtEnumArrayToString(SyncedExtEnumList[i].GetAndCacheCompressedEntries())
                 );
             }
-            // foreach (var compressedstuff in compressedExtEnumTable)
-            // {
-            //     RainMeadow.Debug("Logging compressed set of "+ compressedstuff.Key);
-            //     string[] listofcompressedstuff = CompressedExtEnumStringToArray(compressedstuff.Value);
-            //     for (int j = 0; j < listofcompressedstuff.Length; j++)
-            //     {
-            //         RainMeadow.Debug($"   > <{j}> {listofcompressedstuff[j]}");
-            //     }
-            // }
         }
         catch (System.Exception er)
         {
