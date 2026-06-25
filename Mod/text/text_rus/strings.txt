@@ -403,9 +403,9 @@ Points a kill is worth|Количество очков за убийство.
 Survival Score:|Счёт выживаний:
 Points for surviving inside the shelter|Количество очков за выживание.
 Empty Kill Score:|Счёт без убийств:
-Points for other players if someone dies without a killer|Количество очков для других игроков если кто-то умирает не от игрока.
+Points for other players if someone dies without a killer|Количество очков, выдававаемых другим игрокам, если кто-то умирает не от игрока.
 Unlock Dens:|Счёт для спячки:
-Points required to unlock dens|Количество очков для открытия убежища.
+Points required to unlock dens|Количество очков, требуемых для открытия убежища.
 Den Entry:|Вход в убежище:
 Den entry behavior|Поведение входа в убежище.
 Den Ejection:|Выталкивание:
