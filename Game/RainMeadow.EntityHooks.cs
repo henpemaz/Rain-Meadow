@@ -40,6 +40,7 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
             On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
