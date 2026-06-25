@@ -46,14 +46,10 @@ namespace RainMeadow
         }
 
         private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
-        {
-
-                orig(self);
-            if (OnlineManager.lobby != null && !self.abstractPhysicalObject.GetOnlineObject(out _))
+        {         
+            orig(self);
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
             {
-                var apo = self.abstractPhysicalObject;
-                self.room.world.GetResource()?.ApoEnteringWorld(apo);
-                self.room.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
                 self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
                 self.room.abstractRoom.AddEntity(self.prince.abstractPhysicalObject);
             }

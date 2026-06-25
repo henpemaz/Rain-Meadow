@@ -5,17 +5,17 @@ namespace RainMeadow
 {
     public class RealizedPrinceBulbState : RealizedPhysicalObjectState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField]
         PrinceState prince;
-        [OnlineField(nullable = true)]
-        ChunkState body;
+        [OnlineField]
+        Vector2 idealPos;
 
         public RealizedPrinceBulbState() { }
         public RealizedPrinceBulbState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             PrinceBulb bulb = onlineEntity.apo.realizedObject as PrinceBulb;
-            body = new ChunkState(bulb.bodyChunks[0]);
-            prince = new(bulb.prince);            
+            prince = new(bulb.prince);
+            idealPos = bulb.idealPos;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -24,14 +24,15 @@ namespace RainMeadow
 
             PrinceBulb bulb = (PrinceBulb)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             if (bulb == null) return;
-            body.ReadTo(bulb.bodyChunks[0]);
-            prince.ReadTo(bulb.prince);            
+            
+            bulb.idealPos = idealPos;
+            prince.ReadTo(bulb.prince);
         }
         [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
         public class PrinceState : OnlineState
         {
             [OnlineField]
-            Vector2 lookPoint;            
+            Vector2 lookPoint;
             [OnlineField]
             Vector2 getToDir;
             [OnlineField]
@@ -39,7 +40,7 @@ namespace RainMeadow
 
             public PrinceState() { }
             public PrinceState(Prince prince)
-            {                
+            {
                 lookPoint = prince.behavior.lookPoint;
                 getToDir = prince.behavior.GetToDir;
                 getToPos = prince.behavior.GetToPos;
@@ -47,11 +48,10 @@ namespace RainMeadow
 
             public void ReadTo(Prince prince)
             {
-                prince.behavior.lookPoint = lookPoint;                
+                prince.behavior.lookPoint = lookPoint;
                 prince.behavior.GetToDir = getToDir;
-                prince.behavior.GetToPos = getToPos;                
+                prince.behavior.GetToPos = getToPos;
             }
-
-        }        
+        }
     }
 }

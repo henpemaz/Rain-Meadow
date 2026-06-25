@@ -39,7 +39,7 @@ namespace RainMeadow
             On.Room.Loaded += Room_LoadedCheck;
             IL.Room.SpawnPrinceBulb += Room_SpawnPrinceBulb;
             IL.Watcher.PrinceBehavior.Update += PrinceBehavior_Update;
-            On.Watcher.PrinceBehavior.Update += PrinceBehavior_Update1;            
+            On.Watcher.PrinceBehavior.Update += PrinceBehavior_Update1;
             On.FliesRoomAI.MoveFlyToHive += MoveFlyToHive;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
@@ -761,7 +761,42 @@ namespace RainMeadow
                     c.Emit(OpCodes.Ldarg_0);
                     c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
                     c.Emit(OpCodes.Brfalse, skipApo);
-                }                
+                }
+
+                // preventing Princebulb duplication
+                c = new ILCursor(il);
+
+                var bulbskip = il.DefineLabel();
+
+              
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Room>(nameof(Room.roomSettings)),
+                    i => i.MatchLdfld<RoomSettings>(nameof(RoomSettings.placedObjects)),
+                    i => i.MatchLdloc(29),
+                    i => i.MatchCallvirt(typeof(List<PlacedObject>).GetMethod("get_Item")),
+                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))                    
+                    );
+                c.MarkLabel(bulbskip);
+
+                c = new ILCursor(il);
+
+                c.GotoNext(MoveType.Before,
+                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))
+                );
+                c.Remove();
+                c.EmitDelegate((Room room, PlacedObject p) =>
+                {                    
+                    if (OnlineManager.lobby == null)
+                    {
+                        room.SpawnPrinceBulb(p);
+                    }
+                    else
+                    {                        
+                        StartCoroutine(SpawnPrinceBulb(room, () => room.SpawnPrinceBulb(p)));                       
+                    }
+                });
             }
             catch (Exception e)
             {
@@ -774,7 +809,7 @@ namespace RainMeadow
         {
             var c = new ILCursor(il);
             var bulbskip = c.DefineLabel();
-            // this.AddObject(princeBulb);            
+            
             c.GotoNext(MoveType.After,
                 i => i.MatchLdarg(0),
                 i => i.MatchLdloc(11),
@@ -784,7 +819,7 @@ namespace RainMeadow
             c.MarkLabel(bulbskip);
 
             c = new ILCursor(il);
-            // var bulbskip = il.DefineLabel();
+            
             c.GotoNext(MoveType.After,
                  i => i.MatchLdloc(7),
                  i => i.MatchLdfld<DaddyCorruption>(nameof(DaddyCorruption.places)),
@@ -795,16 +830,22 @@ namespace RainMeadow
 
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Room room) =>
-            {
-                return (OnlineManager.lobby != null) && room.world.GetResource().activeEntities.Any( // tá errado ainda, tem q ver de conferir pra não rolar raros casos de 2 spawns
-                             x => x is OnlinePhysicalObject opo && opo.apo.type == Watcher.WatcherEnums.AbstractObjectType.PrinceBulb);
+            {                
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && !rs.isOwner;
             });
             c.Emit(OpCodes.Brtrue, bulbskip);
         }
-        
+        System.Collections.IEnumerator SpawnPrinceBulb(Room room, Action spb)
+        {
+            while (RoomSession.map.TryGetValue(room.abstractRoom, out var _rs) && _rs.owner == null)
+            {
+                yield return null;
+            }
+            spb();            
+        }
         // only changing lookpos directly if owner
         private void PrinceBehavior_Update(ILContext il)
-        {          
+        {
             var c = new ILCursor(il);
             var skip1 = il.DefineLabel();
             var skip2 = il.DefineLabel();
@@ -818,8 +859,8 @@ namespace RainMeadow
             i => i.MatchBrfalse(out skip1));
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((PrinceBehavior self) =>
-            {                
-                return (OnlineManager.lobby != null) || RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+            {
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
             });
             c.Emit(OpCodes.Brtrue, skip1);
 
@@ -834,7 +875,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((PrinceBehavior self) =>
             {
-                return (OnlineManager.lobby != null) || RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
             });
             c.Emit(OpCodes.Brtrue, skip2);
         }
