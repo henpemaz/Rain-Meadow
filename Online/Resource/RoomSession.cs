@@ -1,7 +1,4 @@
-﻿using MoreSlugcats;
-using RainMeadow.Generics;
-using RWCustom;
-using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -27,7 +24,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+            if (isActive) LoadPearlStrings();
         }
 
         public void LoadPearlStrings()
@@ -37,12 +34,10 @@ namespace RainMeadow
             RainMeadow.Debug("looking for pearls");
             if (isOwner)
             {
-                foreach(var obj in absroom.realizedRoom.updateList)
+                var list = absroom.realizedRoom.drawableObjects.Where(o => o is MoreSlugcats.HangingPearlString or ScavengerOutpost.PearlString).ToList();
+                for (int i = 0; i < list.Count; i++) 
                 {
-                    if (obj is HangingPearlString or ScavengerOutpost.PearlString)
-                    {
-                        OnlinePearlString.InitializePearlString(obj);
-                    }
+                    OnlinePearlString.InitializePearlString((UpdatableAndDeletable)list[i]);
                 }
             }
 
@@ -75,12 +70,12 @@ namespace RainMeadow
                 }
             }
 
-            LoadPearlStrings();
+            if (isAvailable) LoadPearlStrings();
         }
 
         protected override void DeactivateImpl()
         {
-
+            
         }
 
         protected override void UnavailableImpl()
