@@ -1398,17 +1398,18 @@ namespace RainMeadow
             return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
         }
 
-        public void DisableMeadowCosmetics()
-        {
-            if (enableMeadowCosmetics == false)
-            {
-                RainMeadow.rainMeadowOptions.ArenaFlairActive.Value = 0;
-                RainMeadow.rainMeadowOptions.WearingCape.Value = false;
-                RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = Color.red;
-                RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value = true;
-                avatarSettings.wearingCape = false;
-                avatarSettings.eventCape = null;
-            }
-        }
+        // needs new implementation which doesn't disable capes for other gamemodes.
+        // public void DisableMeadowCosmetics()
+        // {
+        //     if (enableMeadowCosmetics == false)
+        //     {
+        //         RainMeadow.rainMeadowOptions.ArenaFlairActive.Value = 0;
+        //         RainMeadow.rainMeadowOptions.WearingCape.Value = false;
+        //         RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = Color.red;
+        //         RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value = true;
+        //         avatarSettings.wearingCape = false;
+        //         avatarSettings.eventCape = null;
+        //     }
+        // }
     }
 }
