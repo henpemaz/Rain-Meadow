@@ -115,7 +115,7 @@ Control which mods are permitted on clients by editing the files below.<LINE>Ins
 Edit High-Impact Mods|Разрешённые моды
 Edit Banned Mods|Запрещённые моды
 Lobby Music|Музыка в лобби
-Default|По умолчанию
+//Default|По умолчанию [уже переведено в игре]
 Chat Log Toggle|Открыть/закрыть окно чата
 Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
@@ -128,7 +128,7 @@ Vanilla|Стандартный
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|DLC Downpour не включён, будет использовано стандартное вступление.
 Watcher DLC is not activated, vanilla intro will be used instead|DLC Watcher не включён, будет использовано стандартное вступление.
-Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: |Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: $10|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 10
 Disable Pause Menu Animation|Отключить анимацию в меню паузы.
 If selected, disables the sway animation in the pause menu|Если этот параметр включен, отключает анимацию раскачивания в меню паузы.
 Input “cheats” to access cheats|Введи «cheats», чтобы получить доступ к читам.
@@ -148,7 +148,7 @@ If selected, usernames and icons will allways appear onscreen for slugcats in a 
 WARNING: Experimental features may cause data corruption, back up your saves|ВАЖНО: Возможно повреждение данных, рекомендуется сделать резервную копию сохранений 
 Gain achievements online|Получать достижения в сетевой игре
 Streamer Mode|Режим стримера
-None|Нет
+//None|Нет [уже переведено в игре]
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
@@ -217,6 +217,7 @@ Invite Friends|Пригласить
 Friendly Fire|Друж. огонь
 Require Campaign Slugcat|Отключить выбор Кота
 Sync Save|Синхр. сохр.
+//Restart game|Перезапустить кампанию [уже переведено в игре]
 PLAYERS|ИГРОКИ
 Press again to ban player!|Нажми ещё раз, чтобы забанить игрока!
 Wait for others to shelter or rescue you, press |Жди, пока другие не переживут цикл или спасут тебя, нажми «
