@@ -45,34 +45,16 @@ Before you will be able to make a mod, you need the following:
 
 ### Assemblies
 
-Dependencies aren't included in the repo for several reasons. You will need to add the following assemblies to the `lib/` folder:
+Some BepInEx and Unity dependencies will be downloaded automatically, however you will need to add the following assemblies to the `lib/` folder:
 
 ```
-BepInEx/core/0Harmony.dll
-BepInEx/core/BepInEx.Harmony.dll
-BepInEx/core/BepInEx.dll
-BepInEx/core/HarmonyXInterop.dll
-BepInEx/core/Mono.Cecil.dll
-BepInEx/core/MonoMod.RuntimeDetour.dll
-BepInEx/core/MonoMod.Utils.dll
-BepInEx/core/MonoMod.dll
 BepInEx/plugins/HOOKS-Assembly-CSharp.dll
 BepInEx/utils/PUBLIC-Assembly-CSharp.dll
 RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
 RainWorld_Data/Managed/com.rlabrecque.steamworks.net.dll
-RainWorld_Data/Managed/Newtonsoft.Json.dll
 RainWorld_Data/Managed/Rewired.Runtime.dll
 RainWorld_Data/Managed/Rewired_Core.dll
 RainWorld_Data/Managed/Unity.Mathematics.dll
-RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
-RainWorld_Data/Managed/UnityEngine.AudioModule.dll
-RainWorld_Data/Managed/UnityEngine.CoreModule.dll
-RainWorld_Data/Managed/UnityEngine.InputLegacyModule.dll
-RainWorld_Data/Managed/UnityEngine.ImageConversionModule.dll
-RainWorld_Data/Managed/UnityEngine.IMGUIModule.dll
-RainWorld_Data/Managed/UnityEngine.JSONSerializeModule.dll
-RainWorld_Data/Managed/UnityEngine.UnityWebRequestModule.dll
-RainWorld_Data/Managed/UnityEngine.dll
 ```
 
 ## Guidelines

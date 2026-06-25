@@ -8,6 +8,10 @@
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<Configurations>Debug;Release</Configurations>
 		<RootNamespace>RainMeadow</RootNamespace>
+		<RestoreAdditionalProjectSources>
+			https://nuget.bepinex.dev/v3/index.json;
+			https://nuget.samboy.dev/v3/index.json
+		</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
@@ -22,6 +26,12 @@
 
 	<ItemGroup>
 		<Reference Include="lib\*.dll" Private="False" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="BepInEx.Core" Version="5.4.17" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+	  <PackageReference Include="UnityEngine.Modules" Version="2020.3.45" IncludeAssets="compile" />
 	</ItemGroup>
 
 	<ItemGroup>
