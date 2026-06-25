@@ -89,8 +89,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool disableMaul;
 
-            [OnlineField(group = "arenaSetup")]
-            public bool disableArtiStun;
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float artiStunDistance;
 
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
@@ -103,6 +103,8 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaSetup")]
             public bool voidMasterEnabled;
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float voidSpawnLethalityFactor;
 
             [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
@@ -157,7 +159,17 @@ namespace RainMeadow
             public bool challengeDenEjection;
 
             [OnlineField(group = "arenaSetup")]
+            public bool enableMeadowCosmetics;
+
+            [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
+
+            
+            [OnlineFieldHalf(group = "arenaSetup")]
+            public float artiParryDistance;
+            
+            [OnlineField(group = "arenaSetup")]
+            public bool artiParryLeniency;
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -251,7 +263,7 @@ namespace RainMeadow
                 painCatThrows = arena.painCatThrows;
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
-                disableArtiStun = arena.disableArtiStun;
+                artiStunDistance = arena.artiStunDistanceMult;
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
@@ -265,6 +277,7 @@ namespace RainMeadow
 
                 bannedSlugs = new(arena.bannedSlugs);
                 voidMasterEnabled = arena.voidMasterEnabled;
+                voidSpawnLethalityFactor = arena.voidSpawnLethalityFactor;
                 amoebaDuration = arena.amoebaDuration;
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
@@ -282,6 +295,9 @@ namespace RainMeadow
                 challengeDenEjection = arena.challengeDenEjection;
 
                 artiExplosionCapacity = arena.artiExplosionCount;
+                artiParryDistance = arena.artiParryDistanceMult;
+                artiParryLeniency = arena.artiParryLeniency;
+                enableMeadowCosmetics = arena.enableMeadowCosmetics;
 
             }
 
@@ -339,7 +355,7 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-                (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
+                (lobby.gameMode as ArenaOnlineGameMode).artiStunDistanceMult = artiStunDistance;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
@@ -358,6 +374,8 @@ playerNumberWithTrophiesPerRound;
                 (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
                 (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled = voidMasterEnabled;
+                (lobby.gameMode as ArenaOnlineGameMode).voidSpawnLethalityFactor = voidSpawnLethalityFactor;
+
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration = amoebaDuration;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
                 (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
@@ -377,6 +395,9 @@ playerNumberWithTrophiesPerRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
+                (lobby.gameMode as ArenaOnlineGameMode).artiParryDistanceMult = artiParryDistance;
+                (lobby.gameMode as ArenaOnlineGameMode).artiParryLeniency = artiParryLeniency;
+                (lobby.gameMode as ArenaOnlineGameMode).enableMeadowCosmetics = enableMeadowCosmetics;
 
             }
 
