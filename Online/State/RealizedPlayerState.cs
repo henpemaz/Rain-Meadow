@@ -98,7 +98,7 @@ namespace RainMeadow
         public byte malnourishedState = 0;
         const byte MALNOURISHED = 1 << 0;
         const byte MALNOURISHED_BY_CREATURE = 1 << 1;
-        
+
 
 
 
@@ -155,6 +155,8 @@ namespace RainMeadow
 
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
+        [OnlineFieldHalf]
+        public float rippleDeathIntensity;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -171,6 +173,7 @@ namespace RainMeadow
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             lungsExhausted = p.lungsExhausted;
+            rippleDeathIntensity = p.rippleDeathIntensity;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             afkSleep = extras.afkSleep;
@@ -228,7 +231,7 @@ namespace RainMeadow
 
             malnourishedState = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
         }
-        
+
         byte GetMalnourishedState(bool malnourished, bool malnourishedByCreature)
         {
             return (byte)((malnourished ? MALNOURISHED : 0)
@@ -277,6 +280,7 @@ namespace RainMeadow
 
             //watcher
             p.isCamo = isCamo;
+            p.rippleDeathIntensity = rippleDeathIntensity;
             p.monkAscension = monkAscension;
             p.gourmandExhausted = gourmandExhausted;
             p.burstY = burstY;
@@ -302,7 +306,10 @@ namespace RainMeadow
                 if (p.slugOnBack.slugcat != onback)
                 {
                     p.slugOnBack.DropSlug();
-                    p.slugOnBack.SlugToBack(onback);
+                    if (onback != null)
+                    {
+                        p.slugOnBack.SlugToBack(onback);
+                    }
                 }
             }
 
@@ -358,8 +365,9 @@ namespace RainMeadow
             }
 
             byte curmalstate = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
-            if (curmalstate != malnourishedState) {
-                p.SetMalnourished((malnourishedState & MALNOURISHED) != 0,  (malnourishedState & MALNOURISHED_BY_CREATURE) != 0);
+            if (curmalstate != malnourishedState)
+            {
+                p.SetMalnourished((malnourishedState & MALNOURISHED) != 0, (malnourishedState & MALNOURISHED_BY_CREATURE) != 0);
             }
         }
     }

@@ -19,9 +19,8 @@ namespace RainMeadow
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
-            
+
             On.Creature.SpitOutOfShortCut += Creature_SpitOutOfShortCut;
-            // On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -92,18 +91,20 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null) {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
-                            creature.MoveMovable(cord);
                             try
                             {
-                                if (creature.GetAllConnectedObjects().Contains(handler.game.cameras[0].followAbstractCreature))
+                                if (creature.FollowedByCamera(0))
                                 {
-                                    handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
+                                    handler.game.world.ActivateRoom(handler.betweenRoomsWaitingLobby[inbetween_room_index].room);
+                                    // handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
                                 }
                             }
                             catch (Exception except)
                             {
                                 RainMeadow.Debug(except);
                             }
+
+                            creature.MoveMovable(cord);
                             
                             return true;
                         }

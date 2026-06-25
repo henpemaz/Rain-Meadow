@@ -160,7 +160,24 @@ namespace RainMeadow
                     this.generalGlitch *= 1f - this.expand;
                     this.glitch = 0.15f;
                     this.expand -= 1f / Mathf.Lerp(60f, 2f, this.expand);
-                    Vector2 a = Vector2.Lerp(this.expandAroundCreature.bodyChunks[1].pos, this.expandAroundCreature.mainBodyChunk.pos + Custom.DirVec(this.expandAroundCreature.bodyChunks[1].pos, this.expandAroundCreature.mainBodyChunk.pos) * 10f, Mathf.Lerp(1f, 0.65f, this.expand));
+
+                    Vector2 a;
+                    if (this.expandAroundCreature.bodyChunks.Length >= 2)
+                    {
+                        a = Vector2.Lerp(
+                            this.expandAroundCreature.bodyChunks[1].pos, 
+                            this.expandAroundCreature.mainBodyChunk.pos + Custom.DirVec(this.expandAroundCreature.bodyChunks[1].pos, 
+                            this.expandAroundCreature.mainBodyChunk.pos) * 10f, Mathf.Lerp(1f, 0.65f, this.expand));
+                    }
+                    else
+                    {
+                        Vector2 fakebodychunkpos = this.expandAroundCreature.mainBodyChunk.pos + Vector2.right*this.expandAroundCreature.mainBodyChunk.rad;
+                        a = Vector2.Lerp(
+                            fakebodychunkpos, 
+                            this.expandAroundCreature.mainBodyChunk.pos + Custom.DirVec(fakebodychunkpos, 
+                            this.expandAroundCreature.mainBodyChunk.pos) * 10f, Mathf.Lerp(1f, 0.65f, this.expand));
+                    }
+                    
                     for (int m = 0; m < this.lines.GetLength(0); m++)
                     {
                         Vector2 b3 = Custom.RotateAroundOrigo(Vector2.Lerp((Random.value > this.expand) ? this.lines[m, 2] : this.lines[Random.Range(0, 4), 2], this.lines[Random.Range(0, 4), 2], Random.value * (1f - this.expand)) * (4f * Mathf.Pow(this.expand, 0.25f)), Custom.AimFromOneVectorToAnother(this.expandAroundCreature.bodyChunks[1].pos, this.expandAroundCreature.mainBodyChunk.pos)) * Mathf.Lerp(Random.value, 1f, this.expand);
@@ -224,7 +241,7 @@ namespace RainMeadow
                 {
                     avatarCreature = mgm.avatars[0].creature.realizedCreature;
                 }
-                else if (avatarCreature.room == this.room)
+                else if (avatarCreature.room == this.room && avatarCreature is not Overseer)
                 {
                     // collect logic moved here
                     for (int i = 0; i < avatarCreature.bodyChunks.Length; i++)
@@ -250,6 +267,7 @@ namespace RainMeadow
                 {
                     var creature = room.abstractRoom.creatures[i].realizedCreature;
                     if (creature == null) continue;
+                    if (creature is Overseer) continue;
                     num4 = Mathf.Min(num4, Vector2.Distance(creature.mainBodyChunk.pos, this.pos));
 
                     if (Custom.DistLess(creature.mainBodyChunk.pos, this.pos, num5))
