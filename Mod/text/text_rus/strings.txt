@@ -115,7 +115,7 @@ Control which mods are permitted on clients by editing the files below.<LINE>Ins
 Edit High-Impact Mods|Разрешённые моды
 Edit Banned Mods|Запрещённые моды
 Lobby Music|Музыка в лобби
-//Default|По умолчанию [уже переведено в игре]
+Default|По умолчанию
 Chat Log Toggle|Открыть/закрыть окно чата
 Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
@@ -163,7 +163,7 @@ Username|Имя
 UDP timeout (ms)|Максимальное время ожидания (мс)
 UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (мс)
 Cape Color|Цвета плащей
-Default|По умолчанию
+//Default|По умолчанию
 Gold|Золото
 Silver|Серебро
 Greedy|Жадный
