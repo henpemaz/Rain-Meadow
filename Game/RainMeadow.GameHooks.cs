@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Watcher;
+using System.Runtime.Remoting.Messaging;
+using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
@@ -24,6 +26,7 @@ namespace RainMeadow
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             IL.OverWorld.ctor += Overworld_ctor; 
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
+            IL.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate1;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
@@ -74,6 +77,45 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+        }
+
+        private void RainWorldGame_RawUpdate1(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<RainWorldGame>(nameof(RainWorldGame.devToolsActive)),
+                x => x.MatchBrfalse(out skip));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((RainWorldGame self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    if (Input.GetKey("q"))
+                    {
+                        self.RequestUnloadAllRoomsExcept(self.cameras[0].room);
+                    }
+                    if (Input.GetKey("h") && self.devUI != null)
+                    {
+                        Cursor.visible = !self.rainWorld.options.fullScreen;
+                        self.devUI.ClearSprites();
+                        self.devUI = null;
+                    }
+                    if (Input.GetKey("k") && !self.kDown)
+                    {
+                        self.consoleVisible = !self.consoleVisible;
+                        self.console.Visibility(self.consoleVisible);
+                    }
+                    self.kDown = Input.GetKey("k");
+
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
         }
 
         // Disable Artificer ending trigger in Meadow Mode.
@@ -302,6 +344,7 @@ namespace RainMeadow
                 // if chat is open, moves pausing logic to RawUpdate for consistent input detection
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                var skip2 = il.DefineLabel();
                 c.GotoNext(
                     i => i.MatchLdloc(0),
                     i => i.MatchBrfalse(out var _),
@@ -344,6 +387,23 @@ namespace RainMeadow
                 }
                 );
                 c.Emit(OpCodes.Brtrue, skip);
+
+                // Don't allow restarting cycle if online and not the host.
+                c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<RainWorldGame>(nameof(RainWorldGame.devToolsActive)),
+                x => x.MatchBrfalse(out skip2));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip2);
             }
             catch (Exception e)
             {
@@ -406,7 +466,8 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby != null)
             {
-                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value})";
+                string cl = OnlineManager.CheatsAllowed ? "" : "\n" + Utils.Translate("Cheats are disabled in this lobby.");
+                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value}){cl}";
             }
         }
 
