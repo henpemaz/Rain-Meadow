@@ -35,6 +35,7 @@ namespace RainMeadow
         public string? password;
         public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
+        public bool cheats = false;
         public bool eventGags = false;
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
@@ -237,6 +238,8 @@ namespace RainMeadow
             public Dictionary<string, int> onlineIntRemixSettings;
             [OnlineField]
             public bool eventGags;
+            [OnlineField]
+            public bool cheats;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -251,6 +254,7 @@ namespace RainMeadow
                 onlineIntRemixSettings = lobby.configurableInts;
                 timeline = lobby.meadowTimeline;
                 eventGags = lobby.eventGags;
+                cheats = lobby.cheats;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -314,6 +318,7 @@ namespace RainMeadow
                 }
                 
                 lobby.eventGags = eventGags;
+                lobby.cheats = cheats;
                 base.ReadTo(resource);
             }
         }

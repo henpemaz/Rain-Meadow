@@ -523,6 +523,18 @@ namespace RainMeadow
 
             @event.Then(_ => Unlock(key, @event));
         }
+        public void Lock(string key)
+        {
+            RainMeadow.Debug($"{this}: Locked {key} manually");
+            if (!locks.ContainsKey(key))
+            {
+                locks.Add(key, [ new() ]);
+            }
+            else
+            {
+                locks[key].Add(new());
+            }
+        }
 
         public void TraceLocks()
         {

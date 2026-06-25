@@ -17,7 +17,7 @@ namespace RainMeadow.UI.Components
         public ArenaSetup.GameTypeSetup GetGameTypeSetup =>
             GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
-
+        public const string ROOMREPEAT = "ROOMREPEAT", SESSIONLENGTH = "SESSIONLENGTH", WILDLIFE = "WILDLIFE";
         public OnlineArenaSettingsInferface(
             Menu.Menu menu,
             MenuObject owner,
@@ -82,7 +82,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(0, 355),
                 menu.Translate("Repeat Rooms:"),
-                "ROOMREPEAT",
+                ROOMREPEAT,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 115 : 95,
                 settingsWidth,
                 5,
@@ -97,7 +97,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(0, 305),
                 menu.Translate("Rain Timer:"),
-                "SESSIONLENGTH",
+                SESSIONLENGTH,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f,
                 settingsWidth,
                 6,
@@ -112,7 +112,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(0, 255),
                 menu.Translate("Wildlife:"),
-                "WILDLIFE",
+                WILDLIFE,
                 95,
                 settingsWidth,
                 4,
@@ -421,17 +421,17 @@ namespace RainMeadow.UI.Components
 
         public int GetSelected(MultipleChoiceArray array)
         {
-            if (array.IDString == "ROOMREPEAT")
+            if (array.IDString == ROOMREPEAT)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.levelRepeats - 1
                 );
-            if (array.IDString == "SESSIONLENGTH")
+            if (array.IDString == SESSIONLENGTH)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.sessionTimeLengthIndex
                 );
-            if (array.IDString == "WILDLIFE" && GetGameTypeSetup.wildLifeSetting.Index != -1)
+            if (array.IDString == WILDLIFE && GetGameTypeSetup.wildLifeSetting.Index != -1)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.wildLifeSetting.Index
@@ -441,11 +441,11 @@ namespace RainMeadow.UI.Components
 
         public void SetSelected(MultipleChoiceArray array, int i)
         {
-            if (array.IDString == "ROOMREPEAT")
+            if (array.IDString == ROOMREPEAT)
                 GetGameTypeSetup.levelRepeats = i + 1;
-            if (array.IDString == "SESSIONLENGTH")
+            if (array.IDString == SESSIONLENGTH)
                 GetGameTypeSetup.sessionTimeLengthIndex = i;
-            if (array.IDString == "WILDLIFE")
+            if (array.IDString == WILDLIFE)
                 GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(
                     ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i),
                     false

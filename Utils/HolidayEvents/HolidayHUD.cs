@@ -10,8 +10,6 @@ namespace RainMeadow
     {
         public const string JokerRifle = "Joke Rifle";
         public const string MeadowCoin = "Meadow Coin";
-        public const string SilverCape = "Silver Cape";
-        public const string GoldenCape = "Golden Cape";
         public const string RainbowCape = "Rainbow Cape";
         public const string GoldenSkin = "Golden Skin";
 
@@ -50,8 +48,6 @@ namespace RainMeadow
 
             var storeItems = new List<(string, int, Configurable<bool>?)>
             {
-                (SilverCape, 75, RainMeadow.rainMeadowOptions.boughtSilverCape),
-                (GoldenCape, 100, RainMeadow.rainMeadowOptions.boughtGoldenCape),
                 (RainbowCape, 150, RainMeadow.rainMeadowOptions.boughtRainbowCape),
                 (GoldenSkin, 150, RainMeadow.rainMeadowOptions.boughtGoldenSkin),
                 (Rock, 1, null),
