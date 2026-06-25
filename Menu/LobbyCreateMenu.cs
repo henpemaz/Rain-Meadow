@@ -18,6 +18,7 @@ public class LobbyCreateMenu : SmartMenu
     private OpComboBox2 visibilityDropDown;
     private OpTextBox lobbyLimitNumberTextBox;
     private int maxPlayerCount;
+    private OpCheckBox? lobbyCheats;
     private OpCheckBox? lobbyPinnedCheckBox;
     private OpCheckBox? lobbyEventGags;
 
@@ -134,6 +135,18 @@ public class LobbyCreateMenu : SmartMenu
         meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
         new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
 
+        where.x -= 80;
+        where.y -= 45;
+        mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Cheats:"), where, new Vector2(400, 20f), false));
+        where.x += 80;
+        where.y -= 5;
+        lobbyCheats = new OpCheckBox(new Configurable<bool>(false), where) 
+        { 
+            description = Utils.Translate("If enabled, players will be allowed to use most Dev Tools cheats. Use with caution."),
+        };
+        new UIelementWrapper(this.tabWrapper, lobbyCheats);
+        where.y += 5;
+
         if (MatchmakingManager.currentInstance.IsTrustedCommunity(OnlineManager.mePlayer.id))
         {
             where.x -= 80;
@@ -181,6 +194,7 @@ public class LobbyCreateMenu : SmartMenu
         }
         else
         {
+            OnlineManager.lobby.cheats = lobbyCheats?.GetValueBool() ?? false;
             OnlineManager.lobby.eventGags = lobbyEventGags?.GetValueBool() ?? false;
             OnlineManager.lobby.meadowTimeline = this.meadowTimeline;
         }
@@ -218,6 +232,7 @@ public class LobbyCreateMenu : SmartMenu
     {
         //Column; enforce element order, and fix/adjust left/right binds.
         List<MenuObject> VerticalElements = [modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper, meadowTimelineDropdown.wrapper];
+        if (lobbyCheats != null) { VerticalElements.Add(lobbyCheats.wrapper); }
         if (lobbyPinnedCheckBox != null) { VerticalElements.Add(lobbyPinnedCheckBox.wrapper); }
         if (lobbyEventGags != null) { VerticalElements.Add(lobbyEventGags.wrapper); }
         Extensions.TrySequentialMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);

@@ -16,6 +16,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         private int _timerDuration;
 
         public override ArenaSetup.GameTypeID GetGameModeId => ChallengeMode;
+        public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
 
         public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)

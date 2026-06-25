@@ -30,10 +30,10 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
-            base.ReadTo(onlineEntity);
             if (onlineEntity.isTransfering)
             {
                 RainMeadow.Debug($"Transferring {onlineEntity}, not updating state!");
+                base.ReadTo(onlineEntity);
                 return;
             }
 
@@ -56,7 +56,8 @@ namespace RainMeadow
                     weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
                 }
             }
-            
+
+            base.ReadTo(onlineEntity);
 
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }

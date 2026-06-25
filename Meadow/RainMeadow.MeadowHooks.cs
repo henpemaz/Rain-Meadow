@@ -18,6 +18,7 @@ namespace RainMeadow
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
+            _ = Ext_OverseerHologram_Message.OverseerEmote;
 
             byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_base.png"));
             nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
@@ -46,6 +47,7 @@ namespace RainMeadow
             EggbugController.EnableEggbug();
             MeadowPlayerController.Enable();
             LanternMouseController.EnableMouse();
+            OverseerController.EnableOverseer();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
@@ -298,6 +300,10 @@ namespace RainMeadow
             {
                 if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
+                    if (c is OverseerController oc && oc.cursor is not null && oc.cursor.currentlyInteracting != null)
+                    {
+                        return oc.cursor.interactTimer > 20;
+                    } 
                     return c.touchedNoInputCounter > 20;
                 }
             }
@@ -310,6 +316,18 @@ namespace RainMeadow
             {
                 if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
+                    if (c is OverseerController oc)
+                    {
+                        if (oc.cursor is not null && oc.cursor.currentlyInteracting is OverseerController.InteractableGateSide gateside)
+                        {
+                            return gateside.index + 1;
+                        }
+                        else
+                        {
+                            return self.letThroughDir ? 3 : 0;
+                        }
+                    } 
+
                     return self.DetectZone(c.creature.abstractCreature);
                 }
             }
@@ -416,11 +434,9 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadowGameMode)
             {
-                if (self.hud == null && self.followAbstractCreature?.realizedObject is Creature owner)
+                if (self.hud == null && meadowGameMode.avatars[0].realizedCreature is Creature owner)
                 {
                     RainMeadow.Debug("followed creature is " + owner);
-                    if (owner != meadowGameMode.avatars[0].realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatars[0]}"); }
-
                     self.hud = new HUD.HUD(new FContainer[]
                     {
                         self.ReturnFContainer("HUD"),
@@ -433,6 +449,10 @@ namespace RainMeadow
                     self.hud.AddPart(new MeadowProgressionHud(self.hud));
                     self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
                     self.hud.AddPart(new MeadowHud(self.hud, self, owner));
+                    if (owner is Overseer)
+                    {
+                        self.hud.AddPart(new SpectatorHud(self.hud, self));
+                    }
                 }
             }
             orig(self);
