@@ -163,7 +163,7 @@ Username|Имя
 UDP timeout (ms)|Максимальное время ожидания (мс)
 UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (мс)
 Cape Color|Цвета плащей
-//Default|По умолчанию
+//Default|По умолчанию [уже переведено выше]
 Gold|Золото
 Silver|Серебро
 Greedy|Жадный
