@@ -970,6 +970,10 @@ namespace RainMeadow
                 orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
                 return;
             }
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return;
+            }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)
             {
                 Error($"Target {self} doesn't exist in online space!");
@@ -1029,6 +1033,10 @@ namespace RainMeadow
             if (OnlineManager.lobby == null)
             {
                 orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
+                return;
+            }
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
                 return;
             }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)
