@@ -617,7 +617,7 @@ namespace RainMeadow
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (!opo.isMine)
                             {
                                 // not-online-aware removal
                                 opo.RemoveEntityFromGame(false);

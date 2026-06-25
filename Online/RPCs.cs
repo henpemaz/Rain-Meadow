@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -28,6 +29,41 @@ namespace RainMeadow
                 game.globalRain.deathRain.progression = 0f;
                 game.globalRain.deathRain.timeInThisMode = timeInThisMode;
                 game.globalRain.deathRain.calmBeforeStormSunlight = calmBeforeStornSunlight;
+            }
+        }
+
+        [RPCMethod]
+        public static void Weapon_CreatureDeflect(OnlinePhysicalObject onlineWeapon, RealizedWeaponState realizedWeaponState, bool artificerParry, bool isSilent)
+        {
+            if (onlineWeapon.IsLocked("parry")) return;
+            
+            try
+            {
+                if (onlineWeapon.apo.realizedObject is Weapon weapon)
+                {
+                    if (onlineWeapon.IsLocked("deflected")) // weapon was already deflected, no need to do anything.
+                    {
+                        RainMeadow.Debug($"Recieved {onlineWeapon} deflect RPC but the weapon was already deflected ! Ignoring.");
+                        return;
+                    }
+                    realizedWeaponState.ReadTo(onlineWeapon);  // actually, let everyone enjoy the spectacle.
+                    if (!isSilent)
+                    {
+                        if (artificerParry) 
+                        {
+                            RainMeadow.PlayArtiParryCustomSound(weapon);
+                        }
+                        else
+                        {
+                            weapon.room.PlaySound(weapon is Spear ? SoundID.Spear_Bounce_Off_Creauture_Shell : SoundID.Rock_Bounce_Off_Creature_Shell, weapon.firstChunk);
+                            weapon.vibrate = 20;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // UnityEngine.Random.state = state;
             }
         }
 

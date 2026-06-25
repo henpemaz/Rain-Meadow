@@ -31,44 +31,8 @@ namespace RainMeadow
             }
         }
 
-
-        // Substracting a player's points would be infinitely easier, but Rain World has logic to display as 0 if that's the case, which is not helpful and now I have to suffer for it
-        // We also have to account for already dead players who shouldn't be getting score
         [RPCMethod]
-        public static void DistributeEmptyKillScores(int[] alivePlayers)
-        {
-            RainMeadow.DebugMe();
-            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame { session: ArenaGameSession session }) return;
-            if (!RainMeadow.isArenaMode(out var arena)) return;
-
-            for (int i = 0; i < session.arenaSitting.players.Count; i++)
-            {
-                var pState = session.arenaSitting.players[i];
-                if (pState == null || pState.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) continue;
-
-                // Only process players who were confirmed alive by the sender
-                if (alivePlayers.Contains(pState.playerNumber))
-                {
-                    // 1. Update local score for the UI (everyone does this)
-                    pState.score += arena.emptyKillTagScore;
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        OnlinePlayer? targetPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, pState.playerNumber);
-                        if (targetPlayer != null)
-                        {
-                            // Ensure the key exists, then add the score
-                            if (arena.playerNumberWithScore.ContainsKey(targetPlayer.inLobbyId))
-                            {
-                                arena.playerNumberWithScore[targetPlayer.inLobbyId] += arena.emptyKillTagScore;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        [RPCMethod]
-        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        public static void IncreasePlayerScore(int playerNumber, int newScore)
         {
             RainMeadow.DebugMe();
             if (!RainMeadow.isArenaMode(out var arena)) return;
@@ -100,9 +64,46 @@ namespace RainMeadow
                         arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
                     }
 
-                    RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
+                    RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
 
                 }
+            }
+
+        }
+
+        // Can increase or decrease
+        [RPCMethod]
+        public static void UpdatePlayerScore(int playerNumber, int newScore)
+        {
+            RainMeadow.DebugMe();
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                return;
+            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null)
+            {
+                RainMeadow.Error("Arena: RainWorldGame is null!");
+                return;
+            }
+
+            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+            {
+                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                {
+                    return; // no points for you
+                }
+
+                a.arenaSitting.players[playerNumber].score = newScore;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                }
+                RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
+
             }
 
         }
