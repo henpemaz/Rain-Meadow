@@ -148,7 +148,7 @@ If selected, usernames and icons will allways appear onscreen for slugcats in a 
 WARNING: Experimental features may cause data corruption, back up your saves|ВАЖНО: Возможно повреждение данных, рекомендуется сделать резервную копию сохранений 
 Gain achievements online|Получать достижения в сетевой игре
 Streamer Mode|Режим стримера
-//None|Нет
+None|Нет
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
