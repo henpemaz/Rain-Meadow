@@ -2,6 +2,7 @@
 
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
   - The host will still be allowed to use cheats but no other players can.
