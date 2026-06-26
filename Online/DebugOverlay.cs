@@ -80,7 +80,7 @@ namespace RainMeadow
 
         private class EntityNode
         {
-            public OnlineEntity entity;
+            public EntityIconPair entityIcon;
             private IconSymbol iconSymbol;
             private FLabel label;
             public string text = "";
@@ -88,23 +88,21 @@ namespace RainMeadow
             public Color color = Color.white;
             public float rad = 5;
             public float thickness = 3;
-            public EntityNode(RainWorld rainWorld, FContainer container, OnlineEntity onlineEntity)
+            public EntityNode(RainWorld rainWorld, FContainer container, EntityIconPair entityIcon)
             {
-                this.entity = onlineEntity;
-
-                if (onlineEntity is OnlinePhysicalObject onlinePhysicalObject)
+                this.entityIcon = entityIcon;
+                
+                if (entityIcon.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature)
                 {
-                    if (onlinePhysicalObject.apo is AbstractCreature creature)
-                    {
-                        iconSymbol = new CreatureSymbol(CreatureSymbol.SymbolDataFromCreature(creature), container);
-                    }
-                    else
-                    {
-                        iconSymbol = new ItemSymbol(ItemSymbol.SymbolDataFromItem(onlinePhysicalObject.apo).GetValueOrDefault(), container);
-                    }
-                    iconSymbol.Show(true);
-                    iconSymbol.showFlash = iconSymbol.lastShowFlash = 0;
+                    iconSymbol = new CreatureSymbol(entityIcon.Icon, container);
                 }
+                else
+                {
+                    iconSymbol = new ItemSymbol(entityIcon.Icon, container);
+                }
+
+                iconSymbol.Show(true);
+                iconSymbol.showFlash = iconSymbol.lastShowFlash = 0;
 
                 label = new FLabel(Custom.GetFont(), text);
                 label.color = Color.white;
@@ -114,7 +112,7 @@ namespace RainMeadow
 
             public void Update()
             {
-                float alpha = entity.isMine ? 1 : 0.5f;
+                float alpha = entityIcon.Entity.isMine ? 1 : 0.5f;
                 iconSymbol.symbolSprite.alpha = alpha;
                 iconSymbol.shadowSprite1.alpha = alpha;
                 iconSymbol.shadowSprite2.alpha = alpha;
@@ -357,7 +355,9 @@ namespace RainMeadow
             for (int i = 0; i < onlineEntities.Count; i++)
             {
                 ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntities[i].currentlyJoinedResource);
-                if (resourceNode != null && onlineEntities[i] is OnlinePhysicalObject onlinePhysicalObject)
+                if (resourceNode is null) return;
+
+                if (onlineEntities[i] is OnlinePhysicalObject onlinePhysicalObject)
                 {
                     resourceNode.childEntities.Add(new EntityIconPair
                     {
@@ -367,6 +367,17 @@ namespace RainMeadow
                         ItemSymbol.SymbolDataFromItem(((OnlinePhysicalObject)onlineEntities[i]).apo).GetValueOrDefault(),
                     });
                 }
+                
+                if (onlineEntities[i] is OnlinePearlString pearlString)
+                {
+                    resourceNode.childEntities.Add(new EntityIconPair
+                    {
+                        Entity = pearlString,
+                        Icon = new IconSymbol.IconSymbolData(CreatureTemplate.Type.StandardGroundCreature, AbstractPhysicalObject.AbstractObjectType.PebblesPearl, 2),
+                    });
+                }
+
+                
             }
 
             for (int i = 0; i < resourceNodes.Count; i++)
@@ -402,9 +413,7 @@ namespace RainMeadow
                 int j = 0;
                 while (j < resourceNodes[i].childEntities.Count)
                 {
-                    iconType = (((OnlinePhysicalObject)resourceNodes[i].childEntities[j].Entity).apo is AbstractCreature creature) ?
-                        CreatureSymbol.SymbolDataFromCreature(creature) :
-                        ItemSymbol.SymbolDataFromItem(((OnlinePhysicalObject)resourceNodes[i].childEntities[j].Entity).apo).GetValueOrDefault();
+                    iconType = resourceNodes[i].childEntities[j].Icon;
 
                     if (iconType == lastIconType && resourceNodes[i].childEntities[j].Entity.isMine == lastIsMine)
                     {
@@ -416,7 +425,7 @@ namespace RainMeadow
                         iconCount = 1;
                         //Ok so, I'm not really using EntityNode for its intended purpose here; it's designed to link a creature instance to an icon, and I'm using it to just show *an* icon.
                         //I've done this because the code already works and does roughly what I want with very few modifications, and also so EntityNode can be reused later if it's ever helpful.
-                        EntityNode entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j].Entity)
+                        EntityNode entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j])
                         {
                             text = (resourceNodes[i].childEntities[j].Entity.isMine && iconType.critType == CreatureTemplate.Type.Slugcat) ?
                                 iconCount > 1 ?
