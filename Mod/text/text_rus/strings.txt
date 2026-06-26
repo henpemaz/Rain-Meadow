@@ -148,7 +148,7 @@ If selected, usernames and icons will allways appear onscreen for slugcats in a 
 WARNING: Experimental features may cause data corruption, back up your saves|ВАЖНО: Возможно повреждение данных, рекомендуется сделать резервную копию сохранений 
 Gain achievements online|Получать достижения в сетевой игре
 Streamer Mode|Режим стримера
-//None|Нет [уже переведено в игре]
+//None|Нет
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
@@ -163,7 +163,6 @@ Username|Имя
 UDP timeout (ms)|Максимальное время ожидания (мс)
 UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (мс)
 Cape Color|Цвета плащей
-//Default|По умолчанию [уже переведено выше]
 Gold|Золото
 Silver|Серебро
 Greedy|Жадный
@@ -355,8 +354,8 @@ Artificer Stun Range Multiplier|Множитель расстояния оглу
 Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|Как далеко Техник может оглушать других игроков по сравнению со стандартным радиусом? По умолчанию: 0.5
 Artificer Parry Range Multiplier|Множитель расстояния отражений Техником:
 How far Artificer can parry from compared to vanilla range. Default: 0.3|Как далеко Техник может отражать копья по сравнению со стандартным радиусом? По умолчанию: 0.3 
-Artificer Parry Leniency:|Смягчение отражений копий Техником:
-Gives Artificer more leniency frames in the concussive blast's parry|Смягчает Технику отражения копий с помощью оглушающего взрыва
+Artificer Parry Leniency:|Более надёжное парирование Техника:
+Gives Artificer more leniency frames in the concussive blast's parry|Даёт больше времени Технику для парирования копья с помощью Оглушающего Взрыва
 Disable Mauling:|Отключить укус:
 Prevent Artificer and <PAINCATNAME> from mauling|Предотвратить укусы Техника и <PAINCATNAME>
 Disable Artificer Stun:|Отключить оглушение Техника:
