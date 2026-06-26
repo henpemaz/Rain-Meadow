@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using MoreSlugcats;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -101,14 +102,6 @@ namespace RainMeadow
                     case JokerRifle:
                         desiredObject = new JokeRifle.AbstractRifle(game.world, null, me.pos, game.GetNewID(), JokeRifle.AbstractRifle.AmmoType.Fruit);
                         break;
-                    case SilverCape:
-                        btn.chosenColor = new Color(0.863f, 0.918f, 0.941f);
-                        desiredCape = new SolidCapeColor(btn.chosenColor);
-                        break;
-                    case GoldenCape:
-                        btn.chosenColor = RainWorld.SaturatedGold;
-                        desiredCape = new SolidCapeColor(btn.chosenColor);
-                        break;
                     case RainbowCape:
                         desiredCape = new RainbowCapeColor();
                         break;
@@ -131,7 +124,7 @@ namespace RainMeadow
                 custom.eventCape = desiredCape;
                 CapeManager.RefreshGraphicalModule(cc.realizedCreature);
                 if (!purchased) SpecialEvents.SpendMeadowCoin(btn.cost);
-                RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = btn.chosenColor;
+                RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = Custom.colorToHex(btn.chosenColor);
             }
 
             if (btn.permanentPurchase is not null) btn.permanentPurchase.Value = true;

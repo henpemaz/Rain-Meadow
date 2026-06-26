@@ -123,8 +123,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out var arena))
             arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1 && arena.enableMeadowCosmetics;
         Arena.AddToPostGameStatsDialog();
-        Arena.DisableMeadowCosmetics();
-
+        // Arena.DisableMeadowCosmetics(); 
     }
 
     public void ChangeScene()
