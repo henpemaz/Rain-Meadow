@@ -73,7 +73,7 @@ Creating lobby...|Создание лобби...
 Timeline:|Хронология:
 Spear|Мастер Копья
 Cheats:|Читы:
-If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|Если включено, игроки смогут использовать большинство читов Dev Tools. Используйте с осторожностью.
+If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|Если включено, игроки смогут использовать большинство читов Dev Tools. Используй с осторожностью.
 
 ///Создатели
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow — это уникальный многопользовательский движок для уникальной игры. Ничто другое не подошло бы. — Henpemaz
@@ -128,7 +128,7 @@ Vanilla|Стандартный
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|DLC Downpour не включён, будет использовано стандартное вступление.
 Watcher DLC is not activated, vanilla intro will be used instead|DLC Watcher не включён, будет использовано стандартное вступление.
-Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: |Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: $10|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 10
 Disable Pause Menu Animation|Отключить анимацию в меню паузы.
 If selected, disables the sway animation in the pause menu|Если этот параметр включен, отключает анимацию раскачивания в меню паузы.
 Input “cheats” to access cheats|Введи «cheats», чтобы получить доступ к читам.
@@ -148,7 +148,7 @@ If selected, usernames and icons will allways appear onscreen for slugcats in a 
 WARNING: Experimental features may cause data corruption, back up your saves|ВАЖНО: Возможно повреждение данных, рекомендуется сделать резервную копию сохранений 
 Gain achievements online|Получать достижения в сетевой игре
 Streamer Mode|Режим стримера
-None|Нет
+//None|Нет [уже переведено в игре]
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
@@ -163,7 +163,7 @@ Username|Имя
 UDP timeout (ms)|Максимальное время ожидания (мс)
 UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (мс)
 Cape Color|Цвета плащей
-Default|По умолчанию
+//Default|По умолчанию [уже переведено выше]
 Gold|Золото
 Silver|Серебро
 Greedy|Жадный
@@ -214,12 +214,10 @@ Current Campaign: |Текущая кампания:
 Selected Slugcat|Выбор Слизнекота
 Slugpup|Слизнекотёнок
 Invite Friends|Пригласить
-Friendly Fire|Огонь по своим
-Require Campaign Slugcat|Отключить выбор слизнекота
-Sync Save|Синхронизировать сохранение
-/// если верхнее не работает
-CLIENTSAVERESET|Синхронизировать сохранение АЛЬТ
-Restart game|Перезапустить кампанию
+Friendly Fire|Друж. огонь
+Require Campaign Slugcat|Отключить выбор Кота
+Sync Save|Синхр. сохр.
+//Restart game|Перезапустить кампанию [уже переведено в игре]
 PLAYERS|ИГРОКИ
 Press again to ban player!|Нажми ещё раз, чтобы забанить игрока!
 Wait for others to shelter or rescue you, press |Жди, пока другие не переживут цикл или спасут тебя, нажми «
@@ -352,20 +350,20 @@ Amoeba Lethality Factor:|Фактор летальности амёб:
 Multiplier for amoeba lethality|Множитель летальности амёб
 Amoeba's direction is influenced by pointing|Направление амёбы зависит от указания лапой
 Amoebas chase targets at-will|Амёбы сами преследуют цели
-How many explosions Artificer can use before cooldown|Количество взрывов которых может использовать Техник до перезарядки
+How many explosions Artificer can use before cooldown|Сколько взрывов может использовать Техник до перезарядки?
 Artificer Stun Range Multiplier|Множитель расстояния оглушения Техником:
-Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|На каком расстоянии Техник может оглушать других игроков по сравнению с ванильным расстоянием. По умолчанию: 0.5
+Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|Как далеко Техник может оглушать других игроков по сравнению со стандартным радиусом? По умолчанию: 0.5
 Artificer Parry Range Multiplier|Множитель расстояния отражений Техником:
-How far Artificer can parry from compared to vanilla range. Default: 0.3|На каком расстоянии Техник может отражать копья по сравнению с ванильным расстоянием. По умолчанию: 0.3 
+How far Artificer can parry from compared to vanilla range. Default: 0.3|Как далеко Техник может отражать копья по сравнению со стандартным радиусом? По умолчанию: 0.3 
 Artificer Parry Leniency:|Смягчение отражений копий Техником:
 Gives Artificer more leniency frames in the concussive blast's parry|Смягчает Технику отражения копий с помощью оглушающего взрыва
-Disable Mauling:|Отключить Укус:
+Disable Mauling:|Отключить укус:
 Prevent Artificer and <PAINCATNAME> from mauling|Предотвратить укусы Техника и <PAINCATNAME>
 Disable Artificer Stun:|Отключить оглушение Техника:
 Prevent Artificer from stunning other players|Предотвратить Техника от оглушения других игроков
 Sain't:|Несвятой:
 Disable Saint ascendance ability, but allow it to throw spears|Отключить способность вознесения Святого, но разрешить ему кидать копья 
-Saint Ascendance Duration:|Длительность Вознесения Святого:
+Saint Ascendance Duration:|Длительность вознесения Святого:
 How long Saint's ascendance ability lasts for. Default: 3s|Длительность способности вознесения Святого. По умолчанию: 3 сек.
 <PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> получает яйцо на 0 навыке броска:
 If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Если <PAINCATNAME> появляется с 0 навыком броска, он также появляется с Яйцен0лём
@@ -405,9 +403,9 @@ Points a kill is worth|Количество очков за убийство.
 Survival Score:|Счёт выживаний:
 Points for surviving inside the shelter|Количество очков за выживание.
 Empty Kill Score:|Счёт без убийств:
-Points for other players if someone dies without a killer|Количество очков для других игроков если кто-то умирает не от игрока.
+Points for other players if someone dies without a killer|Количество очков, выдававаемых другим игрокам, если кто-то умирает не от игрока.
 Unlock Dens:|Счёт для спячки:
-Points required to unlock dens|Количество очков для открытия убежища.
+Points required to unlock dens|Количество очков, требуемых для открытия убежища.
 Den Entry:|Вход в убежище:
 Den entry behavior|Поведение входа в убежище.
 Den Ejection:|Выталкивание:
