@@ -51,10 +51,8 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
             {
-                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
-                self.room.abstractRoom.AddEntity(self.prince.abstractPhysicalObject);
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
             }
-
         }
 
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)

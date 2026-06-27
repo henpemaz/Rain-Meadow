@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class RealizedPrinceBulbState : RealizedPhysicalObjectState
     {
-        [OnlineField]
+        [OnlineField(nullable = true)]
         PrinceState prince;
         [OnlineField]
         Vector2 idealPos;
@@ -14,8 +14,8 @@ namespace RainMeadow
         public RealizedPrinceBulbState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             PrinceBulb bulb = onlineEntity.apo.realizedObject as PrinceBulb;
-            prince = new(bulb.prince);
             idealPos = bulb.idealPos;
+            if (bulb.prince != null) prince = new(bulb.prince);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -24,9 +24,9 @@ namespace RainMeadow
 
             PrinceBulb bulb = (PrinceBulb)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             if (bulb == null) return;
-            
             bulb.idealPos = idealPos;
-            prince.ReadTo(bulb.prince);
+
+            if (bulb.prince != null) prince.ReadTo(bulb.prince);
         }
         [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
         public class PrinceState : OnlineState

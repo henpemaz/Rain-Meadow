@@ -40,12 +40,11 @@ namespace RainMeadow
             orig(self, obj);
             if (OnlineManager.lobby != null)
             {
-                if (obj is not Watcher.Prince)
-                    if (obj is PhysicalObject po && po.abstractPhysicalObject is AbstractPhysicalObject apo && !apo.GetOnlineObject(out _))
-                    {
-                        self.world.GetResource()?.ApoEnteringWorld(apo);
-                        self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
-                    }
+                if (obj is PhysicalObject po && po.abstractPhysicalObject is AbstractPhysicalObject apo && !apo.GetOnlineObject(out _))
+                {
+                    self.world.GetResource()?.ApoEnteringWorld(apo);
+                    self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
+                }
             }            
         }
 
