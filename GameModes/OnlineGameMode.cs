@@ -309,6 +309,8 @@ namespace RainMeadow
             {
                 case OverworldSession:
                 case WorldSession:
+                    if (!OE.isNeeded) break; // safe to discharge
+                    
                     OE.NotNeeded();
                     if (OnlineManager.instance.manager.upcomingProcess is null)
                     {
@@ -319,6 +321,8 @@ namespace RainMeadow
                     break;
 
                 default: 
+                    if (!OE.isNeeded) break; // safe to discharge
+
                     // don't take unknown discharges lightly
                     OnlineManager.QuitWithError($"Unhandled discharge from {OE}: {reason}");
                     break;
