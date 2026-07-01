@@ -68,33 +68,36 @@ namespace RainMeadow
     static class CapeManager
     {
         const string capes_latest_commit = "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
-        static string getRemoteLatestCommit()
+        static void getRemoteLatestCommit(Action<string> onComplete)
         {
             using (WebClient client = new WebClient())
             {
-                string response = client.DownloadString(capes_latest_commit);
-
-                // Split by lines
-                var lines = response.Split('\n');
-
-                foreach (var line in lines)
+                client.DownloadStringCompleted += (s, a) =>
                 {
-                    if (line.Contains("refs/heads/master"))
+                    if (a.Error != null || a.Cancelled) throw new Exception("We couldn't find the remote hash");
+
+                    // Split by lines
+                    var lines = a.Result.Split('\n');
+
+                    foreach (var line in lines)
                     {
-                        RainMeadow.Debug(line);
-                        // Line format: <length><sha1> refs/heads/master
-                        // Strip off the first 4 chars (pkt-line length)
-                        string trimmed = line.Length > 4 ? line.Substring(4) : line;
-                        string[] parts = trimmed.Split(' ');
-                        if (parts.Length > 0)
+                        if (line.Contains("refs/heads/master"))
                         {
-                            RainMeadow.Debug($"recieved the hash latest commit: {parts[0]}");
-                            return parts[0];
+                            RainMeadow.Debug(line);
+                            // Line format: <length><sha1> refs/heads/master
+                            // Strip off the first 4 chars (pkt-line length)
+                            string trimmed = line.Length > 4 ? line.Substring(4) : line;
+                            string[] parts = trimmed.Split(' ');
+                            if (parts.Length > 0)
+                            {
+                                RainMeadow.Debug($"recieved the hash latest commit: {parts[0]}");
+                                onComplete?.Invoke(parts[0]);
+                            }
                         }
                     }
-                }
+                };
 
-                throw new Exception("We couldn't find the remote hash");
+                client.DownloadStringAsync(new(capes_latest_commit));
             }
         }
 
@@ -104,77 +107,96 @@ namespace RainMeadow
         {
             try
             {
-                using (WebClient client = new WebClient())
+
+                var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
+                var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
+
+                // Download remote commit hash async.
+                getRemoteLatestCommit(commithash =>
                 {
-                    var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
-                    var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
-
-                    // Download remote commit hash.
-                    string commithash = getRemoteLatestCommit();
-
-                    // Read local commit hash from file.
-                    string commithashlocal = string.Empty;
-                    if (File.Exists(cape_hash_file))
+                    using (WebClient client = new WebClient())
                     {
-                        using (FileStream stream = File.OpenRead(cape_hash_file))
-                        using (StreamReader reader = new(stream))
+
+                        // Read local commit hash from file.
+                        string commithashlocal = string.Empty;
+                        if (File.Exists(cape_hash_file))
                         {
-                            commithashlocal = reader.ReadLine();
+                            using (FileStream stream = File.OpenRead(cape_hash_file))
+                            using (StreamReader reader = new(stream))
+                            {
+                                commithashlocal = reader.ReadLine();
+                            }
+                        }
+
+                        // Only download the new capes when we hashes don't match.
+                        if (commithash != commithashlocal)
+                        {
+                            RainMeadow.Debug("Local hash doesn't match, downloading remote.");
+                            using (FileStream stream = File.Create(cape_hash_file))
+                            using (StreamWriter writer = new(stream))
+                            {
+                                writer.WriteLine(commithash);
+                            }
+
+                            client.DownloadStringCompleted += (s, a) =>
+                            {
+                                using (FileStream stream = File.Create(capes_txt))
+                                using (StreamWriter writer = new(stream))
+                                {
+                                    writer.WriteLine(a.Result);
+                                }
+
+                                // Wait for a download before processing
+                                ProcessFile();
+                            };
+
+                            client.DownloadStringAsync(new(capes_remote_txt));
+                        }
+                        else
+                        {
+                            // Process file without downloading.
+                            ProcessFile();
                         }
                     }
-
-
-                    // Only download the new capes when we hashes don't match.
-                    if (commithash != commithashlocal)
-                    {
-                        RainMeadow.Debug("Local hash doesn't match, downloading remote.");
-                        using (FileStream stream = File.Create(cape_hash_file))
-                        using (StreamWriter writer = new(stream))
-                        {
-                            writer.WriteLine(commithash);
-                        }
-                        string response = client.DownloadString(capes_remote_txt);
-                        using (FileStream stream = File.Create(capes_txt))
-                        using (StreamWriter writer = new(stream))
-                        {
-                            writer.WriteLine(response);
-                        }
-                    }
-
-                    entries.Clear();
-                    // process capes from file.
-                    using (FileStream capefile = File.OpenRead(capes_txt))
-                    using (StreamReader capestream = new StreamReader(capefile))
-                    {
-                        while (true)
-                        {
-                            var line = capestream.ReadLine();
-                            if (line == null) break;
-
-                            // Skip the header or empty lines
-                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
-                                continue;
-
-                            // Split the line into parts
-                            string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                            if (parts.Length < 2) continue;
-
-                            string HashedsteamId64 = parts[0].Trim();
-                            string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
-                            string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
-
-                            // Check if the color is a list of floats (RGB)
-                            ICapeColor capeColor = ParseCapeColor(color);
-
-                            // Add the parsed entry to the list
-                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
-                        }
-                    }
-                }
+                });
             }
             catch (Exception except)
             {
                 RainMeadow.Error(except);
+            }
+        }
+
+        static public void ProcessFile()
+        {
+            var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
+            entries.Clear();
+            // process capes from file.
+            using (FileStream capefile = File.OpenRead(capes_txt))
+            using (StreamReader capestream = new StreamReader(capefile))
+            {
+                while (true)
+                {
+                    var line = capestream.ReadLine();
+                    if (line == null) break;
+
+                    // Skip the header or empty lines
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
+                        continue;
+
+                    // Split the line into parts
+                    string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 2) continue;
+
+                    string HashedsteamId64 = parts[0].Trim();
+                    string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
+                    string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
+
+                    // Check if the color is a list of floats (RGB)
+                    ICapeColor capeColor = ParseCapeColor(color);
+
+                    // Add the parsed entry to the list
+                    if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
+                }
             }
         }
 
