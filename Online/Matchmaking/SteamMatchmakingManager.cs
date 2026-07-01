@@ -523,9 +523,12 @@ namespace RainMeadow
             }
         }
 
+        /// <inheritdoc/>
         public override void LeaveLobby()
         {
             RainMeadow.DebugMe();
+            OnLobbyLeavingEvent();
+            
             if (lobbyID != default)
             {
                 SteamMatchmaking.LeaveLobby(lobbyID);
