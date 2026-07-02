@@ -13,7 +13,7 @@ namespace RainMeadow
         public bool globalMute { get; set; } = RainMeadow.rainMeadowOptions.GlobalMute.Value;
 
         public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value && RainMeadow.rainMeadowOptions.EnableMeadowCosmetics.Value;
-        public ICapeColor? eventCape { get; set; } = RainMeadow.rainMeadowOptions.wantsRainbowCape.Value ? (SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>() ? new RainbowCapeColor() : new SolidCapeColor(Menu.MenuColorEffect.HexToColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value))) : new SolidCapeColor(Menu.MenuColorEffect.HexToColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value));
+        public ICapeColor? eventCape { get; set; } = RainMeadow.rainMeadowOptions.wantsRainbowCape.Value ? (SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>() ? new RainbowCapeColor() : new SolidCapeColor(Utils.SafeHexToColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value))) : new SolidCapeColor(Utils.SafeHexToColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value));
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
         public bool fakePup { get; set; }
