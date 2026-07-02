@@ -212,8 +212,6 @@ namespace RainMeadow
                 {
 
                     return new SolidCapeColor(new Color(r, g, b));
-
-
                 }
             }
             else
