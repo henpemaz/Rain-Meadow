@@ -12,6 +12,7 @@ namespace RainMeadow
         public OnlineResource.ParticipantResourceState lastAcknoledgedState;
         private int basecooldown;
         private int cooldown;
+        public uint Priority => lastAcknoledgedState is null? uint.MaxValue : Math.Max(0u, OnlineManager.mePlayer.tick - lastAcknoledgedState.tick);
 
         public ResourceSubscription(OnlineResource resource, OnlinePlayer player)
         {

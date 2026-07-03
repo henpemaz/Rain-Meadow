@@ -187,7 +187,6 @@ namespace RainMeadow
             }
             public override void ReadTo(OnlineResource resource)
             {
-                base.ReadTo(resource);
                 if (resource.isActive)
                 {
                     foreach (var def in registeredEntities.list)
@@ -283,6 +282,7 @@ namespace RainMeadow
                     }
 
                 }
+                base.ReadTo(resource);
                 resourceDataStates.list.ForEach(ds => ds.ReadTo(resource.TryGetData(ds.GetDataType(), out var d) ? d : resource.AddData(ds.MakeData(resource)), resource));
             }
         }

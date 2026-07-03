@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -287,9 +288,10 @@ namespace RainMeadow
             toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
 
             RainMeadow.Trace($"Writing {toPlayer.OutgoingStates.Count} states");
-            while (toPlayer.OutgoingStates.Count > 0)
+            toPlayer.OutgoingStates.Sort((a, b) => a.source.Priority.CompareTo(b.source.Priority));
+            for (int i = 0; i < toPlayer.OutgoingStates.Count; i++)
             {
-                var s = toPlayer.OutgoingStates.Dequeue();
+                var s = toPlayer.OutgoingStates[i];
                 StateProfiler.Instance?.Push(s.state.GetType());
                 if (WriteState(s.state))
                 {
@@ -303,6 +305,7 @@ namespace RainMeadow
                 }
                 StateProfiler.Instance?.Pop(s.state.GetType());
             }
+            toPlayer.OutgoingStates.Clear();
 
             EndWriteStates();
 

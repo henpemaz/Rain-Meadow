@@ -1348,6 +1348,7 @@ namespace RainMeadow
         public override void DischargedFromResource(OnlineResource OE, string reason)
         {
             if (OE is OverworldSession && reason == "next-level") return;
+            if (OE is OverworldSession && reason == "no-suitable-inheritor") return; // we're heading to the next level (probably)
             base.DischargedFromResource(OE, reason);
         }
     }

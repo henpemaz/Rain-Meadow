@@ -425,7 +425,7 @@ namespace RainMeadow
             RainMeadow.Debug("Removing entity from game: " + this);
             if (apo.stuckObjects != null)
             {
-                foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>().ToList())
                 {
                     if (stick.A.realizedObject is Weapon weapon)
                     {

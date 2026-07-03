@@ -31,8 +31,9 @@
             source.Sent(this);
         }
 
-        public interface IStateSource // could as well be a base type, used in entityfeed and resourcesubscription only
+        public interface IStateSource // could as well be a base type, used in resourcesubscription only
         {
+            public uint Priority { get; }
             void Sent(OnlineStateMessage stateMessage);
             void Failed(OnlineStateMessage stateMessage);
         }

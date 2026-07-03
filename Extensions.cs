@@ -123,7 +123,7 @@ namespace RainMeadow
                 }
 
                 apo.pos = newCoord;
-                apo.world.GetResource().ApoEnteringWorld(apo);
+                apo.world.GetResource()?.ApoEnteringWorld(apo);
                 apo.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(apo, newCoord);
             }
         }

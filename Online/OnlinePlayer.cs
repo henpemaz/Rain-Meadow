@@ -12,7 +12,7 @@ namespace RainMeadow
 
         public Queue<OnlineEvent> OutgoingEvents = new(8);
         public List<OnlineEvent> recentlyAckedEvents = new(4);
-        public Queue<OnlineStateMessage> OutgoingStates = new(16);
+        public List<OnlineStateMessage> OutgoingStates = new(16);
 
         public ushort nextOutgoingEvent = 1; // outgoing, event id
         public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
@@ -75,7 +75,7 @@ namespace RainMeadow
         public OnlineStateMessage QueueStateMessage(OnlineStateMessage stateMessage)
         {
             TraceOutgoingState(stateMessage);
-            OutgoingStates.Enqueue(stateMessage);
+            OutgoingStates.Add(stateMessage);
             return stateMessage;
         }
 

@@ -369,9 +369,11 @@ namespace RainMeadow
             if (!participants.Contains(participant)) return;
             if (isActive)
             {
+                List<OnlineResource> leftResources = new( 1 + subresources.Count ) { this };
                 foreach (OnlineResource resource in subresources.ToArray())
                 {
-                    if (resource == this) continue; // prevent any recursive nonsense
+                    if (leftResources.Contains(resource)) continue; // prevent any recursive nonsense
+                    leftResources.Add(resource);
                     resource.ParticipantLeft(participant);
                 }
             }
@@ -386,7 +388,7 @@ namespace RainMeadow
             if (isAvailable && !participant.isMe)
             {
                 Unsubscribed(participant);
-                if (isActive) SanitizeSubresources();
+                if (isActive && isOwner) SanitizeSubresources();
             }
             if (participant.isMe)
             {

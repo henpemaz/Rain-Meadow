@@ -172,6 +172,7 @@ namespace RainMeadow
             isReleasing = false;
             if (releaseResult is GenericResult.Ok) // I've let go
             {
+                ParticipantLeft(OnlineManager.mePlayer);
                 RainMeadow.Debug("Left resource: " + this);
             }
             else if (releaseResult is GenericResult.Error) // I should retry
