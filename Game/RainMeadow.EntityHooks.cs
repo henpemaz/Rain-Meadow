@@ -40,9 +40,20 @@ namespace RainMeadow
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+
+        private void StowawayBugAI_Update(On.MoreSlugcats.StowawayBugAI.orig_Update orig, MoreSlugcats.StowawayBugAI self)
+        {
+            var behavior = self.behavior;
+            orig(self);
+            if (OnlineManager.lobby != null && !self.creature.GetOnlineCreature().isMine)
+            {
+                self.behavior = behavior;
+            }
+        }                      
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try

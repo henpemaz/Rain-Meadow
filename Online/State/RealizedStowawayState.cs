@@ -11,6 +11,8 @@ namespace RainMeadow
         // TODO sync tentacle firing correctly so it fires at the same time for everyone
         [OnlineField]
         Generics.DynamicOrderedStates<StowawayTentacleState> heads;
+        [OnlineField]
+        bool[] headsfired;// = new bool[3];
 
         [OnlineField]
         bool mawOpen;
@@ -28,23 +30,22 @@ namespace RainMeadow
         int spitCooldown;
         [OnlineField(group = "counters")]
         int huntDelay;
+       [OnlineField]
+       byte behavior;       
         public RealizedStowawayState() { }
 
         public RealizedStowawayState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             StowawayBug stowaway = (StowawayBug)onlineEntity.realizedCreature;
 
+            behavior = (byte)stowaway.AI.behavior.index;
+            headsfired = stowaway.headFired;
             mawOpen = stowaway.mawOpen;
-
             //originalPos = stowaway.originalPos;
-
             //placedDirection = stowaway.placedDirection;
             currentDirection = stowaway.currentDirection;
-
             headCooldown = stowaway.headCooldown;
-
             sleepScale = stowaway.sleepScale;
-
             spitCooldown = stowaway.spitCooldown;
             huntDelay = stowaway.huntDelay;
 
@@ -55,31 +56,35 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).apo.realizedObject is not StowawayBug stowaway) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
+            stowaway.AI.behavior = behavior switch
+            {
+                0 => StowawayBugAI.Behavior.Idle,
+                1 => StowawayBugAI.Behavior.EscapeRain,
+                2 => StowawayBugAI.Behavior.Hidden,
+                3 => StowawayBugAI.Behavior.Attacking,
+                4 => StowawayBugAI.Behavior.Digesting,
+                5 => StowawayBugAI.Behavior.Sleeping
+            };
 
+            stowaway.headFired = headsfired;         
             stowaway.mawOpen = mawOpen;
-
-            //stowaway.originalPos = originalPos;
-
-            //stowaway.placedDirection = placedDirection;
+            // stowaway.originalPos = originalPos;
+            // stowaway.placedDirection = placedDirection;
             stowaway.currentDirection = currentDirection;
-
             stowaway.headCooldown = headCooldown;
-
             stowaway.sleepScale = sleepScale;
-
             stowaway.spitCooldown = spitCooldown;
             stowaway.huntDelay = huntDelay;
 
-            for(int i = 0; i < stowaway.heads.Length; i++)
+            for (int i = 0; i < stowaway.heads.Length; i++)
             {
                 heads.list[i].ReadTo(stowaway.heads[i], i);
             }
         }
-
-        //public override bool ShouldPosBeLenient(PhysicalObject po)
-        //{
-        //    return true;
-        //}
+        protected override ArtificialIntelligenceState? GetCreatureAIState(OnlineCreature onlineCreature)
+        {
+            return new ArtificialIntelligenceState(onlineCreature.abstractCreature.abstractAI.RealAI);
+        }
     }
 
     public class StowawayTentacleState : OnlineState
@@ -89,9 +94,18 @@ namespace RainMeadow
         [OnlineField]
         bool fired;
         [OnlineFieldHalf(group = "counters")]
-        float cooldown;
+        float hcooldown;
+        [OnlineField(group = "counters")]
+        int scooldown;
         [OnlineFieldHalf]
-        Vector2 pos;
+        Vector2[] vel;
+        [OnlineFieldHalf]
+        Vector2[] pos;
+
+        [OnlineField(nullable = true)]
+        Vector2? grabdest;
+        [OnlineFieldHalf]
+        float idealLength;
         public StowawayTentacleState() { }
 
         public StowawayTentacleState(Tentacle tentacle, int index)
@@ -99,11 +113,20 @@ namespace RainMeadow
             StowawayBug owner = (StowawayBug)tentacle.owner;
 
             retractFac = tentacle.retractFac;
-
             fired = owner.headFired[index];
-            cooldown = owner.headCooldown[index];
-            pos = tentacle.Tip.pos;
-            //floatGrabDest = tentacle.floatGrabDest;
+            hcooldown = owner.headCooldown[index];
+            scooldown = owner.spitCooldown;
+            
+            pos = new Vector2[3];
+            vel = new Vector2[3];
+            for (int i = 0; i < 3; i++)
+            {
+                pos[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos;
+                vel[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel;
+            }
+            
+            idealLength = tentacle.idealLength;
+            grabdest = tentacle.floatGrabDest;
         }
 
         public void ReadTo(Tentacle tentacle, int index)
@@ -113,10 +136,18 @@ namespace RainMeadow
             tentacle.retractFac = retractFac;
 
             owner.headFired[index] = fired;
-            owner.headCooldown[index] = cooldown;
+            owner.headCooldown[index] = hcooldown;
+            owner.spitCooldown = scooldown;
+            
+            for (int i = 0; i < 3; i++)
+            {
+                tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos = pos[i];
+                tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel = vel[i];
+            }
+            
+            tentacle.idealLength = idealLength;
+            tentacle.floatGrabDest = grabdest;
 
-            tentacle.Tip.pos = pos;
-            //tentacle.floatGrabDest = floatGrabDest;
         }
     }
 }
