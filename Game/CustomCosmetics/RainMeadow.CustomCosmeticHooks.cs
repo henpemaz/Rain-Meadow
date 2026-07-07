@@ -1,6 +1,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
@@ -18,6 +19,8 @@ namespace RainMeadow
             On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainerCosmetics;
             IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
         }
+
+        public static ConditionalWeakTable<GraphicsModule, CosmeticManager.IMeadowCosmetic> cosmeticed_avatars = new();
 
         void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor)
         {
@@ -44,29 +47,29 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby != null)
                         {
-                            if (!SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                            if (!cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                             {
-                                if (!self.player.isNPC && self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
+                                if (self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter && critter.isAvatar)
                                 {
-                                    if (critter.TryGetData<SlugcatCustomization>(out var customization))
+                                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.cosmetic != null && CosmeticManager.AvailableCosmetics(critter.owner.id).Contains(customization.cosmetic))
                                     {
-                                        ICapeColor? cape_color = customization.wearingCape ? CapeManager.HasCape(critter.owner.id) : null;
-                                        if (customization.eventCape is not null)
-                                        {
-                                            cape_color = customization.eventCape;
-                                        }
-                                        if (cape_color is not null)
-                                        {
-                                            cape = new SlugcatCape(self, numofsprites, cape_color);
-                                        }
+                                        string skin = customization.cosmeticSkin ?? "solid";
+                                        if (!CosmeticManager.AvailableCosmeticSkins(critter.owner.id).Contains(skin)) skin = "solid";
 
-
+                                        var real_skin = CosmeticManager.ParseCosmeticSkin(skin);
+                                        if (real_skin != null)
+                                        {
+                                            var real_cosmetic = CosmeticManager.ParseCosmetic(customization.cosmetic, self, numofsprites, real_skin);
+                                            if (real_cosmetic != null)
+                                            {
+                                                RainMeadow.Debug(numofsprites);
+                                                numofsprites += real_cosmetic.totalSprites;
+                                                cosmeticed_avatars.Add(self, real_cosmetic);
+                                            }
+                                        }
                                     }
-
                                 }
                             }
-
-                            if (cape is not null) numofsprites += SlugcatCape.totalSprites;
                         }
                     }
                     catch (Exception except)
@@ -86,8 +89,9 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby != null)
                         {
-                            if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                            if (cosmeticed_avatars.TryGetValue(self, out var cape))
                             {
+                                RainMeadow.Debug(sLeaser.sprites.Length);
                                 cape.InitiateSprites(sLeaser, rCam);
                             }
                         }
@@ -112,7 +116,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
                     {
                         cape.Update();
                     }
@@ -131,7 +135,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
                     {
                         cape.Reset();
                     }
@@ -153,7 +157,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
                     {
                         cape.DrawSprites(sLeaser, rCam, timeStacker, camPos);
                     }
@@ -173,7 +177,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
                     {
                         cape.AddToContainer(sLeaser, rCam, newContatiner);
                     }
