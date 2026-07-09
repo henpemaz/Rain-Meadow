@@ -114,15 +114,15 @@ namespace RainMeadow
         public Dictionary<int, int> persistentDeathsByInLobbyId = [];
         public Dictionary<int, int> persistentWinsByInLobbyId = [];
         public Dictionary<int, int> persistentTotalScoreByInLobbyId = [];
-        public Dictionary<int, List<string>> persistentAllKillsByInLobbyId = [];
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> persistentAllKillsByInLobbyId = [];
         // END POST-GAME PERSISTENT SCORING
 
         public Dictionary<int, int> winsByInLobbyId = [];
         public Dictionary<int, int> deathsByInLobbyId = [];
         public Dictionary<int, int> totalScoreByInLobbyId = [];
         public Dictionary<int, int> scoreByInLobbyId = [];
-        public Dictionary<int, List<string>> allKillsByInLobbyId = [];
-        public Dictionary<int, List<string>> roundKillsByInLobbyId = [];
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> allKillsByInLobbyId = [];
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> roundKillsByInLobbyId = [];
 
         public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
@@ -865,11 +865,11 @@ namespace RainMeadow
             }
             if (!allKillsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
             {
-                allKillsByInLobbyId.Add(getPlayer.inLobbyId, new List<string>());
+                allKillsByInLobbyId.Add(getPlayer.inLobbyId, []);
             }
             if (!roundKillsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
             {
-                roundKillsByInLobbyId.Add(getPlayer.inLobbyId, new List<string>());
+                roundKillsByInLobbyId.Add(getPlayer.inLobbyId, []);
             }
         }
 

@@ -244,8 +244,18 @@ namespace RainMeadow
                 deathsByInLobbyId     = arenaOnline.deathsByInLobbyId.ToDictionary();
                 totalScoreByInLobbyId = arenaOnline.totalScoreByInLobbyId.ToDictionary();
                 scoreByInLobbyId      = arenaOnline.scoreByInLobbyId.ToDictionary();
-                allKillsByInLobbyId   = arenaOnline.allKillsByInLobbyId.ToDictionary();
-                roundKillsByInLobbyId = arenaOnline.roundKillsByInLobbyId.ToDictionary();
+                allKillsByInLobbyId   = arenaOnline.allKillsByInLobbyId.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value
+                        .Select(trophy => trophy.ToString())
+                        .ToList()
+                );
+                roundKillsByInLobbyId = arenaOnline.roundKillsByInLobbyId.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value
+                        .Select(trophy => trophy.ToString())
+                        .ToList()
+                );
 
                 playersChoosingSlugs = arenaOnline.playersInLobbyChoosingSlugs.ToDictionary();
                 countdownInitiatedHoldFire = arenaOnline.countdownInitiatedHoldFire;
@@ -325,8 +335,18 @@ namespace RainMeadow
                 arenaOnline.deathsByInLobbyId     = deathsByInLobbyId;
                 arenaOnline.totalScoreByInLobbyId = totalScoreByInLobbyId;
                 arenaOnline.scoreByInLobbyId      = scoreByInLobbyId;
-                arenaOnline.allKillsByInLobbyId   = allKillsByInLobbyId.ToDictionary();
-                arenaOnline.roundKillsByInLobbyId = roundKillsByInLobbyId.ToDictionary();
+                arenaOnline.allKillsByInLobbyId   = allKillsByInLobbyId.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value
+                        .Select(IconSymbol.IconSymbolData.IconSymbolDataFromString)
+                        .ToList()
+                );
+                arenaOnline.roundKillsByInLobbyId = roundKillsByInLobbyId.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value
+                        .Select(IconSymbol.IconSymbolData.IconSymbolDataFromString)
+                        .ToList()
+                );
 
                 arenaOnline.countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 arenaOnline.playerResultColors = playerResultColors;

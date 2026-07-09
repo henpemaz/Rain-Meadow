@@ -152,7 +152,7 @@ namespace RainMeadow
                 return;
             }
 
-            IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+            IconSymbol.IconSymbolData trophy = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
             bool earnsTrophy = CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type);
 
             // 1. Find the target player first 
@@ -206,9 +206,8 @@ namespace RainMeadow
             {
                 if (isLobbyOwner)
                 {
-                    string trophyString = iconSymbolData.ToString();
-                    arena.allKillsByInLobbyId[lobbyId].Add(trophyString);
-                    arena.roundKillsByInLobbyId[lobbyId].Add(trophyString);
+                    arena.allKillsByInLobbyId[lobbyId].Add(trophy);
+                    arena.roundKillsByInLobbyId[lobbyId].Add(trophy);
                 }
                 else
                 {
@@ -250,7 +249,7 @@ namespace RainMeadow
             }
             if (arena.externalArenaGameMode is ArenaChallengeMode || arena.killScore == 0)
             {
-                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(trophy).Index;
                 scoreToAdd = (index >= 0) ? self.arenaSitting.gameTypeSetup.killScores[index] : 0;
             }
 

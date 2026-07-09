@@ -382,21 +382,17 @@ namespace RainMeadow
             }
             for (int i = 0; i < arena.allKillsByInLobbyId[onlinePlayer.inLobbyId].Count; i++)
             {
-                IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.allKillsByInLobbyId[onlinePlayer.inLobbyId][i]
-                    );
-                trophies.Add(iconSymbolData);
+                trophies.Add(arena.allKillsByInLobbyId[onlinePlayer.inLobbyId][i]);
             }
             return trophies;
         }
 
-        public static List<string> GetAllPlayerTrophies(
+        public static List<IconSymbol.IconSymbolData> GetAllPlayerTrophies(
             ArenaOnlineGameMode arena,
             ArenaSitting.ArenaPlayer sittingPlayer
         )
         {
-            List<string> trophies = new List<string>();
+            List<IconSymbol.IconSymbolData> trophies = [];
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
                 arena,
                 sittingPlayer.playerNumber
@@ -415,7 +411,7 @@ namespace RainMeadow
 
             for (int i = 0; i < sittingPlayer.allKills.Count; i++)
             {
-                trophies.Add(sittingPlayer.allKills[i].ToString());
+                trophies.Add(sittingPlayer.allKills[i]);
             }
 
             return trophies;
@@ -442,20 +438,18 @@ namespace RainMeadow
             for (int i = 0; i < arena.roundKillsByInLobbyId[onlinePlayer.inLobbyId].Count; i++)
             {
                 IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.roundKillsByInLobbyId[onlinePlayer.inLobbyId][i]
-                    );
+                    arena.roundKillsByInLobbyId[onlinePlayer.inLobbyId][i];
                 trophies.Add(iconSymbolData);
             }
             return trophies;
         }
 
-        public static List<string> GetRoundPlayerTrophies(
+        public static List<IconSymbol.IconSymbolData> GetRoundPlayerTrophies(
             ArenaOnlineGameMode arena,
             ArenaSitting.ArenaPlayer sittingPlayer
         )
         {
-            List<string> trophies = new List<string>();
+            List<IconSymbol.IconSymbolData> trophies = [];
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
                 arena,
                 sittingPlayer.playerNumber
@@ -474,7 +468,7 @@ namespace RainMeadow
 
             for (int i = 0; i < sittingPlayer.roundKills.Count; i++)
             {
-                trophies.Add(sittingPlayer.roundKills[i].ToString());
+                trophies.Add(sittingPlayer.roundKills[i]);
             }
 
             return trophies;

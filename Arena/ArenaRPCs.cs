@@ -1,9 +1,8 @@
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
-using RWCustom;
 using System.Linq;
-using System.Collections.Generic;
+
 namespace RainMeadow
 {
     public static class ArenaRPCs
@@ -381,7 +380,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
+                IconSymbol.IconSymbolData trophy = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
                     if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber != playerNum)
@@ -391,12 +390,12 @@ namespace RainMeadow
                     OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
                     if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
                     {
-                        game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                        game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(trophy);
+                        game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(trophy);
                         if (pl != null)
                         {
-                            arena.allKillsByInLobbyId[pl.inLobbyId].Add(iconSymbolData.ToString());
-                            arena.roundKillsByInLobbyId[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            arena.allKillsByInLobbyId[pl.inLobbyId].Add(trophy);
+                            arena.roundKillsByInLobbyId[pl.inLobbyId].Add(trophy);
                             // 7
                         }
 
