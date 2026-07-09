@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -379,13 +377,12 @@ namespace RainMeadow
                 this.scoreLabel.x = pos.x + 20f;
                 this.scoreLabel.y = pos.y;
                 this.scoreLabel.alpha = num;
-                int lobbyId = player.inLobbyId;
                 int playerNumber = -1;
                 if (arena.session != null && owner != null && owner.RealizedPlayer != null)
                 {
                     playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
                     int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
-                    if (arena.totalScoreByInLobbyId.TryGetValue(lobbyId, out int totScore) &&
+                    if (arena.totalScoreByPlayer.TryGetValue(player, out int totScore) &&
                         playerNumber != -1)
                     {
                         bool sessionEnded = arena.session.sessionEnded;

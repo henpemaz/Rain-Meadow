@@ -198,7 +198,6 @@ namespace RainMeadow
             }
 
 
-            ushort lobbyId = absPlayerCreature.owner.inLobbyId;
             bool isLobbyOwner = OnlineManager.lobby.isOwner;
 
             // 4. Handle Trophies
@@ -206,8 +205,8 @@ namespace RainMeadow
             {
                 if (isLobbyOwner)
                 {
-                    arena.allKillsByInLobbyId[lobbyId].Add(trophy);
-                    arena.roundKillsByInLobbyId[lobbyId].Add(trophy);
+                    arena.allKillsByPlayer[absPlayerCreature.owner].Add(trophy);
+                    arena.roundKillsByPlayer[absPlayerCreature.owner].Add(trophy);
                 }
                 else
                 {
@@ -257,8 +256,8 @@ namespace RainMeadow
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
             if (onlineKilledCreature.owner == OnlineManager.lobby.owner) // host creature was killed
             {
-                arena.scoreByInLobbyId[lobbyId] += scoreToAdd;
-                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.scoreByInLobbyId[lobbyId]);
+                arena.scoreByPlayer[absPlayerCreature.owner] += scoreToAdd;
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.scoreByPlayer[absPlayerCreature.owner]);
             }
             else // my creature, not host - tell the room
             {
@@ -338,11 +337,11 @@ namespace RainMeadow
                     return;
                 }
 
-                if (arena.scoreByInLobbyId[onlinePlayer.inLobbyId] < aPlayer.score)
+                if (arena.scoreByPlayer[onlinePlayer] < aPlayer.score)
                 {
-                    arena.scoreByInLobbyId[onlinePlayer.inLobbyId] = aPlayer.score;
+                    arena.scoreByPlayer[onlinePlayer] = aPlayer.score;
                 }
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.scoreByInLobbyId[onlinePlayer.inLobbyId]);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.scoreByPlayer[onlinePlayer]);
             }
             else
             {

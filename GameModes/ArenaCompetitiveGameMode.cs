@@ -111,18 +111,18 @@ namespace RainMeadow
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
 
         // BEGIN POST-GAME PERSISTENT SCORING
-        public Dictionary<int, int> persistentDeathsByInLobbyId = [];
-        public Dictionary<int, int> persistentWinsByInLobbyId = [];
-        public Dictionary<int, int> persistentTotalScoreByInLobbyId = [];
-        public Dictionary<int, List<IconSymbol.IconSymbolData>> persistentAllKillsByInLobbyId = [];
+        public Dictionary<OnlinePlayer, int> persistentDeathsByPlayer = [];
+        public Dictionary<OnlinePlayer, int> persistentWinsByPlayer = [];
+        public Dictionary<OnlinePlayer, int> persistentTotalScoreByPlayer = [];
+        public Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> persistentAllKillsByPlayer = [];
         // END POST-GAME PERSISTENT SCORING
 
-        public Dictionary<int, int> winsByInLobbyId = [];
-        public Dictionary<int, int> deathsByInLobbyId = [];
-        public Dictionary<int, int> totalScoreByInLobbyId = [];
-        public Dictionary<int, int> scoreByInLobbyId = [];
-        public Dictionary<int, List<IconSymbol.IconSymbolData>> allKillsByInLobbyId = [];
-        public Dictionary<int, List<IconSymbol.IconSymbolData>> roundKillsByInLobbyId = [];
+        public Dictionary<OnlinePlayer, int> winsByPlayer = [];
+        public Dictionary<OnlinePlayer, int> deathsByPlayer = [];
+        public Dictionary<OnlinePlayer, int> totalScoreByPlayer = [];
+        public Dictionary<OnlinePlayer, int> scoreByPlayer = [];
+        public Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> allKillsByPlayer = [];
+        public Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> roundKillsByPlayer = [];
 
         public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
@@ -526,7 +526,7 @@ namespace RainMeadow
 
         public void ResetRoundKills()
         {
-            this.roundKillsByInLobbyId.Clear();
+            this.roundKillsByPlayer.Clear();
         }
 
         public void ResetForceReadyCountDown()
@@ -549,9 +549,9 @@ namespace RainMeadow
 
         public void ResetClientRoundScore()
         {
-            foreach (var key in scoreByInLobbyId.Keys.ToList())
+            foreach (var key in scoreByPlayer.Keys.ToList())
             {
-                scoreByInLobbyId[key] = 0;
+                scoreByPlayer[key] = 0;
             }
         }
         public void ResetScrollTimer()
@@ -811,65 +811,65 @@ namespace RainMeadow
 
         public void AddToPostGameStatsDialog()
         {
-            foreach (var entry in winsByInLobbyId.ToList())
+            foreach (var entry in winsByPlayer.ToList())
             {
-                if (persistentWinsByInLobbyId.TryGetValue(entry.Key, out int currentWins))
-                    persistentWinsByInLobbyId[entry.Key] = currentWins + entry.Value;
+                if (persistentWinsByPlayer.TryGetValue(entry.Key, out int currentWins))
+                    persistentWinsByPlayer[entry.Key] = currentWins + entry.Value;
                 else
-                    persistentWinsByInLobbyId[entry.Key] = entry.Value;
+                    persistentWinsByPlayer[entry.Key] = entry.Value;
             }
 
-            foreach (var entry in deathsByInLobbyId.ToList())
+            foreach (var entry in deathsByPlayer.ToList())
             {
-                if (persistentDeathsByInLobbyId.TryGetValue(entry.Key, out int currentDeaths))
-                    persistentDeathsByInLobbyId[entry.Key] = currentDeaths + entry.Value;
+                if (persistentDeathsByPlayer.TryGetValue(entry.Key, out int currentDeaths))
+                    persistentDeathsByPlayer[entry.Key] = currentDeaths + entry.Value;
                 else
-                    persistentDeathsByInLobbyId[entry.Key] = entry.Value;
+                    persistentDeathsByPlayer[entry.Key] = entry.Value;
             }
 
-            foreach (var entry in totalScoreByInLobbyId.ToList())
+            foreach (var entry in totalScoreByPlayer.ToList())
             {
-                if (persistentTotalScoreByInLobbyId.TryGetValue(entry.Key, out int currentScore))
-                    persistentTotalScoreByInLobbyId[entry.Key] = currentScore + entry.Value;
+                if (persistentTotalScoreByPlayer.TryGetValue(entry.Key, out int currentScore))
+                    persistentTotalScoreByPlayer[entry.Key] = currentScore + entry.Value;
                 else
-                    persistentTotalScoreByInLobbyId[entry.Key] = entry.Value;
+                    persistentTotalScoreByPlayer[entry.Key] = entry.Value;
             }
 
-            foreach (var entry in allKillsByInLobbyId.ToList())
+            foreach (var entry in allKillsByPlayer.ToList())
             {
-                if (persistentAllKillsByInLobbyId.TryGetValue(entry.Key, out var currentTrophies))
+                if (persistentAllKillsByPlayer.TryGetValue(entry.Key, out var currentTrophies))
                     currentTrophies.AddRange(entry.Value);
                 else
-                    persistentAllKillsByInLobbyId[entry.Key] = entry.Value.ToList(); // Use .ToList() to prevent reference mutation
+                    persistentAllKillsByPlayer[entry.Key] = entry.Value.ToList(); // Use .ToList() to prevent reference mutation
             }
 
         }
 
         public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
         {
-            if (!deathsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!deathsByPlayer.ContainsKey(getPlayer))
             {
-                deathsByInLobbyId.Add(getPlayer.inLobbyId, 0);
+                deathsByPlayer.Add(getPlayer, 0);
             }
-            if (!winsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!winsByPlayer.ContainsKey(getPlayer))
             {
-                winsByInLobbyId.Add(getPlayer.inLobbyId, 0);
+                winsByPlayer.Add(getPlayer, 0);
             }
-            if (!totalScoreByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!totalScoreByPlayer.ContainsKey(getPlayer))
             {
-                totalScoreByInLobbyId.Add(getPlayer.inLobbyId, 0);
+                totalScoreByPlayer.Add(getPlayer, 0);
             }
-            if (!scoreByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!scoreByPlayer.ContainsKey(getPlayer))
             {
-                scoreByInLobbyId.Add(getPlayer.inLobbyId, 0);
+                scoreByPlayer.Add(getPlayer, 0);
             }
-            if (!allKillsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!allKillsByPlayer.ContainsKey(getPlayer))
             {
-                allKillsByInLobbyId.Add(getPlayer.inLobbyId, []);
+                allKillsByPlayer.Add(getPlayer, []);
             }
-            if (!roundKillsByInLobbyId.ContainsKey(getPlayer.inLobbyId))
+            if (!roundKillsByPlayer.ContainsKey(getPlayer))
             {
-                roundKillsByInLobbyId.Add(getPlayer.inLobbyId, []);
+                roundKillsByPlayer.Add(getPlayer, []);
             }
         }
 
@@ -882,25 +882,25 @@ namespace RainMeadow
             }
             RainMeadow.Debug(this);
             // Wins
-            if (winsByInLobbyId.TryGetValue(pl.inLobbyId, out var wins))
+            if (winsByPlayer.TryGetValue(pl, out var wins))
             {
                 player.wins = wins;
             }
 
             // Deaths
-            if (deathsByInLobbyId.TryGetValue(pl.inLobbyId, out var deaths))
+            if (deathsByPlayer.TryGetValue(pl, out var deaths))
             {
                 player.deaths = deaths;
             }
 
             // Total Score
-            if (totalScoreByInLobbyId.TryGetValue(pl.inLobbyId, out var totScore))
+            if (totalScoreByPlayer.TryGetValue(pl, out var totScore))
             {
                 player.totScore = totScore;
             }
 
             // Current Score
-            if (scoreByInLobbyId.TryGetValue(pl.inLobbyId, out var score))
+            if (scoreByPlayer.TryGetValue(pl, out var score))
             {
                 player.score = score;
             }
@@ -921,24 +921,23 @@ namespace RainMeadow
                 RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
                 return;
             }
-            int id = pl.inLobbyId;
 
             // Wins
-            if (winsByInLobbyId.TryGetValue(id, out int currentWins) && currentWins < player.wins)
-                winsByInLobbyId[id] = player.wins;
+            if (winsByPlayer.TryGetValue(pl, out int currentWins) && currentWins < player.wins)
+                winsByPlayer[pl] = player.wins;
 
             // Deaths
-            if (deathsByInLobbyId.TryGetValue(id, out int currentDeaths) && currentDeaths < player.deaths)
-                deathsByInLobbyId[id] = player.deaths;
+            if (deathsByPlayer.TryGetValue(pl, out int currentDeaths) && currentDeaths < player.deaths)
+                deathsByPlayer[pl] = player.deaths;
 
             // Score
-            if (scoreByInLobbyId.TryGetValue(id, out _) && totalScoreByInLobbyId.ContainsKey(id))
+            if (scoreByPlayer.TryGetValue(pl, out _) && totalScoreByPlayer.ContainsKey(pl))
             {
 
-                scoreByInLobbyId[id] = player.score;
+                scoreByPlayer[pl] = player.score;
                 if (calculateTotal) // This function runs in a lot of spots, so I just set a bool to manage when we are done with calculations
                 {
-                    totalScoreByInLobbyId[id] += player.score;
+                    totalScoreByPlayer[pl] += player.score;
                 }
 
             }
@@ -949,38 +948,38 @@ namespace RainMeadow
             OnlinePlayer pl
         )
         {
-            if (arena.winsByInLobbyId.TryGetValue(pl.inLobbyId, out var wins))
+            if (arena.winsByPlayer.TryGetValue(pl, out var wins))
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (winsByInLobbyId.TryGetValue(pl.inLobbyId, out int currentWins) && currentWins < newArenaPlayer.wins)
-                        winsByInLobbyId[pl.inLobbyId] = newArenaPlayer.wins;
+                    if (winsByPlayer.TryGetValue(pl, out int currentWins) && currentWins < newArenaPlayer.wins)
+                        winsByPlayer[pl] = newArenaPlayer.wins;
 
                     // Deaths
-                    if (deathsByInLobbyId.TryGetValue(pl.inLobbyId, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
-                        deathsByInLobbyId[pl.inLobbyId] = newArenaPlayer.deaths;
+                    if (deathsByPlayer.TryGetValue(pl, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
+                        deathsByPlayer[pl] = newArenaPlayer.deaths;
 
 
                     // Round Score
-                    if (scoreByInLobbyId.TryGetValue(pl.inLobbyId, out _) && totalScoreByInLobbyId.ContainsKey(pl.inLobbyId))
+                    if (scoreByPlayer.TryGetValue(pl, out _) && totalScoreByPlayer.ContainsKey(pl))
                     {
-                        scoreByInLobbyId[pl.inLobbyId] = newArenaPlayer.score;
+                        scoreByPlayer[pl] = newArenaPlayer.score;
                     }
 
                     if (
-                        arena.allKillsByInLobbyId[pl.inLobbyId].Count
+                        arena.allKillsByPlayer[pl].Count
                         < ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer).Count
                     )
                     {
-                        arena.allKillsByInLobbyId[pl.inLobbyId] =
+                        arena.allKillsByPlayer[pl] =
                             ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer);
                     }
                     if (
-                        arena.roundKillsByInLobbyId.TryGetValue(pl.inLobbyId, out _) && arena.roundKillsByInLobbyId[pl.inLobbyId].Count
+                        arena.roundKillsByPlayer.TryGetValue(pl, out _) && arena.roundKillsByPlayer[pl].Count
                         < ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer).Count
                     )
                     {
-                        arena.roundKillsByInLobbyId[pl.inLobbyId] =
+                        arena.roundKillsByPlayer[pl] =
                             ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer);
                     }
 
@@ -989,27 +988,27 @@ namespace RainMeadow
                         $"Player found witih stats: {newArenaPlayer} from online player: {pl}"
                     );
                     RainMeadow.Debug(
-                        $"Player found witih stats: {newArenaPlayer.wins} from online player: {pl} => NOW {arena.winsByInLobbyId[pl.inLobbyId]} "
+                        $"Player found witih stats: {newArenaPlayer.wins} from online player: {pl} => NOW {arena.winsByPlayer[pl]} "
                     );
                     RainMeadow.Debug(
-                        $"Player found witih score stats: {newArenaPlayer.score} from online player: {pl} {arena.winsByInLobbyId[pl.inLobbyId]} "
+                        $"Player found witih score stats: {newArenaPlayer.score} from online player: {pl} {arena.winsByPlayer[pl]} "
                     );
                     RainMeadow.Debug(
-                        $"Player found witih death stats: {newArenaPlayer.deaths} from online player: {pl} {arena.winsByInLobbyId[pl.inLobbyId]} "
+                        $"Player found witih death stats: {newArenaPlayer.deaths} from online player: {pl} {arena.winsByPlayer[pl]} "
                     );
                     RainMeadow.Debug(
-                        $"Player found witih totScore stats: {newArenaPlayer.totScore} from online player: {pl} {arena.winsByInLobbyId[pl.inLobbyId]}"
+                        $"Player found witih totScore stats: {newArenaPlayer.totScore} from online player: {pl} {arena.winsByPlayer[pl]}"
                     );
                     RainMeadow.Debug(
-                        $"Client read stats with allKills stats: {newArenaPlayer.allKills} from online player: {pl} {arena.allKillsByInLobbyId[pl.inLobbyId]}"
+                        $"Client read stats with allKills stats: {newArenaPlayer.allKills} from online player: {pl} {arena.allKillsByPlayer[pl]}"
                     );
                 }
                 else
                 {
                     newArenaPlayer.wins = wins;
-                    newArenaPlayer.deaths = arena.deathsByInLobbyId[pl.inLobbyId];
-                    newArenaPlayer.totScore = arena.totalScoreByInLobbyId[pl.inLobbyId];
-                    newArenaPlayer.score = arena.scoreByInLobbyId[pl.inLobbyId];
+                    newArenaPlayer.deaths = arena.deathsByPlayer[pl];
+                    newArenaPlayer.totScore = arena.totalScoreByPlayer[pl];
+                    newArenaPlayer.score = arena.scoreByPlayer[pl];
                     newArenaPlayer.roundKills = ArenaHelpers.GetRoundOnlinePlayerTrophies(
     arena,
     newArenaPlayer.playerNumber
@@ -1043,16 +1042,16 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.deathsByInLobbyId.Add(pl.inLobbyId, newArenaPlayer.deaths);
-                    arena.winsByInLobbyId.Add(pl.inLobbyId, newArenaPlayer.wins);
-                    arena.totalScoreByInLobbyId.Add(pl.inLobbyId, newArenaPlayer.totScore);
-                    arena.scoreByInLobbyId.Add(pl.inLobbyId, newArenaPlayer.score);
-                    arena.allKillsByInLobbyId.Add(
-                        pl.inLobbyId,
+                    arena.deathsByPlayer.Add(pl, newArenaPlayer.deaths);
+                    arena.winsByPlayer.Add(pl, newArenaPlayer.wins);
+                    arena.totalScoreByPlayer.Add(pl, newArenaPlayer.totScore);
+                    arena.scoreByPlayer.Add(pl, newArenaPlayer.score);
+                    arena.allKillsByPlayer.Add(
+                        pl,
                         ArenaHelpers.GetAllPlayerTrophies(arena, newArenaPlayer)
                     );
-                    arena.roundKillsByInLobbyId.Add(
-                        pl.inLobbyId,
+                    arena.roundKillsByPlayer.Add(
+                        pl,
                         ArenaHelpers.GetRoundPlayerTrophies(arena, newArenaPlayer)
                     );
                     RainMeadow.Debug(
@@ -1111,12 +1110,12 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
                 return;
             arenaSittingOnlineOrder.Clear();
-            winsByInLobbyId.Clear();
-            deathsByInLobbyId.Clear();
-            totalScoreByInLobbyId.Clear();
-            scoreByInLobbyId.Clear();
-            allKillsByInLobbyId.Clear();
-            roundKillsByInLobbyId.Clear();
+            winsByPlayer.Clear();
+            deathsByPlayer.Clear();
+            totalScoreByPlayer.Clear();
+            scoreByPlayer.Clear();
+            allKillsByPlayer.Clear();
+            roundKillsByPlayer.Clear();
         }
 
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)

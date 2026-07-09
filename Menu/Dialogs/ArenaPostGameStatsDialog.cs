@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
-using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI
@@ -29,18 +25,18 @@ namespace RainMeadow.UI
                 manager.StopSideProcess(this);
                 PlaySound(SoundID.MENU_Remove_Level);
             };
-            arenaMode.persistentWinsByInLobbyId ??= [];
-            arenaMode.persistentDeathsByInLobbyId ??= [];
-            arenaMode.persistentTotalScoreByInLobbyId ??= [];
-            arenaMode.persistentAllKillsByInLobbyId ??= [];
+            arenaMode.persistentWinsByPlayer ??= [];
+            arenaMode.persistentDeathsByPlayer ??= [];
+            arenaMode.persistentTotalScoreByPlayer ??= [];
+            arenaMode.persistentAllKillsByPlayer ??= [];
 
             var resetButton = new SimplerButton(this, pages[0], Translate("RESET"), new(roundedRect.pos.x + roundedRect.size.x - 180, roundedRect.pos.y - 40), new(80, 30));
             resetButton.OnClick += _ =>
             {
-                arenaMode.persistentDeathsByInLobbyId.Clear();
-                arenaMode.persistentAllKillsByInLobbyId.Clear();
-                arenaMode.persistentTotalScoreByInLobbyId.Clear();
-                arenaMode.persistentWinsByInLobbyId.Clear();
+                arenaMode.persistentDeathsByPlayer.Clear();
+                arenaMode.persistentAllKillsByPlayer.Clear();
+                arenaMode.persistentTotalScoreByPlayer.Clear();
+                arenaMode.persistentWinsByPlayer.Clear();
 
             };
             pages[0].subObjects.AddRange([postGameStatsLabel, closeButton, resetButton]);
@@ -70,13 +66,13 @@ namespace RainMeadow.UI
         {
 
             if (i == 0)
-                return [.. arenaMode.persistentWinsByInLobbyId.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.persistentWinsByPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 1)
-                return [.. arenaMode.persistentAllKillsByInLobbyId.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
+                return [.. arenaMode.persistentAllKillsByPlayer.OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
             if (i == 2)
-                return [.. arenaMode.persistentDeathsByInLobbyId.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.persistentDeathsByPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 3)
-                return [.. arenaMode.persistentTotalScoreByInLobbyId.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [.. arenaMode.persistentTotalScoreByPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             return [];
         }
         public void UpdateStoredResults(StoredResults storedResults, string[] strings)
