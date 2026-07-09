@@ -207,8 +207,8 @@ namespace RainMeadow
                 if (isLobbyOwner)
                 {
                     string trophyString = iconSymbolData.ToString();
-                    arena.playerNumberWithTrophies[lobbyId].Add(trophyString);
-                    arena.playerNumberWithTrophiesPerRound[lobbyId].Add(trophyString);
+                    arena.allKillsByInLobbyId[lobbyId].Add(trophyString);
+                    arena.roundKillsByInLobbyId[lobbyId].Add(trophyString);
                 }
                 else
                 {
@@ -258,8 +258,8 @@ namespace RainMeadow
             self.arenaSitting.players[targetPlayerNumber].score += scoreToAdd;
             if (onlineKilledCreature.owner == OnlineManager.lobby.owner) // host creature was killed
             {
-                arena.playerNumberWithScore[lobbyId] += scoreToAdd;
-                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.playerNumberWithScore[lobbyId]);
+                arena.scoreByInLobbyId[lobbyId] += scoreToAdd;
+                onlineKilledCreature.BroadcastRPCInRoom(ArenaRPCs.IncreasePlayerScore, targetPlayerNumber, arena.scoreByInLobbyId[lobbyId]);
             }
             else // my creature, not host - tell the room
             {
@@ -339,11 +339,11 @@ namespace RainMeadow
                     return;
                 }
 
-                if (arena.playerNumberWithScore[onlinePlayer.inLobbyId] < aPlayer.score)
+                if (arena.scoreByInLobbyId[onlinePlayer.inLobbyId] < aPlayer.score)
                 {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = aPlayer.score;
+                    arena.scoreByInLobbyId[onlinePlayer.inLobbyId] = aPlayer.score;
                 }
-                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.playerNumberWithScore[onlinePlayer.inLobbyId]);
+                player.abstractCreature.GetOnlineCreature()?.BroadcastRPCInRoomExceptOwners(ArenaRPCs.IncreasePlayerScore, aPlayer.playerNumber, arena.scoreByInLobbyId[onlinePlayer.inLobbyId]);
             }
             else
             {

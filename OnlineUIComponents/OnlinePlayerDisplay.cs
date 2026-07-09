@@ -385,7 +385,7 @@ namespace RainMeadow
                 {
                     playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
                     int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
-                    if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
+                    if (arena.totalScoreByInLobbyId.TryGetValue(lobbyId, out int totScore) &&
                         playerNumber != -1)
                     {
                         bool sessionEnded = arena.session.sessionEnded;
