@@ -33,20 +33,27 @@ namespace RainMeadow
 
         [RPCMethod]
         public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc,
-            OnlinePhysicalObject weapon1, OnlinePhysicalObject weapon2, RealizedWeaponState realizedWeaponState1, RealizedWeaponState realizedWeaponState2, UnityEngine.Random.State rng)
+            OnlinePhysicalObject onlineWeapon1, OnlinePhysicalObject onlineWeapon2, 
+            RealizedWeaponState realizedWeaponState1, RealizedWeaponState realizedWeaponState2, 
+            Vector2 weapon1LastPos, Vector2 weapon2LastPos, // To get the right sound/visual effect
+            UnityEngine.Random.State rng)
         {
-            if (weapon1.IsLocked("parry") || weapon2.IsLocked("parry")) return;
-            if (rpc.from != weapon1.owner && rpc.from != weapon2.owner) throw new InvalidOperationException("Not owner of either weapon");
+            if (onlineWeapon1.IsLocked("parry") || onlineWeapon2.IsLocked("parry")) return;
+            if (rpc.from != onlineWeapon1.owner && rpc.from != onlineWeapon2.owner) throw new InvalidOperationException("Not owner of either weapon");
             var state = UnityEngine.Random.state;
             
             try
             {
                 UnityEngine.Random.state = rng;
-                if (weapon1.apo.realizedObject != null && weapon2.apo.realizedObject != null)
+                if (onlineWeapon1.apo.realizedObject is Weapon weapon1 && onlineWeapon2.apo.realizedObject is Weapon weapon2)
                 {
-                    realizedWeaponState1.ReadTo(weapon1);
-                    realizedWeaponState2.ReadTo(weapon2);
-                    (weapon1.apo.realizedObject as Weapon).HitAnotherThrownWeapon(weapon2.apo.realizedObject as Weapon);
+                    realizedWeaponState1.ReadTo(onlineWeapon1);
+                    weapon1.firstChunk.lastPos = weapon1LastPos;
+                    
+                    realizedWeaponState2.ReadTo(onlineWeapon2);
+                    weapon2.firstChunk.lastPos = weapon2LastPos;
+
+                    weapon1.HitAnotherThrownWeapon(weapon2);
                 }
             }
             finally
