@@ -120,11 +120,142 @@ public partial class RainMeadow
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
 
+        IL.Spear.HitSomething += Spear_HitSomething;
+        On.Spear.ChangeMode += Spear_ChangeMode_RemoveDeflectMark;
+        IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_OnWeaponParried;
 
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+
+        On.Player.ProcessDebugInputs += Player_ProcessDebugInputs;
     }
+
+    private void Player_ProcessDebugInputs(On.Player.orig_ProcessDebugInputs orig, Player self)
+    {
+        if (OnlineManager.lobby != null && !self.abstractPhysicalObject.IsLocal()) return;
+        orig(self);
+    }
+
+    // sync Artificer's parry. Cmon she needs it.
+    public static void PlayArtiParryCustomSound(Weapon weapon) 
+    {
+        weapon.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, weapon.firstChunk, false, 1.2f, 2f);
+    }
+    private void Player_ClassMechanicsArtificer_OnWeaponParried(ILContext il)
+    {
+        try
+        {
+            ILCursor cursor = new ILCursor(il);
+
+            cursor.GotoNext(moveType: MoveType.After,
+                i => i.MatchCallvirt<Weapon>(nameof(Weapon.SetRandomSpin))
+            );
+            // There's one occurence for the randomSpin and it's when a weapon is being deflected !
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldloc, 11);
+            cursor.Emit(OpCodes.Ldloc, 23);
+            cursor.EmitDelegate((Player player, List<Weapon> weapons, int i) =>
+            {
+                Weapon weapon = weapons[i]; // we grab the weapon from the local variables
+                if (OnlineManager.lobby != null && i == 0) {PlayArtiParryCustomSound(weapon);} // play only in Meadow, not in local
+
+                if (weapon.abstractPhysicalObject.GetOnlineObject() is not OnlinePhysicalObject onlineWeapon
+                    || onlineWeapon.isMine // We don't need to do anything if the spear is ours
+                    || player.abstractCreature.GetOnlineCreature() is not OnlineCreature onlineCreature
+                    || !onlineCreature.isMine) return; // We don't fire if the parry isn't from the client
+                
+                RainMeadow.Debug($"ARTI PARRY !! {onlineCreature}, {onlineWeapon}, {onlineWeapon.owner}, Frame {Mathf.RoundToInt(ARTI_PARRY_MAX_COOLDOWN - player.pyroParryCooldown)}");
+
+                RealizedWeaponState? realizedWeaponState = GetAppropriateWeaponState(onlineWeapon);
+                if (realizedWeaponState is null)
+                {
+                    RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
+                    return;
+                } 
+                
+                onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true, i != 0));
+                foreach (OnlinePlayer otherplayer in onlineWeapon.roomSession?.participants ?? [])
+                {
+                    if (otherplayer is not null && otherplayer != onlineWeapon.owner && !otherplayer.isMe)
+                    {
+                        otherplayer.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true, i != 0);
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            RainMeadow.Error(e);
+        }
+    }
+
+    // sync Spear Deflect of creatures, notably by Gourmand, since sometimes creature.SpearStick() is too conditionnal to be 
+    private void Spear_ChangeMode_RemoveDeflectMark(On.Spear.orig_ChangeMode orig, Spear self, Weapon.Mode newMode)
+    {
+        orig(self, newMode);
+        if (newMode != Weapon.Mode.Free
+            && self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineWeapon
+            && onlineWeapon.IsLocked("deflected"))
+        {
+            onlineWeapon.ClearLock("deflected"); // remove deflect lock when not free anymore, avoiding latent lock junk
+        }
+    }
+    private void Spear_HitSomething(ILContext il)
+    {
+        try
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchCallvirt<Weapon>(nameof(Weapon.SetRandomSpin))
+            );
+            // We go to the very end of the code, where if a weapon has not met the hitting criteria, it'll be deflected.
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate((Weapon weapon, SharedPhysics.CollisionResult result) =>
+            {
+                if (weapon.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineWeapon
+                    && result.obj is Creature target 
+                    && target.abstractCreature.GetOnlineCreature() is OnlineCreature onlineCreature)
+                {
+                    if (!onlineCreature.isMine) 
+                    {
+                        // spear was already deflected, if an RPC comes in, we'll ignore it
+                        onlineWeapon.Lock("deflected"); // Locking manually is abit sketchy, but it's kind of my only way.
+                        RainMeadow.Debug($"{onlineCreature} deflected {onlineWeapon} that isn't mine ! Will ignore the RPC incoming.");
+                    }
+                    else if (!onlineWeapon.isMine) // We don't need to do anything if the spear is ours
+                    {
+                        // We limit that to only the case where the creature is yours but the spear isn't
+                        RealizedWeaponState? realizedWeaponState = GetAppropriateWeaponState(onlineWeapon);
+                        if (realizedWeaponState is null)
+                        {
+                            RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
+                            return;
+                        } 
+                        
+                        onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false));
+                        
+                        foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
+                        {
+                            if (player is not null && player != onlineWeapon.owner && !player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+    
     public bool BottomPlayerUsingSpearmasterAbility(Player spearmaster, out Player user)
     {
         user = null!;
@@ -308,6 +439,8 @@ public partial class RainMeadow
         {
             ILCursor c = new(il);
             ILLabel label = null;
+
+            // --- 1. Proximity & slow down logic ---
             c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, 4);
@@ -325,6 +458,48 @@ public partial class RainMeadow
                 return true;
             });
             c.Emit(OpCodes.Brfalse, label);
+
+            // --- 2. Lethality ---
+            c.Index = 0;
+            if (c.TryGotoNext(MoveType.Before,
+                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                x => x.MatchLdcR4(out _),
+                x => x.MatchAdd(),
+                x => x.MatchStfld<Player>("rippleDeathIntensity")))
+            {
+                c.Index += 2;
+
+                c.EmitDelegate((float originalIncrement) =>
+                {
+                    if (isArenaMode(out var arena))
+                    {
+                        return originalIncrement * arena.voidSpawnLethalityFactor;
+                    }
+                    return originalIncrement;
+                });
+            }
+
+            // --- 3. RippleDeathEffect kept local ---
+            c.Index = 0;
+            ILLabel skipDeathEffectLabel = null;
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                x => x.MatchLdcR4(0f),
+                x => x.MatchBleUn(out _),
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>("deathEffect"),
+                x => x.MatchBrtrue(out skipDeathEffectLabel)))
+            {
+
+                c.Emit(OpCodes.Ldarg_0);
+
+                c.EmitDelegate(delegate (Player self)
+                {
+                    return self.IsLocal();
+                });
+
+                c.Emit(OpCodes.Brfalse, skipDeathEffectLabel);
+            }
         }
         catch (Exception ex)
         {
@@ -1154,7 +1329,6 @@ public partial class RainMeadow
         float wasSleepCurlUp = self.sleepCurlUp;
 
         orig(self, eu);
-
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
@@ -1932,18 +2106,20 @@ public partial class RainMeadow
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         // Inside player_die hook
+
         if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
         {
             OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
 
-            if (self.room.game.session is ArenaGameSession s)
+            if (self.room?.game?.session != null && self.room.game.session is ArenaGameSession s)
             {
-                int excludedPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
+                int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
                     ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
 
-                if (excludedPlayerNumber != -1)
+                if (deadPlayerNumber != -1)
                 {
-                    int[] alivePlayerNumbers = ArenaHelpers.GetAllAlivePlayers(excludedPlayerNumber);
+                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
+                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
                     for (int i = 0; i < s.arenaSitting.players.Count; i++)
                     {
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
@@ -1951,14 +2127,12 @@ public partial class RainMeadow
 
                         if (onlinePlayer.isMe)
                         {
-                            // Execute locally for the dying player
-                            ArenaRPCs.DistributeEmptyKillScores(alivePlayerNumbers);
-
+                            continue;
                         }
                         else
                         {
                             // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.DistributeEmptyKillScores, alivePlayerNumbers);
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, newScore);
                         }
                     }
                 }
@@ -2271,7 +2445,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && (arena.countdownInitiatedHoldFire || arena.disableArtiStun)));
+            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && (arena.countdownInitiatedHoldFire || arena.artiStunDistanceMult <= 0)));
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);

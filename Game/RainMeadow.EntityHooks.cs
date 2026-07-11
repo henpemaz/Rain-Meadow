@@ -564,8 +564,7 @@ namespace RainMeadow
                 oldWorldSession.NotNeeded(); // done? let go
             }
 
-            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-            oldWorldSession.transitionInProgress = true;
+            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));            
             return;
         }
         // world transition at gatesactiveEntities
@@ -605,7 +604,7 @@ namespace RainMeadow
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (!opo.isMine)
                             {
                                 // not-online-aware removal
                                 opo.RemoveEntityFromGame(false);

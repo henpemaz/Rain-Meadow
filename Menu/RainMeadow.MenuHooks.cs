@@ -468,6 +468,26 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowOverseer)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - overseer";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowOverseer - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 5", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 3", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.SoftLight));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 2", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 1", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+
             if (string.IsNullOrEmpty(self.sceneFolder))
             {
                 return;
@@ -545,6 +565,12 @@ namespace RainMeadow
                     else if (mcsp.character == MeadowProgression.Character.LanternMouse)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowMouse;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else if (mcsp.character == MeadowProgression.Character.Overseer)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowOverseer;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
