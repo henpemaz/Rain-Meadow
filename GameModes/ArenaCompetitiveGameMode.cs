@@ -451,6 +451,26 @@ namespace RainMeadow
             this.AddExternalGameModes(DrownMode.Drown, new DrownMode());
         }
 
+        public override void PlayerLeftLobby(OnlinePlayer player)
+        {
+            // Clients should change the lobby data here so the dictionaries behave as excepted.
+            // (You'd expect that looping over the keys would NOT give you players that aren't contained in OnlineManager.lobby)
+
+            persistentDeathsByPlayer.Remove(player);
+            persistentWinsByPlayer.Remove(player);
+            persistentTotalScoreByPlayer.Remove(player);
+            persistentAllKillsByPlayer.Remove(player);
+
+            winsByPlayer.Remove(player);
+            deathsByPlayer.Remove(player);
+            totalScoreByPlayer.Remove(player);
+            scoreByPlayer.Remove(player);
+            allKillsByPlayer.Remove(player);
+            roundKillsByPlayer.Remove(player);
+
+            base.PlayerLeftLobby(player);
+        }
+
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);
