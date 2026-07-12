@@ -27,21 +27,30 @@ namespace RainMeadow
             segments = new SimpleSegment[size, size];
 
             // todo cosmetic options??
+            dangle_length = 90f;
+            dangle_width = 7f; 
+
             if (baseModule is ScavengerGraphics)
             {
-                length = 90f;
-                width = 7f;
+                neck_length = 3f;
+                neck_width = 8f;
             }
-            else if (baseModule is PlayerGraphics)
+            else
             {
-                length = 90f;
-                width = 15f;
+                neck_length = 3f;
+                neck_width = 16f;
             }
             
         }
 
-        float length;
-        float width;
+
+        float dangle_length;
+        float dangle_width;
+
+
+        float neck_length;
+        float neck_width;
+        
         
         const int size = 6;
         private SimpleSegment[,] segments;
@@ -51,9 +60,10 @@ namespace RainMeadow
             {
                 case PlayerGraphics playerGraphics:
                 {
-                    Vector2 headpos = Vector2.Lerp(playerGraphics.player.bodyChunks[0].pos, playerGraphics.player.bodyChunks[0].lastPos, timeStacker);
-                    Vector2 bodypos = Vector2.Lerp(playerGraphics.player.bodyChunks[1].pos, playerGraphics.player.bodyChunks[1].lastPos, timeStacker);
-                    return (headpos - bodypos).normalized;
+                    Vector2 dir = Vector2.Lerp( playerGraphics.player.bodyChunks[0].lastPos - playerGraphics.player.bodyChunks[1].lastPos,
+                                                    playerGraphics.player.bodyChunks[0].pos - playerGraphics.player.bodyChunks[1].pos, 
+                                                    timeStacker);
+                    return dir.normalized;
                 }
 
                 case ScavengerGraphics scavGrphs:
@@ -68,9 +78,9 @@ namespace RainMeadow
             {
                 case PlayerGraphics playerGraphics:
                 {
-                    Vector2 headpos = Vector2.Lerp(playerGraphics.player.bodyChunks[0].pos, playerGraphics.player.bodyChunks[0].lastPos, timeStacker);
-                    Vector2 bodypos = Vector2.Lerp(playerGraphics.player.bodyChunks[1].pos, playerGraphics.player.bodyChunks[1].lastPos, timeStacker);
-                    return Vector2.LerpUnclamped(headpos, bodypos, 0.5f);
+                    Vector2 headpos = Vector2.Lerp(playerGraphics.player.bodyChunks[0].lastPos, playerGraphics.player.bodyChunks[0].pos, timeStacker);
+                    Vector2 bodypos = Vector2.Lerp(playerGraphics.player.bodyChunks[1].lastPos, playerGraphics.player.bodyChunks[1].pos, timeStacker);
+                    return Vector2.LerpUnclamped(headpos, bodypos, 0.65f);
                 }
 
                 case ScavengerGraphics scavGrphs:
@@ -99,8 +109,8 @@ namespace RainMeadow
 
         public void Update()
         {
-            float segmentlength = length / size;
-            float segmentwidth = width / size;
+            float segmentlength = dangle_length / size;
+            float segmentwidth = dangle_width / size;
 
             Room room = baseModule.owner.room;
             if (room is null) return;
@@ -147,7 +157,7 @@ namespace RainMeadow
             for (int i = 0; i < size; i++)
             {
                 float segment_pos = ((float)(i / (size - 1)) - 0.5f);
-                segment_pos *= width;
+                segment_pos *= dangle_width;
 
 
                 ref SimpleSegment segment = ref segments[i, 0];
@@ -235,8 +245,8 @@ namespace RainMeadow
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    float segment_height = (i - 1f) * 3f;
-                    float segment_width = (j - 1f) * 8f;
+                    float segment_height = ((float)i - 0.5f) * neck_length;
+                    float segment_width = ((float)j - 0.5f) * neck_width;
                     Vector2 posrelativetohead = new Vector2(segment_width, segment_height);
                     posrelativetohead = Custom.rotateVectorDeg(posrelativetohead, Custom.VecToDeg(HeadDir(timeStacker)));
                     Vector2 neckpos = NeckPos(timeStacker);

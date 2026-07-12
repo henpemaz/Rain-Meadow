@@ -47,7 +47,7 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby != null)
                         {
-                            if (!cosmeticed_avatars.TryGetValue(self, out var cosmetic))
+                            if (!cosmeticed_avatars.TryGetValue(self, out var old_cosmetic))
                             {
                                 if (self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter && critter.isAvatar)
                                 {
@@ -59,16 +59,20 @@ namespace RainMeadow
                                         var real_skin = CosmeticManager.ParseCosmeticSkin(skin);
                                         if (real_skin != null)
                                         {
-                                            var real_cosmetic = CosmeticManager.ParseCosmetic(customization.cosmetic, self, numofsprites, real_skin);
-                                            if (real_cosmetic != null)
+                                            var new_cosmetic = CosmeticManager.ParseCosmetic(customization.cosmetic, self, numofsprites, real_skin);
+                                            if (new_cosmetic != null)
                                             {
                                                 RainMeadow.Debug(numofsprites);
-                                                numofsprites += real_cosmetic.totalSprites;
-                                                cosmeticed_avatars.Add(self, real_cosmetic);
+                                                numofsprites += new_cosmetic.totalSprites;
+                                                cosmeticed_avatars.Add(self, new_cosmetic);
                                             }
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                numofsprites += old_cosmetic.totalSprites;
                             }
                         }
                     }
