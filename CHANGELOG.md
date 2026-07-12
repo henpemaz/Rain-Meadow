@@ -22,7 +22,7 @@
 - Added configurable Void Amoeba lethality. Default multiplier is now 3x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
-- Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
+- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
