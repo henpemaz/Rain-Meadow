@@ -12,6 +12,8 @@
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
+### Modders
+- Added `MatchmakingManager.OnLobbyLeaving` event.
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
