@@ -31,6 +31,7 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
+- Fixed sound/visual cue of parrying being inconsistant.
 ## Meadow
 - Fixed creatures being able to get injured.
 ### Modders
