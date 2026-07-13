@@ -471,5 +471,28 @@ namespace RainMeadow
                 TryParallelStitchBind(listList[0], listList[listList.Count - 1], areRows, areColumns);
             }
         }
+        public static bool IsDictionary(this Type type, out Type? dictInterface)
+        {
+            dictInterface = null;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                dictInterface = type;
+                return true;
+            }
+            else
+            {
+                foreach (var i in type.GetInterfaces())
+                {
+                    if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                    {
+                        dictInterface = i;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }
