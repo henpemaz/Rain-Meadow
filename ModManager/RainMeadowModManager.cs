@@ -14,7 +14,6 @@ namespace RainMeadow
         // TODO: possibly rename these
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
-
         public static string SyncRequiredModsExplanationComment =>
             """
             // The following is a list of mods that must be synced between client and host:
@@ -104,7 +103,6 @@ namespace RainMeadow
                 .Where(mod => mod != "henpemaz_rainmeadow")
                 .ToArray();
         }
-
         /// <summary>
         /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary.
         /// </summary>
