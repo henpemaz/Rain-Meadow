@@ -45,7 +45,8 @@
 - Allow players to spectate their own corpses as long as they still exist
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
-
+- Fixed prince's duplication
+- Synced prince's position and look point
 # Release 1.14.1
 ## Engine 
 - Improved parry netcode.
