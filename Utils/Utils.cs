@@ -128,5 +128,16 @@ namespace RainMeadow
 
             return fromStart.Take(toTake).ToList();
         }
+
+        public static Color SafeHexToColor(string hex)
+        {
+            try
+            {
+                if (hex != "000000")
+                return Custom.hexToColor(hex);
+            }
+            catch (Exception) {}
+            return new Color(0.01f, 0.01f, 0.01f, 1f);
+        }
     }
 }
