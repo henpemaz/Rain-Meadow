@@ -618,6 +618,10 @@ namespace RainMeadow
                 {
                     hud.ShutDownChatLog();
                 }
+                else if (RMOverlayHUDOwner.GetOverlay(self.rainWorld)?.chatHud is ChatHud chatHud && !chatHud.showChatLog)
+                {
+                    chatHud.ShutDownChatLog();
+                }
             }
             if (OnlineManager.lobby != null)
             {

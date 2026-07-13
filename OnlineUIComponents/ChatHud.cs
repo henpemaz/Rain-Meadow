@@ -17,7 +17,7 @@ namespace RainMeadow
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
-        public List<(string, string)> chatLog = new();
+        public static List<(string, string)> chatLog = new();
         public float logScrollPos;
 
         public bool Active => game.processActive;
@@ -30,14 +30,14 @@ namespace RainMeadow
         }
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
-            textPrompt = hud.textPrompt;
+            this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
             game = camera.game;
 
             ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
             {
-                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
+                this.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
                 ChatLogManager.shownChatTutorial = true;
             }
 
@@ -49,6 +49,12 @@ namespace RainMeadow
             }
 
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
+        }
+
+        public void ClearChatLog()
+        {
+            chatLog.Clear();
+            chatLogOverlay?.UpdateLogDisplay();
         }
 
         public void AddMessage(string user, string message)

@@ -360,7 +360,18 @@ namespace RainMeadow
             self.AddPart(new HUD.TextPrompt(self));
 
             if (MatchmakingManager.currentInstance.canSendChatMessages)
-                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            {
+                if (RMOverlayHUDOwner.TryGetOverlay(self.rainWorld, out var overlayHUD))
+                {
+                    if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
+                    else overlayHUD.SetNewChatHUDCamera(session.game.cameras[0]);
+                }
+                else
+                {
+                    self.AddPart(new ChatHud(self, session.game.cameras[0]));
+                }
+            }
+                
 
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));

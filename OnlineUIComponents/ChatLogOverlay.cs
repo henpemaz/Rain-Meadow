@@ -180,11 +180,11 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
-            if (chatHud.chatLog.Count > myChatLog.Length)
+            if (ChatHud.chatLog.Count > myChatLog.Length)
             {
                 ChatLogManager.UpdatePlayerColors();
                 float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset;
-                var newMessages = chatHud.chatLog.Skip(myChatLog.Length);
+                var newMessages = ChatHud.chatLog.Skip(myChatLog.Length);
                 foreach (var (username, message) in newMessages)
                 {
                     bool isSystemMessage = username is null or "";
@@ -224,7 +224,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                myChatLog = [.. chatHud.chatLog];
+                myChatLog = [.. ChatHud.chatLog];
                 inactivityTimer = 0;
             }
         }

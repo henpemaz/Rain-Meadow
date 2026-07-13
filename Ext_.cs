@@ -5,6 +5,10 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        public class Ext_HUD_OwnerType
+        {
+            public static HUD.HUD.OwnerType RainMeadowOverlay = new("RainMeadowOverlay", true);
+        }
         public class Ext_ProcessID
         {
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
