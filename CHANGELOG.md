@@ -47,7 +47,12 @@
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication
 - Synced prince's position and look point
+## Chat
+- Put Chat in its own overlay so it is available at all time
+- Added Remix options for different system messages in arena and story mode
+
 # Release 1.14.1
+
 ## Engine 
 - Improved parry netcode.
 - Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 
