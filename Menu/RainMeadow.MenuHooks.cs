@@ -68,7 +68,7 @@ namespace RainMeadow
             try
             {
                 var cursor = new ILCursor(il);
-                cursor.GotoNext(MoveType.After,x => x.MatchLdcR4(50.2f));
+                cursor.GotoNext(MoveType.After,x => x.MatchLdcR4(100.2f));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
                     (float orig, ProcessManager self) =>
@@ -76,7 +76,8 @@ namespace RainMeadow
                         // Put it on the right, so chat can don't overlap with it
                         if (RMOverlayHUDMenu.GetOverlay()?.chatHud is not null)
                         {
-                            return self.rainWorld.options.ScreenSize.x - orig - self.loadingLabel.textRect.x;
+                            // RainMeadow.Debug($"orig was <{orig}>, now <{self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x)}> (<{self.rainWorld.options.ScreenSize.x}><{self.loadingLabel.textRect.x}>)");
+                            return self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x); // textRech can be negative ????
                         }
                         return orig;
                     }

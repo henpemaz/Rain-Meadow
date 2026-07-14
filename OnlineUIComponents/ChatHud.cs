@@ -20,7 +20,8 @@ namespace RainMeadow
         public float logScrollPos = -1;
 
         public bool Active => true; //=> game.processActive;
-        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion; //  || game.manager.upcomingProcess != null
+        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;
+        public bool InGameTransition => game.processActive || game.manager.upcomingProcess != null;
 
         public static bool isLogToggled
         {
@@ -31,7 +32,7 @@ namespace RainMeadow
         {
             this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
-            game = camera.game;
+            this.game = camera.game;
 
             ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
@@ -54,6 +55,7 @@ namespace RainMeadow
         {
             this.camera = camera;
             this.game = camera.game;
+            this.textPrompt = camera.hud.textPrompt;
         }
 
         public void AddMessage(string user, string message)
@@ -100,7 +102,8 @@ namespace RainMeadow
             }
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
             {
-                if (chatInputOverlay == null && !textPrompt.pausedMode && !ShouldForceCloseChat)
+                // RainMeadow.Debug($"Chat button pressed ! Input is [{chatInputOverlay}], can chat is <{InGameTransition || !textPrompt.pausedMode}><{!ShouldForceCloseChat}>");
+                if (chatInputOverlay is null && (InGameTransition || !textPrompt.pausedMode) && !ShouldForceCloseChat)
                 {
                     if (ChatTextBox.AnyShift && RainMeadow.rainMeadowOptions.EnableChatLogErrorToggle.Value)
                     {
