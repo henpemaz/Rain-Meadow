@@ -1,5 +1,7 @@
 # Release 1.15.0
 
+## Engine
+- Improved some sources of desync (enums)
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 - Improved the Russian translation
@@ -12,6 +14,8 @@
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
+### Modders
+- Added `MatchmakingManager.OnLobbyLeaving` event.
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -41,7 +45,8 @@
 - Allow players to spectate their own corpses as long as they still exist
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
-
+- Fixed prince's duplication
+- Synced prince's position and look point
 # Release 1.14.1
 ## Engine 
 - Improved parry netcode.
