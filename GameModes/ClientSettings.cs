@@ -18,6 +18,8 @@ namespace RainMeadow
 
         public bool inGame;
         public bool isInteracting;
+
+        public bool isThinking; // no need to sync this one
         public List<OnlineEntity.EntityId> avatars = new();
 
         public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)

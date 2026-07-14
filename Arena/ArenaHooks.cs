@@ -71,7 +71,7 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
-            On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor_DisplayWhoWon;
+            // On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor_DisplayWhoWon;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
@@ -186,6 +186,7 @@ namespace RainMeadow
             DrownHooks();
         }
 
+        // This might bee too much, leaving it out for now
         private void ArenaOverlay_ctor_DisplayWhoWon(On.Menu.ArenaOverlay.orig_ctor orig, ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
         {
             orig(self, manager, ArenaSitting, result);
