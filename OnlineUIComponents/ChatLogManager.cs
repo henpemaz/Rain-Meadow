@@ -27,8 +27,9 @@ namespace RainMeadow
             => AddMessageToChatLog(userMessagePair.Item1, userMessagePair.Item2);
         public static void AddMessageToChatLog(string user, string message) 
         {
-            if (!RainMeadow.rainMeadowOptions.GlobalMute.Value
-                && OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(user) is not true)
+            if (IsUserSystemSignature(user)
+                || (!RainMeadow.rainMeadowOptions.GlobalMute.Value
+                    && OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(user) is not true))
             {
                 chatLog.Add((user, message));
                 // RainMeadow.Debug($"Adding message in log from {user} : {message}"); 

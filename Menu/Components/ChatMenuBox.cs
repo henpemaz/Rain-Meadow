@@ -88,7 +88,7 @@ namespace RainMeadow.UI.Components
         }
         public void AddMessage(string user, string message)
         {
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
+            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && !ChatLogManager.IsUserSystemSignature(user)) return;
             if (!(OnlineManager.lobby?.gameMode?.mutedPlayers.Contains(user) == false)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
             if (RainMeadow.rainMeadowOptions.ChatPing.Value 

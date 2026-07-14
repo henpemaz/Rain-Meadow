@@ -700,7 +700,7 @@ namespace RainMeadow
 
         public void AddMessage(string user, string message)
         {
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
+            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && !ChatLogManager.IsUserSystemSignature(user)) return;
             if (OnlineManager.lobby == null) return;
             if (RainMeadow.rainMeadowOptions.GlobalMute.Value) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;

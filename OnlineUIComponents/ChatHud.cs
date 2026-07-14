@@ -61,7 +61,7 @@ namespace RainMeadow
             if (!Active) return;
             if (OnlineManager.lobby == null) return;
 
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
+            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && !ChatLogManager.IsUserSystemSignature(user)) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
             if (RainMeadow.rainMeadowOptions.ChatPing.Value 
@@ -102,12 +102,19 @@ namespace RainMeadow
             {
                 if (chatInputOverlay == null && !textPrompt.pausedMode && !ShouldForceCloseChat)
                 {
-                    RainMeadow.Debug("creating input");
-                    chatInputOverlay = new ChatInputOverlay(game.manager);
-                    if (chatLogOverlay is null)
+                    if (ChatTextBox.AnyShift && RainMeadow.rainMeadowOptions.EnableChatLogErrorToggle.Value)
                     {
-                        RainMeadow.Debug("creating log");
-                        chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                        ChatLogManager.ToggleLogErrorInChat();
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("creating input");
+                        chatInputOverlay = new ChatInputOverlay(game.manager);
+                        if (chatLogOverlay is null)
+                        {
+                            RainMeadow.Debug("creating log");
+                            chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                        }
                     }
                 }
             }
