@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RainMeadow;
 
-public class RMOverlayHUDOwner : IOwnAHUD
+public class RMOverlayHUDMenu : Menu.Menu, IOwnAHUD
 {
     // Interface
     public int CurrentFood => 0;
@@ -39,107 +39,69 @@ public class RMOverlayHUDOwner : IOwnAHUD
     }
 
     // ctor
-    public static ConditionalWeakTable<RainWorld, RMOverlayHUDOwner> overlayManagers = new();
-    public static bool TryGetOverlayOwner(RainWorld rainWorld, out RMOverlayHUDOwner overlayHUDOwner) 
-        => overlayManagers.TryGetValue(rainWorld, out overlayHUDOwner);
-    public static RMOverlayHUDOwner? GetOverlayOwner(RainWorld rainWorld) 
-        { TryGetOverlayOwner(rainWorld, out var overlayHUDOwner); return overlayHUDOwner;}
-    public static bool TryGetOverlay(RainWorld rainWorld, out RMOverlayHUD overlayHUD) 
-        { overlayHUD = GetOverlayOwner(rainWorld)?.overlayHUD; return overlayHUD is not null;}
-    public static RMOverlayHUD? GetOverlay(RainWorld rainWorld) 
-        { TryGetOverlay(rainWorld, out var overlayHUD); return overlayHUD;}
-    public RMOverlayHUDOwner(RainWorld rainWorld)
+    
+    public static bool TryGetOverlayMenu(out RMOverlayHUDMenu overlayHUDOwner) => (overlayHUDOwner = overlayMenu) is not null;
+    public static RMOverlayHUDMenu GetOverlayMenu() => overlayMenu;
+    public static bool TryGetOverlay(out RMOverlayHUD overlayHUD) => (overlayHUD = overlayMenu?.overlayHUD) is not null;
+    public static RMOverlayHUD GetOverlay() => overlayMenu?.overlayHUD;
+    
+    private static RMOverlayHUDMenu overlayMenu;
+    public RMOverlayHUDMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.RainMeadowOverlay)
     {
-        this.rainWorld = rainWorld;
-        if (overlayManagers.TryGetValue(rainWorld, out var oldOverlayManager)) oldOverlayManager.Destroy();
-        overlayManagers.Add(rainWorld, this);
+        this.rainWorld = manager.rainWorld;
+        overlayMenu?.Destroy();
+        overlayMenu = this;
+        this.pages.Add(new Menu.Page(this, null, "Overlay", 0));
     }
 
     // Functions
-    public void ClearFContainers()
-    {
-        if (this.spriteContainers is not null)
-        {
-            for (int i = 0; i < this.spriteContainers.Length; i++)
-            {
-                Futile.stage.RemoveChild(this.spriteContainers[i]);
-            }
-        }
-        this.spriteContainers = null;
-    }
     public void AddOverlayHUD()
     {
-        ClearFContainers();
-
-        this.spriteContainers = new FContainer[overlayLayers];
-        for (int i = 0; i < this.spriteContainers.Length; i++)
-        {
-            this.spriteContainers[i] = new FContainer();
-            Futile.stage.AddChild(this.spriteContainers[i]);
-        }
-
         this.overlayHUD?.ClearAllSprites();
         this.overlayHUD = new(rainWorld, this); 
     }
     public void RemoveOverlayHUD()
     {
-        ClearFContainers();
         this.overlayHUD?.ClearAllSprites();
         this.overlayHUD = null;
     }
 
-    public void Update(float dt) // from MainProcessLoop
+    public override void Update()
     {
-        this.myTimeStacker += dt * FPS;
-		int overload = 0;
-		while (this.myTimeStacker > 1f)
-		{
-			this.overlayHUD?.Update();
-			this.myTimeStacker -= 1f;
-
-			overload++;
-			if (overload > overloadLimit) this.myTimeStacker = 0f;
-		}
-		this.GrafUpdate(this.myTimeStacker);
-
-        if (this.spriteContainers is not null)
+        base.Update();
+        this.overlayHUD?.Update();
+        if (this.container is not null)
         {
-            if (Futile.stage.GetChildAt(Futile.stage.GetChildCount() - 1) != this.spriteContainers[overlayLayers - 1])
+            if (Futile.stage.GetChildAt(Futile.stage.GetChildCount() - 1) != this.cursorContainer)
             {
                 // Keep them on top
-                for (int i = 0; i < this.spriteContainers.Length; i++)
-                {
-                    Futile.stage.AddChild(this.spriteContainers[i]);
-                }
+                Futile.stage.AddChild(this.container);
+                Futile.stage.AddChild(this.cursorContainer);
             }
         }
     }
-    public void GrafUpdate(float timeStacker)
+    public override void GrafUpdate(float timeStacker)
     {
+        base.GrafUpdate(timeStacker);
         this.overlayHUD?.Draw(timeStacker);
     }
+    public override bool FreezeMenuFunctions => true; // no input update, they can handle it
     public void Destroy()
     {
-        RemoveOverlayHUD();
-        if (overlayManagers.TryGetValue(rainWorld, out _))
-        {
-            overlayManagers.Remove(rainWorld);
-        }
+        this.RemoveOverlayHUD();
+        this.ShutDownProcess();
+        overlayMenu = null;
     }
     
     public readonly RainWorld rainWorld;
-    public FContainer[]? spriteContainers;
     public RMOverlayHUD? overlayHUD;
-    public float myTimeStacker;
-
-    public const int overlayLayers = 3;
-    public const int FPS = 40;
-    public const int overloadLimit = 3;
 }
 
 public class RMOverlayHUD : HUD.HUD
 {
-    public RMOverlayHUD(RainWorld rainWorld, RMOverlayHUDOwner owner) : base(owner.spriteContainers, rainWorld, owner)
+    public static bool TryGetOverlay(out RMOverlayHUD overlayHUD) => RMOverlayHUDMenu.TryGetOverlay(out overlayHUD);
+    public static RMOverlayHUD GetOverlay() => RMOverlayHUDMenu.GetOverlay();
+    public RMOverlayHUD(RainWorld rainWorld, RMOverlayHUDMenu owner) : base([owner.container], rainWorld, owner)
     {
         
     }
@@ -147,7 +109,7 @@ public class RMOverlayHUD : HUD.HUD
     public void AddChatHUD(RoomCamera roomCamera)
     {
         DestroyChatHUD();
-        this.chatHud = new ChatHud(this, roomCamera);
+        this.chatHud = new ChatHud(roomCamera);
         this.AddPart(chatHud);
     }
     public void SetNewChatHUDCamera(RoomCamera roomCamera)
@@ -155,12 +117,14 @@ public class RMOverlayHUD : HUD.HUD
         if (chatHud is not null)
         {
             RainMeadow.Debug("Gave new camera to chat HUD");
-            chatHud.camera = roomCamera;
+            chatHud.UpdateCamera(roomCamera);
         }
     }
     public void DestroyChatHUD()
     {
         chatHud?.ClearSprites();
+        this.parts.Remove(this.chatHud);
+        this.chatHud = null;
     }
     public ChatHud? chatHud;
     public bool isFocusedOnMenu => chatHud?.chatInputActive ?? false;

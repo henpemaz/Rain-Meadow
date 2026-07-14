@@ -194,10 +194,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.mePlayer == OnlineManager.lobby.owner && OnlineManager.lobby.bannedUsers.list.Contains(player.id))
             {
                 BanHammer.BanUser(player);
-                ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."));
+                ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."), ChatLogManager.SystemMessageType.PlayerJoinFail);
                 return;
             }
-            ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."));
+            ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."), ChatLogManager.SystemMessageType.PlayerJoin);
         }
         public void HandleDisconnect(OnlinePlayer player)
         {
@@ -214,7 +214,7 @@ namespace RainMeadow
             OnlineManager.players.Remove(player);
             OnlineManager.netIO.ForgetPlayer(player);
 
-            ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
+            ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("left the game."), ChatLogManager.SystemMessageType.PlayerJoin);
         }
 
         public abstract MeadowPlayerId GetEmptyId();

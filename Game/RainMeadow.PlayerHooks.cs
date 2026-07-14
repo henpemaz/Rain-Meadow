@@ -1179,8 +1179,7 @@ public partial class RainMeadow
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
                 && (hud.textPrompt?.pausedMode is true 
-                    || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) 
-                    || RMOverlayHUDOwner.GetOverlay(hud.rainWorld)?.isFocusedOnMenu is true
+                    || RMOverlayHUDMenu.GetOverlay()?.isFocusedOnMenu is true
                     || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) 
                         && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {

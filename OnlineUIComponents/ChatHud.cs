@@ -17,18 +17,17 @@ namespace RainMeadow
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
-        public static List<(string, string)> chatLog = new();
-        public float logScrollPos;
+        public float logScrollPos = -1;
 
-        public bool Active => game.processActive;
-        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || game.manager.upcomingProcess != null || slatedForDeletion;
+        public bool Active => true; //=> game.processActive;
+        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion; //  || game.manager.upcomingProcess != null
 
         public static bool isLogToggled
         {
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
             set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
         }
-        public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
+        public ChatHud(RoomCamera camera) : base(RMOverlayHUD.GetOverlay())
         {
             this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
@@ -51,10 +50,10 @@ namespace RainMeadow
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
         }
 
-        public void ClearChatLog()
+        public void UpdateCamera(RoomCamera camera)
         {
-            chatLog.Clear();
-            chatLogOverlay?.UpdateLogDisplay();
+            this.camera = camera;
+            this.game = camera.game;
         }
 
         public void AddMessage(string user, string message)
@@ -65,11 +64,13 @@ namespace RainMeadow
             if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value 
+                && !ChatLogManager.IsUserSystemSignature(user)
+                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+                && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1f);
             }
-            chatLog.Add((user, message));
             if (chatLogOverlay != null)
             {
                 bool shouldGoDown = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll;
@@ -136,7 +137,7 @@ namespace RainMeadow
             if (chatLogOverlay != null)
             {
                 logScrollPos = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll ? -1 : chatLogOverlay.scroller.DownScrollOffset;
-                chatLogOverlay.ShutDownProcess();
+                chatLogOverlay.RemoveSprites();
                 chatLogOverlay = null;
             }
         }
@@ -147,7 +148,7 @@ namespace RainMeadow
             {
                 if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
                 chatInputOverlay.chat.DelayedUnload(0.1f);
-                chatInputOverlay.ShutDownProcess();
+                chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;
             }
 

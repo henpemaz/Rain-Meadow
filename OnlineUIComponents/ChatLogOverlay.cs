@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatLogOverlay : Menu.Menu
+    public class ChatLogOverlay : MenuObject
     {
         public (string, string)[] myChatLog = [];
         public ButtonScroller scroller; //idk, makes things easier to manage ;-;
@@ -25,10 +26,11 @@ namespace RainMeadow
 
         private FSprite debug;
 
-        public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(RMOverlayHUDMenu.GetOverlayMenu(), RMOverlayHUDMenu.GetOverlayMenu().pages[0])
         {
+            // if (chatHud.hud is RMOverlayHUD) this.container = chatHud.hud.fContainers[1];
+            
             this.chatHud = chatHud;
-            pages.Add(new Page(this, null, "chat", 0));
 
             chatBg = [];
             Array.Resize(ref chatBg, maxVisibleMessages);
@@ -41,28 +43,34 @@ namespace RainMeadow
                     color = Color.black,
                     alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
                 };
-                pages[0].Container.AddChild(chatBg[i]);
+                this.Container.AddChild(chatBg[i]);
             }
             msgExtents = [];
 
-            scroller = new(this, pages[0], new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
+            scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
             };
             scroller.ClearMenuObject(scroller.scrollSlider); //dont make it null but clear it
-            pages[0].subObjects.Add(scroller);
+            this.subObjects.Add(scroller);
             UpdateLogDisplay();
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
 
             chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
-            //debug = new("pixel")
-            //{
+            // debug = new("pixel")
+            // {
             //    anchorX = 0,
             //    anchorY = 0,
             //    color = Color.red,
             //    alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
-            //};
-            //pages[0].Container.AddChild(debug);
+            // };
+            // pages[0].Container.AddChild(debug);
+        }
+
+        public override void RemoveSprites()
+        {
+            base.RemoveSprites();
+            chatBg.Do(x => x.RemoveFromContainer());
         }
 
         public override void Update()
@@ -180,14 +188,15 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
-            if (ChatHud.chatLog.Count > myChatLog.Length)
+            if (ChatLogManager.chatLog.Count > myChatLog.Length)
             {
                 ChatLogManager.UpdatePlayerColors();
                 float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset;
-                var newMessages = ChatHud.chatLog.Skip(myChatLog.Length);
+                var newMessages = ChatLogManager.chatLog.Skip(myChatLog.Length);
                 foreach (var (username, message) in newMessages)
                 {
-                    bool isSystemMessage = username is null or "";
+                    ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(username);
+                    bool isSystemMessage = systemMessageType is not null;
                     List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{username}: ", false)), 1, out string remainingMessage)];
                     splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
                     for (int i = 0; i < splitMessages.Count; i++)
@@ -196,19 +205,19 @@ namespace RainMeadow
                         string s = splitMessages[i];
                         if (isSystemMessage)
                         {
-                            AlignedMenuLabel systemMessageLabel = new(this, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
+                            AlignedMenuLabel systemMessageLabel = new(this.menu, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             systemMessageLabel.label.alignment = FLabelAlignment.Left;
-                            systemMessageLabel.label.color = ChatLogManager.defaultSystemColor;
+                            systemMessageLabel.label.color = ChatLogManager.GetColorOfSystemMessage(systemMessageType);
                             scroller.AddScrollObjects(systemMessageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 2f);
                         }
                         else if (i == 0)
                         {
-                            UsernameMenuLabel usernameLabel = new(this, scroller, username!, new Vector2(xPos, yPos), new Vector2(0, 20), false);
+                            UsernameMenuLabel usernameLabel = new(this.menu, scroller, username!, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             usernameLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.label.color = ChatLogManager.GetDisplayPlayerColor(username!);
 
-                            AlignedMenuLabel messagewithUserLabel = new(this, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2 + (usernameLabel.Host ? 14 : 0), 0), new Vector2(0, 20), false)
+                            AlignedMenuLabel messagewithUserLabel = new(this.menu, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2 + (usernameLabel.Host ? 14 : 0), 0), new Vector2(0, 20), false)
                             { labelPosAlignment = FLabelAlignment.Left };
                             messagewithUserLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.subObjects.Add(messagewithUserLabel);
@@ -217,14 +226,14 @@ namespace RainMeadow
                         }
                         else
                         {
-                            AlignedMenuLabel messageLabel = new(this, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
+                            AlignedMenuLabel messageLabel = new(this.menu, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             messageLabel.label.alignment = FLabelAlignment.Left;
                             scroller.AddScrollObjects(messageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 4f);
                         }
                     }
                 }
-                myChatLog = [.. ChatHud.chatLog];
+                myChatLog = [.. ChatLogManager.chatLog];
                 inactivityTimer = 0;
             }
         }

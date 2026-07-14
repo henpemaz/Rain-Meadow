@@ -74,8 +74,7 @@ namespace RainMeadow
                     (float orig, ProcessManager self) =>
                     {
                         // Put it on the right, so chat can don't overlap with it
-                        if (RMOverlayHUDOwner.overlayManagers.TryGetValue(self.rainWorld, out var overlayHUDsManager)
-                            && overlayHUDsManager.overlayHUD?.chatHud is not null)
+                        if (RMOverlayHUDMenu.GetOverlay()?.chatHud is not null)
                         {
                             return self.rainWorld.options.ScreenSize.x - orig - self.loadingLabel.textRect.x;
                         }
@@ -92,13 +91,13 @@ namespace RainMeadow
         private void ProcessManager_Update_UpdateOverlay(On.ProcessManager.orig_Update orig, ProcessManager self, float deltaTime)
         {
             orig(self, deltaTime);
-            if (RMOverlayHUDOwner.overlayManagers.TryGetValue(self.rainWorld, out var overlayHUDsManager))
+            if (RMOverlayHUDMenu.TryGetOverlayMenu(out var overlayHUDsManager))
             {
-                overlayHUDsManager.Update(deltaTime);
+                overlayHUDsManager.RawUpdate(deltaTime);
             }
             else
             {
-                new RMOverlayHUDOwner(self.rainWorld).AddOverlayHUD();
+                new RMOverlayHUDMenu(self).AddOverlayHUD();
                 Debug("Rain Meadow Overlay HUD had been added");
             }
         }

@@ -614,11 +614,7 @@ namespace RainMeadow
             {
                 self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                 ChatTextBox.InvokeShutDownChat();
-                if ((self.cameras[0].hud.parts.Find(x => x is ChatHud) is ChatHud hud) && !hud.showChatLog)
-                {
-                    hud.ShutDownChatLog();
-                }
-                else if (RMOverlayHUDOwner.GetOverlay(self.rainWorld)?.chatHud is ChatHud chatHud && !chatHud.showChatLog)
+                if (RMOverlayHUDMenu.GetOverlay()?.chatHud is ChatHud chatHud && !chatHud.showChatLog)
                 {
                     chatHud.ShutDownChatLog();
                 }

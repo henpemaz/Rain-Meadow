@@ -186,10 +186,6 @@ namespace RainMeadow
                 RefreshLobbyList(null);
             };
 
-            // Clear chat logs here
-            ChatHud.chatLog.Clear();
-
-
             new UIelementWrapper(this.tabWrapper, domainDropDown);
 
             CreateElementBindings();

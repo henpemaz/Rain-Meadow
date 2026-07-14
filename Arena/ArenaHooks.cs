@@ -71,6 +71,7 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
+            On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor_DisplayWhoWon;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
@@ -184,7 +185,36 @@ namespace RainMeadow
             
             DrownHooks();
         }
-        
+
+        private void ArenaOverlay_ctor_DisplayWhoWon(On.Menu.ArenaOverlay.orig_ctor orig, ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
+        {
+            orig(self, manager, ArenaSitting, result);
+
+            if (isArenaMode(out var arena))
+            {
+                string winnerName = "";
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    if (tb.winningTeam != -1)
+                    {
+                        winnerName = MatchmakingManager.currentInstance.FilterTeamName(
+                            tb.teamNames[tb.winningTeam].ToUpper()
+                        );
+                    }
+                }
+                else
+                {
+                    var winningResult = result.FirstOrDefault(x => x.winner);
+                    if (winningResult != null)
+                    {
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
+                        winnerName = pl != null ? pl.id.DisplayName : "";
+                    }
+                }
+                ChatLogManager.LogSystemMessage(Utils.Translate("Round ended!") + " " + (winnerName == "" ? Utils.Translate("There is a draw!") : winnerName + " " + Utils.Translate("wins!")), ChatLogManager.SystemMessageType.EndOfRound);
+            }
+        }
+
         // Restrict Artificer's parry and stun range in arena
         private const float VANILLA_ARTI_PARRY_RANGE = 300f;
         private const float VANILLA_ARTI_STUN_RANGE = 200f;
@@ -2567,6 +2597,7 @@ namespace RainMeadow
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
+                ChatLogManager.LogSystemMessage(Utils.Translate("Starting match in arena") + " " + MultiplayerUnlocks.LevelDisplayName(self.arenaSitting.GetCurrentLevel), ChatLogManager.SystemMessageType.StartOfRound);
             }
         }
 
@@ -3004,27 +3035,16 @@ namespace RainMeadow
                 );
                 self.pages[0].subObjects.Add(exitButton);
 
-                if (!TeamBattleMode.isTeamBattleMode(arena, out _))
-                {
-                    var winningResult = self.result.FirstOrDefault(x => x.winner);
-                    if (winningResult != null)
-                    {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
-                        self.headingLabel.text = self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(pl != null ? pl.id.DisplayName : "SESSION RESULTS"));
-                    }
-                }
-
+                string winnerName = "";
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
                     if (tb.winningTeam != -1)
                     {
+                        winnerName = MatchmakingManager.currentInstance.FilterTeamName(
+                            tb.teamNames[tb.winningTeam].ToUpper()
+                        );
                         self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
-                            .Replace(
-                                "<TEAMNAME>",
-                                MatchmakingManager.currentInstance.FilterTeamName(
-                                    tb.teamNames[tb.winningTeam].ToUpper()
-                                )
-                            );
+                            .Replace("<TEAMNAME>",winnerName);
                     }
 
                     if (arena.WinByScore)
@@ -3043,6 +3063,19 @@ namespace RainMeadow
                         }
                     }
                 }
+                else
+                {
+                    var winningResult = self.result.FirstOrDefault(x => x.winner);
+                    if (winningResult != null)
+                    {
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
+                        winnerName = pl != null ? pl.id.DisplayName : "";
+                        self.headingLabel.text = self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(winnerName != "" ? winnerName : "SESSION RESULTS"));
+                    }
+                }
+
+                RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
+                ChatLogManager.LogSystemMessage(Utils.Translate("Session ended!") + " " + (winnerName == "" ? Utils.Translate("There is a draw!") : winnerName + " " + Utils.Translate("wins!")), ChatLogManager.SystemMessageType.EndOfSession);
             }
         }
 

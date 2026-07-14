@@ -30,15 +30,20 @@ namespace RainMeadow.UI.Components
             };
             menu.MutualHorizontalButtonBind(chatTypingBox, messageScroller.scrollSlider);
             subObjects.AddRange([roundedRect, chatTypingBox, messageScroller]);
+
+            for (int i = 0; i < ChatLogManager.chatLog.Count && i < maxVisibleMessages; i++)
+            {
+                AddNewMessageToScroller(ChatLogManager.chatLog[i].Item1, ChatLogManager.chatLog[i].Item2);
+            }
         }
-        public AlignedMenuLabel GetMessageLabel(string? user, string stg, bool isSystemMessage, bool withUser, Vector2 pos, Vector2 size)
+        public AlignedMenuLabel GetMessageLabel(string? user, string stg, ChatLogManager.SystemMessageType? systemMessageType, bool withUser, Vector2 pos, Vector2 size)
         {
-            if (isSystemMessage)
+            if (systemMessageType is not null)
             {
                 AlignedMenuLabel systemMessageLabel = new(menu, messageScroller, stg, pos, size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 systemMessageLabel.label.alignment = FLabelAlignment.Left;
-                systemMessageLabel.label.color = ChatLogManager.defaultSystemColor;
+                systemMessageLabel.label.color = ChatLogManager.GetColorOfSystemMessage(systemMessageType);
                 return systemMessageLabel;
             }
             if (withUser)
@@ -60,10 +65,17 @@ namespace RainMeadow.UI.Components
             messageLabel.label.alignment = FLabelAlignment.Left;
             return messageLabel;
         }
+        public void AddNewMessageToScroller(string user, string message)
+        {
+            bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
+            messageScroller.AddScrollObjects(GetMessageLabels(user, message));
+            if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
+        }
         public AlignedMenuLabel[] GetMessageLabels(string user, string message)
         {
             List<AlignedMenuLabel> messageLabels = [];
-            bool isSystemMessage = user == null || user == "";
+            ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(user);
+            bool isSystemMessage = systemMessageType is not null;
             float desiredXWidth = messageScroller.size.x - 5;
             Vector2 desiredSize = new(desiredXWidth, messageScroller.buttonHeight);
 
@@ -71,7 +83,7 @@ namespace RainMeadow.UI.Components
             List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false) + (host ? 14f : 0)), 1, out string remainingMessage)];
             splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
             for (int i = 0; i < splitMessages.Count; i++)
-                messageLabels.Add(GetMessageLabel(user, splitMessages[i], isSystemMessage, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
+                messageLabels.Add(GetMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
             return [.. messageLabels];
         }
         public void AddMessage(string user, string message)
@@ -79,19 +91,20 @@ namespace RainMeadow.UI.Components
             if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
             if (!(OnlineManager.lobby?.gameMode?.mutedPlayers.Contains(user) == false)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value 
+                && !ChatLogManager.IsUserSystemSignature(user)
+                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+                && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 menu.manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 0f);
             }
-            bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
-            messageScroller.AddScrollObjects(GetMessageLabels(user, message));
-            if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
-
+            AddNewMessageToScroller(user, message);
         }
 
 
         public RoundedRect roundedRect;
         public ChatTextBox chatTypingBox;
         public ButtonScroller messageScroller;
+        private const int maxVisibleMessages = 25;
     }
 }

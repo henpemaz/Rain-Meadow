@@ -59,6 +59,9 @@ namespace RainMeadow
             configurableFloats = new Dictionary<string, float>();
             configurableInts = new Dictionary<string, int>();
 
+            // Clear chat logs here
+            ChatLogManager.ClearChatLog();
+
             if (isOwner)
             {
                 this.password = password;
@@ -70,9 +73,6 @@ namespace RainMeadow
                 this.enteredPassword = password;
                 RequestLobby(password);
             }
-
-
-
         }
 
         public void RequestLobby(string? key)

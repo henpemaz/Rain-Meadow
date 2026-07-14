@@ -18,8 +18,9 @@ namespace RainMeadow
             public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
             public static ProcessManager.ProcessID StoryMenu = new("StoryMenu", true);
             public static ProcessManager.ProcessID SpectatorMode = new("SpectatorMode", true);
-            public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
+            // public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
             public static ProcessManager.ProcessID MeadowCredits = new("MeadowCredits", true);
+            public static ProcessManager.ProcessID RainMeadowOverlay = new("RainMeadowOverlay", true);
         }
 
         public class Ext_SlugcatStatsName

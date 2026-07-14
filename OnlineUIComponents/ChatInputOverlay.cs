@@ -3,16 +3,15 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatInputOverlay : Menu.Menu
+    public class ChatInputOverlay : MenuObject
     {
         //public ChatLogOverlay chatLogOverlay;  // TODO: should we handle this separate from the toggle?
         public ChatTextBox chat;
 
-        public ChatInputOverlay(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        public ChatInputOverlay(ProcessManager manager) : base(RMOverlayHUDMenu.GetOverlayMenu(), RMOverlayHUDMenu.GetOverlayMenu().pages[0])
         {
-            pages.Add(new Page(this, null, "chatButton", 0));
-            chat = new ChatTextBox(this, pages[0], "", new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0), new(750, 30));
-            pages[0].subObjects.Add(chat);
+            chat = new ChatTextBox(this.menu, this, "", new Vector2(manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 0), new(750, 30));
+            this.subObjects.Add(chat);
         }
     }
 }

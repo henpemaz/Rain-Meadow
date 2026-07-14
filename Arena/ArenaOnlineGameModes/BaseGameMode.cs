@@ -359,17 +359,11 @@ namespace RainMeadow
         {
             self.AddPart(new HUD.TextPrompt(self));
 
-            if (MatchmakingManager.currentInstance.canSendChatMessages)
+            if (MatchmakingManager.currentInstance.canSendChatMessages 
+                && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
             {
-                if (RMOverlayHUDOwner.TryGetOverlay(self.rainWorld, out var overlayHUD))
-                {
-                    if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
-                    else overlayHUD.SetNewChatHUDCamera(session.game.cameras[0]);
-                }
-                else
-                {
-                    self.AddPart(new ChatHud(self, session.game.cameras[0]));
-                }
+                if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
+                else overlayHUD.SetNewChatHUDCamera(session.game.cameras[0]);
             }
                 
 

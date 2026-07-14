@@ -142,6 +142,16 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> StoreItem7;
     public readonly Configurable<KeyCode> StoreItem8;
 
+
+    public readonly Configurable<bool> EnableChatArenaDeathNotification;
+    public readonly Configurable<bool> EnableChatArenaJoinNotification;
+    public readonly Configurable<bool> EnableChatStoryDeathNotification;
+    public readonly Configurable<bool> EnableChatStoryJoinNotification;
+    public readonly Configurable<bool> EnableChatRoundNotification;
+    public readonly Configurable<bool> EnableChatSessionNotification;
+    public readonly Configurable<bool> EnableChatLogErrorToggle;
+
+
     public enum IntroRoll
     {
         Meadow,
@@ -305,6 +315,17 @@ public class RainMeadowOptions : OptionInterface
         StoreItem6 = config.Bind("DrownStoreItem6", KeyCode.Alpha6);
         StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
         StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
+
+        // Chat
+        EnableChatStoryDeathNotification = config.Bind("EnableChatStoryDeathNotification", true);
+        EnableChatStoryJoinNotification = config.Bind("EnableChatStoryJoinNotification", true);
+
+        EnableChatArenaDeathNotification = config.Bind("EnableChatArenaDeathNotification", true);
+        EnableChatArenaJoinNotification = config.Bind("EnableChatArenaJoinNotification", true);
+
+        EnableChatLogErrorToggle = config.Bind("EnableChatLogErrorToggle", false);
+        EnableChatRoundNotification = config.Bind("EnableChatRoundNotification", false);
+        EnableChatSessionNotification = config.Bind("EnableChatSessionNotification", false);
     }
 
     List<ListItem> arenaFlairList = new List<ListItem>
@@ -605,6 +626,11 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(new Vector2(40, 170), new(25, 25), Custom.ReplaceLineDelimeters(Translate("Gain achievements online")), FLabelAlignment.Left),
                 new OpCheckBox(EnableAchievementsOnline, new Vector2(10, 170)),
 
+                new OpLabel(10, 120f, Translate("Chat") + " " + Translate("Death Notification")),
+                new OpCheckBox(EnableChatStoryDeathNotification, new Vector2(10f, 90f)),
+
+                new OpLabel(10, 60f,  Translate("Chat") + " " + Translate("Join Notification")),
+                new OpCheckBox(EnableChatStoryJoinNotification, new Vector2(10, 30f)),
             ];
             storyTab.AddItems(OnlineStorySettings);
 
@@ -644,6 +670,23 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
             new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
+
+            new OpLabel(10f, 150f, Translate("Chat"), bigText: true),
+            
+                new OpLabel(10, 120f, Translate("Death Notification")),
+                new OpCheckBox(EnableChatArenaDeathNotification, new Vector2(10f, 90f)),
+
+                new OpLabel(10, 60f, Translate("Join Notification")),
+                new OpCheckBox(EnableChatArenaJoinNotification, new Vector2(10, 30f)),
+
+                new OpLabel(210f, 120f, Translate("Round Notification")),
+                new OpCheckBox(EnableChatRoundNotification, new Vector2(210f, 90f)),
+
+                new OpLabel(210, 60f, Translate("Session Notification")),
+                new OpCheckBox(EnableChatSessionNotification, new Vector2(210, 30f)),
+
+                new OpLabel(410f, 120f, Translate("Enable Chat Logging Toggle")),
+                new OpCheckBox(EnableChatLogErrorToggle, new Vector2(410f, 90f)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
             ];
 
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
