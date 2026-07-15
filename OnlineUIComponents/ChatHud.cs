@@ -62,19 +62,24 @@ namespace RainMeadow
         {
             if (!Active) return;
             if (OnlineManager.lobby == null) return;
+            if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
 
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && !ChatLogManager.IsUserSystemSignature(user)) return;
-            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (RainMeadow.rainMeadowOptions.ChatPing.Value 
-                && !ChatLogManager.IsUserSystemSignature(user)
-                && user != OnlineManager.mePlayer.id.GetPersonaName() 
-                && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (ChatLogManager.ShouldPingFromMessage(user, message))
             {
-                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1f);
+                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1.2f);
             }
             if (chatLogOverlay != null)
             {
+                if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
+                {
+                    camera.virtualMicrophone.PlaySound(
+                        quiet ? SoundID.MENU_Scroll_Tick : SoundID.MENU_First_Scroll_Tick, 
+                        0, 
+                        quiet ? 1.25f : 0.625f, 
+                        quiet ? 0.6f : 0.7f
+                    );
+                }
                 bool shouldGoDown = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll;
                 chatLogOverlay.UpdateLogDisplay();
                 if (shouldGoDown) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;

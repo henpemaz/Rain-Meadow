@@ -18,6 +18,26 @@ namespace RainMeadow
         private static List<IChatSubscriber> subscribers = new();
         public static List<(string, string)> chatLog = new();
         public static bool logErrorsInChat = false;
+        
+        public static bool ShouldMuteMessageFromUser(string user)
+            => !IsUserSystemSignature(user)
+                && (RainMeadow.rainMeadowOptions.GlobalMute.Value
+                    || OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(user) is true);
+        public static bool ShouldPingFromMessage(string user, string message)
+            => RainMeadow.rainMeadowOptions.ChatPing.Value 
+                && !IsUserSystemSignature(user)
+                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+                && !string.IsNullOrEmpty(message)
+                && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0;
+        public static bool ShouldMakeSoundFromMessage(string user, string message, out bool quiet)
+        {
+            quiet = IsUserSystemSignature(user);
+            return RainMeadow.rainMeadowOptions.ChatSound.Value 
+                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+                && !string.IsNullOrEmpty(message)
+                && !ShouldPingFromMessage(user, message);
+        }
+                
         public static void ClearChatLog() 
         { 
             chatLog.Clear(); 
@@ -27,9 +47,7 @@ namespace RainMeadow
             => AddMessageToChatLog(userMessagePair.Item1, userMessagePair.Item2);
         public static void AddMessageToChatLog(string user, string message) 
         {
-            if (IsUserSystemSignature(user)
-                || (!RainMeadow.rainMeadowOptions.GlobalMute.Value
-                    && OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(user) is not true))
+            if (!ShouldMuteMessageFromUser(user))
             {
                 chatLog.Add((user, message));
                 // RainMeadow.Debug($"Adding message in log from {user} : {message}"); 

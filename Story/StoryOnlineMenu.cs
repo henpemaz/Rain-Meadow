@@ -700,17 +700,22 @@ namespace RainMeadow
 
         public void AddMessage(string user, string message)
         {
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && !ChatLogManager.IsUserSystemSignature(user)) return;
             if (OnlineManager.lobby == null) return;
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value) return;
-            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
+            if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
+
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (RainMeadow.rainMeadowOptions.ChatPing.Value 
-                && !ChatLogManager.IsUserSystemSignature(user)
-                && user != OnlineManager.mePlayer.id.GetPersonaName() 
-                && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (ChatLogManager.ShouldPingFromMessage(user, message))
             {
-                manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0f, 1f, 0f);
+                manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0f, 1f, 1.2f);
+            }
+            if (this.isChatToggled && ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
+            {
+                manager.menuMic.PlaySound(
+                    quiet ? SoundID.MENU_Scroll_Tick : SoundID.MENU_First_Scroll_Tick, 
+                    0, 
+                    quiet ? 1.25f : 0.625f, 
+                    quiet ? 0.6f : 0.7f
+                );
             }
             this.UpdateLogDisplay();
         }

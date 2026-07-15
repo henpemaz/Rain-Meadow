@@ -23,7 +23,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatButtonKey;
-    public readonly Configurable<bool> ChatLogOnOff, ChatPing;
+    public readonly Configurable<bool> ChatLogOnOff, ChatPing, ChatSound;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<int> ArenaWatcherCamoTimer;
@@ -194,6 +194,7 @@ public class RainMeadowOptions : OptionInterface
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
         ChatPing = config.Bind("ChatPing", true);
+        ChatSound = config.Bind("ChatSound", false);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
@@ -407,6 +408,12 @@ public class RainMeadowOptions : OptionInterface
 
             new OpLabel(10, 60f, Translate("Sound on Mention")),
             new OpCheckBox(ChatPing, new Vector2(10, 30f)),
+
+            new OpLabel(210, 240f, Translate("Sound On New Message")),
+            new OpCheckBox(ChatSound, new Vector2(210, 210f)),
+
+            new OpLabel(410f, 240f, Translate("Enable Chat Logging Toggle")),
+            new OpCheckBox(EnableChatLogErrorToggle, new Vector2(410f, 210f)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
 
 
             new OpLabel(440f, 535, Translate("Global Mute")),
@@ -684,9 +691,6 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(210, 60f, Translate("Session Notification")),
                 new OpCheckBox(EnableChatSessionNotification, new Vector2(210, 30f)),
-
-                new OpLabel(410f, 120f, Translate("Enable Chat Logging Toggle")),
-                new OpCheckBox(EnableChatLogErrorToggle, new Vector2(410f, 90f)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
             ];
 
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
