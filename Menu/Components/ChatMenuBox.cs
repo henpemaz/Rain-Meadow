@@ -98,10 +98,10 @@ namespace RainMeadow.UI.Components
             if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
             {
                 menu.manager.menuMic.PlaySound(
-                    quiet ? SoundID.MENU_Scroll_Tick : SoundID.MENU_First_Scroll_Tick, 
+                    quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
                     0, 
-                    quiet ? 1.25f : 0.625f, 
-                    quiet ? 0.6f : 0.7f
+                    quiet ? 0.7f : 1.5f, 
+                    quiet ? 0.7f : 0.6f
                 );
             }
             AddNewMessageToScroller(user, message);

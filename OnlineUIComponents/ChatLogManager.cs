@@ -31,7 +31,7 @@ namespace RainMeadow
                 && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0;
         public static bool ShouldMakeSoundFromMessage(string user, string message, out bool quiet)
         {
-            quiet = IsUserSystemSignature(user);
+            quiet = !IsUserSystemSignature(user);
             return RainMeadow.rainMeadowOptions.ChatSound.Value 
                 && user != OnlineManager.mePlayer.id.GetPersonaName() 
                 && !string.IsNullOrEmpty(message)
@@ -118,13 +118,18 @@ namespace RainMeadow
         /// </summary>
         public static void UpdatePlayerColors()
         {
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            foreach (OnlinePlayer onlinePlayer in OnlineManager.lobby.participants)
             {
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
+                if (OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs) && cs.chatUsernameColor is Color color)
+                {
+                    colorDict[onlinePlayer.id.DisplayName] = color;
+                }
+                else if (OnlineManager.lobby.playerAvatars.Exists(kv => kv.Key == onlinePlayer)
+                    && OnlineManager.lobby.playerAvatars.First(kv => kv.Key == onlinePlayer).Value?.FindEntity(true) is OnlinePhysicalObject opo)
                 {
                     // If we successfully get the customization data, upsert
                     if (opo.TryGetData<SlugcatCustomization>(out var customization))
-                        colorDict[opo.owner.id.DisplayName] = customization.bodyColor;
+                        colorDict[onlinePlayer.id.DisplayName] = customization.bodyColor;
                 }
             }
         }

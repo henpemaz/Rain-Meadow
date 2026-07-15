@@ -471,6 +471,12 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+            if (player.isMe
+                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                && cs.chatUsernameColor is Color color)
+            {
+                return color;
+            }
             Color.RGBToHSV(customization.SlugcatColor(), out var H, out var S, out var V);
             if (V < 0.8)
             {
