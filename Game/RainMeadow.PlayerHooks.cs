@@ -129,6 +129,38 @@ public partial class RainMeadow
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
         On.Player.ProcessDebugInputs += Player_ProcessDebugInputs;
+
+        IL.Player.ClassMechanicsGourmand += Player_ClassMechanicsGourmand_GourmandRemoteExhaustFix;
+    }
+
+    private void Player_ClassMechanicsGourmand_GourmandRemoteExhaustFix(ILContext il)
+    {
+        try
+        {
+            ILCursor cursor = new ILCursor(il);
+            ILLabel label = cursor.DefineLabel();
+
+            if (cursor.TryGotoNext(MoveType.Before, 
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>(nameof(Player.gourmandExhausted))))
+            {
+                // Skip the gourmand exhausted check if the player is remote. RealizedPlayerState will do the job.
+                label = cursor.MarkLabel();
+                cursor.Index = 0;
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Player player) => player.abstractCreature?.GetOnlineCreature()?.isMine is false);
+                cursor.Emit(OpCodes.Brfalse, cursor.Next);
+                cursor.Emit(OpCodes.Br, label);
+            }
+            else
+            {
+                 RainMeadow.Error("Couldn't find where to hook :<");
+            }
+        }
+        catch (Exception e)
+        {
+            RainMeadow.Error("Exception while hooking :" +e);
+        }
     }
 
     private void Player_ProcessDebugInputs(On.Player.orig_ProcessDebugInputs orig, Player self)
