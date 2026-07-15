@@ -2567,7 +2567,7 @@ namespace RainMeadow
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
-                ChatLogManager.LogSystemMessage(Utils.Translate("Starting match in arena") + " " + MultiplayerUnlocks.LevelDisplayName(self.arenaSitting.GetCurrentLevel), ChatLogManager.SystemMessageType.StartOfRound);
+                ChatLogManager.LogSystemMessage(Utils.Translate("Starting match in") + " " + MultiplayerUnlocks.LevelDisplayName(self.arenaSitting.GetCurrentLevel), ChatLogManager.SystemMessageType.StartOfRound);
             }
         }
 
