@@ -48,7 +48,7 @@
 - Fixed prince's duplication
 - Synced prince's position and look point
 ## Chat
-- Put Chat in its own overlay so it is available at all time
+- Put Chat in its own overlay so it is available at all times
 - Added Remix options for different system messages in arena and story mode
 
 # Release 1.14.1
