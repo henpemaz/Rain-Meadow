@@ -33,7 +33,8 @@ namespace RainMeadow.UI.Components
 
             for (int i = 0; i < ChatLogManager.chatLog.Count && i < maxVisibleMessages; i++)
             {
-                AddNewMessageToScroller(ChatLogManager.chatLog[i].Item1, ChatLogManager.chatLog[i].Item2);
+                int j = ChatLogManager.chatLog.Count - 1 - i;
+                AddNewMessageToScroller(ChatLogManager.chatLog[j].Item1, ChatLogManager.chatLog[j].Item2);
             }
         }
         public AlignedMenuLabel GetMessageLabel(string? user, string stg, ChatLogManager.SystemMessageType? systemMessageType, bool withUser, Vector2 pos, Vector2 size)

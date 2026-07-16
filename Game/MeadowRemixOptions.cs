@@ -152,6 +152,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableChatLogErrorToggle;
     public readonly Configurable<bool> ClearChatEveryRound;
     public readonly Configurable<bool> UseCustomChatUsernameColor;
+    public readonly Configurable<bool> ChatTextFade;
     public readonly Configurable<string> CurrentlyActiveChatUsernameColor;
 
 
@@ -336,6 +337,7 @@ public class RainMeadowOptions : OptionInterface
         EnableChatSessionNotification = config.Bind("EnableChatSessionNotification", false);
 
         UseCustomChatUsernameColor = config.Bind("UseCustomChatUsernameColor", false);
+        ChatTextFade = config.Bind("ChatTextFade", false);
         CurrentlyActiveChatUsernameColor = config.Bind("CurrentlyActiveChatUsernameColor", "FFFFFF");
     }
 
@@ -774,16 +776,18 @@ public class RainMeadowOptions : OptionInterface
                 new OpCheckBox(EnableChatArenaJoinNotification, new Vector2(210, 110)),
 
 
-                new OpLabel(410, 200, Translate("Arena") + " " +Translate("Round Notification")),
+                new OpLabel(410, 200, Translate("Arena") + " " + Translate("Round Notification")),
                 new OpCheckBox(EnableChatRoundNotification, new Vector2(410, 170)),
 
-                new OpLabel(410, 140, Translate("Arena") + " " +Translate("Session Notification")),
+                new OpLabel(410, 140, Translate("Arena") + " " + Translate("Session Notification")),
                 new OpCheckBox(EnableChatSessionNotification, new Vector2(410, 110)),
 
                 
                 new OpLabel(10, 70, Translate("Enable Chat Logging Toggle")),
                 new OpCheckBox(EnableChatLogErrorToggle, new Vector2(10, 40)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
 
+                new OpLabel(210, 70, Translate("Text Downscroll And Fade")),
+                new OpCheckBox(ChatTextFade, new Vector2(210, 40)),
             ];
             useCustomChatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) =>
             {

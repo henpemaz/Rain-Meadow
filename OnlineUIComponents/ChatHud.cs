@@ -17,7 +17,7 @@ namespace RainMeadow
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
-        public float logScrollPos = -1;
+        public float logScrollPos = RainMeadow.rainMeadowOptions.ChatTextFade.Value ? 0 : -1;
 
         public bool Active => true; //=> game.processActive;
         public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;
@@ -80,9 +80,9 @@ namespace RainMeadow
                         quiet ? 0.7f : 0.6f
                     );
                 }
-                bool shouldGoDown = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll;
+                bool shouldGoDown = chatLogOverlay.scroller.IsAtBottom();
                 chatLogOverlay.UpdateLogDisplay();
-                if (shouldGoDown) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
+                if (shouldGoDown) chatLogOverlay.scroller.MoveAtBottom();
             }
         }
 
@@ -161,7 +161,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatInputOverlay != null)
             {
-                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
+                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveAtBottom();
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;

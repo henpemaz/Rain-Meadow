@@ -18,11 +18,14 @@ namespace RainMeadow
         private FSprite[] chatBg;
         private float bgSideOffset = 20;
         private const int maxVisibleMessages = 13;
+        private const int maxTextVisibleTime = 20 * 40;
+        private const int maxFadeTime = 20;
         private Rect chatRect;
 
         public float opacity = 1.0f;
         private float lastOpacity = 1.0f;
         public int inactivityTimer;
+        private static List<int> textInactivityTimer = new();
 
         private FSprite debug;
 
@@ -50,6 +53,9 @@ namespace RainMeadow
             scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
+                textAnchor = RainMeadow.rainMeadowOptions.ChatTextFade.Value 
+                    ? ButtonScroller.TextAnchor.Bottom 
+                    : ButtonScroller.TextAnchor.Top 
             };
             scroller.ClearMenuObject(scroller.scrollSlider); //dont make it null but clear it
             this.subObjects.Add(scroller);
@@ -77,6 +83,7 @@ namespace RainMeadow
         {
             base.Update();
             OpacityUpdate();
+            UpdateLabelInactivityTable();
             inactivityTimer++;
         }
 
@@ -100,7 +107,7 @@ namespace RainMeadow
                 debug.height = chatRect.height;
             }
 
-            var tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
+            float tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
 
             // Make everything "invisible" by default (just 0-sized)
             for (int i = 0; i < chatBg.Length; ++i)
@@ -109,7 +116,7 @@ namespace RainMeadow
                 chatBg[i].scaleY = 0;
             }
             int firstIndex = GetFirstIndex();
-            float longestMessage = 0;
+            // float longestMessage = 0;
             for (int i = 0; i < chatBg.Length; ++i)
             {
                 int j = firstIndex + i;
@@ -117,12 +124,14 @@ namespace RainMeadow
                 {
                     // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
                     // messages fading out work as intended.
+                    
+                    float tOpacityLabel = tOpacity * GetInactivityFadeOfLabel(j);
                     if (scroller.buttons[j] is AlignedMenuLabel label)
                     {
-                        label.label.alpha = tOpacity;
+                        label.label.alpha = tOpacityLabel;
                         foreach(var subObj in label.subObjects)
                         {
-                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
+                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacityLabel;
                         }
                     }
 
@@ -130,7 +139,7 @@ namespace RainMeadow
                     chatBg[i].y = scroller.pos.y + scroller.buttons[j].Pos.y;
                     chatBg[i].scaleX = msgExtents[j] + 8f;
                     chatBg[i].scaleY = scroller.ButtonHeightAndSpacing + 1f;
-                    chatBg[i].alpha = tOpacity * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
+                    chatBg[i].alpha = tOpacityLabel * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
                 }
             }
         }
@@ -231,11 +240,32 @@ namespace RainMeadow
                             scroller.AddScrollObjects(messageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 4f);
                         }
+                        
+                        if (RainMeadow.rainMeadowOptions.ChatTextFade.Value) textInactivityTimer.Add(maxTextVisibleTime);
                     }
                 }
                 myChatLog = [.. ChatLogManager.chatLog];
                 inactivityTimer = 0;
             }
         }
+        
+        private void UpdateLabelInactivityTable()
+        {
+            if (RainMeadow.rainMeadowOptions.ChatTextFade.Value)
+            {
+                for (int i = 0; i < textInactivityTimer.Count; i++)
+                {
+                    if (textInactivityTimer[i] > -maxFadeTime) --textInactivityTimer[i];
+                }
+            }
+        }
+        private float GetInactivityFadeOfLabel(int index)
+            => this.chatHud?.chatInputActive is true || !RainMeadow.rainMeadowOptions.ChatTextFade.Value
+                ? 1f 
+                : (textInactivityTimer.Count > index && index >= 0
+                    ? (textInactivityTimer[index] > 0 
+                        ? 1f 
+                        : 1f - Mathf.Clamp01(-textInactivityTimer[index]/(float)maxFadeTime))
+                    : 1f);
     }
 }
