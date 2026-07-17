@@ -1,14 +1,14 @@
+using System.Collections.Generic;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
-using RWCustom;
 using System.Linq;
-using System.Collections.Generic;
+using HUD;
+
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
-
         [RPCMethod]
         public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
         {
@@ -32,101 +32,123 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void IncreasePlayerScore(int playerNumber, int newScore)
+        public static void ModifyArenaPlayerScore(int playerNumber, int scoreChange)
         {
-            RainMeadow.DebugMe();
-            if (!RainMeadow.isArenaMode(out var arena)) return;
+            if (scoreChange == 0)
+                RainMeadow.Warn($"{scoreChange} is 0.");
 
-            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
+                RainMeadow.Error("The online game mode is not Arena.");
                 return;
             }
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null)
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
             {
-                RainMeadow.Error("Arena: RainWorldGame is null!");
+                RainMeadow.Warn("Not currently in-game.");
                 return;
             }
-
-            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+            if (game.session is not ArenaGameSession arenaSession)
             {
-                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
-                {
-                    return; // no points for you
-                }
-
-                if (a.arenaSitting.players[playerNumber].score < newScore)
-                {
-                    a.arenaSitting.players[playerNumber].score = newScore;
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
-                    }
-
-                    RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
-
-                }
-            }
-
-        }
-
-        // Can increase or decrease
-        [RPCMethod]
-        public static void UpdatePlayerScore(int playerNumber, int newScore)
-        {
-            RainMeadow.DebugMe();
-            if (!RainMeadow.isArenaMode(out var arena)) return;
-
-            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
-            {
+                RainMeadow.Warn("Not in an arena session.");
                 return;
             }
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null)
+            if (arenaSession.sessionEnded)
             {
-                RainMeadow.Error("Arena: RainWorldGame is null!");
+                RainMeadow.Warn("Session ended.");
+                return;
+            }
+            if (playerNumber < 0 || playerNumber >= arenaSession.arenaSitting.players.Count)
+            {
+                RainMeadow.Warn($"Player number is out of range. Player number: {playerNumber}. Player count: {arenaSession.arenaSitting.players.Count}");
+                return;
+            }
+            if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, playerNumber) is not OnlinePlayer onlinePlayer)
+            {
+                RainMeadow.Warn($"Unable to find online player with player number {playerNumber}.");
                 return;
             }
 
-            if (game.session is ArenaGameSession a && a.arenaSitting.players.Contains(a.arenaSitting.players[playerNumber]))
+
+            ArenaSitting.ArenaPlayer arenaPlayer = arenaSession.arenaSitting.players[playerNumber];
+
+            if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
             {
-                if (a.arenaSitting.players[playerNumber].playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
-                {
-                    return; // no points for you
-                }
-
-                a.arenaSitting.players[playerNumber].score = newScore;
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playerNumberWithScore[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
-                }
-                RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
-
+                RainMeadow.Error($"{onlinePlayer} is a spectator.");
+                return;
             }
 
+            RainMeadow.Info($"Adding {scoreChange} to {onlinePlayer}'s score.");
+            arenaPlayer.score += scoreChange;
+
+            if (OnlineManager.lobby.isOwner)
+                arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
         }
 
         [RPCMethod]
-        public static void AddKilledCreatureToHUD(OnlineCreature onlineKilledCreature)
+        public static void AddArenaPlayerRoundKills(int playerNumber, List<string> trophiesAsStrings)
         {
+            if (trophiesAsStrings.Count == 0)
+                RainMeadow.Warn($"{nameof(trophiesAsStrings)} has 0 elements.");
 
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null)
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                RainMeadow.Error("Arena: RainWorldGame is null!");
+                RainMeadow.Error("The online game mode is not Arena.");
                 return;
             }
-            for (int j = 0; j < game.cameras[0].hud.parts.Count; j++)
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
             {
-                if (game.cameras[0].hud.parts[j] is HUD.PlayerSpecificMultiplayerHud multiHud)
-                {
-                    multiHud.killsList.Killing(CreatureSymbol.SymbolDataFromCreature(onlineKilledCreature.abstractCreature));
-                    break;
-                }
+                RainMeadow.Warn("Not currently in-game.");
+                return;
+            }
+            if (game.session is not ArenaGameSession arenaSession)
+            {
+                RainMeadow.Warn("Not in an arena session.");
+                return;
+            }
+            if (arenaSession.sessionEnded)
+            {
+                RainMeadow.Warn("Session ended.");
+                return;
+            }
+            if (playerNumber < 0 || playerNumber >= arenaSession.arenaSitting.players.Count)
+            {
+                RainMeadow.Warn($"Player number is out of range. Player number: {playerNumber}. Player count: {arenaSession.arenaSitting.players.Count}");
+                return;
+            }
+            if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, playerNumber) is not OnlinePlayer onlinePlayer)
+            {
+                RainMeadow.Warn($"Unable to find arena player's online player. Player number: {playerNumber}.");
+                return;
+            }
+
+            ArenaSitting.ArenaPlayer arenaPlayer = arenaSession.arenaSitting.players[playerNumber];
+
+            if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+            {
+                RainMeadow.Error($"{onlinePlayer} is a spectator.");
+                return;
+            }
+
+            List<IconSymbol.IconSymbolData> trophies = trophiesAsStrings
+                .Select(IconSymbol.IconSymbolData.IconSymbolDataFromString)
+                .ToList();
+
+            RainMeadow.Info($"Adding [ {string.Join(", ", trophies.Select(trophy => trophy.critType))} ] to {onlinePlayer}'s round kills.");
+            arenaPlayer.roundKills.AddRange(trophies);
+
+            if (OnlineManager.lobby.isOwner)
+                arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
+
+            if (onlinePlayer.isMe)
+            {
+                arenaSession.game.cameras[0].hud.parts
+                    .OfType<PlayerSpecificMultiplayerHud>()
+                    .ToList()
+                    .ForEach(hud => trophies.ForEach(hud.killsList.Killing));
+                // There should only be one but might as well loop over it.
             }
         }
+
         [RPCMethod]
         public static void Arena_ForceReady()
         {
@@ -310,7 +332,6 @@ namespace RainMeadow
             }
         }
 
-
         [RPCMethod]
         public static void Arena_InitialSetupTimers(int setupTime, int saintMaxTime)
         {
@@ -360,51 +381,6 @@ namespace RainMeadow
         }
 
 
-        [RPCMethod]
-
-        // TODO: May be unused now since I updated _Killing
-        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-                if (game == null)
-                {
-                    return;
-                }
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-                var crit = (creatureKilled.apo.realizedObject as Creature) ?? null;
-                if (crit == null)
-                {
-                    return;
-                }
-                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
-                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
-                {
-                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber != playerNum)
-                    {
-                        continue;
-                    }
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
-                    if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
-                    {
-                        game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                        game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                        if (pl != null)
-                        {
-                            arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
-                            arena.playerNumberWithTrophiesPerRound[pl.inLobbyId].Add(iconSymbolData.ToString());
-                            // 7
-                        }
-
-                    }
-                }
-
-            }
-        }
         [RPCMethod]
         public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)
         {

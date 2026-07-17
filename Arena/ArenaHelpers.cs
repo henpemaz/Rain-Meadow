@@ -2,10 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using UnityEngine;
-using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 
 namespace RainMeadow
 {
@@ -145,6 +142,30 @@ namespace RainMeadow
             }
 
             return OnlineManager.mePlayer;
+        }
+
+        public static AbstractCreature? FindPlayerACByArenaPlayer(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arenaOnline, arenaPlayer.playerNumber);
+
+            if (onlinePlayer is null)
+                return null;
+
+            return arenaOnline.session.Players
+                .Find(playerAC => playerAC.GetOnlineCreature()?.owner == onlinePlayer);
+        }
+
+        public static ArenaSitting.ArenaPlayer? FindArenaPlayerByOnlinePlayer(
+            ArenaOnlineGameMode arenaOnline,
+            OnlinePlayer onlinePlayer)
+        {
+            int playerNumber = FindOnlinePlayerNumber(arenaOnline, onlinePlayer);
+
+            return playerNumber == -1
+                ? null
+                : arenaOnline.session.arenaSitting.players[playerNumber];
         }
 
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
@@ -364,123 +385,5 @@ namespace RainMeadow
 
         public static int GetReadiedPlayerCount(List<OnlinePlayer> players) =>
             players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
-
-        public static List<IconSymbol.IconSymbolData> GetAllOnlinePlayerTrophies(
-            ArenaOnlineGameMode arena,
-            int playerNumber
-        )
-        {
-            List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-            for (int i = 0; i < arena.playerNumberWithTrophies[onlinePlayer.inLobbyId].Count; i++)
-            {
-                IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]
-                    );
-                trophies.Add(iconSymbolData);
-            }
-            return trophies;
-        }
-
-        public static List<string> GetAllPlayerTrophies(
-            ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
-        {
-            List<string> trophies = new List<string>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
-                arena,
-                sittingPlayer.playerNumber
-            );
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-
-            for (int i = 0; i < sittingPlayer.allKills.Count; i++)
-            {
-                trophies.Add(sittingPlayer.allKills[i].ToString());
-            }
-
-            return trophies;
-        }
-
-        public static List<IconSymbol.IconSymbolData> GetRoundOnlinePlayerTrophies(
-        ArenaOnlineGameMode arena,
-        int playerNumber
-    )
-        {
-            List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Warn("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-            for (int i = 0; i < arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId].Count; i++)
-            {
-                IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId][i]
-                    );
-                trophies.Add(iconSymbolData);
-            }
-            return trophies;
-        }
-
-        public static List<string> GetRoundPlayerTrophies(
-            ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
-        {
-            List<string> trophies = new List<string>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
-                arena,
-                sittingPlayer.playerNumber
-            );
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-
-            for (int i = 0; i < sittingPlayer.roundKills.Count; i++)
-            {
-                trophies.Add(sittingPlayer.roundKills[i].ToString());
-            }
-
-            return trophies;
-        }
     }
 }

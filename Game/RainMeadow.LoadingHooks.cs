@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using MonoMod.RuntimeDetour;
+
 namespace RainMeadow
 {
 
@@ -62,7 +62,7 @@ namespace RainMeadow
                     arena.leaveForNextLevel = true;
                 }
 
-                arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+                arena.externalArenaGameMode.On_ArenaSitting_NextLevel(arena, orig, self, manager);
 
                 ArenaGameSession getArenaGameSession = (
                     manager.currentMainLoop as RainWorldGame
@@ -87,18 +87,6 @@ namespace RainMeadow
                     if (missingPlayer == null)
                     {
                         arena.arenaSittingOnlineOrder.RemoveAt(i);
-                    }
-                }
-
-                foreach (var player in self.players)
-                {
-                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                        arena,
-                        player.playerNumber
-                    );
-                    if (currentName != null)
-                    {
-                        arena.ReadFromStats(player, currentName);
                     }
                 }
 
@@ -184,15 +172,15 @@ namespace RainMeadow
                         {
                             ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
                             {
-                                playerNumber = i,
                                 playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
                                 hasEnteredGameArea = true,
                             };
 
+                            arena.CopyStatsFromLobbyData(newArenaPlayer, pl);
+
                             Debug(
                                 $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                             );
-                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
 
                             self.players.Add(newArenaPlayer);
                         }
@@ -216,16 +204,18 @@ namespace RainMeadow
                                     arena.arenaSittingOnlineOrder.Count - 1
                                 )
                                 {
-                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
                                     playerClass = ArenaHelpers
                                         .GetArenaClientSettings(player)!
                                         .playingAs,
                                     hasEnteredGameArea = true,
                                 };
+
+                                arena.CopyStatsFromLobbyData(newArenaPlayer, player);
+
                                 Debug(
                                     $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                                 );
-                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+
                                 self.players.Add(newArenaPlayer);
                             }
                         }

@@ -31,7 +31,7 @@ namespace RainMeadow
             return false;
         }
 
-        public override bool IsExitsOpen(
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arena,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
