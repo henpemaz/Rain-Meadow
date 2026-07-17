@@ -45,7 +45,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return false;
         }
 
-        public override bool IsExitsOpen(
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arena,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
@@ -97,15 +97,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public override void LandSpear(
+        public override void On_ArenaGameSession_PlayerLandSpear(
             ArenaOnlineGameMode arena,
+            On.ArenaGameSession.orig_PlayerLandSpear orig,
             ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer
-        )
+            Player attacker,
+            Creature target)
         {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
+            // aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
         }
 
         public override string AddIcon(

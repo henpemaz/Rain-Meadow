@@ -106,7 +106,7 @@ namespace RainMeadow
             {
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(orderId);
                 if (pl == null || pl.isMe) continue;
-                pl.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), playerSitting.score);
+                // pl.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), playerSitting.score);
             }
         }
 

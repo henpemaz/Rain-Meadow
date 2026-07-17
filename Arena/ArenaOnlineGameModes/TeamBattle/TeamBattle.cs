@@ -55,7 +55,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
-        public override bool IsExitsOpen(
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arena,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
@@ -179,14 +179,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
 
 
-        public override void ArenaSessionCtor(
+        public override void On_ArenaGameSession_ctor(
             ArenaOnlineGameMode arena,
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
             RainWorldGame game
         )
         {
-            base.ArenaSessionCtor(arena, orig, self, game);
+            base.On_ArenaGameSession_ctor(arena, orig, self, game);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
                 if (
@@ -228,7 +228,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         teamsRemaining.Add(team);
                     }
 
-                    arena.ReadFromStats(player, pl);
+                    arena.CopyStatsToLobbyData(player, pl);
                     playerToTeam[player.playerNumber] = team; // Cache team assignment
 
                     if (WinByScore)
@@ -264,7 +264,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     return finalOverlayWinner;
                 }
-                // If exactly one team is left, they win. 
+                // If exactly one team is left, they win.
                 if (teamsRemaining.Count == 1)
                 {
                     return teamsRemaining.First();
@@ -297,7 +297,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return topTeam;
         }
 
-        public override bool PlayerSittingResultSort(
+        public override bool On_ArenaSitting_PlayerSittingResultSort(
             ArenaMode arena,
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,
@@ -355,7 +355,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaMode arena, On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
+        public override List<ArenaSitting.ArenaPlayer> On_ArenaSitting_FinalSittingResult(ArenaMode arena, On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
         {
             var resultList = orig(self);
 
@@ -404,7 +404,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return resultList;
         }
 
-        public override bool PlayerSessionResultSort(
+        public override bool On_ArenaSitting_PlayerSessionResultSort(
             ArenaMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
@@ -453,20 +453,20 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
+        public override void On_ArenaSitting_NextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
         {
-            base.ArenaSessionNextLevel(arena, orig, self, process);
+            base.On_ArenaSitting_NextLevel(arena, orig, self, process);
             ClearSortingDictionaries();
         }
 
-        public override void ArenaSessionEnded(
+        public override void On_ArenaSitting_SessionEnded(
             ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
             ArenaGameSession session
         )
         {
-            base.ArenaSessionEnded(arena, orig, self, session);
+            base.On_ArenaSitting_SessionEnded(arena, orig, self, session);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
@@ -614,7 +614,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     {
                         if (OnlineManager.lobby.isOwner)
                         {
-                            arena.CheckToAddPlayerStatsToDicts(getPlayer);
+                            arena.AddMissingStatEntries(getPlayer);
                         }
                         RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;${ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
                         RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};TEAM;{teamNames[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(getPlayer).team]}");

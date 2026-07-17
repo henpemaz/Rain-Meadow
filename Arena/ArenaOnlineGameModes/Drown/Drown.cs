@@ -78,7 +78,7 @@ namespace RainMeadow
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public override bool IsExitsOpen(ArenaMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(ArenaMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arena.setupTime > 10)
             {
@@ -95,9 +95,9 @@ namespace RainMeadow
             return false;
         }
 
-        public override void ArenaSessionCtor(ArenaMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void On_ArenaGameSession_ctor(ArenaMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
-            base.ArenaSessionCtor(arena, orig, self, game);
+            base.On_ArenaGameSession_ctor(arena, orig, self, game);
             openedDen = false;
             currentWave = 1;
             lastCleanupWave = 0;
@@ -270,7 +270,7 @@ namespace RainMeadow
             if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
             myTab = null;
         }
-        public override void ArenaSessionEnded(ArenaMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
+        public override void On_ArenaSitting_SessionEnded(ArenaMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
             if (isDrownMode(arena, out var drown))
             {
@@ -298,10 +298,10 @@ namespace RainMeadow
                     }
                 }
             }
-            base.ArenaSessionEnded(arena, orig, self, session);
+            base.On_ArenaSitting_SessionEnded(arena, orig, self, session);
         }
 
-        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaMode arena)
+        public override void On_ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaMode arena)
         {
 
             if (isDrownMode(arena, out var drown))
@@ -377,7 +377,7 @@ namespace RainMeadow
                     waveNeedsUpdate = false;
                 }
             }
-            base.ArenaSessionUpdate(orig, self, arena);
+            base.On_ArenaGameSession_Update(orig, self, arena);
 
         }
 

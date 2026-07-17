@@ -1,6 +1,5 @@
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +13,26 @@ namespace RainMeadow
         public FLabel username;
         public List<FLabel> messageLabels = new();
         public FLabel pingLabel;
-        public FLabel? scoreLabel;
+
+        public FLabel persistentWinsLobbyDataLabel;
+        public FLabel persistentDeathsLobbyDataLabel;
+        public FLabel persistentTotalScoreLobbyDataLabel;
+        public FLabel persistentAllKillCountLobbyDataLabel;
+
+        public FLabel winsLobbyDataLabel;
+        public FLabel deathsLobbyDataLabel;
+        public FLabel totalScoreLobbyDataLabel;
+        public FLabel scoreLobbyDataLabel;
+        public FLabel allKillCountLobbyDataLabel;
+        public FLabel roundKillCountLobbyDataLabel;
+
+        public FLabel winsLabel;
+        public FLabel deathsLabel;
+        public FLabel totalScoreLabel;
+        public FLabel scoreLabel;
+        public FLabel allKillCountLabel;
+        public FLabel roundKillCountLabel;
+
         public FSprite slugIcon;
         public OnlinePlayer player;
         public class Message
@@ -165,16 +183,60 @@ namespace RainMeadow
 
             if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.WinByScore)
             {
-                this.scoreLabel = new FLabel(Custom.GetFont(), "0");
-                owner.hud.fContainers[0].AddChild(this.scoreLabel);
-                this.scoreLabel.alpha = 0f;
-                this.scoreLabel.x = -1000f;
-                this.scoreLabel.color = Color.white;
+                persistentWinsLobbyDataLabel = CreatePlayerStatLabel();
+                persistentDeathsLobbyDataLabel = CreatePlayerStatLabel();
+                persistentTotalScoreLobbyDataLabel = CreatePlayerStatLabel();
+                persistentAllKillCountLobbyDataLabel = CreatePlayerStatLabel();
+
+                winsLobbyDataLabel = CreatePlayerStatLabel();
+                deathsLobbyDataLabel = CreatePlayerStatLabel();
+                totalScoreLobbyDataLabel = CreatePlayerStatLabel();
+                scoreLobbyDataLabel = CreatePlayerStatLabel();
+                allKillCountLobbyDataLabel = CreatePlayerStatLabel();
+                roundKillCountLobbyDataLabel = CreatePlayerStatLabel();
+
+                winsLabel = CreatePlayerStatLabel();
+                deathsLabel = CreatePlayerStatLabel();
+                totalScoreLabel = CreatePlayerStatLabel();
+                scoreLabel = CreatePlayerStatLabel();
+                roundKillCountLabel = CreatePlayerStatLabel();
+                allKillCountLabel = CreatePlayerStatLabel();
+
+                owner.hud.fContainers[0].AddChild(persistentWinsLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(persistentDeathsLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(persistentTotalScoreLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(persistentAllKillCountLobbyDataLabel);
+
+                owner.hud.fContainers[0].AddChild(winsLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(deathsLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(totalScoreLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(scoreLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(allKillCountLobbyDataLabel);
+                owner.hud.fContainers[0].AddChild(roundKillCountLobbyDataLabel);
+
+                owner.hud.fContainers[0].AddChild(winsLabel);
+                owner.hud.fContainers[0].AddChild(deathsLabel);
+                owner.hud.fContainers[0].AddChild(totalScoreLabel);
+                owner.hud.fContainers[0].AddChild(scoreLabel);
+                owner.hud.fContainers[0].AddChild(roundKillCountLabel);
+                owner.hud.fContainers[0].AddChild(allKillCountLabel);
             }
 
             this.customization = customization;
 
             this.fadeSpeed = 20f;
+
+            return;
+
+            static FLabel CreatePlayerStatLabel()
+            {
+                return new FLabel(Custom.GetFont(), "0")
+                {
+                    alpha = 0f,
+                    x = -1000f,
+                    color = Color.white
+                };
+            }
         }
 
         public override void Update()
@@ -372,24 +434,94 @@ namespace RainMeadow
             this.slugIcon.x = pos.x;
             this.slugIcon.y = pos.y;
 
-            if (RainMeadow.isArenaMode(out var arena) && this.scoreLabel != null)
+            if (RainMeadow.isArenaMode(out var arenaOnline))
             {
-                this.scoreLabel.x = pos.x + 20f;
-                this.scoreLabel.y = pos.y;
-                this.scoreLabel.alpha = num;
-                int playerNumber = -1;
-                if (arena.session != null && owner != null && owner.RealizedPlayer != null)
+                int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arenaOnline, player);
+
+                if (playerNumber == -1)
+                    RainMeadow.Error($"Unable to find the player number for {player}.");
+                else
                 {
-                    playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
-                    int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
-                    if (arena.totalScoreByPlayer.TryGetValue(player, out int totScore) &&
-                        playerNumber != -1)
-                    {
-                        bool sessionEnded = arena.session.sessionEnded;
-                        this.scoreLabel.text = arena.externalArenaGameMode != null && arena.externalArenaGameMode.ShowAddedScoreBetweenRoundsInOnlinePlayerUI
-                            ? (sessionEnded ? totScore.ToString() : (totScore + score).ToString())
-                            : score.ToString();
-                    }
+                    arenaOnline.AddMissingStatEntries(player);
+
+                    ArenaSitting.ArenaPlayer arenaPlayer = arenaOnline.session.arenaSitting.players[playerNumber];
+
+                    arenaOnline.persistentWinsByPlayer.TryGetValue(player, out int persistentWins);
+                    arenaOnline.persistentDeathsByPlayer.TryGetValue(player, out int persistentDeaths);
+                    arenaOnline.persistentTotalScoreByPlayer.TryGetValue(player, out int persistentTotalScore);
+                    arenaOnline.persistentAllKillsByPlayer.TryGetValue(player, out List<IconSymbol.IconSymbolData>? persistentAllKills);
+
+                    persistentAllKills ??= [];
+
+                    float baseOffsetX = 20f;
+                    Vector2 labelOffset = new(14f, 11f);
+
+                    persistentWinsLobbyDataLabel.text = persistentWins.ToString();
+                    persistentWinsLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 0;
+                    persistentWinsLobbyDataLabel.y = pos.y + labelOffset.y * 1;
+                    persistentWinsLobbyDataLabel.alpha = num;
+                    persistentDeathsLobbyDataLabel.text = persistentDeaths.ToString();
+                    persistentDeathsLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 1;
+                    persistentDeathsLobbyDataLabel.y = pos.y + labelOffset.y * 1;
+                    persistentDeathsLobbyDataLabel.alpha = num;
+                    persistentTotalScoreLobbyDataLabel.text = persistentTotalScore.ToString();
+                    persistentTotalScoreLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 2;
+                    persistentTotalScoreLobbyDataLabel.y = pos.y + labelOffset.y * 1;
+                    persistentTotalScoreLobbyDataLabel.alpha = num;
+                    persistentAllKillCountLobbyDataLabel.text = persistentAllKills.Count.ToString() ?? "0";
+                    persistentAllKillCountLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 4;
+                    persistentAllKillCountLobbyDataLabel.y = pos.y + labelOffset.y * 1;
+                    persistentAllKillCountLobbyDataLabel.alpha = num;
+
+                    winsLobbyDataLabel.text = arenaOnline.winsByPlayer[player].ToString();
+                    winsLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 0;
+                    winsLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    winsLobbyDataLabel.alpha = num;
+                    deathsLobbyDataLabel.text = arenaOnline.deathsByPlayer[player].ToString();
+                    deathsLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 1;
+                    deathsLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    deathsLobbyDataLabel.alpha = num;
+                    totalScoreLobbyDataLabel.text = arenaOnline.totalScoreByPlayer[player].ToString();
+                    totalScoreLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 2;
+                    totalScoreLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    totalScoreLobbyDataLabel.alpha = num;
+                    scoreLobbyDataLabel.text = arenaOnline.scoreByPlayer[player].ToString();
+                    scoreLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 3;
+                    scoreLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    scoreLobbyDataLabel.alpha = num;
+                    allKillCountLobbyDataLabel.text = arenaOnline.allKillsByPlayer[player].Count.ToString();
+                    allKillCountLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 4;
+                    allKillCountLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    allKillCountLobbyDataLabel.alpha = num;
+                    roundKillCountLobbyDataLabel.text = arenaOnline.roundKillsByPlayer[player].Count.ToString();
+                    roundKillCountLobbyDataLabel.x = pos.x + baseOffsetX + labelOffset.x * 5;
+                    roundKillCountLobbyDataLabel.y = pos.y + labelOffset.y * 0;
+                    roundKillCountLobbyDataLabel.alpha = num;
+
+                    winsLabel.text = arenaPlayer.wins.ToString();
+                    winsLabel.x = pos.x + baseOffsetX + labelOffset.x * 0;
+                    winsLabel.y = pos.y + labelOffset.y * -1;
+                    winsLabel.alpha = num;
+                    deathsLabel.text = arenaPlayer.deaths.ToString();
+                    deathsLabel.x = pos.x + baseOffsetX + labelOffset.x * 1;
+                    deathsLabel.y = pos.y + labelOffset.y * -1;
+                    deathsLabel.alpha = num;
+                    totalScoreLabel.text = arenaPlayer.totScore.ToString();
+                    totalScoreLabel.x = pos.x + baseOffsetX + labelOffset.x * 2;
+                    totalScoreLabel.y = pos.y + labelOffset.y * -1;
+                    totalScoreLabel.alpha = num;
+                    scoreLabel.text = arenaPlayer.score.ToString();
+                    scoreLabel.x = pos.x + baseOffsetX + labelOffset.x * 3;
+                    scoreLabel.y = pos.y + labelOffset.y * -1;
+                    scoreLabel.alpha = num;
+                    allKillCountLabel.text = arenaPlayer.allKills.Count.ToString();
+                    allKillCountLabel.x = pos.x + baseOffsetX + labelOffset.x * 4;
+                    allKillCountLabel.y = pos.y + labelOffset.y * -1;
+                    allKillCountLabel.alpha = num;
+                    roundKillCountLabel.text = arenaPlayer.roundKills.Count.ToString();
+                    roundKillCountLabel.x = pos.x + baseOffsetX + labelOffset.x * 5;
+                    roundKillCountLabel.y = pos.y + labelOffset.y * -1;
+                    roundKillCountLabel.alpha = num;
                 }
             }
 
@@ -438,9 +570,27 @@ namespace RainMeadow
             pingLabel.RemoveFromContainer();
             foreach (var label in this.messageLabels) label.RemoveFromContainer();
             this.slugIcon.RemoveFromContainer();
-            if (this.scoreLabel != null)
+
+            if (RainMeadow.isArenaMode(out _))
             {
-                this.scoreLabel.RemoveFromContainer();
+                persistentWinsLobbyDataLabel.RemoveFromContainer();
+                persistentDeathsLobbyDataLabel.RemoveFromContainer();
+                persistentTotalScoreLobbyDataLabel.RemoveFromContainer();
+                persistentAllKillCountLobbyDataLabel.RemoveFromContainer();
+
+                winsLobbyDataLabel.RemoveFromContainer();
+                deathsLobbyDataLabel.RemoveFromContainer();
+                totalScoreLobbyDataLabel.RemoveFromContainer();
+                scoreLobbyDataLabel.RemoveFromContainer();
+                allKillCountLobbyDataLabel.RemoveFromContainer();
+                roundKillCountLobbyDataLabel.RemoveFromContainer();
+
+                winsLabel.RemoveFromContainer();
+                deathsLabel.RemoveFromContainer();
+                totalScoreLabel.RemoveFromContainer();
+                scoreLabel.RemoveFromContainer();
+                allKillCountLabel.RemoveFromContainer();
+                roundKillCountLabel.RemoveFromContainer();
             }
         }
     }
