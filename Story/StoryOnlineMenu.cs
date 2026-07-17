@@ -25,10 +25,12 @@ namespace RainMeadow
 
         //Chat constants
         private const int maxVisibleMessages = 13;
+        private const float chatMessgesOffset = 20f;
         //Chat variables
         private List<MenuObject> chatSubObjects = [];
         private int currentLogIndex = 0;
         private bool isChatToggled = false;
+        private ButtonScroller.TextAnchor textAnchor;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
         public NullLobbyError nullLobbyError;
@@ -97,6 +99,9 @@ namespace RainMeadow
             }
 
             RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
+            this.textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
+                ? ButtonScroller.TextAnchor.Bottom 
+                : ButtonScroller.TextAnchor.Top;
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -766,8 +771,8 @@ namespace RainMeadow
 
                 ChatLogManager.UpdatePlayerColors();
 
-                float yOffSet = 0;
                 var visibleLog = ChatLogManager.chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                float yOffSet = textAnchor == ButtonScroller.TextAnchor.Top ? 0 : (maxVisibleMessages - 1 - visibleLog.Count()) * chatMessgesOffset;
                 foreach (var (username, message) in visibleLog)
                 {
                     ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(username);
@@ -802,7 +807,7 @@ namespace RainMeadow
                         chatSubObjects.Add(messageLabel);
                         pages[0].subObjects.Add(messageLabel);
                     }
-                    yOffSet += 20f;
+                    yOffSet += chatMessgesOffset;
                 }
             }
         }

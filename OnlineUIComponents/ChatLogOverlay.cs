@@ -18,6 +18,7 @@ namespace RainMeadow
         private FSprite[] chatBg;
         private float bgSideOffset = 20;
         private const int maxMessagesHistoryOnStart = 40;
+        private const float textOffsetSquishFix = 0.01f; // thanks Five Blue Moons for this fix on this... weird chat text bug
         private readonly int messageHistoryStart; 
 
         private const int maxVisibleMessages = 13;
@@ -57,7 +58,6 @@ namespace RainMeadow
                     ? ButtonScroller.TextAnchor.Bottom 
                     : ButtonScroller.TextAnchor.Top 
             };
-            scroller.ClearMenuObject(scroller.scrollSlider); //dont make it null but clear it
             this.subObjects.Add(scroller);
             
             this.messageHistoryStart = Mathf.Max(0, ChatLogManager.chatLog.Count - maxMessagesHistoryOnStart);
@@ -199,7 +199,7 @@ namespace RainMeadow
             if (ChatLogManager.chatLog.Count > myChatLog.Length + messageHistoryStart)
             {
                 ChatLogManager.UpdatePlayerColors();
-                float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset;
+                float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset + textOffsetSquishFix; 
                 var newMessages = ChatLogManager.chatLog.Skip(myChatLog.Length + messageHistoryStart);
                 foreach (var (username, message) in newMessages)
                 {
@@ -209,7 +209,7 @@ namespace RainMeadow
                     splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
                     for (int i = 0; i < splitMessages.Count; i++)
                     {
-                        float yPos = scroller.GetIdealYPosWithScroll(scroller.buttons.Count);
+                        float yPos = scroller.GetIdealYPosWithScroll(scroller.buttons.Count) + textOffsetSquishFix;
                         string s = splitMessages[i];
                         if (isSystemMessage)
                         {
