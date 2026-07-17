@@ -49,7 +49,11 @@
 - Synced prince's position and look point
 ## Chat
 - Put Chat in its own overlay so it is available at all times
+- Chat now keeps history of what was typed in/out of the lobby menu
+- Moved all chat related Remix option in its own tab
 - Added Remix options for different system messages in arena and story mode
+- Added username color customization as a Remix options
+- Added text downscroll as a Remix options
 
 # Release 1.14.1
 
