@@ -17,17 +17,17 @@ namespace RainMeadow
         private List<float> msgExtents;
         private FSprite[] chatBg;
         private float bgSideOffset = 20;
+        private const int maxMessagesHistoryOnStart = 40;
+        private readonly int messageHistoryStart; 
+
         private const int maxVisibleMessages = 13;
-        private const int maxTextVisibleTime = 20 * 40;
-        private const int maxFadeTime = 20;
         private Rect chatRect;
 
         public float opacity = 1.0f;
         private float lastOpacity = 1.0f;
         public int inactivityTimer;
-        private static List<int> textInactivityTimer = new();
 
-        private FSprite debug;
+        private FSprite? debug;
 
         public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(RMOverlayHUDMenu.GetOverlayMenu(), RMOverlayHUDMenu.GetOverlayMenu().pages[0])
         {
@@ -53,12 +53,14 @@ namespace RainMeadow
             scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
-                textAnchor = RainMeadow.rainMeadowOptions.ChatTextFade.Value 
+                textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
                     ? ButtonScroller.TextAnchor.Bottom 
                     : ButtonScroller.TextAnchor.Top 
             };
             scroller.ClearMenuObject(scroller.scrollSlider); //dont make it null but clear it
             this.subObjects.Add(scroller);
+            
+            this.messageHistoryStart = Mathf.Max(0, ChatLogManager.chatLog.Count - maxMessagesHistoryOnStart);
             UpdateLogDisplay();
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
 
@@ -83,7 +85,6 @@ namespace RainMeadow
         {
             base.Update();
             OpacityUpdate();
-            UpdateLabelInactivityTable();
             inactivityTimer++;
         }
 
@@ -124,14 +125,12 @@ namespace RainMeadow
                 {
                     // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
                     // messages fading out work as intended.
-                    
-                    float tOpacityLabel = tOpacity * GetInactivityFadeOfLabel(j);
                     if (scroller.buttons[j] is AlignedMenuLabel label)
                     {
-                        label.label.alpha = tOpacityLabel;
+                        label.label.alpha = tOpacity;
                         foreach(var subObj in label.subObjects)
                         {
-                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacityLabel;
+                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
                         }
                     }
 
@@ -139,7 +138,7 @@ namespace RainMeadow
                     chatBg[i].y = scroller.pos.y + scroller.buttons[j].Pos.y;
                     chatBg[i].scaleX = msgExtents[j] + 8f;
                     chatBg[i].scaleY = scroller.ButtonHeightAndSpacing + 1f;
-                    chatBg[i].alpha = tOpacityLabel * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
+                    chatBg[i].alpha = tOpacity * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
                 }
             }
         }
@@ -197,11 +196,11 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
-            if (ChatLogManager.chatLog.Count > myChatLog.Length)
+            if (ChatLogManager.chatLog.Count > myChatLog.Length + messageHistoryStart)
             {
                 ChatLogManager.UpdatePlayerColors();
                 float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset;
-                var newMessages = ChatLogManager.chatLog.Skip(myChatLog.Length);
+                var newMessages = ChatLogManager.chatLog.Skip(myChatLog.Length + messageHistoryStart);
                 foreach (var (username, message) in newMessages)
                 {
                     ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(username);
@@ -240,32 +239,11 @@ namespace RainMeadow
                             scroller.AddScrollObjects(messageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 4f);
                         }
-                        
-                        if (RainMeadow.rainMeadowOptions.ChatTextFade.Value) textInactivityTimer.Add(maxTextVisibleTime);
                     }
                 }
-                myChatLog = [.. ChatLogManager.chatLog];
+                myChatLog = [.. ChatLogManager.chatLog.Skip(messageHistoryStart)];
                 inactivityTimer = 0;
             }
         }
-        
-        private void UpdateLabelInactivityTable()
-        {
-            if (RainMeadow.rainMeadowOptions.ChatTextFade.Value)
-            {
-                for (int i = 0; i < textInactivityTimer.Count; i++)
-                {
-                    if (textInactivityTimer[i] > -maxFadeTime) --textInactivityTimer[i];
-                }
-            }
-        }
-        private float GetInactivityFadeOfLabel(int index)
-            => this.chatHud?.chatInputActive is true || !RainMeadow.rainMeadowOptions.ChatTextFade.Value
-                ? 1f 
-                : (textInactivityTimer.Count > index && index >= 0
-                    ? (textInactivityTimer[index] > 0 
-                        ? 1f 
-                        : 1f - Mathf.Clamp01(-textInactivityTimer[index]/(float)maxFadeTime))
-                    : 1f);
     }
 }

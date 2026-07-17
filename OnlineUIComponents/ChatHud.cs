@@ -17,7 +17,7 @@ namespace RainMeadow
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
-        public float logScrollPos = RainMeadow.rainMeadowOptions.ChatTextFade.Value ? 0 : -1;
+        public float logScrollPos = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value ? 0 : -1;
 
         public bool Active => true; //=> game.processActive;
         public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;

@@ -19,7 +19,7 @@ namespace RainMeadow.UI.Components
             //chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30));
             chatTypingBox.OnTextSubmit += () =>
             {
-                if (messageScroller != null) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
+                if (messageScroller != null) messageScroller.MoveAtBottom();
             };
             float posYOffset = chatTypingBox.size.y + 10;
             messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), true, new(-5, -posYOffset), posYOffset - 25)
@@ -27,14 +27,16 @@ namespace RainMeadow.UI.Components
                 sliderDefaultIsDown = true,
                 buttonHeight = 20,
                 buttonSpacing = 3,
+                textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
+                    ? ButtonScroller.TextAnchor.Bottom 
+                    : ButtonScroller.TextAnchor.Top
             };
             menu.MutualHorizontalButtonBind(chatTypingBox, messageScroller.scrollSlider);
             subObjects.AddRange([roundedRect, chatTypingBox, messageScroller]);
 
-            for (int i = 0; i < ChatLogManager.chatLog.Count && i < maxVisibleMessages; i++)
+            for (int i = Mathf.Max(0, ChatLogManager.chatLog.Count - maxVisibleMessages - 1); i < ChatLogManager.chatLog.Count; i++)
             {
-                int j = ChatLogManager.chatLog.Count - 1 - i;
-                AddNewMessageToScroller(ChatLogManager.chatLog[j].Item1, ChatLogManager.chatLog[j].Item2);
+                AddNewMessageToScroller(ChatLogManager.chatLog[i].Item1, ChatLogManager.chatLog[i].Item2);
             }
         }
         public AlignedMenuLabel GetMessageLabel(string? user, string stg, ChatLogManager.SystemMessageType? systemMessageType, bool withUser, Vector2 pos, Vector2 size)
@@ -68,9 +70,9 @@ namespace RainMeadow.UI.Components
         }
         public void AddNewMessageToScroller(string user, string message)
         {
-            bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
+            bool setNewScrollPosToLatest = messageScroller.IsAtBottom();
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
-            if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
+            if (setNewScrollPosToLatest) messageScroller.MoveAtBottom();
         }
         public AlignedMenuLabel[] GetMessageLabels(string user, string message)
         {

@@ -137,18 +137,17 @@ namespace RainMeadow
         {
             if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER")
             {
-                scrollSliderValue = 1 - f;
+                scrollSliderValue = textAnchor == TextAnchor.Top ? 1 - f : f;
                 DownScrollOffset = scrollOffset = Mathf.Lerp(0f, scrollSliderValueCap, scrollSliderValue);
             }
         }
         public float ValueOfSlider(Slider slider)
         {
-            if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER") return 1 - scrollSliderValue;
+            if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER") return textAnchor == TextAnchor.Top ? 1 - scrollSliderValue : scrollSliderValue;
             return 0;
         }
         public void ScrollingUpdate(float yInput)
         {
-            yInput *= textAnchor == TextAnchor.Top ? 1 : -1;
             if ((yInput < 0 && CanScrollUp) || (yInput > 0 && CanScrollDown))
             {
                 //scrolling up -, scrolling down +
