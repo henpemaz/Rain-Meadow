@@ -21,6 +21,7 @@ namespace RainMeadow
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
+        public bool enumsChecked = false;
         public bool bannedUsersChecked = false;
 
         public bool lobbyRequestable = false;
@@ -34,6 +35,7 @@ namespace RainMeadow
         public string? password;
         public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
+        public bool cheats = false;
         public bool eventGags = false;
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
@@ -58,6 +60,8 @@ namespace RainMeadow
             configurableFloats = new Dictionary<string, float>();
             configurableInts = new Dictionary<string, int>();
 
+            MeadowExtEnumSync.ResetEnumEntriesMapping();
+
             if (isOwner)
             {
                 this.password = password;
@@ -65,13 +69,36 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Debug("Requesting lobby");
                 this.enteredPassword = password;
-                RequestLobby(password);
+                RequestCompressedEnums();
             }
+        }
 
+        public void RequestCompressedEnums()
+        {
+            RainMeadow.Debug("Requesting lobby enum list");
+            owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
+        }
+        public void ResolveEnumCompression(GenericResult requestResult)
+        {
+            RainMeadow.Debug(this);
+            if (requestResult is GenericResult.Fail) // I didn't send it to the right person somehow
+            {
+                RainMeadow.Error("Request stopped for " + this);
+                MatchmakingManager.currentInstance.JoinLobby(false);
+            }
+            else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
+            {
+                RainMeadow.Error("request failed for " + this);
+                RequestCompressedEnums();
+            }
+        }
 
-
+        public void OnEnumSyncSuccessful()
+        {
+            enumsChecked = true;
+            RainMeadow.Debug("Requesting lobby");
+            RequestLobby(this.enteredPassword);
         }
 
         public void RequestLobby(string? key)
@@ -211,6 +238,8 @@ namespace RainMeadow
             public Dictionary<string, int> onlineIntRemixSettings;
             [OnlineField]
             public bool eventGags;
+            [OnlineField]
+            public bool cheats;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -225,6 +254,7 @@ namespace RainMeadow
                 onlineIntRemixSettings = lobby.configurableInts;
                 timeline = lobby.meadowTimeline;
                 eventGags = lobby.eventGags;
+                cheats = lobby.cheats;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -288,6 +318,7 @@ namespace RainMeadow
                 }
                 
                 lobby.eventGags = eventGags;
+                lobby.cheats = cheats;
                 base.ReadTo(resource);
             }
         }

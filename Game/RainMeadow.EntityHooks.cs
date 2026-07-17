@@ -4,6 +4,7 @@ using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -40,9 +41,20 @@ namespace RainMeadow
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+
+        private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
+        {         
+            orig(self);
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
+            {
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
+            }
+        }
+
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try
@@ -342,7 +354,7 @@ namespace RainMeadow
 
 
 
-        // echo warps from the waher
+        // echo warps from the watcher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
             if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)
@@ -565,7 +577,6 @@ namespace RainMeadow
             }
 
             self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-            oldWorldSession.transitionInProgress = true;
             return;
         }
         // world transition at gatesactiveEntities
@@ -605,7 +616,7 @@ namespace RainMeadow
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (!opo.isMine)
                             {
                                 // not-online-aware removal
                                 opo.RemoveEntityFromGame(false);

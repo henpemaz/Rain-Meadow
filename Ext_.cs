@@ -1,4 +1,5 @@
 ﻿using Menu;
+using OverseerHolograms;
 using System.Collections.Generic;
 namespace RainMeadow
 {
@@ -41,6 +42,7 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
             internal static MenuScene.SceneID Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
             internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
+            internal static MenuScene.SceneID Slugcat_MeadowOverseer = new("Slugcat_MeadowOverseer", true);
 
 
             internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);
@@ -69,6 +71,11 @@ namespace RainMeadow
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
             internal static SoundID Fartificer = new("Fartificer", true);
+        }
+
+        public static class Ext_OverseerHologram_Message
+        {
+            internal static OverseerHologram.Message OverseerEmote = new("Meadow_OverseerEmote", true);
         }
     }
 }

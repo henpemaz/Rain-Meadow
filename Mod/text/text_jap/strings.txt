@@ -624,7 +624,7 @@ Invite friends|フレンドを招待
 
 /// General Tab
 Lobby Music|ロビー音楽
-Cape Colors|マントのカラー
+Cape Color|マントのカラー
 Log Level|ログレベル
 
 /// Arena Tab

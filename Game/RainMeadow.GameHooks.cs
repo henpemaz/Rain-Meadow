@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Watcher;
+using System.Runtime.Remoting.Messaging;
+using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
@@ -23,6 +26,7 @@ namespace RainMeadow
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             IL.OverWorld.ctor += Overworld_ctor; 
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
+            IL.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate1;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
@@ -36,7 +40,10 @@ namespace RainMeadow
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
             On.Room.Loaded += Room_LoadedCheck;
-            On.FliesRoomAI.MoveFlyToHive +=  MoveFlyToHive;
+            IL.Room.SpawnPrinceBulb += Room_SpawnPrinceBulb;
+            IL.Watcher.PrinceBehavior.Update += PrinceBehavior_Update;
+            On.Watcher.PrinceBehavior.Update += PrinceBehavior_Update1;
+            On.FliesRoomAI.MoveFlyToHive += MoveFlyToHive;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
@@ -70,6 +77,45 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+        }
+
+        private void RainWorldGame_RawUpdate1(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<RainWorldGame>(nameof(RainWorldGame.devToolsActive)),
+                x => x.MatchBrfalse(out skip));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((RainWorldGame self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    if (Input.GetKey("q"))
+                    {
+                        self.RequestUnloadAllRoomsExcept(self.cameras[0].room);
+                    }
+                    if (Input.GetKey("h") && self.devUI != null)
+                    {
+                        Cursor.visible = !self.rainWorld.options.fullScreen;
+                        self.devUI.ClearSprites();
+                        self.devUI = null;
+                    }
+                    if (Input.GetKey("k") && !self.kDown)
+                    {
+                        self.consoleVisible = !self.consoleVisible;
+                        self.console.Visibility(self.consoleVisible);
+                    }
+                    self.kDown = Input.GetKey("k");
+
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
         }
 
         // Disable Artificer ending trigger in Meadow Mode.
@@ -298,6 +344,7 @@ namespace RainMeadow
                 // if chat is open, moves pausing logic to RawUpdate for consistent input detection
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                var skip2 = il.DefineLabel();
                 c.GotoNext(
                     i => i.MatchLdloc(0),
                     i => i.MatchBrfalse(out var _),
@@ -340,6 +387,23 @@ namespace RainMeadow
                 }
                 );
                 c.Emit(OpCodes.Brtrue, skip);
+
+                // Don't allow restarting cycle if online and not the host.
+                c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<RainWorldGame>(nameof(RainWorldGame.devToolsActive)),
+                x => x.MatchBrfalse(out skip2));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip2);
             }
             catch (Exception e)
             {
@@ -402,7 +466,8 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby != null)
             {
-                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value})";
+                string cl = OnlineManager.CheatsAllowed ? "" : "\n" + Utils.Translate("Cheats are disabled in this lobby.");
+                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value}){cl}";
             }
         }
 
@@ -758,12 +823,136 @@ namespace RainMeadow
                     c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
                     c.Emit(OpCodes.Brfalse, skipApo);
                 }
+
+                // preventing Princebulb duplication
+                c = new ILCursor(il);
+
+                var bulbskip = il.DefineLabel();
+
+              
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Room>(nameof(Room.roomSettings)),
+                    i => i.MatchLdfld<RoomSettings>(nameof(RoomSettings.placedObjects)),
+                    i => i.MatchLdloc(29),
+                    i => i.MatchCallvirt(typeof(List<PlacedObject>).GetMethod("get_Item")),
+                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))                    
+                    );
+                c.MarkLabel(bulbskip);
+
+                c = new ILCursor(il);
+
+                c.GotoNext(MoveType.Before,
+                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))
+                );
+                c.Remove();
+                c.EmitDelegate((Room room, PlacedObject p) =>
+                {                    
+                    if (OnlineManager.lobby == null)
+                    {
+                        room.SpawnPrinceBulb(p);
+                    }
+                    else
+                    {                        
+                        StartCoroutine(SpawnPrinceBulb(room, () => room.SpawnPrinceBulb(p)));                       
+                    }
+                });
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
             }
         }
+
+        // add princebulb once
+        private void Room_SpawnPrinceBulb(ILContext il)
+        {
+            var c = new ILCursor(il);
+            var bulbskip = c.DefineLabel();
+            
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(11),
+                i => i.MatchCall<Room>(nameof(Room.AddObject))
+                );
+
+            c.MarkLabel(bulbskip);
+
+            c = new ILCursor(il);
+            
+            c.GotoNext(MoveType.After,
+                 i => i.MatchLdloc(7),
+                 i => i.MatchLdfld<DaddyCorruption>(nameof(DaddyCorruption.places)),
+                 i => i.MatchLdloc(9),
+                 i => i.MatchCallvirt(typeof(List<PlacedObject>).GetMethod(nameof(List<PlacedObject>.Add)))
+                 );
+
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room room) =>
+            {                
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && !rs.isOwner;
+            });
+            c.Emit(OpCodes.Brtrue, bulbskip);
+        }
+        System.Collections.IEnumerator SpawnPrinceBulb(Room room, Action spb)
+        {
+            while (RoomSession.map.TryGetValue(room.abstractRoom, out var _rs) && _rs.owner == null)
+            {
+                yield return null;
+            }
+            spb();            
+        }
+        // only changing lookpos directly if owner
+        private void PrinceBehavior_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            var skip1 = il.DefineLabel();
+            var skip2 = il.DefineLabel();
+
+            //if (this.paralyzed)            
+            // - this.lookPoint = new Vector2(this.GetToPos.x, this.GetToPos.y + 500f);
+            c.GotoNext(MoveType.After,
+                i => i.MatchStfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.lastDialogBoxMessage)),
+            i => i.MatchLdarg(0),
+            i => i.MatchLdfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.paralyzed)),
+            i => i.MatchBrfalse(out skip1));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((PrinceBehavior self) =>
+            {
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+            });
+            c.Emit(OpCodes.Brtrue, skip1);
+
+            // if (this.bestPlayer != null)            
+            // - this.lookPoint = this.bestPlayer.firstChunk.pos;
+            c.GotoNext(MoveType.After,
+                i => i.MatchBrfalse(out _),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.bestPlayer)),
+                i => i.MatchBrfalse(out skip2)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((PrinceBehavior self) =>
+            {
+                return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner;
+            });
+            c.Emit(OpCodes.Brtrue, skip2);
+        }
+        // only changing gettopos and gettodir directly if owner
+        private void PrinceBehavior_Update1(On.Watcher.PrinceBehavior.orig_Update orig, PrinceBehavior self)
+        {
+            var toPos = self.GetToPos;
+            var toDir = self.GetToDir;
+            orig(self);
+            if (OnlineManager.lobby != null && (RoomSession.map.TryGetValue(self.prince.room.abstractRoom, out var rs) && !rs.isOwner))
+            {
+                self.GetToPos = toPos;
+                self.GetToDir = toDir;
+            }
+        }
+
 
         // please dont spawn flies
         private void FliesWorldAI_AddFlyToSwarmRoom(On.FliesWorldAI.orig_AddFlyToSwarmRoom orig, FliesWorldAI self, int spawnRoom)
