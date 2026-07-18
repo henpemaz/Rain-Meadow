@@ -222,50 +222,50 @@ Thrown weapons are corrected to prevent no-clips|Les trajectoires des armes sont
 Thrown weapons follow vanilla behaviour|Les trajectoires des armes ne sont pas modifiée.
 Countdown Timer:|Compte à rebours :
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Durée du temps de grâce au début du round. Défaut : 5s.
-Arena Game Mode:|Modo de juego de arena:
-The game mode for this match|El modo de juego de esta partida
-Slugcat Abilities|Gato-habilidades
-Disable Mauling:|Desactivar mordeduras:
-Prevent Artificer and <PAINCATNAME> from mauling|Impedir que Artífice y <PAINCATNAME> muerdan
-Disable Artificer Stun:|Desactivar aturdimientos de Artífice:
-Prevent Artificer from stunning other players|Impedir que Artífice aturda a otros jugadores
-Sain't:|Santon't:
-Disable Saint ascendance ability, but allow it to throw spears|Desactivar la habilidad ascendente del Santo, pero permitirle usar lanzas
-Saint Ascendance Duration:|Duración del ascendiente del Santo:
-How long Saint's ascendance ability lasts for. Default: 3s|Cuánto dura la habilidad ascendente del Santo. Predeterminado: 3 s
-<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> obtiene un huevo al tener<LINE>habilidad de lanzamiento 0:
-If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATNAME> aparece con habilidad de lanzamiento 0, también hacerle aparecer con Huevocer0
-<PAINCATNAME> can always throw spears:|<PAINCATNAME> siempre puede usar lanzas:
-Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permitir que <PAINCATNAME> siempre use lanzas, incluso si la habilidad de lanzamiento es 0
-<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> a veces obtiene un amigo:
-Allow <PAINCATNAME> to rarely spawn with a little friend|Permitir que <PAINCATNAME> aparezca con un amigo en raras ocasiones
-Watcher Camo Duration:|Duración del camuflaje del Vigilante
-How long Wacher's abilities last for. Default: 12s|Cuánto dura las habilidades del Vigilante. Predeterminado: 12 s
-Team Settings|Ajustes de equipo
-TEAM|EQUIPO
-Team Lerp Color:|Color de la interpolación lineal del equipo:
-How much do you want team color to show on players? From 0 to 1|¿Cuánto quieres que el color del equipo se muestre sobre los jugadores? De 0 a 1
-You cant color without Remix on!|¡No puedes colorear sin el Remix activado!
-Waiting|Esperando
-Prepare for combat,|Prepárate para el combate,
-Prepare for war,|Prepárate para la guerra,
-Winner!|¡Ganador!
-<TEAMNAME> WIN!|¡EL EQUIPO «<TEAMNAME>» HA GANADO!
-Unknown user|Usuario desconocido
-TO LOBBY|A LA SALA
+Arena Game Mode:|Mode de jeu Arène :
+The game mode for this match|Le mode de jeu pour ce match
+Slugcat Abilities|Abilités des chat-limaces
+Disable Mauling:|Désactiver la morsure :
+Prevent Artificer and <PAINCATNAME> from mauling|Désactive l'abilité de l'Artificier et de <PAINCATNAME> de pouvoir mordre.
+Disable Artificer Stun:|Désactiver l'onde de choc de l'Artificier :
+Prevent Artificer from stunning other players|Empêche l'Artificier de pouvoir assommer ces adversaires avec son onde de choc
+Sain't:|Saintpas:
+Disable Saint ascendance ability, but allow it to throw spears|Le Saint perd son pouvoir d'ascension, mais peut lancer des lances.
+Saint Ascendance Duration:|Durée d'ascension du Saint :
+How long Saint's ascendance ability lasts for. Default: 3s|Le temps maximum que le Saint peut utiliser son pouvoir d'ascension. Défaut : 3s.
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> obtient un œuf à habileté de la lance 0 :
+If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATNAME> apparait avec 0 d'habileté de la lance, il obtient un desto-œuf 3000
+<PAINCATNAME> can always throw spears:|<PAINCATNAME> peut toujours lancer des lances :
+Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permet à <PAINCATNAME> de toujours pouvoir lancer des lances, même avec 0 d'habileté de la lance.
+<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> peut parfois obtenir un ami :
+Allow <PAINCATNAME> to rarely spawn with a little friend|Permet à <PAINCATNAME> d'apparaître occassionellement avec un certain ami
+Watcher Camo Duration:|Durée du camouflage du Guetteur :
+How long Wacher's abilities last for. Default: 12s|Le temps maximum que le Guetteur peut utiliser son pouvoir. Défaut : 12s.
+Team Settings|Paramètre d'équipe
+TEAM|ÉQUIPE
+Team Lerp Color:|Couleur d'interpolation de l'équipe :
+How much do you want team color to show on players? From 0 to 1|Quel atténuation de la couleur d'équipe voulez-vous montrer sur les joueurs ? De 0 à 1
+You cant color without Remix on!|Vous ne pouvez pas colorer les joueurs sans le mod Remix !
+Waiting|En attente
+Prepare for combat,|Préparez-vous au combat,
+Prepare for war,|Préparez-vous à la guerre,
+Winner!|Vainqueur !
+<TEAMNAME> WIN!|L'ÉQUIPE «<TEAMNAME>» GAGNE !
+Unknown user|Utilisateur inconnu
+TO LOBBY|VERS LE LOBBY
 
 // Arena Slugcat Select
-Back To Lobby|Volver a la sala
-Go back to main lobby|Volver a la sala principal
-You have been unreadied. Switch back to re-ready yourself automatically|Ya no estás listo. Regresa para volver a dar a listo automáticamente.
-The match is starting in <COUNTDOWN>! Ready up!!|¡La partida comienza en <COUNTDOWN>! ¡¡Alístate!!
-THE NIGHTCAT|EL GATO NOCTURNO
-THE FARTIFICER|LA FARTÍFICE
-THE SLUGPUP|LA CRÍA DE GATO-BABOSA
-THE UNKNOWN|LO DESCONOCIDO
-Unknown|Desconocido
-Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Los enemigos se acercan a tu alrededor, pero no será<LINE>como tu primera vez. Agarra tu lanza y roca.
-Remember: they struck first, so you'll need to hit back harder.|Recuerda: ellos atacaron primero,<LINE>así que necesitarás devolver más fuerte el golpe.
+Back To Lobby|Retourner au Lobby
+Go back to main lobby|Retourner au Lobby principal
+You have been unreadied. Switch back to re-ready yourself automatically|Vous n'êtes plus marqué comme prêt. Revenez au menu d'avant pour être re-marqué comme prêt automatiquement.
+The match is starting in <COUNTDOWN>! Ready up!!|Le match commence dans <COUNTDOWN> seconds ! Marquez-vous prêt !!
+THE NIGHTCAT|LE NOCTURNE
+THE FARTIFICER|LE PETTIFICIER
+THE SLUGPUP|LE CHATTON-LIMACE
+THE UNKNOWN|L'INCONNU
+Unknown|Inconnu
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Les enemies approchent, mais ça ne se déroulera pas comme la première fois.<LINE>Attrape ta lance et ta pièrre.
+Remember: they struck first, so you'll need to hit back harder.|Rappelle-toi : ils ont lancé la première pièrre, tu devras donc la renvoyer plus fort.
 Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Afligido desde el inicio y un luchador hasta el final.<LINE>Demuéstrales el significado del sufrimiento.
 Observe all weakness - then strike while cloaked in shadows.|Observa toda debilidad; luego ataca oculto en las sombras.
 Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Tu historia de idas y vueltas está casi completa.<LINE>Aplasta esta última tarea.
