@@ -37,6 +37,7 @@
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
 - Fixed sound/visual cue of parrying being inconsistant.
+- Fixed gourmand not being shown as exhausted when throwing a spear
 ## Meadow
 - Fixed creatures being able to get injured.
 ### Modders
