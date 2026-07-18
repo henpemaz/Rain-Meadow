@@ -1358,6 +1358,40 @@ namespace RainMeadow
 
             }
         }
+        public void Serialize(ref Dictionary<string, string> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new Dictionary<string, string>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadString();
+                    data.Add(key, value);
+                }
+
+            }
+        }
         public void Serialize(ref Dictionary<int, List<string>> data)
         {
 #if TRACING

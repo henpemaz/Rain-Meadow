@@ -89,7 +89,6 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> boughtGoldenSkin;
     public readonly Configurable<bool> boughtRainbowCape;
-    public readonly Configurable<bool> wantsRainbowCape;
     public readonly Configurable<string> currentlyActiveCosmetic;
     public readonly Configurable<string> currentlyActiveCosmeticSkin;
     public readonly Configurable<Color> currentlyActiveCustomCosmeticColor;
@@ -264,7 +263,6 @@ public class RainMeadowOptions : OptionInterface
 
         boughtGoldenSkin = config.Bind("BoughtGoldenSkin", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
-        wantsRainbowCape = config.Bind("WantsRainbowCape", true);
         currentlyActiveCosmetic = config.Bind("CurrentlyActiveCosmetic", "none");
         currentlyActiveCosmeticSkin = config.Bind("CurrentlyActiveCosmeticSkin", "solid");
         currentlyActiveCustomCosmeticColor = config.Bind("currentlyActiveCustomCosmeticColor", Color.red);
@@ -485,8 +483,6 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410f, 250f, Translate("Cosmetic Color")),
 
             cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
-            rainbowCape = new OpCheckBox(wantsRainbowCape, 595f, 90f),
-            rainbowCapeLabel = new OpLabel(595f, 120f, Translate("Rainbow Cape")),
             new OpLabel(10f, 50f, Translate("Log Level")),
 
         new OpComboBox2(
@@ -523,13 +519,6 @@ public class RainMeadowOptions : OptionInterface
                 cosmeticColor.bumpBehav.greyedOut = currentlyActiveCosmeticbox.value != "none";
             };
 
-            rainbowCape.Hidden = true;
-            rainbowCapeLabel.Hidden = true;
-            if (SpecialEvents.IsSpecialEvent)
-            {
-                rainbowCape.Hidden = false;
-                rainbowCapeLabel.Hidden = false;
-            }
             downpourWarning.Hidden = true;
             watcherWarning.Hidden = true;
             if (!ModManager.MSC && introroll.value == "Downpour")

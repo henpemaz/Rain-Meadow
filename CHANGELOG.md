@@ -1,7 +1,10 @@
 # Release 1.15.0
 
+## Engine
+- Improved some sources of desync (enums)
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
   - The host will still be allowed to use cheats but no other players can.
@@ -10,7 +13,10 @@
   - This update also fixes Dev Tools item spawning, restricting it to just the player spawning the item, and teleporting to exits trying to teleport everyone instead of just the local player.
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
+- Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
+### Modders
+- Added `MatchmakingManager.OnLobbyLeaving` event.
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -21,7 +27,7 @@
 - Added configurable Void Amoeba lethality. Default multiplier is now 3x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
-- Added scoring in-game UI for Challenge, Drown, ir if scoring logic is enabled
+- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
@@ -31,6 +37,7 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
+- Fixed sound/visual cue of parrying being inconsistant.
 ## Meadow
 - Fixed creatures being able to get injured.
 ### Modders
@@ -39,7 +46,8 @@
 - Allow players to spectate their own corpses as long as they still exist
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
-
+- Fixed prince's duplication
+- Synced prince's position and look point
 # Release 1.14.1
 ## Engine 
 - Improved parry netcode.

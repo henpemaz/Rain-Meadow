@@ -161,6 +161,74 @@ namespace RainMeadow
             }
         }
 
+        public void SerializeNullableShort<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                writer.Write(arrayOfSerializables != null);
+                if (arrayOfSerializables != null)
+                {
+                    if (arrayOfSerializables.Length > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)arrayOfSerializables.Length);
+                    for (int i = 0; i < arrayOfSerializables.Length; i++)
+                    {
+                        arrayOfSerializables[i].CustomSerialize(this);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    ushort count = reader.ReadUInt16();
+                    arrayOfSerializables = new T[count];
+                    for (int i = 0; i < count; i++)
+                    {
+                        T item = new();
+                        item.CustomSerialize(this);
+                        arrayOfSerializables[i] = item;
+                    }
+                }
+            }
+        }
+        
+        public void SerializeNullableShort<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                writer.Write(listOfSerializables != null);
+                if (listOfSerializables != null)
+                {
+                    if (listOfSerializables.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)listOfSerializables.Count);
+                    for (int i = 0; i < listOfSerializables.Count; i++)
+                    {
+                        listOfSerializables[i].CustomSerialize(this);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    ushort count = reader.ReadUInt16();
+                    listOfSerializables = new(count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        T item = new();
+                        item.CustomSerialize(this);
+                        listOfSerializables.Add(item);
+                    }
+                }
+            }
+        }
+
         internal static Dictionary<Serializer.TypeInfo, MethodInfo> serializerMethods = new();
 
         // tempting to try and cache this, would need a query icomparable
