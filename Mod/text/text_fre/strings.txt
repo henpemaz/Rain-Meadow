@@ -266,26 +266,26 @@ THE UNKNOWN|L'INCONNU
 Unknown|Inconnu
 Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Les enemies approchent, mais ça ne se déroulera pas comme la première fois.<LINE>Attrape ta lance et ta pièrre.
 Remember: they struck first, so you'll need to hit back harder.|Rappelle-toi : ils ont lancé la première pièrre, tu devras donc la renvoyer plus fort.
-Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Afligido desde el inicio y un luchador hasta el final.<LINE>Demuéstrales el significado del sufrimiento.
-Observe all weakness - then strike while cloaked in shadows.|Observa toda debilidad; luego ataca oculto en las sombras.
-Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Tu historia de idas y vueltas está casi completa.<LINE>Aplasta esta última tarea.
-An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|Una personalidad explosiva e ira inigualable.<LINE>Muerde y detona tu sendero hacia la venganza.
-A gnawing hunger grows inside you. Feed it with spears.|Un hambre pertinaz crece dentro de ti. Aliméntala con lanzas.
-In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|En un mundo carente de propósito, quizá has hallado<LINE>al fin el tuyo. Muévete con audacia para no perderlo.
-The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lanza es un instrumento pusilánime.<LINE>Moldea el mundo desde las marcas de tu mente.
-The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|La mente es un elemento pusilánime.<LINE>Demuestra tu pericia con lanza en mano.
-Desperate. Fearful. Violent.|Desesperada. Temerosa. Violenta.
-Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Abierto: Voces. Elección. Atosigado.<LINE>Cerrado: Susurros. Convergencia. Ahogado.<LINE>Abierto: Ecos. Claridad. Ingrávido.
-Am I Warrior from the past, or a Messiah from the future?|¿Soy un guerrero del pasado o un mesías del futuro?
-Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscando muchos o un ratón buscando uno?
-<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>¿Soy un samaritano condenado o una anomalía entre el tiempo y el espacio?
-<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>¿Estoy condenado a ser un samaritano o estoy atrapado por siempre en tu sombra?
-<LINE>I do not know, for I am not one. I am many.|<LINE>Yo no lo sé puesto que no soy uno. Soy muchos.
-Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar el gran tesoro.<LINE>Aquellos que deambulen muchos de ellos encontrarán la gran verdad.
+Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Affligé dès le début, combattant jusqu'à la fin.<LINE>Montre-leur le vrai sens de la souffrance.
+Observe all weakness - then strike while cloaked in shadows.|Guette leur faiblesse. Attaque cammouflé dans les ombres.
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Votre histoire pleine de rebondissements touche à sa fin.<LINE>Terrase cette dernière quête.
+An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|Une personnalité explosive et une haine sans précédant<LINE>Broie et détruit tout tes adversaires sur le chemin de ta vengeance.
+A gnawing hunger grows inside you. Feed it with spears.|Une faim dévorante t'accable. Nourris-la avec des lances.
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|Dans un monde qui perd son sens, tu as peut-être trouvé le tien.<LINE>Agit vite avant de le perdre.
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lance est un faible récipient.<LINE>Forge le monde de ton esprit.
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|L'esprit est un faible récipient.<LINE>Montre ta vaillance par la lance dans ta main.
+Desperate. Fearful. Violent.|Désespéré. Terrifié. Violent.
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Overt: Voix. Choix. Fardeau.<LINE>Fermé: Murmures. Convergence. Étouffement.<LINE>Ouvert: Échos. Claireté. Flottement.
+Am I Warrior from the past, or a Messiah from the future?|Suis-je un guerrier du passé, ou un Messie du future ?
+Am I Cat Searching for many, or a Mouse searching for one?|Suis-je un cat à la recherche de tous, ou une souris à la recherche de un ?
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>Suis-je un samaritain maudit, ou une anomalie à travers l'espace et le temps ?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>Suis-je un samaritain maudit, ou suis-je coincé pour toujours dans l'ombre ?
+<LINE>I do not know, for I am not one. I am many.|<LINE>Je ne sais point, car je ne suis plus. Nous sommes.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Ceux qui traverse un chemin trouveront peut-être un trésor.<LINE>Ceux qui en traverse beaucoup trouveront la vérité.
 
 // Paincat's Names & Descriptions
-Paincat|Gato-dolor
-PAINCAT|GATO-DOLOR
+Paincat|Chat-douleur
+PAINCAT|CHAT-DOULEUR
 Inv|Inv
 INV|INV
 Enot|Enot
@@ -311,7 +311,7 @@ Did you know:<LINE>There's more "Did you know"s.|¿Sabías que...<LINE>existen m
 Did you know:<LINE>This is the only "Did you know".|¿Sabías que...<LINE>este es el único «¿Sabías que...?»?
 You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|Tú perderás<LINE>Tu cuerpo no hallarán<LINE>Lejos está
 "<USERNAME>, youre gonna get us both killed"|«¡<USERNAME>, vas a hacer que nos maten!».
-"no srsly wheres my egg"|«No, en serio, ¿dónde está mi huevo?».
+"no srsly wheres my egg"|«ok srx ou est mon oeuf».
 "u dont need 2 be alone, bby."|«No tienes por qué estar sin compañía, bebé».
 "sometimes i wake up with a friend ive never met b4"|«A veces me despierto con un amigo que nunca había conocido».
 "i luv u <3"|«Te amo <3».
