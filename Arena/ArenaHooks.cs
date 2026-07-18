@@ -1095,41 +1095,42 @@ namespace RainMeadow
             Menu.ArenaOverlay self
         )
         {
+            if (isArenaMode(out var arena) && !arena.lobby.isOwner) self.nextLevelCall = true; // don't call nextLevel 
             orig(self);
-            if (isArenaMode(out var arena))
-            {
-                if (arena.leaveForNextLevel)
-                {
-                    string loadingString;
+            // if (isArenaMode(out var arena))
+            // {
+            //     if (arena.leaveForNextLevel)
+            //     {
+            //         string loadingString;
 
-                    // Check for nulls and ensure we have players to avoid dividing by zero
-                    if (OnlineManager.lobby.overworld != null &&
-                        OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) &&
-                        self.ArenaSitting.players?.Count > 0)
-                    {
-                        float progress = 1.0f - ((float)ws.participants.Count / self.ArenaSitting.players.Count);
+            //         // Check for nulls and ensure we have players to avoid dividing by zero
+            //         if (OnlineManager.lobby.overworld != null &&
+            //             OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) &&
+            //             self.ArenaSitting.players?.Count > 0)
+            //         {
+            //             float progress = 1.0f - ((float)ws.participants.Count / self.ArenaSitting.players.Count);
 
-                        // Format: "LOADING: 75%"
-                        loadingString = $"{self.Translate("LOADING")}: {progress:P0}";
-                    }
-                    else
-                    {
-                        loadingString = self.Translate("LOADING...");
-                    }
+            //             // Format: "LOADING: 75%"
+            //             loadingString = $"{self.Translate("LOADING")}: {progress:P0}";
+            //         }
+            //         else
+            //         {
+            //             loadingString = self.Translate("LOADING...");
+            //         }
 
-                    self.headingLabel.text = loadingString;
+            //         self.headingLabel.text = loadingString;
 
-                    self.headingLabel.text = loadingString;
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        if (!self.nextLevelCall)
-                        {
-                            self.ArenaSitting.NextLevel(self.manager);
-                            self.nextLevelCall = true;
-                        }
-                    }
-                }
-            }
+            //         self.headingLabel.text = loadingString;
+            //         if (!OnlineManager.lobby.isOwner)
+            //         {
+            //             if (!self.nextLevelCall)
+            //             {
+            //                 self.ArenaSitting.NextLevel(self.manager);
+            //                 self.nextLevelCall = true;
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         public void MenuScene_BuildScene(ILContext context)
@@ -1781,10 +1782,6 @@ namespace RainMeadow
             {
                 if (message == "EXIT")
                 {
-                    if (arena.leaveForNextLevel)
-                    {
-                        return;
-                    }
                     if (OnlineManager.lobby.isOwner)
                     {
                         for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
@@ -2851,6 +2848,8 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                arena.UpdateSitting(manager.arenaSitting);
+
                 self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
 
                 var exitButton = new Menu.SimpleButton(

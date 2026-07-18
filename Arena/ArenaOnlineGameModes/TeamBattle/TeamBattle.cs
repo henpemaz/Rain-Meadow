@@ -602,8 +602,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.isInGame = true; // used for readied players at the beginning
-                    arena.leaveForNextLevel = false;
-
                     foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                     {
                         OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(

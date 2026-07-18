@@ -42,24 +42,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.leaveForNextLevel = true;
-                }
-
                 arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
-
-                ArenaGameSession getArenaGameSession = (
-                    manager.currentMainLoop as RainWorldGame
-                ).GetArenaGameSession;
-                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-                Room room = absRoom.realizedRoom;
-                WorldSession worldSession =
-                    WorldSession.map.TryGetValue(absRoom.world, out var ws) ? ws
-                    : OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws2)
-                        ? ws2
-                    : null;
-                    
                 for (int i = arena.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
                 {
                     OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
@@ -83,125 +66,46 @@ namespace RainMeadow
                     }
                 }
 
-                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                if (OnlineManager.lobby.overworld is OverworldSession session && session.isSupervisor)
                 {
-                    // we go over all APOs in the room
-                    Debug("Next level switching");
-                    RainMeadow.Debug("Unsubscribing everyone from the old overworld");
-                    
-                    OverworldSession overworld = OnlineManager.lobby.overworld;
-                    if (overworld.isSupervisor)
+                    foreach (OnlinePlayer p in session.participants.ToList())
                     {
-                        foreach (OnlinePlayer p in overworld.participants)
-                        {
-                            if (!p.isMe) overworld.Discharge(p, "next-level");
-                        }
-                    }                    
-
-                    overworld.Deactivate();
-                    overworld.NotNeeded();
-
-                    if (manager.currentMainLoop is RainWorldGame)
-                    {
-                        self.creatures.Clear();
-                        self.savCommunities = null;
-
-                        self.firstGameAfterMenu = false;
-
-                        if (ModManager.MSC && getArenaGameSession.challengeCompleted)
-                        {
-                            manager.RequestMainProcessSwitch(
-                                ProcessManager.ProcessID.MultiplayerMenu
-                            );
-                            self.players.Clear();
-                            return;
-                        }
+                        if (!p.isMe) session.Discharge(p, "next-level");
                     }
+                    session.Deactivate();
+                }
 
-                    RainMeadow.Debug("Arena: Moving to next level");
-                    self.currentLevel++;
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.currentLevel = self.currentLevel;
-                    }
+                // we go over all APOs in the room
+                Debug("Next level switching");
+                if (manager.currentMainLoop is RainWorldGame game)
+                {
+                    self.creatures.Clear();
+                    self.savCommunities = null;
 
-                    if (
-                        self.currentLevel >= arena.playList.Count
-                        && !self.gameTypeSetup.repeatSingleLevelForever
-                    )
+                    self.firstGameAfterMenu = false;
+
+                    if (ModManager.MSC && game.GetArenaGameSession.challengeCompleted)
                     {
+                        self.players.Clear();
                         manager.RequestMainProcessSwitch(
-                            ProcessManager.ProcessID.MultiplayerResults
+                            ProcessManager.ProcessID.MultiplayerMenu
                         );
                         return;
                     }
-
-                    List<OnlinePlayer> waitingPlayers =
-                    [
-                        .. OnlineManager.players.Where(x =>
-                            ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe
-                        ),
-                    ];
-
-                    self.players.Clear();
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                    {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            arena.arenaSittingOnlineOrder[i]
-                        );
-                        if (pl != null)
-                        {
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
-                            {
-                                playerNumber = i,
-                                playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
-                                hasEnteredGameArea = true,
-                            };
-
-                            Debug(
-                                $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
-                            );
-                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
-
-                            self.players.Add(newArenaPlayer);
-                        }
-                    }
-
-                    // Add waiting players
-                    if (arena.allowJoiningMidRound)
-                    {
-                        foreach (OnlinePlayer player in waitingPlayers)
-                        {
-                            if (player != null) // always gotta check in case something happened to them
-                            {
-                                if (
-                                    !arena.arenaSittingOnlineOrder.Contains(player.inLobbyId)
-                                    && OnlineManager.lobby.isOwner
-                                )
-                                {
-                                    arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
-                                }
-                                ArenaSitting.ArenaPlayer newArenaPlayer = new(
-                                    arena.arenaSittingOnlineOrder.Count - 1
-                                )
-                                {
-                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                                    playerClass = ArenaHelpers
-                                        .GetArenaClientSettings(player)!
-                                        .playingAs,
-                                    hasEnteredGameArea = true,
-                                };
-                                Debug(
-                                    $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
-                                );
-                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
-                                self.players.Add(newArenaPlayer);
-                            }
-                        }
-                    }
-
-                    manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
                 }
+
+                RainMeadow.Debug("Arena: Moving to next level");
+                if (OnlineManager.lobby.isOwner) self.currentLevel++;
+                if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                {
+                    self.players.Clear();
+                    manager.RequestMainProcessSwitch(
+                        ProcessManager.ProcessID.MultiplayerResults
+                    );
+                    return;
+                }
+
+                manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
             }
             else
             {

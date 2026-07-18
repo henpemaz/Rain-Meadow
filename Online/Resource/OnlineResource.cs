@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RainMeadow
@@ -67,6 +68,7 @@ namespace RainMeadow
 
         public void PerformRequests()
         {
+            if (!super.isActive) return;
             if (isNeeded) Needed();
             else NotNeeded();
         }
@@ -369,11 +371,9 @@ namespace RainMeadow
             if (!participants.Contains(participant)) return;
             if (isActive)
             {
-                List<OnlineResource> leftResources = new( 1 + subresources.Count ) { this };
                 foreach (OnlineResource resource in subresources.ToArray())
                 {
-                    if (leftResources.Contains(resource)) continue; // prevent any recursive nonsense
-                    leftResources.Add(resource);
+                    if (resource == this) continue; // prevent any recursive nonsense
                     resource.ParticipantLeft(participant);
                 }
             }

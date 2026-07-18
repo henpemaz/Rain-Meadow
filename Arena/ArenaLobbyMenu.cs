@@ -589,8 +589,8 @@ namespace RainMeadow
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
-            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            UserInput.SetUserCount(1);
+            UserInput.SetForceDisconnectControllers(false);
             this.PlaySound(SoundID.MENU_Start_New_Game);
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }

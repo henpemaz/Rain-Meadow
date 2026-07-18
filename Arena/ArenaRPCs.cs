@@ -348,15 +348,29 @@ namespace RainMeadow
         }
 
 
-        [RPCMethod(runDeferred = true)]
+        [RPCMethod(runDeferred = true, security = RPCSecurity.Owner)]
         public static void Arena_RestartGame(RPCEvent rpcEvent)
         {
-
             if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
             {
-                arena.leaveToRestart = true;
+                arena.RestartGame();
             }
         }
+
+        [RPCMethod(runDeferred = true, security = RPCSecurity.Owner)]
+        public static void Arena_NextLevel(RPCEvent rpcEvent)
+        {
+            if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
+            {
+                var processManager = Custom.rainWorld.processManager;
+                if (processManager.currentMainLoop is RainWorldGame)
+                {
+                    processManager.arenaSitting.NextLevel(processManager);
+                    return;
+                }
+            }
+        }
+
 
 
         [RPCMethod]

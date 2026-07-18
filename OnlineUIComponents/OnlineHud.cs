@@ -44,37 +44,29 @@ namespace RainMeadow
 
         public void UpdatePlayers()
         {
-            var playerAvatars = OnlineManager.lobby.playerAvatars.Select(x => x.Value).ToList();
-            var currentAvatars = indicators.Select(i => i.playerId).ToList();
-
-            playerAvatars.Except(currentAvatars).Do(AvatarAdded);
-            currentAvatars.Except(playerAvatars).Do(AvatarRemoved);
+            var activeAvatars = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true) as OnlineCreature).Where(e => e != null);
+            var currentAvatars = indicators.Select(i => i.onlinePlayer).ToList(); //needs duplication
+            activeAvatars.Except(currentAvatars).Do(AvatarAdded);
+            currentAvatars.Except(activeAvatars).Do(AvatarRemoved);
         }
 
-        public void AvatarAdded(OnlineEntity.EntityId avatar)
+        public void AvatarAdded(OnlineCreature avatar)
         {
             RainMeadow.DebugMe();
-            if (avatar.FindEntity() is not OnlineEntity entity) {
-                RainMeadow.Error("Couldn't find online entity");
-                return;
-            }
-
-            if (entity.owner is null) {
+            if (avatar.owner is null) {
                 RainMeadow.Error("Online Entity has no owner");
                 return;
             }
 
-
-            
-            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, OnlineManager.lobby.clientSettings[entity.owner], avatar);
+            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, OnlineManager.lobby.clientSettings[avatar.owner], avatar);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
 
-        public void AvatarRemoved(OnlineEntity.EntityId avatar)
+        public void AvatarRemoved(OnlineCreature avatar)
         {
             RainMeadow.DebugMe();
-            var indicator = this.indicators.First(i => i.playerId == avatar);
+            var indicator = this.indicators.First(x => x.onlinePlayer == avatar);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;
         }

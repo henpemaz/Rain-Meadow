@@ -12,8 +12,8 @@ namespace RainMeadow
         public ClientSettings clientSettings;
 
 
-        public OnlineEntity.EntityId playerId;
-        public AbstractCreature abstractPlayer;
+        public OnlineCreature onlinePlayer;
+        public AbstractCreature abstractPlayer => onlinePlayer.creature;
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
@@ -57,7 +57,7 @@ namespace RainMeadow
         //    }
         //}
 
-        public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings, OnlineEntity.EntityId playerId) : base(owner.hud)
+        public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings, OnlineCreature player) : base(owner.hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
             this.owner = owner;
@@ -65,7 +65,8 @@ namespace RainMeadow
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.onlineGameMode = onlineGameMode;
             this.clientSettings = clientSettings;
-            this.playerId = playerId;
+            this.onlinePlayer = player;
+            player.TryGetData<SlugcatCustomization>(out customization);
 
             needed = true;
         }
@@ -138,15 +139,6 @@ namespace RainMeadow
             this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
-            if (playerId.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
-            {
-                abstractPlayer = oc.abstractCreature;
-                oc.TryGetData<SlugcatCustomization>(out customization);
-            }
-            else
-            {
-                return;
-            }
             if (this.playerDisplay == null && customization != null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
