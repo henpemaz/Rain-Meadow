@@ -89,8 +89,9 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> boughtGoldenSkin;
     public readonly Configurable<bool> boughtRainbowCape;
-    public readonly Configurable<bool> wantsRainbowCape;
-    public readonly Configurable<string> currentlyActiveCapeColor;
+    public readonly Configurable<string> currentlyActiveCosmetic;
+    public readonly Configurable<string> currentlyActiveCosmeticSkin;
+    public readonly Configurable<Color> currentlyActiveCustomCosmeticColor;
     public readonly Configurable<int> ChallengeID;
 
 
@@ -266,7 +267,9 @@ public class RainMeadowOptions : OptionInterface
 
         boughtGoldenSkin = config.Bind("BoughtGoldenSkin", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
-        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", "");
+        currentlyActiveCosmetic = config.Bind("CurrentlyActiveCosmetic", "none");
+        currentlyActiveCosmeticSkin = config.Bind("CurrentlyActiveCosmeticSkin", "solid");
+        currentlyActiveCustomCosmeticColor = config.Bind("currentlyActiveCustomCosmeticColor", Color.red);
 
         ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
         ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
@@ -276,7 +279,6 @@ public class RainMeadowOptions : OptionInterface
 
         ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
-        wantsRainbowCape = config.Bind("WantsRainbowCape", true);
         CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
         ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
@@ -432,8 +434,9 @@ public class RainMeadowOptions : OptionInterface
 
             // General Tab
             OpComboBox2 introroll;
-            OpTextBox capeColor;
-            OpRect capeColorPreview;
+            OpColorPicker cosmeticColor;
+            OpComboBox2 currentlyActiveCosmeticbox;
+            OpComboBox2 currentlyActiveCosmeticSkinbox;
             OpCheckBox rainbowCape;
             OpLabel rainbowCapeLabel;
             OpComboBox2 arenaFlair;
@@ -472,58 +475,30 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 250, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
-                // --- New Cape Options Section ---
-                new OpLabel(10f, 180f, Translate("Cape Color")),
+                new OpLabel(10f, 190f, Translate("Cosmetic")),
+                new OpLabel(210f, 190f, Translate("Cosmetic Skin")),
+                currentlyActiveCosmeticbox = new OpComboBox2(currentlyActiveCosmetic, new Vector2(10f, 160f), 160f, CosmeticItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+                currentlyActiveCosmeticSkinbox = new OpComboBox2(currentlyActiveCosmeticSkin, new Vector2(210f, 160f), 160f, CosmeticSkinItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+                new OpLabel(410f, 250f, Translate("Cosmetic Color")),
 
-                capeColor = new OpTextBox(currentlyActiveCapeColor, new Vector2(10f, 150f), 130f),
-                capeColorPreview = new OpRect(new Vector2(146f, 150f), new Vector2(24f, 24f), 1f),
-                rainbowCape = new OpCheckBox(wantsRainbowCape, 185f, 150f),
-                rainbowCapeLabel = new OpLabel(185f, 180f, Translate("Rainbow Cape")),
-                new OpLabel(10f, 100f, Translate("Log Level")),
+            cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
+            new OpLabel(10f, 50f, Translate("Log Level")),
 
-                new OpComboBox2(
-                    CurrentLogLevel,
-                    new Vector2(10f, 70f),
-                    160f,
-                    OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
-                )
-                {
-                    colorEdge = Menu.MenuColorEffect.rgbWhite
-                }
+        new OpComboBox2(
+        CurrentLogLevel,
+        new Vector2(10f, 20f),
+        160f,
+        OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
+    )
+    {
+        colorEdge = Menu.MenuColorEffect.rgbWhite
+    }
 
             };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
             }
-            capeColor.OnValueChanged += (UIconfig config, string value, string oldValue) =>
-            {
-                if (value.Length > 6)
-                {
-                    capeColor.value = value.Remove(6, value.Length - 6);
-                }
-                else if (value.Length < 6 && value.Length > 0)
-                {
-                    capeColor.value = oldValue;
-                }
-                if (value != "" && value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
-                {
-                    capeColor.value = oldValue;
-                }
-                currentlyActiveCapeColor.Value = capeColor.value;
-                capeColorPreview.colorFill = Utils.SafeHexToColor(capeColor.value);
-            };
-            capeColor.OnValueUpdate += (UIconfig config, string value, string oldValue) => 
-            {
-                if (value.Length == 6 && !value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
-                {
-                    capeColorPreview.colorFill = Utils.SafeHexToColor(capeColor.value);
-                }
-                else
-                {
-                    capeColorPreview.colorFill = Utils.SafeHexToColor(currentlyActiveCapeColor.Value);
-                }
-            };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
                 if (value == "Downpour" && !ModManager.MSC)
@@ -535,15 +510,14 @@ public class RainMeadowOptions : OptionInterface
                 {
                     watcherWarning.Show();
                 }
+                
                 else watcherWarning.Hide();
             };
-            rainbowCape.Hidden = true;
-            rainbowCapeLabel.Hidden = true;
-            if (SpecialEvents.IsSpecialEvent)
-            {
-                rainbowCape.Hidden = false;
-                rainbowCapeLabel.Hidden = false;
-            }
+            currentlyActiveCosmeticbox.OnChanged += () => {
+                currentlyActiveCosmeticSkinbox.bumpBehav.greyedOut = currentlyActiveCosmeticbox.value != "none";
+                cosmeticColor.bumpBehav.greyedOut = currentlyActiveCosmeticbox.value != "none";
+            };
+
             downpourWarning.Hidden = true;
             watcherWarning.Hidden = true;
             if (!ModManager.MSC && introroll.value == "Downpour")
@@ -880,6 +854,64 @@ public class RainMeadowOptions : OptionInterface
                 value = i++
             }),
         ];
+    }
+
+    private List<ListItem> CosmeticItemList()
+    {
+        var items = new List<ListItem>
+        {
+            new ListItem
+            {
+                displayName = Translate("None"),
+                name = "none",
+                value = 0
+            }
+        };
+
+        if (OnlineManager.mePlayer != null)
+        {
+            foreach (var cosmetic in CosmeticManager.AvailableCosmetics(OnlineManager.mePlayer.id))
+            {
+                items.Add(new ListItem
+                {
+                    displayName = Translate(cosmetic),
+                    name = cosmetic,
+                    value = items.Count
+                });
+            }
+        }
+
+        return items;
+    }
+
+    private List<ListItem> CosmeticSkinItemList()
+    {
+        var items = new List<ListItem>();
+
+        if (OnlineManager.mePlayer != null)
+        {
+            foreach (var skin in CosmeticManager.AvailableCosmeticSkins(OnlineManager.mePlayer.id))
+            {
+                items.Add(new ListItem
+                {
+                    displayName = Translate(skin),
+                    name = skin,
+                    value = items.Count
+                });
+            }
+        }
+
+        if (!items.Any())
+        {
+            items.Add(new ListItem
+            {
+                displayName = Translate("solid"),
+                name = "solid",
+                value = 0
+            });
+        }
+
+        return items;
     }
 
     private static List<string> GetSongNames()
