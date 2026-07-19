@@ -204,10 +204,10 @@ namespace RainMeadow
                     cursor.EmitDelegate(() => isArenaMode(out _));
                     cursor.Emit(OpCodes.Brtrue, label);
 
-                    cursor.MoveAfterLabels();
-                    cursor.Emit(OpCodes.Ldarg_0);
-                    cursor.EmitDelegate((VoidSpawn self) 
-                        => Debug($"Ripple [{self}/{self.abstractPhysicalObject.GetOnlineObject()}] is despawning ! <{!self.dayLightMode && self.RippleMigration && self.room.PointSubmerged(self.mainBody[0].pos)}><{self.startFadeOut}><{self.abstractPhysicalObject.rippleLayer == 1 && self.room.game.ActiveRippleLayer != 1}><{!isArenaMode(out _)}><{self.timeUntilFadeout}>"));
+                    // cursor.MoveAfterLabels();
+                    // cursor.Emit(OpCodes.Ldarg_0);
+                    // cursor.EmitDelegate((VoidSpawn self) 
+                    //     => Debug($"Ripple [{self}/{self.abstractPhysicalObject.GetOnlineObject()}] is despawning ! <{!self.dayLightMode && self.RippleMigration && self.room.PointSubmerged(self.mainBody[0].pos)}><{self.startFadeOut}><{self.abstractPhysicalObject.rippleLayer == 1 && self.room.game.ActiveRippleLayer != 1}><{!isArenaMode(out _)}><{self.timeUntilFadeout}>"));
                 }
                 else
                 {
