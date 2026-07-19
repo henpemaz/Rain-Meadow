@@ -121,8 +121,8 @@ namespace RainMeadow
             float FlameJetTime;
 
             // ThunderStorm
-            [OnlineField]
-            LethalThunderStormData stormData;
+            [OnlineField (nullable = true)]
+            LethalThunderStormData? stormData;
 
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
@@ -165,7 +165,7 @@ namespace RainMeadow
                             LethalThunderStorm storm = rs.absroom.realizedRoom.lethalThunderStorm;
                             if (storm != null)
                             {
-                                stormData.ReadTo(storm);
+                                stormData?.ReadTo(storm);
                             }
                         }
                     }
