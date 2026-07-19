@@ -113,6 +113,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             painCatName,
             painCatIndex
         );
+        
+        RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
+
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);

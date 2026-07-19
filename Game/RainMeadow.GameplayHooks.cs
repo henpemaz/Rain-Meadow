@@ -73,6 +73,40 @@ namespace RainMeadow
             On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
             IL.JokeRifle.Use += JokeRifle_Use;
             On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
+
+            On.PlayerGraphics.Update += PlayerGraphics_Update_MakePlayerThinkWhenTyping;
+        }
+
+        private void PlayerGraphics_Update_MakePlayerThinkWhenTyping(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
+        {
+            orig(self);
+            if (OnlineManager.lobby is not null
+                && self.player.abstractCreature.GetOnlineCreature()?.owner is OnlinePlayer onlinePlayer
+                && OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs))
+            {
+                if (cs.isInteracting && self.player.touchedNoInputCounter > 0)
+                {
+                    if (!cs.isThinking) cs.isThinking = true;
+                    self.LookAtPoint(self.player.mainBodyChunk.pos + Vector2.up * 25f, 100);
+                    self.player.Blink(10);
+                    if (self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame 
+                        || storyGame.saveState.deathPersistentSaveData.theMark)
+                    {
+                        self.markAlpha = Custom.LerpAndTick(
+                            self.lastMarkAlpha, 
+                            Mathf.Clamp01(1f - UnityEngine.Random.value * Mathf.InverseLerp(80f, 30f, self.player.touchedNoInputCounter)), 
+                            0.1f, 
+                            0.033333335f
+                        );
+                        // RainMeadow.Debug($"Mark at alpha {self.markAlpha}<{self.player.touchedNoInputCounter}>");
+                    }
+                }
+                else if (cs.isThinking)
+                {
+                    self.LookAtNothing();
+                    cs.isThinking = false;
+                }
+            }
         }
 
         // Prevent ammo from duping

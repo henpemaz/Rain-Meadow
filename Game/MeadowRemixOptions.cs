@@ -23,7 +23,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatButtonKey;
-    public readonly Configurable<bool> ChatLogOnOff, ChatPing;
+    public readonly Configurable<bool> ChatLogOnOff, ChatPing, ChatSound;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<int> ArenaWatcherCamoTimer;
@@ -143,6 +143,20 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> StoreItem7;
     public readonly Configurable<KeyCode> StoreItem8;
 
+
+    public readonly Configurable<bool> EnableChatArenaDeathNotification;
+    public readonly Configurable<bool> EnableChatArenaJoinNotification;
+    public readonly Configurable<bool> EnableChatStoryDeathNotification;
+    public readonly Configurable<bool> EnableChatStoryJoinNotification;
+    public readonly Configurable<bool> EnableChatRoundNotification;
+    public readonly Configurable<bool> EnableChatSessionNotification;
+    public readonly Configurable<bool> EnableChatLogErrorToggle;
+    public readonly Configurable<bool> ClearChatEveryRound;
+    public readonly Configurable<bool> UseCustomChatUsernameColor;
+    public readonly Configurable<bool> ChatTextDownscroll;
+    public readonly Configurable<string> CurrentlyActiveChatUsernameColor;
+
+
     public enum IntroRoll
     {
         Meadow,
@@ -165,7 +179,8 @@ public class RainMeadowOptions : OptionInterface
     private UIelement[] OnlineArenaSettings;
     private UIelement[] OnlineStorySettings;
     private UIelement[] OnlineLANSettings;
-    private UIelement[] OnlineAdvancedSettings;
+    private UIelement[] OnlineChatSettings;
+    // private UIelement[] OnlineAdvancedSettings;
     private UIelement[] OnlineGameplay;
 
 
@@ -181,16 +196,10 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
-        ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
-        ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
-        ChatLogOnOff = config.Bind("ChatLogOnOff", true);
-        ChatPing = config.Bind("ChatPing", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
-
-        ProfanityFilter = config.Bind("ProfanityFilter", true);
 
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
@@ -252,11 +261,6 @@ public class RainMeadowOptions : OptionInterface
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
-        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
-        ChatInactivityOpacity = config.Bind("ChatInactivityOpacity", 0.35f);
-        ChatInactivityTimer = config.Bind("ChatInactivityTimer", 30);
-        StreamerMode = config.Bind("StreamerMode", StreamMode.None);
-
         DevNightskySkin = config.Bind("DevNightskySkin", false);
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         MeadowCoins = config.Bind("MeadowCoins", 0);
@@ -307,13 +311,43 @@ public class RainMeadowOptions : OptionInterface
         StoreItem6 = config.Bind("DrownStoreItem6", KeyCode.Alpha6);
         StoreItem7 = config.Bind("DrownStoreItem7", KeyCode.Alpha7);
         StoreItem8 = config.Bind("DrownStoreItem8", KeyCode.Alpha8);
+
+        // Chat
+        ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
+        ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
+        ChatLogOnOff = config.Bind("ChatLogOnOff", true);
+        ChatPing = config.Bind("ChatPing", true);
+        ChatSound = config.Bind("ChatSound", false);
+
+        ProfanityFilter = config.Bind("ProfanityFilter", true);
+
+        ClearChatEveryRound = config.Bind("ClearChatEveryRound", false);
+
+        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
+        ChatInactivityOpacity = config.Bind("ChatInactivityOpacity", 0.35f);
+        ChatInactivityTimer = config.Bind("ChatInactivityTimer", 30);
+        StreamerMode = config.Bind("StreamerMode", StreamMode.None);
+
+        EnableChatStoryDeathNotification = config.Bind("EnableChatStoryDeathNotification", true);
+        EnableChatStoryJoinNotification = config.Bind("EnableChatStoryJoinNotification", true);
+
+        EnableChatArenaDeathNotification = config.Bind("EnableChatArenaDeathNotification", true);
+        EnableChatArenaJoinNotification = config.Bind("EnableChatArenaJoinNotification", true);
+
+        EnableChatLogErrorToggle = config.Bind("EnableChatLogErrorToggle", false);
+        EnableChatRoundNotification = config.Bind("EnableChatRoundNotification", false);
+        EnableChatSessionNotification = config.Bind("EnableChatSessionNotification", false);
+
+        UseCustomChatUsernameColor = config.Bind("UseCustomChatUsernameColor", false);
+        ChatTextDownscroll = config.Bind("ChatTextDownscroll", false);
+        CurrentlyActiveChatUsernameColor = config.Bind("CurrentlyActiveChatUsernameColor", "FFFFFF");
     }
 
     List<ListItem> arenaFlairList = new List<ListItem>
-{
-    new ListItem("0", "Default"),
-    new ListItem("1", "Greedy"),
-};
+    {
+        new ListItem("0", "Default"),
+        new ListItem("1", "Greedy"),
+    };
 
     public override void Initialize()
     {
@@ -325,11 +359,12 @@ public class RainMeadowOptions : OptionInterface
             OpTab storyTab = new OpTab(this, Translate("Story"));
             OpTab lanTab = new OpTab(this, Translate("LAN"));
             OpTab onlineTab = new OpTab(this, Translate("Gameplay"));
+            OpTab chatTab = new OpTab(this, Translate("Chat"));
+
+            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab, onlineTab, chatTab };
 
 
-
-            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab, onlineTab };
-
+            // Gameplay Tab
             List<UIelement> meadowCheats;
             OpTextBox meadowCheatBox;
             OpSimpleButton cheatEmote;
@@ -337,75 +372,37 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton cheatCharacter;
             OpSimpleButton cheatReset;
             float cheaty = 130f;
-            OpTextBox chatBgOpacity;
-            OpTextBox chatInactivityOpacity;
-            OpTextBox chatInactivityTimer;
             OnlineGameplay = new UIelement[]
-          {
-            new OpLabel(10f, 550f, Translate("Gameplay"), bigText: true),
-            new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
+            {
+                new OpLabel(10f, 550f, Translate("Gameplay"), bigText: true),
+                new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
 
-            new OpLabel(10, 490f, Translate("Show usernames")),
-            new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
+                new OpLabel(10, 490f, Translate("Show usernames")),
+                new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
-            new OpLabel(310f, 490f, Translate("Username Toggle"), bigText: false),
-            new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
-            new OpLabel(340f, 475f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Replace holding with toggling"))),
+                new OpLabel(310f, 490f, Translate("Username Toggle"), bigText: false),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
+                new OpLabel(340f, 475f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Replace holding with toggling"))),
 
-            new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
-            new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
+                new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
 
-            new OpLabel(310, 445f, Translate("Stop Inputs While Spectating")),
-            new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 420)),
+                new OpLabel(310, 445f, Translate("Stop Inputs While Spectating")),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 420)),
 
-            new OpLabel(310, 400f, Translate("Pointing Key")),
-            new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
+                new OpLabel(310, 400f, Translate("Pointing Key")),
+                new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
 
-            new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
-            new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
+                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
+                new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
-
-            new OpLabel(10, 250f, Translate("Streamer Mode")),
-            new OpComboBox2(StreamerMode, new Vector2(10f, 220f), 160f, OpResourceSelector.GetEnumNames(null, typeof(StreamMode)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-
-            new OpLabel(10, 180f, Translate("Chat Log Toggle")),
-            new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
-
-            new OpLabel(210, 180f, Translate("Chat Talk Button")),
-            new OpKeyBinder(ChatButtonKey, new Vector2(210f, 150), new Vector2(150f, 30f)),
-
-            new OpLabel(410, 180, Translate("Chat Background Opacity")),
-            chatBgOpacity = new OpTextBox(ChatBgOpacity, new Vector2(410f, 153f), 90),
-
-
-            new OpLabel(10, 120f, Translate("Profanity Filter")),
-            new OpCheckBox(ProfanityFilter, new Vector2(10f, 90f)),
-
-            new OpLabel(210, 120f, Translate("Show Ping")),
-            new OpCheckBox(ShowPing, new Vector2(210, 90f)),
-
-            new OpLabel(10, 60f, Translate("Sound on Mention")),
-            new OpCheckBox(ChatPing, new Vector2(10, 30f)),
-
-
-            new OpLabel(440f, 535, Translate("Global Mute")),
-            new OpCheckBox(GlobalMute, new Vector2(410f, 535)),
-
-            new OpLabel(410, 120f, Translate("Chat Inactivity Opacity")),
-            chatInactivityOpacity = new OpTextBox(ChatInactivityOpacity, new Vector2(410f, 93f), 90),
-
-            new OpLabel(410, 60f, Translate("Chat Inactivity Timer")),
-            chatInactivityTimer = new OpTextBox(ChatInactivityTimer, new Vector2(410f, 33f), 90),
-
-            new OpLabel(210, 60f, Translate("Chat Log On/Off")),
-            new OpCheckBox(ChatLogOnOff, new Vector2(210f, 30f)),
-
-
-          };
+            };
             onlineTab.AddItems(OnlineGameplay);
 
+
+            // Meadow Tab
             OnlineMeadowSettings = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("Meadow"), bigText: true),
@@ -434,6 +431,8 @@ public class RainMeadowOptions : OptionInterface
 
             meadowTab.AddItems(OnlineMeadowSettings);
 
+
+            // General Tab
             OpComboBox2 introroll;
             OpColorPicker cosmeticColor;
             OpComboBox2 currentlyActiveCosmeticbox;
@@ -495,7 +494,7 @@ public class RainMeadowOptions : OptionInterface
         colorEdge = Menu.MenuColorEffect.rgbWhite
     }
 
-        };
+            };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
@@ -529,7 +528,6 @@ public class RainMeadowOptions : OptionInterface
             {
                 watcherWarning.Hidden = false;
             }
-
             editSyncRequiredModsButton.OnClick += _ =>
             {
                 try
@@ -542,7 +540,6 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadow.Error(e);
                 }
             };
-
             editBannedModsButton.OnClick += _ =>
             {
                 try
@@ -557,6 +554,8 @@ public class RainMeadowOptions : OptionInterface
             };
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
+            
+            // Story Tab
             OnlineStorySettings =
             [   new OpLabel(10f, 550f, Translate("Story"), bigText: true),
 
@@ -589,10 +588,11 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(new Vector2(40, 170), new(25, 25), Custom.ReplaceLineDelimeters(Translate("Gain achievements online")), FLabelAlignment.Left),
                 new OpCheckBox(EnableAchievementsOnline, new Vector2(10, 170)),
-
             ];
             storyTab.AddItems(OnlineStorySettings);
 
+            
+            // Arena Tab
             OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
             OpHoldButton arenaSpoilerButton;
             OpCheckBox slugpupHellBackgroundCheckbox;
@@ -612,34 +612,33 @@ public class RainMeadowOptions : OptionInterface
                 slugpupHellBackgroundLabel = new OpLabel(10f, 480, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
                 slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 455)),
 
-            new OpLabel(10f, 400, Translate("Flair")),
+                new OpLabel(10f, 400, Translate("Flair")),
 
-            arenaFlair = new OpComboBox2(
-                ArenaFlairActive,
-                new Vector2(10f, 370),
-                160f,
-                arenaFlairList.Where(i =>
-                    (i.displayName == "Default") ||
-                    (i.displayName == "Greedy" && ArenaUnhandledOptimizations.Value)
-                ).ToList()
-            )
-            {
-                colorEdge = Menu.MenuColorEffect.rgbWhite
-            },
+                arenaFlair = new OpComboBox2(
+                    ArenaFlairActive,
+                    new Vector2(10f, 370),
+                    160f,
+                    arenaFlairList.Where(i =>
+                        (i.displayName == "Default") ||
+                        (i.displayName == "Greedy" && ArenaUnhandledOptimizations.Value)
+                    ).ToList()
+                )
+                {
+                    colorEdge = Menu.MenuColorEffect.rgbWhite
+                },
 
-            new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
-            new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
+                new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
+                new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
             ];
-
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
+
             arenaSpoilerButton.OnPressDone += btn =>
             {
                 OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
                 for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
             };
-
             arenaFlair.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
                 if (!int.TryParse(value, out int result))
@@ -651,7 +650,8 @@ public class RainMeadowOptions : OptionInterface
                 RainMeadow.Info($"Converted ArenaFlair to integer: {result}");
             };
 
-
+            
+            // LAN Tab
             OnlineLANSettings = new UIelement[7]
             {
                 new OpLabel(10f, 550f, Translate("LAN"), bigText: true),
@@ -671,8 +671,131 @@ public class RainMeadowOptions : OptionInterface
                     accept = OpTextBox.Accept.Int
                 }
 
-        };
+            };
             lanTab.AddItems(OnlineLANSettings);
+
+            // Chat Tab
+            OpCheckBox useCustomChatColor;
+            OpTextBox chatColor;
+            OpRect chatColorPreview;
+
+            OpTextBox chatBgOpacity;
+            OpTextBox chatInactivityOpacity;
+            OpTextBox chatInactivityTimer;
+
+            OnlineChatSettings = [
+                new OpLabel(10f, 550f, Translate("Chat"), bigText: true),
+                
+                new OpLabel(10f, 520f, Translate("Custom Chat Username Color")),
+                useCustomChatColor = new OpCheckBox(UseCustomChatUsernameColor, new Vector2(10, 490)),
+                chatColor = new OpTextBox(CurrentlyActiveChatUsernameColor, new Vector2(50, 490), 130f)
+                {
+                    greyedOut = !UseCustomChatUsernameColor.Value,
+                    accept = OpTextBox.Accept.StringASCII
+                },                
+                chatColorPreview = new OpRect(new Vector2(184, 490), new Vector2(24f, 24f), 1f),
+
+                new OpLabel(10, 460, Translate("Streamer Mode")),
+                new OpComboBox2(StreamerMode, new Vector2(10f, 430), 160f, OpResourceSelector.GetEnumNames(null, typeof(StreamMode)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
+                new OpLabel(210, 460, Translate("Chat Log Toggle")),
+                new OpKeyBinder(ChatLogKey, new Vector2(210, 430), new Vector2(150f, 30f)),
+
+                new OpLabel(410, 460, Translate("Chat Talk Button")),
+                new OpKeyBinder(ChatButtonKey, new Vector2(410, 430), new Vector2(150f, 30f)),
+
+
+                new OpLabel(10, 400, Translate("Chat Background Opacity")),
+                chatBgOpacity = new OpTextBox(ChatBgOpacity, new Vector2(10, 373f), 90),
+
+                new OpLabel(210, 400, Translate("Chat Inactivity Opacity")),
+                chatInactivityOpacity = new OpTextBox(ChatInactivityOpacity, new Vector2(210, 373f), 90),
+
+                new OpLabel(410, 400, Translate("Chat Inactivity Timer")),
+                chatInactivityTimer = new OpTextBox(ChatInactivityTimer, new Vector2(410f, 373f), 90),
+
+
+                new OpLabel(10, 330, Translate("Chat Log On/Off")),
+                new OpCheckBox(ChatLogOnOff, new Vector2(10, 300)),
+
+                new OpLabel(10, 270, Translate("Show Ping")),
+                new OpCheckBox(ShowPing, new Vector2(10, 240)),
+
+
+                new OpLabel(210, 330, Translate("Profanity Filter")),
+                new OpCheckBox(ProfanityFilter, new Vector2(210, 300)),
+
+                new OpLabel(210, 270, Translate("Global Mute")),
+                new OpCheckBox(GlobalMute, new Vector2(210, 240)),
+
+
+                new OpLabel(410, 330, Translate("Sound on Mention")),
+                new OpCheckBox(ChatPing, new Vector2(410, 300)),
+
+                new OpLabel(410, 270, Translate("Sound On New Message")),
+                new OpCheckBox(ChatSound, new Vector2(410, 240)),
+
+            
+                new OpLabel(10, 200, Translate("Story") + " " + Translate("Death Notification")),
+                new OpCheckBox(EnableChatStoryDeathNotification, new Vector2(10f, 170)),
+
+                new OpLabel(10, 140, Translate("Story") + " " + Translate("Join Notification")),
+                new OpCheckBox(EnableChatStoryJoinNotification, new Vector2(10, 110)),
+
+
+                new OpLabel(210, 200, Translate("Arena") + " " + Translate("Death Notification")),
+                new OpCheckBox(EnableChatArenaDeathNotification, new Vector2(210f, 170)),
+
+                new OpLabel(210, 140, Translate("Arena") + " " + Translate("Join Notification")),
+                new OpCheckBox(EnableChatArenaJoinNotification, new Vector2(210, 110)),
+
+
+                new OpLabel(410, 200, Translate("Arena") + " " + Translate("Round Notification")),
+                new OpCheckBox(EnableChatRoundNotification, new Vector2(410, 170)),
+
+                new OpLabel(410, 140, Translate("Arena") + " " + Translate("Session Notification")),
+                new OpCheckBox(EnableChatSessionNotification, new Vector2(410, 110)),
+
+                
+                new OpLabel(10, 70, Translate("Enable Chat Logging Toggle")),
+                new OpCheckBox(EnableChatLogErrorToggle, new Vector2(10, 40)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
+
+                new OpLabel(210, 70, Translate("Text Downscroll")),
+                new OpCheckBox(ChatTextDownscroll, new Vector2(210, 40)),
+            ];
+            useCustomChatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) =>
+            {
+                chatColor.greyedOut = !bool.Parse(value);
+            };
+            chatColor.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                if (value.Length > 6)
+                {
+                    chatColor.value = value.Remove(6, value.Length - 6);
+                }
+                else if (value.Length < 6 && value.Length > 0)
+                {
+                    chatColor.value = oldValue;
+                }
+                if (value != "" && value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
+                {
+                    chatColor.value = oldValue;
+                }
+                CurrentlyActiveChatUsernameColor.Value = chatColor.value;
+                chatColorPreview.colorFill = Utils.SafeHexToColor(chatColor.value);
+            };
+            chatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) => 
+            {
+                if (value.Length == 6 && !value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
+                {
+                    chatColorPreview.colorFill = Utils.SafeHexToColor(value);
+                }
+                else
+                {
+                    chatColorPreview.colorFill = Utils.SafeHexToColor(CurrentlyActiveChatUsernameColor.Value);
+                }
+            };
+            chatTab.AddItems(OnlineChatSettings);
         }
 
         catch (Exception ex)
