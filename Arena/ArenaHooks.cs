@@ -631,19 +631,16 @@ namespace RainMeadow
         public void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
-            if (!isArenaMode(out var arena))
+            if (!isArenaMode(out _))
                 return;
             bool slowDownCharge = false;
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
-                if (!voidSpawn.IsLocal())
+                if (!voidSpawn.IsLocal() || !self.IsLocal()) 
                     continue;
                 if (voidSpawn.behavior != null) //player actually created it
                     slowDownCharge = true;
-                if (
-                    voidSpawn.abstractPhysicalObject.rippleLayer
-                    != self.abstractPhysicalObject.rippleLayer
-                )
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
                     voidSpawn.startFadeOut = true;
             }
             if (slowDownCharge)

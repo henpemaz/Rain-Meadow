@@ -11,12 +11,15 @@ namespace RainMeadow
         private int timer;
         [OnlineField]
         private bool startFadeOut;
+        [OnlineField]
+        private int rippleLayer;
         public RealizedRippleSpawnState() { }
         public RealizedRippleSpawnState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var rip = (VoidSpawn)onlineEntity.apo.realizedObject;
             timer = rip.timeUntilFadeout;
             startFadeOut = rip.startFadeOut;
+            rippleLayer = rip.abstractPhysicalObject.rippleLayer;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -26,6 +29,10 @@ namespace RainMeadow
             var rip = (VoidSpawn)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             rip.timeUntilFadeout = timer;
             rip.startFadeOut = startFadeOut;
+            if (rippleLayer != rip.abstractPhysicalObject.rippleLayer)
+            {
+                rip.ChangeRippleLayer(rippleLayer, true);
+            }
         }
     }
 
