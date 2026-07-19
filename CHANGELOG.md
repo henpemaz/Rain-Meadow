@@ -18,6 +18,7 @@
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
+- Added scarfs(?)
 ### ⚠️ Developers
 - The Debug Overlay has been changed to be able to track non physical object entities.
 - The Debug Overlay now has an Ownership view to Dev Tools.
@@ -54,7 +55,16 @@
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication
 - Synced prince's position and look point
+## Chat
+- Put Chat in its own overlay so it is available at all times
+- Chat now keeps history of what was typed in/out of the lobby menu
+- Moved all chat related Remix option in its own tab
+- Added Remix options for different system messages in arena and story mode
+- Added username color customization as a Remix options
+- Added text downscroll as a Remix options
+
 # Release 1.14.1
+
 ## Engine 
 - Improved parry netcode.
 - Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 

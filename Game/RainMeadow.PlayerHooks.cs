@@ -1178,7 +1178,10 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
+                && (hud.textPrompt?.pausedMode is true 
+                    || RMOverlayHUDMenu.GetOverlay()?.isFocusedOnMenu is true
+                    || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) 
+                        && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
                 GameplayOverrides.StopPlayerMovement(self);
             }
@@ -1469,7 +1472,7 @@ public partial class RainMeadow
 
             if (self.IsLocal())
             {
-                if (CapeManager.HasCape(OnlineManager.mePlayer.id) is not null && !self.isNPC)
+                if (self.graphicsModule is not null && RainMeadow.cosmeticed_avatars.TryGetValue(self.graphicsModule, out var cosmetic) && cosmetic is SlugcatCape && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)

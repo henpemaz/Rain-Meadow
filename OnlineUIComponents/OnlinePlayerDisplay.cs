@@ -65,6 +65,12 @@ namespace RainMeadow
             {
                 this.color = a.externalArenaGameMode.IconColor(a, this, owner, customization, player);
             }
+            else if (RainMeadow.isStoryMode(out _)
+                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                && cs.chatUsernameColor is Color chatUsernameColor)
+            {
+                this.color = chatUsernameColor;
+            }
             Color.RGBToHSV(color, out H, out S, out V);
 
 
