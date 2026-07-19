@@ -10,7 +10,7 @@ namespace RainMeadow;
 
 public partial class RoomSession
 {
-    [DeltaSupport(level = StateHandler.DeltaSupport.FollowsContainer)]
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class LethalThunderStormData : OnlineState
     {
         [OnlineField(group = "counters")]
