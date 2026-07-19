@@ -178,13 +178,46 @@ namespace RainMeadow
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
 
-            // On.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible;
             IL.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode;
             
             IL.RippleCreatureTracker.RippleCreatureSprite.DrawSprites += RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace;
             On.Room.Loaded += Room_Loaded_AddRippleCreatureTracker;
+            IL.VoidSpawn.Update += VoidSpawn_Update_DontAutoDespawnIfArena;
 
             DrownHooks();
+        }
+
+        private void VoidSpawn_Update_DontAutoDespawnIfArena(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+
+                if (cursor.TryGotoNext(MoveType.After, 
+                    x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod()),
+                    x => x.MatchLdcI4(1),
+                    x => x.MatchBeq(out label)
+                ))
+                {
+                    // If it's areana mode, don't despawn ripple if they are in ripple space
+                    cursor.EmitDelegate(() => isArenaMode(out _));
+                    cursor.Emit(OpCodes.Brtrue, label);
+
+                    cursor.MoveAfterLabels();
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((VoidSpawn self) 
+                        => Debug($"Ripple [{self}/{self.abstractPhysicalObject.GetOnlineObject()}] is despawning ! <{!self.dayLightMode && self.RippleMigration && self.room.PointSubmerged(self.mainBody[0].pos)}><{self.startFadeOut}><{self.abstractPhysicalObject.rippleLayer == 1 && self.room.game.ActiveRippleLayer != 1}><{!isArenaMode(out _)}><{self.timeUntilFadeout}>"));
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
         }
 
         private void Room_Loaded_AddRippleCreatureTracker(On.Room.orig_Loaded orig, Room self)
@@ -221,7 +254,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Error("Couldn't find IL hook 1 :<");
+                    RainMeadow.Error("Couldn't find IL hook :<");
                 }
             }
             catch (Exception e)
@@ -254,16 +287,6 @@ namespace RainMeadow
                 RainMeadow.Error("Error while hooking ! " + e);
             }
         }
-
-        // private void PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible(On.PlayerGraphics.orig_RippleTrailUpdate orig, PlayerGraphics self)
-        // {
-        //     orig(self);
-        //     if (RainMeadow.isArenaMode(out _) && !self.isRippleTrailDisabled) 
-        //     {
-        //         self.rippleTrail.SetProperty(0, 1f - self.player.camoProgress); 
-        //     }
-        //     // RainMeadow.Debug($"Player [{self.player}] online [{self.player.abstractCreature.GetOnlineCreature()}] has ripple trail ? <{ModManager.Watcher && !Watcher.Watcher.cfgDisableRippleTrail.Value}><{self.player.abstractCreature.world.game.cameras[0].rippleData is not null}><{self.rippleTrail is not null}><{self.player.rippleLevel}><{!self.player.room.game.cameras[0].voidSeaMode}><{!self.isRippleTrailDisabled}><{self.rippleTrail?.vertexColor[0]}><{self.rippleTrail?.pos}><{self.rippleTrail?.scale}>");
-        // }
 
         // Restrict Artificer's parry and stun range in arena
         private const float VANILLA_ARTI_PARRY_RANGE = 300f;
@@ -640,8 +663,8 @@ namespace RainMeadow
                     continue;
                 if (voidSpawn.behavior != null) //player actually created it
                     slowDownCharge = true;
-                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
-                    voidSpawn.startFadeOut = true;
+                // if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                //     voidSpawn.startFadeOut = true;
             }
             if (slowDownCharge)
             {
