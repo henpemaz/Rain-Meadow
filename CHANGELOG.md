@@ -2,6 +2,7 @@
 
 ## Engine
 - Improved some sources of desync (enums)
+- Improved Noodle Fly sync
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 - Improved the Russian translation
@@ -14,6 +15,8 @@
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
+- Added Ownership view to Dev Tools.
+  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 ## Arena
@@ -37,6 +40,7 @@
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
 - Fixed sound/visual cue of parrying being inconsistant.
+- Fixed gourmand not being shown as exhausted when throwing a spear
 ## Meadow
 - Fixed creatures being able to get injured.
 ### Modders

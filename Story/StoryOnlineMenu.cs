@@ -26,6 +26,7 @@ namespace RainMeadow
         //Chat constants
         private const int maxVisibleMessages = 13;
         private const float chatMessgesOffset = 20f;
+
         //Chat variables
         private List<MenuObject> chatSubObjects = [];
         private int currentLogIndex = 0;
@@ -773,6 +774,7 @@ namespace RainMeadow
 
                 var visibleLog = ChatLogManager.chatLog.Skip(startIndex).Take(maxVisibleMessages);
                 float yOffSet = textAnchor == ButtonScroller.TextAnchor.Top ? 0 : (maxVisibleMessages - 1 - visibleLog.Count()) * chatMessgesOffset;
+                
                 foreach (var (username, message) in visibleLog)
                 {
                     ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(username);
