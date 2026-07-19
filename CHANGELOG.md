@@ -42,8 +42,8 @@
 - Fixed explosive spears still damaging the player when parried.
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
-- Fixed summoned Aomeba getting anihilated for diverse unwanted reasons
-- Aomeba is now going in the right layer when summoned
+- Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
+- Amoeba is now going in the right layer when summoned
 - Disabling Ripple Trail in online arena
 - Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
 - Watcher will always have while eyes in camo
