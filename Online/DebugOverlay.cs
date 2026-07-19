@@ -2,6 +2,7 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace RainMeadow
@@ -10,46 +11,39 @@ namespace RainMeadow
     {
         private static FContainer overlayContainer;
 
-        private class ResourceNode
+        public abstract class DebugNode
         {
-            public OnlineResource resource;
-            private FSprite lineSprite;
-            private FSprite lineSprite2;
-            private FLabel label;
-            public string text = "";
+            protected FSprite lineSprite;
+            protected FSprite lineSprite2;
+            protected FLabel label;
             public Vector2 pos;
             public Color color = Color.white;
             public float thickness = 3;
             public int lines = 0;
-            public int entityCount = 0;
             public List<EntityIconPair> childEntities = [];
+            public int entityNodeCount;
 
             public float width => label.textRect.width;
-            public ResourceNode(RainWorld rainWorld, FContainer container, OnlineResource resource)
+            public abstract bool ClaimsEntity(OnlineEntity x);
+            public DebugNode(FContainer container)
             {
-                this.resource = resource;
-
                 lineSprite = new FSprite("pixel");
                 lineSprite2 = new FSprite("pixel");
 
-                label = new FLabel(Custom.GetFont(), resource.ToString());
-                label.alignment = FLabelAlignment.Left;
-                label.color = Color.white;
+                label = new FLabel(Custom.GetFont(), "node") { 
+                    alignment =  FLabelAlignment.Left,
+                    color = Color.white
+                };
 
                 container.AddChild(lineSprite);
                 container.AddChild(lineSprite2);
                 container.AddChild(label);
             }
 
-            public void Update()
+            public virtual void Update()
             {
                 label.x = pos.x + 0.01f + 20;
                 label.y = pos.y;
-
-                label.color =
-                    resource.isOwner ? Color.green :
-                    resource.isSupervisor ? Color.blue :
-                    resource.canRelease ? Color.red : Color.white;
 
                 lineSprite.x = pos.x + 20;
                 lineSprite.y = pos.y - 8;
@@ -62,13 +56,10 @@ namespace RainMeadow
                 lineSprite2.anchorX = 0;
                 lineSprite2.scaleX = 15;
                 lineSprite2.scaleY = 2;
-                lineSprite2.color = OnlineManager.feeds.Exists(sub => sub.resource == resource) ? Color.green : Color.white;
-
                 lines = 0;
-                entityCount = 0;
             }
 
-            public void RemoveSprites()
+            public virtual void RemoveSprites()
             {
                 lineSprite.RemoveFromContainer();
                 lineSprite2.RemoveFromContainer();
@@ -76,9 +67,62 @@ namespace RainMeadow
             }
         }
 
-        private static List<ResourceNode> resourceNodes = new List<ResourceNode>();
+        public  class ResourceDebugNode : DebugNode
+        {
+            public OnlineResource Resource { get; set; }
+            public ResourceDebugNode(FContainer container, OnlineResource resource) : base(container)
+            {
+                this.Resource = resource;
+                this.label.text = resource.ToString();
+            }
 
-        private class EntityNode
+            public override bool ClaimsEntity(OnlineEntity x) => x.currentlyJoinedResource == Resource;
+            public override void Update()
+            {
+                base.Update();
+                label.color =
+                        Resource.isOwner ? Color.green :
+                        Resource.isSupervisor ? Color.blue :
+                        Resource.canRelease ? Color.red : Color.white;
+                
+            }
+        }
+
+
+        private class PlayerDebugNode : DebugNode
+        {
+            public OnlinePlayer Player { get; set; }
+            public PlayerDebugNode(FContainer container, OnlinePlayer player) : base(container)
+            {
+                this.Player = player;
+                this.label.text = player.ToString();
+            }
+
+            public override bool ClaimsEntity(OnlineEntity x) => x.owner == Player;
+            public override void Update()
+            {
+                base.Update();
+                
+                StringBuilder labelText = new(Player.ToString());
+                if (Player.isMe)
+                {
+                    this.label.color = Color.white;
+                }
+                else
+                {
+                    int ping = Utils.RealPing(Player.ping);
+                    labelText.Append($" ({ping})");
+                    this.label.color = Utils.RealPingColor(ping);
+                }
+
+                this.label.text = labelText.ToString();
+            }
+        }
+
+
+        private static List<DebugNode> debugNodes = new List<DebugNode>();
+
+        public class EntityNode
         {
             public EntityIconPair entityIcon;
             private IconSymbol iconSymbol;
@@ -88,7 +132,7 @@ namespace RainMeadow
             public Color color = Color.white;
             public float rad = 5;
             public float thickness = 3;
-            public EntityNode(RainWorld rainWorld, FContainer container, EntityIconPair entityIcon)
+            public EntityNode(FContainer container, EntityIconPair entityIcon)
             {
                 this.entityIcon = entityIcon;
                 
@@ -176,7 +220,7 @@ namespace RainMeadow
         public static playerCache playersRead = new playerCache(16, TimeSpan.FromSeconds(5));
         public static playerCache playersWritten = new playerCache(16, TimeSpan.FromSeconds(5));
 
-        private class EntityIconPair
+        public class EntityIconPair
         {
             public OnlineEntity Entity { get; set; }
             public IconSymbol.IconSymbolData Icon { get; set; }
@@ -201,6 +245,12 @@ namespace RainMeadow
 
             if (overlayContainer == null)
                 return;
+
+            if (self.devToolsActive && Input.GetKey(KeyCode.Minus) && !keyDown)
+            {
+                ownershipView = !ownershipView;
+            }
+            keyDown = self.devToolsActive && Input.GetKey(KeyCode.Minus);
 
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
 
@@ -274,9 +324,14 @@ namespace RainMeadow
                 line++;
             }
 
-            resourceNodes.RemoveAll(node =>
+            debugNodes.RemoveAll(node =>
             {
-                if (!node.resource.isActive)
+                if (node is ResourceDebugNode rdn && (ownershipView || !rdn.Resource.isActive) && rdn.Resource is not Lobby)
+                {
+                    node.RemoveSprites();
+                    return true;
+                }
+                if (node is PlayerDebugNode pdn && (!ownershipView || pdn.Player.hasLeft))
                 {
                     node.RemoveSprites();
                     return true;
@@ -284,58 +339,77 @@ namespace RainMeadow
                 return false;
             });
 
-            var root = resourceNodes[0];
+            var root = debugNodes[0];
 
-            // Worlds (Regions)
-
-            RoomSession inRoomSession;
-            WorldSession inWorldSession = null;
-            if (self.cameras[0].room == null || !RoomSession.map.TryGetValue(self.cameras[0].room.abstractRoom, out inRoomSession))
+            if (!ownershipView) // World
             {
-                return;
-            }
-            inWorldSession = inRoomSession.worldSession;
-
-            var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
-            worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
-
-            int lastWorldLines = 0;
-            foreach (var worldSession in worlds)
-            {
-                if (!worldSession.isActive)
-                    continue;
-
-                ResourceNode regionNode = resourceNodes.Find(regionNode => regionNode.resource == worldSession);
-                if (regionNode == null)
+                // Worlds (Regions)
+                RoomSession inRoomSession;
+                WorldSession inWorldSession = null;
+                if (self.cameras[0].room == null || !RoomSession.map.TryGetValue(self.cameras[0].room.abstractRoom, out inRoomSession))
                 {
-                    regionNode = new ResourceNode(self.rainWorld, overlayContainer, worldSession);
-                    resourceNodes.Add(regionNode);
+                    return;
                 }
+                inWorldSession = inRoomSession.worldSession;
 
-                root.lines += lastWorldLines + 1;
-                regionNode.pos = root.pos + new Vector2(20, root.lines * -35);
-
-                // Rooms
-                var rooms = worldSession.roomSessions.Values.ToList();
-                rooms.Sort((x, y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
-                foreach (var roomSession in rooms)
+                var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
+                worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
+                int lastWorldLines = 0;
+                foreach (var worldSession in worlds)
                 {
-                    if (!roomSession.isActive)
+                    if (!worldSession.isActive)
                         continue;
 
-                    ResourceNode roomNode = resourceNodes.Find(node => node.resource == roomSession);
-                    if (roomNode == null)
+                    ResourceDebugNode regionNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == worldSession);
+                    if (regionNode == null)
                     {
-                        roomNode = new ResourceNode(self.rainWorld, overlayContainer, roomSession);
-                        resourceNodes.Add(roomNode);
+                        regionNode = new ResourceDebugNode(overlayContainer, worldSession);
+                        debugNodes.Add(regionNode);
                     }
 
-                    regionNode.lines++;
-                    roomNode.pos = regionNode.pos + new Vector2(20, regionNode.lines * -35);
-                }
+                    root.lines += lastWorldLines + 1;
+                    regionNode.pos = root.pos + new Vector2(20, root.lines * -35);
 
-                lastWorldLines = regionNode.lines;
+                    // Rooms
+                    var rooms = worldSession.roomSessions.Values.ToList();
+                    rooms.Sort((x, y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
+                    foreach (var roomSession in rooms)
+                    {
+                        if (!roomSession.isActive)
+                            continue;
+
+                        ResourceDebugNode roomNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == worldSession);
+                        if (roomNode == null)
+                        {
+                            roomNode = new ResourceDebugNode(overlayContainer, roomSession);
+                            debugNodes.Add(roomNode);
+                        }
+
+                        regionNode.lines++;
+                        roomNode.pos = regionNode.pos + new Vector2(20, regionNode.lines * -35);
+                    }
+
+                    lastWorldLines = regionNode.lines;
+                }
             }
+            else
+            {
+                // Players
+                var players = OnlineManager.lobby.participants.OrderBy(x => x.inLobbyId);
+                foreach(var player in players)
+                {
+                    DebugNode playerNode = debugNodes.OfType<PlayerDebugNode>().FirstOrDefault(playerNode => playerNode.Player == player);
+                    if (playerNode == null)
+                    {
+                        playerNode = new PlayerDebugNode(overlayContainer, player);
+                        debugNodes.Add(playerNode);
+                    }
+
+                    root.lines += 1;
+                    playerNode.pos = root.pos + new Vector2(20, root.lines * -35);
+                }
+            }
+
 
             //Creature icons
 
@@ -345,16 +419,16 @@ namespace RainMeadow
             }
             entityNodes.Clear();
 
-            for (int i = 0; i < resourceNodes.Count; i++)
+            for (int i = 0; i < debugNodes.Count; i++)
             {
-                resourceNodes[i].Update();
-                resourceNodes[i].childEntities.Clear();
+                debugNodes[i].Update();
+                debugNodes[i].childEntities.Clear();
             }
 
             List<OnlineEntity> onlineEntities = OnlineManager.recentEntities.Values.ToList();
             for (int i = 0; i < onlineEntities.Count; i++)
             {
-                ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntities[i].currentlyJoinedResource);
+                DebugNode resourceNode = debugNodes.Find(node => node.ClaimsEntity(onlineEntities[i]));
                 if (resourceNode is null) return;
 
                 if (onlineEntities[i] is OnlinePhysicalObject onlinePhysicalObject)
@@ -376,21 +450,21 @@ namespace RainMeadow
                         Icon = new IconSymbol.IconSymbolData(CreatureTemplate.Type.StandardGroundCreature, AbstractPhysicalObject.AbstractObjectType.PebblesPearl, 2),
                     });
                 }
-
-                
             }
 
-            for (int i = 0; i < resourceNodes.Count; i++)
+            for (int i = 0; i < debugNodes.Count; i++)
             {
-                if (resourceNodes[i].childEntities.Count == 0) { continue; }
+                if (debugNodes[i].childEntities.Count == 0) { continue; }
 
-                resourceNodes[i].childEntities.Sort((x, y) =>
+                debugNodes[i].childEntities.Sort((x, y) =>
                 {
                     int comp = (x.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? -1 : 0) + (y.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature ? 1 : 0); //Creatures then items
                     if (comp != 0) { return comp; }
                     if ((x.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature) && (y.Icon.itemType == AbstractPhysicalObject.AbstractObjectType.Creature))
                     {
-                        comp = (((OnlineCreature)x.Entity).creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat ? -1 : 0) + (((OnlineCreature)y.Entity).creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat ? 1 : 0); //Us always first
+                        comp = 0;
+                        if (x.Entity is OnlineCreature critter && critter.isAvatar) comp -= 1;
+                        if (y.Entity is OnlineCreature critter2 && critter2.isAvatar) comp += 1;
                         if (comp != 0) { return comp; }
                         comp = (int)x.Icon.critType - (int)y.Icon.critType; //Creatures by type
                         if (comp != 0) { return comp; }
@@ -406,16 +480,15 @@ namespace RainMeadow
                     return comp;
                 });
 
-                IconSymbol.IconSymbolData iconType = new();
                 IconSymbol.IconSymbolData lastIconType = new();
                 int iconCount = 1;
                 bool lastIsMine = true;
+                bool lastAvatar = false;
                 int j = 0;
-                while (j < resourceNodes[i].childEntities.Count)
+                while (j < debugNodes[i].childEntities.Count)
                 {
-                    iconType = resourceNodes[i].childEntities[j].Icon;
-
-                    if (iconType == lastIconType && resourceNodes[i].childEntities[j].Entity.isMine == lastIsMine)
+                    IconSymbol.IconSymbolData iconType = debugNodes[i].childEntities[j].Icon;
+                    if (iconType == lastIconType && debugNodes[i].childEntities[j].Entity.isMine == lastIsMine && !lastAvatar)
                     {
                         iconCount++;
                         entityNodes.Last().text = iconCount.ToString();
@@ -425,21 +498,25 @@ namespace RainMeadow
                         iconCount = 1;
                         //Ok so, I'm not really using EntityNode for its intended purpose here; it's designed to link a creature instance to an icon, and I'm using it to just show *an* icon.
                         //I've done this because the code already works and does roughly what I want with very few modifications, and also so EntityNode can be reused later if it's ever helpful.
-                        EntityNode entityNode = new EntityNode(self.rainWorld, overlayContainer, resourceNodes[i].childEntities[j])
+
+                        lastAvatar = false;
+                        if (debugNodes[i].childEntities[j].Entity is OnlineCreature critter && critter.isMine && critter.isAvatar) lastAvatar = true;
+
+                        EntityNode entityNode = new EntityNode(overlayContainer, debugNodes[i].childEntities[j])
                         {
-                            text = (resourceNodes[i].childEntities[j].Entity.isMine && iconType.critType == CreatureTemplate.Type.Slugcat) ?
+                            text = lastAvatar?
                                 iconCount > 1 ?
                                     "U" + iconCount.ToString() : //This should never happen in normal gameplay, but, may as well support it I guess.
                                     "YOU" :
                                 iconCount.ToString()
                         };
                         entityNodes.Add(entityNode);
-                        entityNode.pos = resourceNodes[i].pos + new Vector2(40 + 22.5f * resourceNodes[i].entityCount + resourceNodes[i].width, 0);
-                        resourceNodes[i].entityCount++;
+                        entityNode.pos = debugNodes[i].pos + new Vector2(40 + 22.5f * debugNodes[i].entityNodeCount + debugNodes[i].width, 0);
+                        debugNodes[i].entityNodeCount++;
                     }
 
                     lastIconType = iconType;
-                    lastIsMine = resourceNodes[i].childEntities[j].Entity.isMine;
+                    lastIsMine = debugNodes[i].childEntities[j].Entity.isMine;
                     j++;
                 }
             }
@@ -449,10 +526,14 @@ namespace RainMeadow
                 entityNodes[i].Update();
             }
 
+            viewLabel.text = ownershipView ? "World - [Ownership]" : "[World] - Ownership";
             localClientSettings.text = "You:" + AssembleClientFlags(OnlineManager.mePlayer);
         }
 
         private static FLabel localClientSettings;
+        private static FLabel viewLabel;
+        private static bool ownershipView = false;
+        private static bool keyDown = false;
         public static void CreateOverlay(RainWorldGame self)
         {
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
@@ -470,18 +551,26 @@ namespace RainMeadow
                 x = 205.01f,
                 y = screenSize.y - 10,
             });
+            viewLabel = new(Custom.GetFont(), ownershipView ? "World - [Ownership]" : "[World] - Ownership")
+            {
+                alignment = FLabelAlignment.Center,
+                x = 405.01f,
+                y = screenSize.y - 10,
+            };
             localClientSettings = (new FLabel(Custom.GetFont(), "You:" + AssembleClientFlags(OnlineManager.mePlayer))
             {
                 alignment = FLabelAlignment.Left,
                 x = 405.01f,
-                y = screenSize.y - 10,
+                y = screenSize.y - 25,
             });
+
+            overlayContainer.AddChild(viewLabel);
             overlayContainer.AddChild(localClientSettings);
 
             // Lobby (Root)
-            resourceNodes.Add(new ResourceNode(self.rainWorld, overlayContainer, OnlineManager.lobby)
+            debugNodes.Add(new ResourceDebugNode(overlayContainer, OnlineManager.lobby)
             {
-                pos = new Vector2(400, screenSize.y - 35),
+                pos = new Vector2(400, screenSize.y - 45),
             });
 
             Futile.stage.AddChild(overlayContainer);
@@ -489,7 +578,7 @@ namespace RainMeadow
 
         public static void RemoveOverlay(RainWorldGame self)
         {
-            resourceNodes.Clear();
+            debugNodes.Clear();
             entityNodes.Clear();
             overlayContainer?.RemoveFromContainer();
             overlayContainer = null;
@@ -548,6 +637,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings))
                 {
+                    clientFlags += OnlineManager.lobby.owner == player ? "H" : "";
                     if (!OnlineManager.lobby.clientSettings[player].inGame)
                     {
                         clientFlags += "L";

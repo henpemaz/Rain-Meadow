@@ -262,7 +262,7 @@ public class RainMeadowOptions : OptionInterface
 
         boughtGoldenSkin = config.Bind("BoughtGoldenSkin", false);
         boughtRainbowCape = config.Bind("BoughtRainbowCape", false);
-        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", "FF0000");
+        currentlyActiveCapeColor = config.Bind("CurrentlyActiveCapeColor", "");
 
         ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
         ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
@@ -503,16 +503,16 @@ public class RainMeadowOptions : OptionInterface
                 {
                     capeColor.value = value.Remove(6, value.Length - 6);
                 }
-                else if (value.Length < 6)
+                else if (value.Length < 6 && value.Length > 0)
                 {
                     capeColor.value = oldValue;
                 }
-                if (value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
+                if (value != "" && value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
                 {
                     capeColor.value = oldValue;
                 }
                 currentlyActiveCapeColor.Value = capeColor.value;
-                capeColorPreview.colorFill = Menu.MenuColorEffect.HexToColor(capeColor.value);
+                capeColorPreview.colorFill = Utils.SafeHexToColor(capeColor.value);
             };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
