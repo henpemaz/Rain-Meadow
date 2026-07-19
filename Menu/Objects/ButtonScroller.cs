@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
@@ -14,6 +14,11 @@ namespace RainMeadow
     //a scroller just for predetermined buttons, intended for buttons' owner to be ButtonScroller, rn has predetermined height and spacing
     public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME
     {
+        public enum TextAnchor
+        {
+            Top,
+            Bottom
+        }
         public static float CalculateHeightBasedOnAmtOfButtons(int amtOfButtonsView, float buttonHeight, float spacing, bool startEndSpacing = false)
         {
             //remember it goes by buttonsize + button spacing not the buttonSpacing + buttonsize. button size plus first as there will be not extra spacing
@@ -36,11 +41,12 @@ namespace RainMeadow
         public float LowerBound => 0;
         public float UpperBound => size.y;
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
-        public float ScrollOffsetPos => scrollOffset * ButtonHeightAndSpacing;
+        public float ScrollOffsetPos => (textAnchor == TextAnchor.Top ? 1 : -1) * scrollOffset * ButtonHeightAndSpacing;
         public bool CanScrollUp => DownScrollOffset > 0;
         public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
         public bool CanScroll => !menu.FreezeMenuFunctions;
         public bool IsHidden { get; set; }
+        public TextAnchor textAnchor = TextAnchor.Top;
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, (float, float) buttonHeightSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0, bool startEndWithSpacing = false) : 
             this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, buttonHeightSpacing.Item1, buttonHeightSpacing.Item2, startEndWithSpacing)), sliderOnRight, sliderPosOffset, sliderSizeYOffset)
         {
@@ -55,6 +61,28 @@ namespace RainMeadow
             //slider sprite xoffset is 15
             scrollSlider = new(menu, this, "Scroller", sliderPosOffset + new Vector2(sliderOnRight? size.x : -32, 0), new Vector2(30, size.y + sliderSizeYOffset), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
             subObjects.Add(scrollSlider);
+        }
+        public void MoveAtBottom()
+        {
+            if (this.textAnchor == TextAnchor.Top)
+            {
+                this.scrollOffset = this.DownScrollOffset = this.MaxDownScroll;
+            }
+            else
+            {
+                this.scrollOffset = this.DownScrollOffset = 0;
+            }
+        }
+        public bool IsAtBottom()
+        {
+            if (this.textAnchor == TextAnchor.Top)
+            {
+                return this.DownScrollOffset == this.MaxDownScroll;
+            }
+            else
+            {
+                return this.DownScrollOffset == 0;
+            }
         }
         public override void RemoveSprites()
         {
@@ -109,13 +137,13 @@ namespace RainMeadow
         {
             if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER")
             {
-                scrollSliderValue = 1 - f;
+                scrollSliderValue = textAnchor == TextAnchor.Top ? 1 - f : f;
                 DownScrollOffset = scrollOffset = Mathf.Lerp(0f, scrollSliderValueCap, scrollSliderValue);
             }
         }
         public float ValueOfSlider(Slider slider)
         {
-            if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER") return 1 - scrollSliderValue;
+            if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER") return textAnchor == TextAnchor.Top ? 1 - scrollSliderValue : scrollSliderValue;
             return 0;
         }
         public void ScrollingUpdate(float yInput)
@@ -171,10 +199,16 @@ namespace RainMeadow
         }
         public Vector2 GetIdealNormalPosForButton(int index)
         {
-            return new(0, UpperBound - GetBoundSizeOffset() - ((index + 1) * ButtonHeightAndSpacing));
+            if (this.textAnchor == TextAnchor.Top)
+                return new(0, UpperBound - GetBoundSizeOffset() - ((index + 1) * ButtonHeightAndSpacing));
+            else
+                return new(0, LowerBound - GetBoundSizeOffset() + ((this.buttons.Count - index - 1) * ButtonHeightAndSpacing));
         }
         public Vector2 GetIdealPosWithScrollForButton(int index) => new(GetIdealNormalPosForButton(index).x, GetIdealYPosWithScroll(index));
-        public virtual float GetIdealYPosWithScroll(int index) => Math.Min(UpperBound + (ButtonHeightAndSpacing / 3), Mathf.Max(LowerBound - (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos));
+        public virtual float GetIdealYPosWithScroll(int index) 
+            => this.textAnchor == TextAnchor.Top 
+                ? Math.Min(UpperBound + (ButtonHeightAndSpacing / 3), Mathf.Max(LowerBound - (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos))
+                : Math.Max(LowerBound - (ButtonHeightAndSpacing / 3), Mathf.Min(UpperBound + (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos));
         public virtual float GetAmountOfAlphaByCrossingBounds(Vector2 combinedPos)
         {
             //if button starts crossing the bound, calculate the alpha else alpha = 1

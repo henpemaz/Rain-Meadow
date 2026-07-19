@@ -678,6 +678,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     .TryGetData<ArenaTeamClientSettings>(out var tb2)
             )
             {
+                if (player.isMe
+                    && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                    && cs.chatUsernameColor is Color color)
+                {
+                    return color;
+                }
                 return teamColors[tb2.team];
             }
 
