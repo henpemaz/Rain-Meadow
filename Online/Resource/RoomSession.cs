@@ -114,6 +114,7 @@ namespace RainMeadow
             return new RoomState(this, ts);
         }
 
+        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
         public class RoomState : ResourceState
         {
             [OnlineFieldHalf]
