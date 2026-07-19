@@ -181,10 +181,22 @@ namespace RainMeadow
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
+
+            On.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible;
             
             DrownHooks();
         }
-        
+
+        private void PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible(On.PlayerGraphics.orig_RippleTrailUpdate orig, PlayerGraphics self)
+        {
+            orig(self);
+            if (RainMeadow.isArenaMode(out _) && !self.isRippleTrailDisabled) 
+            {
+                self.rippleTrail.SetProperty(0, 1f - self.player.camoProgress); 
+            }
+            // RainMeadow.Debug($"Player [{self.player}] online [{self.player.abstractCreature.GetOnlineCreature()}] has ripple trail ? <{ModManager.Watcher && !Watcher.Watcher.cfgDisableRippleTrail.Value}><{self.player.abstractCreature.world.game.cameras[0].rippleData is not null}><{self.rippleTrail is not null}><{self.player.rippleLevel}><{!self.player.room.game.cameras[0].voidSeaMode}><{!self.isRippleTrailDisabled}><{self.rippleTrail?.vertexColor[0]}><{self.rippleTrail?.pos}><{self.rippleTrail?.scale}>");
+        }
+
         // Restrict Artificer's parry and stun range in arena
         private const float VANILLA_ARTI_PARRY_RANGE = 300f;
         private const float VANILLA_ARTI_STUN_RANGE = 200f;
@@ -593,6 +605,7 @@ namespace RainMeadow
             }
             if (arena.countdownInitiatedHoldFire)
             {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
             if (!arena.voidMasterEnabled)

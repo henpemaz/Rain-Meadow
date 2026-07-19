@@ -109,6 +109,11 @@ namespace RainMeadow
                         if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                         {
                             customization.ModifyEyeColor(ref originalEyeColor);
+                            // Keep Watcher camo eye transition
+                            if (ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                            {
+                                originalEyeColor = Color.Lerp(originalEyeColor, Color.white, self.player.camoProgress);
+                            }
                         }
                     });
                 }
