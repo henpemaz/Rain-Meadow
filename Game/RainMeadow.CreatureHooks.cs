@@ -50,6 +50,23 @@ namespace RainMeadow
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+
+            On.Watcher.Rattler.ValidSpawnPos += Rattler_ValidSpawnPos;
+        }
+
+        private bool Rattler_ValidSpawnPos(On.Watcher.Rattler.orig_ValidSpawnPos orig, Room room, RWCustom.IntVector2 pos, List<Vector2> rattlerSpawnLocsSoFar)
+        {
+            // Only allow room owner to spawn rattlers
+            if (OnlineManager.lobby != null)
+            {
+                var roomSession = room.abstractRoom.GetResource();
+                if (roomSession != null && roomSession.isOwner)
+                {
+                    return orig(room, pos, rattlerSpawnLocsSoFar);
+                }
+                return false;
+            }
+            return orig(room, pos, rattlerSpawnLocsSoFar);
         }
 
         private Watcher.SandGrubBurrow SandGrubAI_PickNewBurrow(On.Watcher.SandGrubAI.orig_PickNewBurrow orig, Watcher.SandGrubAI self)

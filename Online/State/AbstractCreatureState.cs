@@ -44,6 +44,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is TubeWorm) return new RealizedTubeWormState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is GarbageWorm) return new RealizedGarbageWormState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is SandGrub) return new RealizedSandGrubState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Rattler) return new RealizedRattlerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is StowawayBug) return new RealizedStowawayState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigNeedleWorm) return new RealizedBigNeedleWormState((OnlineCreature)onlineObject);
