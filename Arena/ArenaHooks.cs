@@ -148,10 +148,6 @@ namespace RainMeadow
                 typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(),
                 this.ChasePlayer
             );
-            new Hook(
-                typeof(VoidSpawnGraphics).GetProperty("rippleMode").GetGetMethod(),
-                this.GetRippleModeForLocalPlayer
-            );
 
             On.Player.ActivateAscension += Player_ActivateAscension;
 
@@ -182,20 +178,92 @@ namespace RainMeadow
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
 
-            On.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible;
+            // On.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible;
+            IL.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode;
             
+            IL.RippleCreatureTracker.RippleCreatureSprite.DrawSprites += RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace;
+            On.Room.Loaded += Room_Loaded_AddRippleCreatureTracker;
+
             DrownHooks();
         }
 
-        private void PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible(On.PlayerGraphics.orig_RippleTrailUpdate orig, PlayerGraphics self)
+        private void Room_Loaded_AddRippleCreatureTracker(On.Room.orig_Loaded orig, Room self)
         {
             orig(self);
-            if (RainMeadow.isArenaMode(out _) && !self.isRippleTrailDisabled) 
+            if (ModManager.Watcher && isArenaMode(out _))
             {
-                self.rippleTrail.SetProperty(0, 1f - self.player.camoProgress); 
+                self.rippleCreatureTracker = new RippleCreatureTracker(self);
+                self.AddObject(self.rippleCreatureTracker);
             }
-            // RainMeadow.Debug($"Player [{self.player}] online [{self.player.abstractCreature.GetOnlineCreature()}] has ripple trail ? <{ModManager.Watcher && !Watcher.Watcher.cfgDisableRippleTrail.Value}><{self.player.abstractCreature.world.game.cameras[0].rippleData is not null}><{self.rippleTrail is not null}><{self.player.rippleLevel}><{!self.player.room.game.cameras[0].voidSeaMode}><{!self.isRippleTrailDisabled}><{self.rippleTrail?.vertexColor[0]}><{self.rippleTrail?.pos}><{self.rippleTrail?.scale}>");
         }
+
+        private void RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod()))
+                    && cursor.TryGotoNext(MoveType.After, x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod())))
+                {
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((int orig, RippleCreatureTracker.RippleCreatureSprite self) =>
+                    {
+                        // If a player is in ripple space and not us, make them glow
+                        if (isArenaMode(out _)
+                            && orig == 0
+                            && self.creature?.realizedCreature is Player
+                            && self.creature.rippleLayer != 0)
+                        {
+                            return 1;
+                        }
+                        return orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook 1 :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+
+        private void PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchLdfld<RoomCamera>(nameof(RoomCamera.voidSeaMode))))
+                {
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((bool orig, PlayerGraphics self) =>
+                    {
+                        // If it's Meadow Arena mode, also disable trail
+                        return orig || RainMeadow.isArenaMode(out _); 
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+
+        // private void PlayerGraphics_RippleTrailUpdate_DisableTrailWhenGoingInvisible(On.PlayerGraphics.orig_RippleTrailUpdate orig, PlayerGraphics self)
+        // {
+        //     orig(self);
+        //     if (RainMeadow.isArenaMode(out _) && !self.isRippleTrailDisabled) 
+        //     {
+        //         self.rippleTrail.SetProperty(0, 1f - self.player.camoProgress); 
+        //     }
+        //     // RainMeadow.Debug($"Player [{self.player}] online [{self.player.abstractCreature.GetOnlineCreature()}] has ripple trail ? <{ModManager.Watcher && !Watcher.Watcher.cfgDisableRippleTrail.Value}><{self.player.abstractCreature.world.game.cameras[0].rippleData is not null}><{self.rippleTrail is not null}><{self.player.rippleLevel}><{!self.player.room.game.cameras[0].voidSeaMode}><{!self.isRippleTrailDisabled}><{self.rippleTrail?.vertexColor[0]}><{self.rippleTrail?.pos}><{self.rippleTrail?.scale}>");
+        // }
 
         // Restrict Artificer's parry and stun range in arena
         private const float VANILLA_ARTI_PARRY_RANGE = 300f;
@@ -965,27 +1033,6 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        public bool GetRippleModeForLocalPlayer(
-            Func<VoidSpawnGraphics, bool> orig,
-            VoidSpawnGraphics self
-        )
-        {
-            //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
-            if (isArenaMode(out _))
-            {
-                if (self.spawn.room != null && self.spawn.rippleSpawn)
-                {
-                    AbstractCreature? myPlayer = self.spawn.room.game.Players.Find(x =>
-                        x.IsLocal()
-                    );
-                    int actualActiveRippleLayer =
-                        myPlayer?.rippleLayer ?? self.spawn.room.game.ActiveRippleLayer;
-                    return self.spawn.abstractPhysicalObject.rippleLayer == actualActiveRippleLayer;
-                }
-            }
-            return orig(self);
-        }
-
         public void PlayerGraphics_ctor(
             On.PlayerGraphics.orig_ctor orig,
             PlayerGraphics self,
@@ -1016,13 +1063,33 @@ namespace RainMeadow
             UnityEngine.Vector2 camPos
         )
         {
-            if (
-                isArenaMode(out _)
+            if (isArenaMode(out _)
                 && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true
                 && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
             )
                 self.player.watcherMorph = 0.51f;
+            
             orig(self, sLeaser, rCam, timeStacker, camPos);
+
+            if (isArenaMode(out var arena)
+                && sLeaser.sprites is not null
+                && self.player?.abstractCreature?.GetOnlineCreature()?.isMine is false
+                && self.player.rippleLevel >= 5f)
+            {
+                // Makes the eyes invisible for other players when in Camo at max ripple
+                bool isWatcher = ModManager.Watcher && arena.avatarSettings.playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
+                float rippleSpaceAlpha = self.player.room?.game?.ActiveRippleLayer == 0 
+                    ? (isWatcher
+                        ? 1f - self.player.camoProgress * 0.25f 
+                        : 1f - self.player.camoProgress)
+                    : (isWatcher
+                        ? 1f
+                        : self.player.camoProgress); // Show other Watchers if you are yourself in camo
+
+                sLeaser.sprites[7].alpha = rippleSpaceAlpha; // hand 1
+                sLeaser.sprites[8].alpha = rippleSpaceAlpha; // hand 2
+                sLeaser.sprites[9].alpha = rippleSpaceAlpha; // eyes
+            }
         }
 
         public void PlayerGraphics_WeaverParts_Update(

@@ -119,6 +119,10 @@ public partial class RainMeadow
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSlugFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
         new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+        new Hook(
+            typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod(),
+            this.RainWorldGame_ActiveRippleLayer_GetActiveRippleLayerForLocalPlayer
+        );
 
         IL.Spear.HitSomething += Spear_HitSomething;
         On.Spear.ChangeMode += Spear_ChangeMode_RemoveDeflectMark;
@@ -129,6 +133,25 @@ public partial class RainMeadow
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
         On.Player.ProcessDebugInputs += Player_ProcessDebugInputs;
+    }
+
+    public int RainWorldGame_ActiveRippleLayer_GetActiveRippleLayerForLocalPlayer(
+        Func<RainWorldGame, int> orig,
+        RainWorldGame self
+    )
+    {
+        // Check the local player instead of the first player if online
+        if (OnlineManager.lobby is not null)
+        {
+            int playerIndex = self.Players.FindIndex(x => x.IsLocal());
+            AbstractCreature? myPlayer = playerIndex >= 0 ? self.Players[playerIndex] : null;
+            if (self.session == null || myPlayer is null)
+            {
+                return 0;
+            }
+            return myPlayer.rippleLayer;
+        }
+        return orig(self);
     }
 
     private void Player_ProcessDebugInputs(On.Player.orig_ProcessDebugInputs orig, Player self)
