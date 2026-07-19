@@ -225,6 +225,35 @@ namespace RainMeadow
             public OnlineEntity Entity { get; set; }
             public IconSymbol.IconSymbolData Icon { get; set; }
         }
+        public static int TraverseAddResources(ResourceDebugNode node)
+        {      
+
+            if (node.Resource.isActive)
+            {
+                node.lines = 0;
+                foreach (OnlineResource resource in node.Resource.subresources)
+                {
+                    node.lines += 1;
+                    ResourceDebugNode childNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == resource);
+                    if (childNode == null)
+                    {
+                        childNode = new ResourceDebugNode(overlayContainer, resource);
+                        int index = debugNodes.IndexOf(node);
+                        if (index >= 0) 
+                        {
+                            debugNodes.Insert(index + 1, childNode);
+                        }
+                        else 
+                        {
+                            debugNodes.Add(childNode);
+                        }
+                    }
+                    childNode.pos = node.pos + new Vector2(20, node.lines * -35);
+                    node.lines += TraverseAddResources(childNode);
+                }
+            }
+            return node.lines;
+        }
 
         public static void Update(RainWorldGame self, float dt)
         {
@@ -340,57 +369,9 @@ namespace RainMeadow
             });
 
             var root = debugNodes[0];
-
             if (!ownershipView) // World
             {
-                // Worlds (Regions)
-                RoomSession inRoomSession;
-                WorldSession inWorldSession = null;
-                if (self.cameras[0].room == null || !RoomSession.map.TryGetValue(self.cameras[0].room.abstractRoom, out inRoomSession))
-                {
-                    return;
-                }
-                inWorldSession = inRoomSession.worldSession;
-
-                var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
-                worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
-                int lastWorldLines = 0;
-                foreach (var worldSession in worlds)
-                {
-                    if (!worldSession.isActive)
-                        continue;
-
-                    ResourceDebugNode regionNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == worldSession);
-                    if (regionNode == null)
-                    {
-                        regionNode = new ResourceDebugNode(overlayContainer, worldSession);
-                        debugNodes.Add(regionNode);
-                    }
-
-                    root.lines += lastWorldLines + 1;
-                    regionNode.pos = root.pos + new Vector2(20, root.lines * -35);
-
-                    // Rooms
-                    var rooms = worldSession.roomSessions.Values.ToList();
-                    rooms.Sort((x, y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
-                    foreach (var roomSession in rooms)
-                    {
-                        if (!roomSession.isActive)
-                            continue;
-
-                        ResourceDebugNode roomNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == worldSession);
-                        if (roomNode == null)
-                        {
-                            roomNode = new ResourceDebugNode(overlayContainer, roomSession);
-                            debugNodes.Add(roomNode);
-                        }
-
-                        regionNode.lines++;
-                        roomNode.pos = regionNode.pos + new Vector2(20, regionNode.lines * -35);
-                    }
-
-                    lastWorldLines = regionNode.lines;
-                }
+                TraverseAddResources((ResourceDebugNode)debugNodes[0]);
             }
             else
             {
@@ -422,6 +403,7 @@ namespace RainMeadow
             for (int i = 0; i < debugNodes.Count; i++)
             {
                 debugNodes[i].Update();
+                debugNodes[i].entityNodeCount = 0;
                 debugNodes[i].childEntities.Clear();
             }
 
@@ -484,8 +466,8 @@ namespace RainMeadow
                 int iconCount = 1;
                 bool lastIsMine = true;
                 bool lastAvatar = false;
-                int j = 0;
-                while (j < debugNodes[i].childEntities.Count)
+                
+                for  (int j = 0; j < debugNodes[i].childEntities.Count; j++)
                 {
                     IconSymbol.IconSymbolData iconType = debugNodes[i].childEntities[j].Icon;
                     if (iconType == lastIconType && debugNodes[i].childEntities[j].Entity.isMine == lastIsMine && !lastAvatar)
@@ -517,7 +499,6 @@ namespace RainMeadow
 
                     lastIconType = iconType;
                     lastIsMine = debugNodes[i].childEntities[j].Entity.isMine;
-                    j++;
                 }
             }
 
