@@ -1492,7 +1492,7 @@ public partial class RainMeadow
 
             if (self.IsLocal())
             {
-                if (CapeManager.HasCape(OnlineManager.mePlayer.id) is not null && !self.isNPC)
+                if (self.graphicsModule is not null && RainMeadow.cosmeticed_avatars.TryGetValue(self.graphicsModule, out var cosmetic) && cosmetic is SlugcatCape && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)
