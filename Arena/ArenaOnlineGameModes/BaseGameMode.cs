@@ -471,8 +471,7 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (player.isMe
-                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+            if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
                 && cs.chatUsernameColor is Color color)
             {
                 return color;

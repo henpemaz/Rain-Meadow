@@ -261,6 +261,22 @@ namespace RainMeadow
                 hackySlugcatCustomization = null;
                 PlayerGraphics.customColors = cachedCustomColors;
             }
+            
+            // Disable graphics manually when in ripple mode
+            int meRippleLayer = self.player.room?.game?.ActiveRippleLayer ?? 0;
+            int otherRippleLayer = self.player.abstractCreature.rippleLayer;
+            bool isWatcher = ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
+            if (otherRippleLayer == 0) 
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i == 9 && isWatcher) continue;
+                    bool isVisibilityAlreadySet = i >= 4 && i <= 8;
+                    sLeaser.sprites[i].isVisible = isVisibilityAlreadySet 
+                        ? meRippleLayer == otherRippleLayer && sLeaser.sprites[i].isVisible
+                        : meRippleLayer == otherRippleLayer;
+                }
+            }
         }
         private void PlayerGraphics_Update_SlugcatCustomization(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
         {

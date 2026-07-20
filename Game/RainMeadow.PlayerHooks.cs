@@ -101,7 +101,6 @@ public partial class RainMeadow
         IL.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
-        IL.Player.RippleSpawnInteractions += Player_RippleSpawnInteractions;
 
         On.Player.SetMalnourished += Player_SetMalnourished;
         new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
@@ -133,6 +132,37 @@ public partial class RainMeadow
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
         On.Player.ProcessDebugInputs += Player_ProcessDebugInputs;
+
+        IL.MudUtils.UpdateMudSprite += MudUtils_UpdateMudSprite_DontDisplayMudInRippleSpace;
+    }
+
+    private void MudUtils_UpdateMudSprite_DontDisplayMudInRippleSpace(ILContext il)
+    {
+        try
+        {
+            ILCursor cursor = new ILCursor(il);
+            if (cursor.TryGotoNext(MoveType.Before, 
+                x => x.MatchCallvirt(typeof(FNode).GetProperty(nameof(FNode.isVisible)).GetSetMethod())))
+            {
+                cursor.MoveAfterLabels();
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((bool orig, Creature creature) =>
+                {
+                    // Debug($"Is mud of [{creature}/{creature.abstractCreature?.GetOnlineCreature()}] visible ? <{orig}><{creature.abstractCreature?.rippleLayer}><{creature.abstractCreature?.world?.game?.ActiveRippleLayer}>");
+                    return orig 
+                        && creature.abstractCreature?.rippleLayer == 0 
+                        && creature.abstractCreature?.world?.game?.ActiveRippleLayer == 0;
+                });
+            }
+            else
+            {
+                RainMeadow.Error("Couldn't find IL hook :<");
+            }
+        }
+        catch (Exception e)
+        {
+            RainMeadow.Error("Error while IL hooking : " + e);
+        }
     }
 
     public int RainWorldGame_ActiveRippleLayer_GetActiveRippleLayerForLocalPlayer(
@@ -456,81 +486,8 @@ public partial class RainMeadow
             Error(ex);
         }
     }
-    private void Player_RippleSpawnInteractions(ILContext il)
-    {
-        try
-        {
-            ILCursor c = new(il);
-            ILLabel label = null;
 
-            // --- 1. Proximity & slow down logic ---
-            c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
-            c.Emit(OpCodes.Ldarg_0);
-            c.Emit(OpCodes.Ldloc, 4);
-            c.EmitDelegate(delegate (Player self, int i)
-            {
-                VoidSpawn spawn = self.room.voidSpawns[i];
-                if (!self.IsLocal())
-                {
-                    if (isArenaMode(out _))
-                        spawn.playerProximityTime = 10; //slow down when near the player
-                    return false;
-                }
-                if (isArenaMode(out _) && spawn.IsLocal() && spawn.behavior != null)
-                    return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
-                return true;
-            });
-            c.Emit(OpCodes.Brfalse, label);
-
-            // --- 2. Lethality ---
-            c.Index = 0;
-            if (c.TryGotoNext(MoveType.Before,
-                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
-                x => x.MatchLdcR4(out _),
-                x => x.MatchAdd(),
-                x => x.MatchStfld<Player>("rippleDeathIntensity")))
-            {
-                c.Index += 2;
-
-                c.EmitDelegate((float originalIncrement) =>
-                {
-                    if (isArenaMode(out var arena))
-                    {
-                        return originalIncrement * arena.voidSpawnLethalityFactor;
-                    }
-                    return originalIncrement;
-                });
-            }
-
-            // --- 3. RippleDeathEffect kept local ---
-            c.Index = 0;
-            ILLabel skipDeathEffectLabel = null;
-            if (c.TryGotoNext(MoveType.After,
-                x => x.MatchLdfld<Player>("rippleDeathIntensity"),
-                x => x.MatchLdcR4(0f),
-                x => x.MatchBleUn(out _),
-                x => x.MatchLdarg(0),
-                x => x.MatchLdfld<Player>("deathEffect"),
-                x => x.MatchBrtrue(out skipDeathEffectLabel)))
-            {
-
-                c.Emit(OpCodes.Ldarg_0);
-
-                c.EmitDelegate(delegate (Player self)
-                {
-                    return self.IsLocal();
-                });
-
-                c.Emit(OpCodes.Brfalse, skipDeathEffectLabel);
-            }
-        }
-        catch (Exception ex)
-        {
-            Error(ex);
-        }
-    }
     delegate bool orig_get_Malnourished(Player self);
-
     bool Player_get_Malnourished(orig_get_Malnourished orig, Player self)
     {
         if (OnlineManager.lobby != null && !self.isNPC)
