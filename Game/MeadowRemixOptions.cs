@@ -21,6 +21,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> EyeColor;
     public readonly Configurable<KeyCode> SpectatorKey;
     public readonly Configurable<KeyCode> PointingKey;
+    public readonly Configurable<KeyCode> ArenaToggleShowScoreKey;
+    public readonly Configurable<bool> ArenaShowScore;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatButtonKey;
     public readonly Configurable<bool> ChatLogOnOff, ChatPing, ChatSound;
@@ -196,6 +198,8 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
+        ArenaToggleShowScoreKey = config.Bind("ArenaToggleShowScoreKey", KeyCode.S);
+        ArenaShowScore = config.Bind("ArenaShowScore", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
@@ -510,10 +514,11 @@ public class RainMeadowOptions : OptionInterface
                 {
                     watcherWarning.Show();
                 }
-                
+
                 else watcherWarning.Hide();
             };
-            currentlyActiveCosmeticbox.OnChanged += () => {
+            currentlyActiveCosmeticbox.OnChanged += () =>
+            {
                 currentlyActiveCosmeticSkinbox.bumpBehav.greyedOut = currentlyActiveCosmeticbox.value != "none";
                 cosmeticColor.bumpBehav.greyedOut = currentlyActiveCosmeticbox.value != "none";
             };
@@ -554,7 +559,7 @@ public class RainMeadowOptions : OptionInterface
             };
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            
+
             // Story Tab
             OnlineStorySettings =
             [   new OpLabel(10f, 550f, Translate("Story"), bigText: true),
@@ -591,7 +596,7 @@ public class RainMeadowOptions : OptionInterface
             ];
             storyTab.AddItems(OnlineStorySettings);
 
-            
+
             // Arena Tab
             OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
             OpHoldButton arenaSpoilerButton;
@@ -629,6 +634,9 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
                 new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
+
+                new OpLabel(210f, 340, Translate("Toggle Show Score")),
+                new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f)),
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
@@ -650,7 +658,7 @@ public class RainMeadowOptions : OptionInterface
                 RainMeadow.Info($"Converted ArenaFlair to integer: {result}");
             };
 
-            
+
             // LAN Tab
             OnlineLANSettings = new UIelement[7]
             {
@@ -685,14 +693,14 @@ public class RainMeadowOptions : OptionInterface
 
             OnlineChatSettings = [
                 new OpLabel(10f, 550f, Translate("Chat"), bigText: true),
-                
+
                 new OpLabel(10f, 520f, Translate("Custom Chat Username Color")),
                 useCustomChatColor = new OpCheckBox(UseCustomChatUsernameColor, new Vector2(10, 490)),
                 chatColor = new OpTextBox(CurrentlyActiveChatUsernameColor, new Vector2(50, 490), 130f)
                 {
                     greyedOut = !UseCustomChatUsernameColor.Value,
                     accept = OpTextBox.Accept.StringASCII
-                },                
+                },
                 chatColorPreview = new OpRect(new Vector2(184, 490), new Vector2(24f, 24f), 1f),
 
                 new OpLabel(10, 460, Translate("Streamer Mode")),
@@ -735,7 +743,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410, 270, Translate("Sound On New Message")),
                 new OpCheckBox(ChatSound, new Vector2(410, 240)),
 
-            
+
                 new OpLabel(10, 200, Translate("Story") + " " + Translate("Death Notification")),
                 new OpCheckBox(EnableChatStoryDeathNotification, new Vector2(10f, 170)),
 
@@ -756,7 +764,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410, 140, Translate("Arena") + " " + Translate("Session Notification")),
                 new OpCheckBox(EnableChatSessionNotification, new Vector2(410, 110)),
 
-                
+
                 new OpLabel(10, 70, Translate("Enable Chat Logging Toggle")),
                 new OpCheckBox(EnableChatLogErrorToggle, new Vector2(10, 40)){ description = Translate("Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.") },
 
@@ -784,7 +792,7 @@ public class RainMeadowOptions : OptionInterface
                 CurrentlyActiveChatUsernameColor.Value = chatColor.value;
                 chatColorPreview.colorFill = Utils.SafeHexToColor(chatColor.value);
             };
-            chatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) => 
+            chatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) =>
             {
                 if (value.Length == 6 && !value.Any(c => !"0123456789abcdefABCDEF".Contains(c)))
                 {
