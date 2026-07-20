@@ -20,6 +20,7 @@
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
+- Added `ScrollableConfirmDialog` menu object
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -47,11 +48,13 @@
 - Disabling Ripple Trail in online arena
 - Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
 - Watcher will always have while eyes in camo
-- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity.
-## Meadow
-- Fixed creatures being able to get injured.
+- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity.  
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+## Meadow
+- Fixed creatures being able to get injured.
+## Meadow
+- Fixed creatures being able to get injured.
 ## Story
 - Allow players to spectate their own corpses as long as they still exist
 ### Watcher
