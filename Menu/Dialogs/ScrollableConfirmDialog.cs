@@ -7,10 +7,7 @@ using UnityEngine;
 namespace RainMeadow
 {
     /// <summary>
-    /// A confirm/notify dialog whose body text lives inside a <see cref="ButtonScroller"/>, so long
-    /// lists (e.g. mod mismatches) scroll instead of overflowing the box. Mirrors the base game
-    /// DialogConfirm/DialogNotify flow: OK invokes <c>onOK</c>, Cancel invokes <c>onCancel</c>, and
-    /// either one stops the side process afterwards.
+    /// A confirm/notify dialog whose body text lives inside a <see cref="ButtonScroller"/>. 
     /// </summary>
     public class ScrollableConfirmDialog : Dialog
     {
