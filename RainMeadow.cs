@@ -260,6 +260,7 @@ namespace RainMeadow
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
                 fullyInit = fullyEnabled;
 
+                InitializeExtEnums();
                 // // Useful for finding where a Translate() method is missing
                 // On.InGameTranslator.Translate += (origTranslate, translator, s) =>
                 // {

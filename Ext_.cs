@@ -5,6 +5,11 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        public void InitializeExtEnums()
+        {
+            Ext_SlugcatStatsName.Initialize();
+            Ext_SceneID.Initialize();
+        }
         public class Ext_ProcessID
         {
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
@@ -20,9 +25,16 @@ namespace RainMeadow
 
         public class Ext_SlugcatStatsName
         {
-            public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
-            public static SlugcatStats.Name OnlineRandomSlugcat = new("MeadowRandom", true);
-            public static SlugcatStats.Name OnlineOverseerSpectator = new("OnlineOverseerSpectator", true);
+            public static void Initialize()
+            {
+                OnlineSessionPlayer = new("MeadowOnline", true);
+                OnlineRandomSlugcat = new("MeadowRandom", true);
+                OnlineOverseerSpectator = new("OnlineOverseerSpectator", true);
+            }
+
+            public static SlugcatStats.Name OnlineSessionPlayer;
+            public static SlugcatStats.Name OnlineRandomSlugcat;
+            public static SlugcatStats.Name OnlineOverseerSpectator;
 
             public static readonly List<SlugcatStats.Name> AllMeadowExtSlugcats = new()
           {
@@ -35,19 +47,32 @@ namespace RainMeadow
 
         public class Ext_SceneID
         {
+            public static void Initialize()
+            {
+                Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
+                Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
+                Slugcat_MeadowScav = new("Slugcat_MeadowScav", true);
+                Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
+                Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
+                Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
+                Slugcat_MeadowOverseer = new("Slugcat_MeadowOverseer", true);
+                Meadow_See = new("Meadow_See", true);
+                Meadow_Anniversary = new("Meadow_Anniversary", true);
+                Meadow_Coin = new("Meadow_Coin", true);
+            }
             // MeadowSlugcat => Slugcat_White
-            internal static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
-            internal static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
-            internal static MenuScene.SceneID Slugcat_MeadowScav = new("Slugcat_MeadowScav", true);
-            internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
-            internal static MenuScene.SceneID Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
-            internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
-            internal static MenuScene.SceneID Slugcat_MeadowOverseer = new("Slugcat_MeadowOverseer", true);
+            internal static MenuScene.SceneID Slugcat_MeadowSquidcicada;
+            internal static MenuScene.SceneID Slugcat_MeadowLizard;
+            internal static MenuScene.SceneID Slugcat_MeadowScav;
+            internal static MenuScene.SceneID Slugcat_MeadowEggbug;
+            internal static MenuScene.SceneID Slugcat_MeadowNoot;
+            internal static MenuScene.SceneID Slugcat_MeadowMouse;
+            internal static MenuScene.SceneID Slugcat_MeadowOverseer;
 
 
-            internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);
-            internal static MenuScene.SceneID Meadow_Anniversary = new("Meadow_Anniversary", true);
-            internal static MenuScene.SceneID Meadow_Coin = new("Meadow_Coin", true);
+            internal static MenuScene.SceneID Meadow_See;
+            internal static MenuScene.SceneID Meadow_Anniversary;
+            internal static MenuScene.SceneID Meadow_Coin;
 
         }
 
