@@ -40,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
+            IL.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -73,6 +73,40 @@ namespace RainMeadow
             On.DataPearl.InitiateSprites += DataPearl_InitiateSprites;
             IL.JokeRifle.Use += JokeRifle_Use;
             On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
+
+            On.PlayerGraphics.Update += PlayerGraphics_Update_MakePlayerThinkWhenTyping;
+        }
+
+        private void PlayerGraphics_Update_MakePlayerThinkWhenTyping(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
+        {
+            orig(self);
+            if (OnlineManager.lobby is not null
+                && self.player.abstractCreature.GetOnlineCreature()?.owner is OnlinePlayer onlinePlayer
+                && OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs))
+            {
+                if (cs.isInteracting && self.player.touchedNoInputCounter > 0)
+                {
+                    if (!cs.isThinking) cs.isThinking = true;
+                    self.LookAtPoint(self.player.mainBodyChunk.pos + Vector2.up * 25f, 100);
+                    self.player.Blink(10);
+                    if (self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame 
+                        || storyGame.saveState.deathPersistentSaveData.theMark)
+                    {
+                        self.markAlpha = Custom.LerpAndTick(
+                            self.lastMarkAlpha, 
+                            Mathf.Clamp01(1f - UnityEngine.Random.value * Mathf.InverseLerp(80f, 30f, self.player.touchedNoInputCounter)), 
+                            0.1f, 
+                            0.033333335f
+                        );
+                        // RainMeadow.Debug($"Mark at alpha {self.markAlpha}<{self.player.touchedNoInputCounter}>");
+                    }
+                }
+                else if (cs.isThinking)
+                {
+                    self.LookAtNothing();
+                    cs.isThinking = false;
+                }
+            }
         }
 
         // Prevent ammo from duping
@@ -156,14 +190,43 @@ namespace RainMeadow
             _ => null
         };
 
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private void Weapon_HitAnotherThrownWeapon(ILContext il)
         {
-            RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(self, obj);
-            orig(self, obj);
-            
-        }
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchBneUn(out label)))
+                {
+                    cursor.MoveAfterLabels();
+                    cursor.EmitDelegate(() => OnlineManager.lobby is not null && RPCEvent.currentRPCEvent is not null);
+                    cursor.Emit(OpCodes.Brtrue, label); 
+                    // If we are in an RPC, move it directly to parrying, even if the weapons are going in the same directions
 
+                    cursor.GotoLabel(label, MoveType.Before);
+                    cursor.MoveAfterLabels();
+                    cursor.Emit(OpCodes.Ldarg_0);            
+                    cursor.Emit(OpCodes.Ldarg_1);
+                    cursor.EmitDelegate((Weapon w1, Weapon w2) =>
+                        {
+                            RainMeadow.DebugMe();
+                            // The check is still necessary, since the weaposn could be still going opposite directions and pass the above check.
+                            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(w1, w2);
+                        }
+                    );
+                    // If the weapons are about to deflect each other, call BroacastParry
+                }
+                else
+                {
+                    RainMeadow.Error("Could not find IL hook :<");
+                }
+                    
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error("Error occured while hooking : " + ex);
+            }
+        }
         private void BroacastParry(Weapon A, Weapon B)
         {
             RainMeadow.DebugMe();
@@ -186,16 +249,16 @@ namespace RainMeadow
                 RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
                 return;
             } 
-                
+            
 
             if (!wep1.isMine)
             {
-                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
+                wep1.Lock("parry", wep1.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, A.firstChunk.lastPos, B.firstChunk.lastPos, UnityEngine.Random.state));
             }
 
             if (!wep2.isMine)
             {
-                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state));
+                wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, A.firstChunk.lastPos, B.firstChunk.lastPos, UnityEngine.Random.state));
             }
             
 
@@ -203,7 +266,7 @@ namespace RainMeadow
             {
                 if (p != wep1.owner && p != wep2.owner)
                 {
-                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, UnityEngine.Random.state);
+                    p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, A.firstChunk.lastPos, B.firstChunk.lastPos, UnityEngine.Random.state);
                 }
             }
         }

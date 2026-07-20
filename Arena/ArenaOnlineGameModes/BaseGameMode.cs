@@ -359,8 +359,13 @@ namespace RainMeadow
         {
             self.AddPart(new HUD.TextPrompt(self));
 
-            if (MatchmakingManager.currentInstance.canSendChatMessages)
-                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            if (MatchmakingManager.currentInstance.canSendChatMessages 
+                && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
+            {
+                if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
+                else overlayHUD.SetNewChatHUDCamera(session.game.cameras[0]);
+            }
+                
 
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
@@ -466,6 +471,12 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
+            if (player.isMe
+                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                && cs.chatUsernameColor is Color color)
+            {
+                return color;
+            }
             Color.RGBToHSV(customization.SlugcatColor(), out var H, out var S, out var V);
             if (V < 0.8)
             {
