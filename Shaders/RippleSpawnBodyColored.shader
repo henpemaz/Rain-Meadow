@@ -107,14 +107,7 @@ half4 frag (v2f i) : SV_Target
 	grabPos = QuantizeToPixels(grabPos,_screenSize);
 
 	fixed4 grabCol = tex2D(_GrabTexture, grabPos);
-	fixed4 color = i.clr;
-	#if RIPPLE || ripple_other_side
-		#if ripple_other_side
-			color = fixed4(i.clr.xyz,1);
-		#else
-			color = fixed4(i.clr.xyz,0.4);
-		#endif
-	#endif
+	fixed4 color = RippleSpawnColorCustom(i.clr, i.scrPos);
 
 	fixed contrast = abs(mod(lightness(grabCol*color.w)-_RAIN*.1,.2)-.1)/.1;
 	contrast = lerp(contrast,1-contrast,color.w);
@@ -122,15 +115,16 @@ half4 frag (v2f i) : SV_Target
 	contrast *= color.w;
 	distortedBody *= color.w;
 
-	#if absorption
-	i.clr.x = 1-i.clr.x;
-	float len = length(i.uv*2-1);
-	fade *= (tex2D(_PreLevelColorGrab, i.scrPos) != 0)*smoothstep(1,.5,len);
-	fade = max(fade,iLerpClamp(1,0.5,len+i.clr.x));
-	fade *= i.clr.w;
-	#endif
+	// #if absorption
+	// i.clr.x = 1-i.clr.x;
+	// float len = length(i.uv*2-1);
+	// fade *= (tex2D(_PreLevelColorGrab, i.scrPos) != 0)*smoothstep(1,.5,len);
+	// fade = max(fade,iLerpClamp(1,0.5,len+i.clr.x));
+	// fade *= i.clr.w;
+	// #endif
 
 	return fixed4(lerp(grabCol,distortedBody,i.clr.w*i.clr.w*.75*(.5+contrast*.5)*fade*color.w).xyz,fade);
+	// return fixed4(0.5, 0.5, 0.5, fade);
 }
 ENDCG
 				

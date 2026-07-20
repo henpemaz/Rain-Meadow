@@ -96,14 +96,7 @@ half4 frag (v2f i) : SV_Target
      half2 grabPos = half2(i.scrPos.x, i.scrPos.y);
      grabPos.x = (floor(grabPos.x*_screenSize.x)+0.5)/_screenSize.x;
      grabPos.y = (floor(grabPos.y*_screenSize.y)+0.5)/_screenSize.y;
-	 fixed4 color = i.clr;
-	 #if RIPPLE || ripple_other_side
-		#if ripple_other_side
-			color = fixed4(i.clr.xyz,1);
-		#else
-			color = fixed4(i.clr.xyz,0.4);
-		#endif
-	 #endif
+	 fixed4 color = RippleSpawnColorCustom(i.clr, i.scrPos);
      color.xyz*=.5;
      
      
@@ -115,6 +108,7 @@ half4 frag (v2f i) : SV_Target
      half4 glow = lerp(grabCol, color*(1+highlight), d*i.clr.w*(.5+i.clr.w*.5));
 
      return half4(glow.xyz, effect*d*color.w);
+	// return half4(color.xyz, effect*d*color.w);
 
 }
 ENDCG
