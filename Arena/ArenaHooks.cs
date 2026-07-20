@@ -199,8 +199,8 @@ namespace RainMeadow
                 while (cursor.TryGotoNext(MoveType.After, 
                     x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod())))
                 {
-                    // Set the level artificially to 1 when in arena, no matter the real level... unless it's max ripple.
-                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && orig < 5 ? 1 : orig);
+                    // Set the level artificially to 0.5 when in arena, no matter the real level... unless it's max ripple.
+                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && orig < 5 ? 0.5f : orig);
                 }
             }
             catch (Exception e)
@@ -224,7 +224,8 @@ namespace RainMeadow
                 ))
                 {
                     // If it's areana mode, don't spawn 4373 bajilion effects
-                    cursor.EmitDelegate(() => isArenaMode(out _));
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((Player player) => isArenaMode(out _) && player.rippleLevel < 5);
                     cursor.Emit(OpCodes.Brtrue, label);
                 }
                 else
