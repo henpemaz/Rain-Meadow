@@ -39,6 +39,12 @@ namespace RainMeadow
                     RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
                 }
 
+                if (RainMeadow.isArenaMode(out var arena) && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ToggleShowScoreKey.Value))
+                {
+                    arena.ShowScore ^= true;
+                    RainMeadow.rainMeadowOptions.ArenaShowScore.Value = arena.ShowScore;
+                }
+
             base.Draw(timeStacker);
         }
 

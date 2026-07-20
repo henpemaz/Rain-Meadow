@@ -21,6 +21,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> EyeColor;
     public readonly Configurable<KeyCode> SpectatorKey;
     public readonly Configurable<KeyCode> PointingKey;
+    public readonly Configurable<KeyCode> ToggleShowScoreKey;
+    public readonly Configurable<bool> ArenaShowScore;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatButtonKey;
     public readonly Configurable<bool> ChatLogOnOff, ChatPing, ChatSound;
@@ -196,6 +198,8 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
+        ToggleShowScoreKey = config.Bind("ToggleShowScoreKey", KeyCode.S);
+        ArenaShowScore = config.Bind("ArenaShowScore", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
@@ -629,6 +633,9 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 340, Translate("Enable Meadow Cosmetics")),
                 new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
+
+                new OpLabel(210f, 340, Translate("Toggle Show Score")),
+                new OpKeyBinder(ToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f)),
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();

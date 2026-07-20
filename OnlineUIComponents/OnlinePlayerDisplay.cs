@@ -171,7 +171,7 @@ namespace RainMeadow
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = lighter_color;
 
-            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.WinByScore)
+            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.ShowScore)
             {
                 this.scoreLabel = new FLabel(Custom.GetFont(), "0");
                 owner.hud.fContainers[0].AddChild(this.scoreLabel);
