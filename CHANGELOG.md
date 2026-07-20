@@ -24,7 +24,7 @@
 - The Debug Overlay now has an Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 - Added `MatchmakingManager.OnLobbyLeaving` event.
-- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+- Added `ScrollableConfirmDialog` menu object
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -47,6 +47,8 @@
 - Fixed explosive spears still damaging the player when parried.
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
+### Modders
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow
 - Fixed creatures being able to get injured.
 ## Story
