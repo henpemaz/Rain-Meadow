@@ -11,6 +11,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -181,8 +182,79 @@ namespace RainMeadow
             new Hook(typeof(ArenaSetup.GameTypeSetup).GetProperty("ScoreToEnterDen").GetGetMethod(), this.ScoreToEnterDen);
             IL.HUD.PlayerSpecificMultiplayerHud.Update += PlayerSpecificOnlineHud_Update;
             IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer_ArtificerConfiguration;
+
+            new Hook(
+                typeof(VoidSpawnGraphics).GetProperty(nameof(VoidSpawnGraphics.BodyShader), BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true),
+                this.VoidSpawnGraphics_BodyShader_ChangeToColoredShader
+            );
+            new Hook(
+                typeof(VoidSpawnGraphics).GetProperty(nameof(VoidSpawnGraphics.GlowShader), BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true),
+                this.VoidSpawnGraphics_GlowShader_ChangeToColoredShader
+            );
+            new Hook(
+                typeof(VoidSpawnGraphics).GetProperty(nameof(VoidSpawnGraphics.EffectShader), BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true),
+                this.VoidSpawnGraphics_EffectShader_ChangeToColoredShader
+            );
+            On.VoidSpawnGraphics.UpdateGlowSpriteColor += VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba;
             
             DrownHooks();
+        }
+
+        // Get our own shader into the mix, so we can color the Amoeba
+        private void VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba(On.VoidSpawnGraphics.orig_UpdateGlowSpriteColor orig, VoidSpawnGraphics self, RoomCamera.SpriteLeaser sLeaser)
+        {
+            if (isArenaMode(out _) 
+                && self.spawn.rippleSpawn
+                && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer
+                && ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.slugcatColor is Color bodyColor) 
+            {
+                // Debug($"Changing color of ripple {self.spawn} from player {onlinePlayer} to {bodyColor}");
+                sLeaser.sprites[self.GlowSprite].color = bodyColor;
+                sLeaser.sprites[self.BodyMeshSprite].color = bodyColor;
+                if (self.hasOwnGoldEffect)
+                {
+                    sLeaser.sprites[self.EffectSprite].color = bodyColor;
+                }
+                self.meshColor = new Color(bodyColor.r, bodyColor.g, bodyColor.b, self.meshColor.a);
+            }
+            else
+            {
+                orig(self, sLeaser);
+            }
+        }
+
+        private FShader VoidSpawnGraphics_BodyShader_ChangeToColoredShader(
+            Func<VoidSpawnGraphics, FShader> orig,
+            VoidSpawnGraphics self
+        )
+        {
+            if (isArenaMode(out _) && self.spawn.rippleSpawn)
+            {
+                return Custom.rainWorld.Shaders[(self.spawn.abstractPhysicalObject.rippleLayer == 0) ? "RippleSpawnBodyColored" : "RippleSpawnBodyColoredRippleSide"];
+            }
+            return orig(self);
+        }
+        private FShader VoidSpawnGraphics_GlowShader_ChangeToColoredShader(
+            Func<VoidSpawnGraphics, FShader> orig,
+            VoidSpawnGraphics self
+        )
+        {
+            if (isArenaMode(out _) && self.spawn.rippleSpawn)
+            {
+                return Custom.rainWorld.Shaders[(self.spawn.abstractPhysicalObject.rippleLayer == 0) ? "FlatWaterLight" : "FlatWaterLightRippleSide"];
+            }
+            return orig(self);
+        }
+        private FShader VoidSpawnGraphics_EffectShader_ChangeToColoredShader(
+            Func<VoidSpawnGraphics, FShader> orig,
+            VoidSpawnGraphics self
+        )
+        {
+            if (isArenaMode(out _) && self.spawn.rippleSpawn)
+            {
+                return Custom.rainWorld.Shaders[(self.spawn.abstractPhysicalObject.rippleLayer == 0) ? "RippleGlowColored" : "RippleGlowColoredRippleSide"];
+            }
+            return orig(self);
         }
 
         // Restrict Artificer's parry and stun range in arena
