@@ -16,6 +16,22 @@ namespace RainMeadow
             IL.Room.Update += Room_Update;
 
             // IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1; ;
+            On.LobeTree.ValidSpawnPos += LobeTree_ValidSpawnPos;
+        }
+
+        private bool LobeTree_ValidSpawnPos(On.LobeTree.orig_ValidSpawnPos orig, Room room, IntVector2 pos, List<Vector2> lobeTreeSpawnLocsSoFar)
+        {
+            // Only allow room owner to spawn lobe trees
+            if (OnlineManager.lobby != null)
+            {
+                var roomSession = room.abstractRoom.GetResource();
+                if (roomSession != null && roomSession.isOwner)
+                {
+                    return orig(room, pos, lobeTreeSpawnLocsSoFar);
+                }
+                return false;
+            }
+            return orig(room, pos, lobeTreeSpawnLocsSoFar);
         }
 
         // private void ScavengerOutpost_ctor1(ILContext il)
