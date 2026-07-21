@@ -14,8 +14,7 @@ namespace RainMeadow
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
-
-            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1; ;
+            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1;
         }
 
         private void ScavengerOutpost_ctor1(ILContext il)

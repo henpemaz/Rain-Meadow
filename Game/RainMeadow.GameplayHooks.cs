@@ -75,6 +75,28 @@ namespace RainMeadow
             On.Vulture.AccessSkyGate += Vulture_AccessSkyGate;
 
             On.PlayerGraphics.Update += PlayerGraphics_Update_MakePlayerThinkWhenTyping;
+            On.Watcher.LightningMaker.Strike += LightningMaker_Strike;
+        }
+
+        private void LightningMaker_Strike(On.Watcher.LightningMaker.orig_Strike orig, Watcher.LightningMaker self, Vector2 pos, float branchingChance, float size, float effectRadius, float killRadius, int delayFrames)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, pos, branchingChance, size, effectRadius, killRadius, delayFrames);
+            }
+            else
+            {
+                var roomSession = self.room.abstractRoom.GetResource();
+                if (roomSession != null && roomSession.isOwner)
+                {
+                    orig(self, pos, branchingChance, size, effectRadius, killRadius, delayFrames);
+                    foreach(var player in roomSession.participants)
+                    {
+                        if (player.isMe) continue;
+                        player.InvokeRPC(RPCs.LightingMakerStrike, roomSession, pos, branchingChance, size, effectRadius, killRadius, delayFrames);
+                    }
+                }
+            }
         }
 
         private void PlayerGraphics_Update_MakePlayerThinkWhenTyping(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)

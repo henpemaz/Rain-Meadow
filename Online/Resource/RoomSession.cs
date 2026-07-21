@@ -1,4 +1,5 @@
-﻿using MoreSlugcats;
+﻿using MonoMod;
+using MoreSlugcats;
 using RainMeadow.Generics;
 using RWCustom;
 using System;
@@ -118,15 +119,27 @@ namespace RainMeadow
             [OnlineFieldHalf]
             float FlameJetTime;
 
+            // ThunderStorm
+            [OnlineField (nullable = true)]
+            LethalThunderStormData? stormData;
+
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
                 if (resource.absroom.realizedRoom != null)
                 {
-                    FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
-                    if (firstJet != null)
+                    if (ModManager.Watcher)
                     {
-                        FlameJetTime = firstJet.time;
+                        FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
+                        if (firstJet != null)
+                        {
+                            FlameJetTime = firstJet.time;
+                        }
+                        LethalThunderStorm storm = resource.absroom.realizedRoom.lethalThunderStorm;
+                        if (storm != null)
+                        {
+                            stormData = new(storm);
+                        }
                     }
                 }
             }
@@ -141,10 +154,18 @@ namespace RainMeadow
 
                     if (rs.absroom.realizedRoom != null)
                     {
-                        var room = rs.absroom.realizedRoom;
-                        foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
+                        if (ModManager.Watcher)
                         {
-                            flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            var room = rs.absroom.realizedRoom;
+                            foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
+                            {
+                                flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            }
+                            LethalThunderStorm storm = rs.absroom.realizedRoom.lethalThunderStorm;
+                            if (storm != null)
+                            {
+                                stormData?.ReadTo(storm);
+                            }
                         }
                     }
                 }

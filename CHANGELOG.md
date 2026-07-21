@@ -54,6 +54,7 @@
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication
 - Synced prince's position and look point
+- Synced lightning storms
 ## Chat
 - Put Chat in its own overlay so it is available at all times
 - Chat now keeps history of what was typed in/out of the lobby menu
