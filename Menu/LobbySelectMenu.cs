@@ -186,9 +186,6 @@ namespace RainMeadow
                 RefreshLobbyList(null);
             };
 
-
-
-
             new UIelementWrapper(this.tabWrapper, domainDropDown);
 
             CreateElementBindings();

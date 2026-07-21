@@ -89,7 +89,7 @@ namespace RainMeadow
 
             if (!SpecialEvents.CanSpendMeadowCoin(btn.cost) && !purchased) return;
 
-            ICapeColor? desiredCape = null;
+            string? desiredSkin = null;
             AbstractPhysicalObject? desiredObject = CreateStandardItem(btn.itemName, me);
 
             if (desiredObject == null)
@@ -103,7 +103,7 @@ namespace RainMeadow
                         desiredObject = new JokeRifle.AbstractRifle(game.world, null, me.pos, game.GetNewID(), JokeRifle.AbstractRifle.AmmoType.Fruit);
                         break;
                     case RainbowCape:
-                        desiredCape = new RainbowCapeColor();
+                        desiredSkin = "rainbow";
                         break;
                 }
             }
@@ -111,7 +111,7 @@ namespace RainMeadow
             if (btn.itemName == GoldenSkin && me.GetOnlineCreature() is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var data))
             {
                 data.overlaySkin = new CoinSkin();
-                CapeManager.RefreshGraphicalModule(critter.realizedCreature);
+                CosmeticManager.RefreshGraphicalModule(critter.realizedCreature);
             }
 
             if (desiredObject != null)
@@ -119,12 +119,11 @@ namespace RainMeadow
                 FinalizeObjectSpawn(desiredObject);
                 if (!purchased) SpecialEvents.SpendMeadowCoin(btn.cost);
             }
-            else if (desiredCape != null && me.GetOnlineCreature() is OnlineCreature cc && cc.TryGetData<SlugcatCustomization>(out var custom))
+            else if (desiredSkin != null && me.GetOnlineCreature() is OnlineCreature cc && cc.TryGetData<SlugcatCustomization>(out var custom))
             {
-                custom.eventCape = desiredCape;
-                CapeManager.RefreshGraphicalModule(cc.realizedCreature);
+                custom.cosmeticSkin = desiredSkin;
+                CosmeticManager.RefreshGraphicalModule(cc.realizedCreature);
                 if (!purchased) SpecialEvents.SpendMeadowCoin(btn.cost);
-                RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value = Custom.colorToHex(btn.chosenColor);
             }
 
             if (btn.permanentPurchase is not null) btn.permanentPurchase.Value = true;

@@ -60,6 +60,10 @@ namespace RainMeadow
             configurableFloats = new Dictionary<string, float>();
             configurableInts = new Dictionary<string, int>();
 
+            // Clear chat logs
+            ChatLogManager.ClearChatLog();
+            
+            // Reset Enum Mapping
             MeadowExtEnumSync.ResetEnumEntriesMapping();
 
             if (isOwner)
