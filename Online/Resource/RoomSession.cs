@@ -1,8 +1,4 @@
-﻿using MoreSlugcats;
-using RainMeadow.Generics;
-using RWCustom;
-using System;
-using System.Diagnostics;
+﻿﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -28,34 +24,26 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            if (isOwner && absroom.realizedRoom != null)
-            {
-                foreach(var obj in absroom.realizedRoom.updateList)
-                {
-                    if (obj is ScavengerOutpost outpost && outpost.pearlStrings.Count == 0)
-                    {
-                        //initiate outpost pearl strings
-                        Random.State state = Random.state;
-                        Random.InitState((outpost.placedObj.data as PlacedObject.ScavengerOutpostData).pearlsSeed);
-                        int length = Random.Range(5, 15);
-                        for (int i = 0; i < length; i++)
-                        {
-                            var pearlString = new ScavengerOutpost.PearlString(outpost.room, outpost, 20f + Mathf.Lerp(20f, 150f, Random.value) * Custom.LerpMap(length, 5f, 15f, 1f, 0.1f));
-                            outpost.room.AddObject(pearlString);
-                            outpost.pearlStrings.Add(pearlString);
+            if (isActive) LoadPearlStrings();
+        }
 
-                            pearlString.Initiate();
-                        }
-                        Random.state = state;
-                    }
-                }
-                foreach(var obj in absroom.realizedRoom.roomSettings.placedObjects)
+        public void LoadPearlStrings()
+        {
+            if (!isActive || !isAvailable) return;
+            if (absroom.realizedRoom == null) return;
+            RainMeadow.Debug("looking for pearls");
+            if (isOwner)
+            {
+                var list = absroom.realizedRoom.drawableObjects.Where(o => o is MoreSlugcats.HangingPearlString or ScavengerOutpost.PearlString).ToList();
+                for (int i = 0; i < list.Count; i++) 
                 {
-                    if (obj.type == PlacedObject.Type.HangingPearls)
-                    {
-                        absroom.realizedRoom.AddObject(new HangingPearlString(absroom.realizedRoom, Mathf.Lerp(60f, 180f, 0.5f + Mathf.Sin(obj.pos.x * 10f) / 2f), obj.pos));
-                    }
+                    OnlinePearlString.InitializePearlString((UpdatableAndDeletable)list[i]);
                 }
+            }
+
+            foreach (var entity in activeEntities.OfType<OnlinePearlString>())
+            {
+                entity.FindPearlString(this);
             }
         }
 
@@ -81,11 +69,13 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (isAvailable) LoadPearlStrings();
         }
 
         protected override void DeactivateImpl()
         {
-
+            
         }
 
         protected override void UnavailableImpl()

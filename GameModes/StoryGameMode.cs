@@ -95,7 +95,7 @@ namespace RainMeadow
         public HashSet<PlacedObject.Type> disallowedPlacedObjects = new()
         {
             //PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle (UPDATE: probably doesn't anymore)
-            PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
+            // PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
             //DLCSharedEnums.PlacedObjectType.Stowaway, // No longer causes visual glitches but still needs some work, excluding for now
             Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };

@@ -5,6 +5,9 @@
 - Improved Noodle Fly sync
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
+- Fixed objects marked as destroyOnAbstraction not being detroyed.
 - Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
@@ -16,9 +19,10 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
-- Added Ownership view to Dev Tools.
+### ⚠️ Developers
+- The Debug Overlay has been changed to be able to track non physical object entities.
+- The Debug Overlay now has an Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
-### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
 ## Arena

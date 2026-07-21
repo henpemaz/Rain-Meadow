@@ -778,17 +778,19 @@ namespace RainMeadow
 
                 // Skip spawning HangingPearls if RoomSession doesn't yet exist.
 
-                c.GotoNext(MoveType.After,
-                    i => i.MatchLdsfld<PlacedObject.Type>(nameof(PlacedObject.Type.HangingPearls)),
-                    i => i.MatchCall("ExtEnum`1<PlacedObject/Type>", "op_Equality"),
-                    i => i.MatchBrfalse(out skip));
+                // c.GotoNext(MoveType.After,
+                //     i => i.MatchLdsfld<PlacedObject.Type>(nameof(PlacedObject.Type.HangingPearls)),
+                //     i => i.MatchCall("ExtEnum`1<PlacedObject/Type>", "op_Equality"),
+                //     i => i.MatchBrfalse(out skip));
 
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) =>
-                {
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !roomSession.isOwner;
-                });
-                c.Emit(OpCodes.Brtrue, skip);
+                // c.Emit(OpCodes.Ldarg_0);
+                // c.EmitDelegate((Room self) =>
+                // {
+                //     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !roomSession.isOwner;
+                // });
+
+
+                // c.Emit(OpCodes.Brtrue, skip);
 
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(0),

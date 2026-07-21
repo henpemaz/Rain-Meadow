@@ -136,7 +136,7 @@ namespace RainMeadow
                 camera.followAbstractCreature = return_to_player;
                 if (return_to_player.Room.realizedRoom == null)
                 {
-                    this.game.world.ActivateRoom(return_to_player.Room);
+                    this.game.roomRealizer.MeadowRealizeAndTrackRoom(return_to_player.Room, true);
                 }
                 if (
                     return_to_player.Room.realizedRoom != null
@@ -145,7 +145,7 @@ namespace RainMeadow
                 {
                     var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
-                    AbstractizeIfSafe(oldRoom);
+                    oldRoom?.TryKillRoom();
                 }
             }
         }
@@ -202,7 +202,7 @@ namespace RainMeadow
                 {
                     if (spectatee.Room.realizedRoom == null)
                     {
-                        this.game.world.ActivateRoom(spectatee.Room);
+                        this.game.roomRealizer.MeadowRealizeAndTrackRoom(spectatee.Room, false);
                     }
                     if (
                         spectatee.Room.realizedRoom != null
@@ -211,31 +211,9 @@ namespace RainMeadow
                     {
                         var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
-                        AbstractizeIfSafe(oldRoom);
+                        oldRoom?.TryKillRoom();
                     }
                 }
-            }
-        }
-
-        // Unloads a room left behind by the spectator camera if no local players remain in it.
-        private void AbstractizeIfSafe(AbstractRoom oldRoom)
-        {
-            if (oldRoom == null || oldRoom.realizedRoom == null) return;
-
-            bool keepLoaded = false;
-            for (int i = 0; i < game.Players.Count; i++)
-            {
-                if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal())
-                {
-                    keepLoaded = true;
-                    break;
-                }
-            }
-
-            if (!keepLoaded)
-            {
-                RainMeadow.Debug($"Spectator leaving room {oldRoom.name}, abstractizing it to prevent leaks.");
-                oldRoom.Abstractize();
             }
         }
     }

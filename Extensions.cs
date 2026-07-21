@@ -155,6 +155,35 @@ namespace RainMeadow
             return found;
         }
 
+        public static RoomRealizer.RealizedRoomTracker MeadowRealizeAndTrackRoom(this RoomRealizer self, AbstractRoom room, bool actuallyEntering)
+        {
+            room.world.ActivateRoom(room);
+            RoomRealizer.RealizedRoomTracker? tracker = self.realizedRooms.FirstOrDefault(x => x.room == room);
+
+            if (tracker is null) 
+            {
+                tracker = new RoomRealizer.RealizedRoomTracker(room, actuallyEntering);
+                self.realizedRooms.Add(tracker);
+                if (actuallyEntering) self.currentlyLoadingRoom = room.realizedRoom;
+            }
+
+            return tracker;
+        }
+
+        public static void TryKillRoom(this AbstractRoom self)
+        {
+            if (self.realizedRoom is null) return;
+
+            RoomRealizer roomRealizer = self.world.game.roomRealizer;
+            var trackedroom = roomRealizer.MeadowRealizeAndTrackRoom(self, false); // track the room if we aren't tracking it.
+
+            if (!roomRealizer.CanAbstractizeRoom(trackedroom))
+            {
+                RainMeadow.Debug($"Killing {self.name} to prevent leaks.");
+                roomRealizer.KillRoom(self);
+            }
+        }
+
         // suck it, linq
         public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<KeyValuePair<TKey, TElement>> source)
         {
