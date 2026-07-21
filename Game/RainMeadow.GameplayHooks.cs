@@ -92,6 +92,7 @@ namespace RainMeadow
                     orig(self, pos, branchingChance, size, effectRadius, killRadius, delayFrames);
                     foreach(var player in roomSession.participants)
                     {
+                        if (player.isMe) continue;
                         player.InvokeRPC(RPCs.LightingMakerStrike, roomSession, pos, branchingChance, size, effectRadius, killRadius, delayFrames);
                     }
                 }
