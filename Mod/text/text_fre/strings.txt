@@ -295,233 +295,234 @@ SOFANTHIEL|SOFANTHIEL
 Gorbo|Gorbo
 GORBO|GORBO
 ???|???
-You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Has atravesado el infierno y has sobrevivido, pero ahora es<LINE>el momento de expiar tus pecados de tus ciclos pasados.
-...why are you here|... ¿Por qué estás aquí?
-Thanks, Andrew.|Gracias, Andrew.
-.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA .zev aremirp ut omoc<LINE>áres on erop ,rodederla ut a nacreca es sogimene soL
-Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Te doy la bienvenida a la torre de esfuerzos: donde harás trabajo pesado por<LINE>la duración de tu estadía. ¡Espero que hayas traído agua, <USERNAME>!
-$5 to unlock this description.|$5 para desbloquear esta descripción.
-egg|huevo
-Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|La búsqueda del amor te llevará al<LINE>precioso camino de los despojos desgarradores.
-How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|Tres tristes tigres tragaban trigo en un trigal,<LINE>en tres tristes trastos tragaban trigo tres tristes tigres.
-Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|¿Te sientes con suerte?<LINE>Prueba manteniendo pulsado tu retrato de gato-babosa ;)
-Did you know:<LINE>Meadow was released this Friday|¿Sabías que...<LINE>Meadow fue lanzado este viernes?
-Did you know:<LINE>You're bad at Arena|¿Sabías que...<LINE>eres malo en el modo arena?
-Did you know:<LINE>There's more "Did you know"s.|¿Sabías que...<LINE>existen más «¿Sabías que...?»?
-Did you know:<LINE>This is the only "Did you know".|¿Sabías que...<LINE>este es el único «¿Sabías que...?»?
-You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|Tú perderás<LINE>Tu cuerpo no hallarán<LINE>Lejos está
-"<USERNAME>, youre gonna get us both killed"|«¡<USERNAME>, vas a hacer que nos maten!».
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Vous avez passé une vie en enfer, mais il est maintenant<LINE>temps de vous racheter de vos pêchers.
+...why are you here|...que fais-tu ici
+Thanks, Andrew.|Merci, Andrew.
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.erreip at te ecnal at eparttA<LINE>.siof ereimerp al emmoc sap areluored es en ac siam ,tnehcorppa seimene seL
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Bienvenue dans la tour des épreuves : ici, le boulot, ça sera du lourd !<LINE>Espèrons que vous avez pris de quoi vous hydrater, <USERNAME> !
+$5 to unlock this description.|5€ pour débloquer cette description.
+egg|œuf
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|L'amour te guidera dans la magnifique rive des nafrages amoureux.
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|Six cent cinq saints sont sans scie.<LINE>Si six cent cinq saints avaient une scie,<LINE> six cent cinq saints scieraient sans soucis.
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|La chance est avec vous ?<LINE>Essayer de maintenir le clique sur le portrait de votre chat-limace ;)
+Did you know:<LINE>Meadow was released this Friday|Le savez-vous ?<LINE>Meadow est sorti ce vendredi !
+Did you know:<LINE>You're bad at Arena|Le savez-vous ?<LINE>Vous semblez manquer d'expertise dans le mode de jeu d'Arène
+Did you know:<LINE>There's more "Did you know"s.|Le savez-vous ?<LINE>Il existe encore plus de «Le savez-vous ?»
+Did you know:<LINE>This is the only "Did you know".|Le savez-vous ?<LINE>>Il n'existe que ce «Le savez-vous ?»
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|Tu perdras ce round<LINE>Ton corps ne sera pas trouvé<LINE>Six pieds sous terre
+"<USERNAME>, youre gonna get us both killed"|«<USERNAME>, tu vas nous faire tuer !».
 "no srsly wheres my egg"|«ok srx ou est mon oeuf».
-"u dont need 2 be alone, bby."|«No tienes por qué estar sin compañía, bebé».
-"sometimes i wake up with a friend ive never met b4"|«A veces me despierto con un amigo que nunca había conocido».
-"i luv u <3"|«Te amo <3».
-WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|¿POR QUÉ TENÍA QUE SER UNA VARIABLE?<LINE>num2 ES LITERALMENTE 0
-Don't Care<LINE>Nuh<LINE>Yuh|No me importa<LINE>Nah<LINE>Yah
-Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|De repente el rectángulo de resultados falló en aparecer, estás en un softlock.<LINE>¿Qué demonios?<LINE>Creí que ya habían arreglado ese error hace mucho...
-Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|¿Alguna vez pensaste en contribuir a<LINE>https://github.com/henpemaz/Rain-Meadow?
-Be careful when selecting the Fartificer|Ten cuidado seleccionando a Fartífice
-am getting "among us potion at 3 am" vibes<LINE>add that /lh|me están llegando vibras de «poción de among us de las 3 am»<LINE>añade eso /lh
-Playtesters<LINE>Are<LINE>Replaceable|Los<LINE>playtesters<LINE>son<LINE>reemplazables
-There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Hay suficientes descripciones de Inv.<LINE>NO SACIA MI ESTÓMAGO VACÍO
-"hiiii!"|«¡Holiiii!».
-"i'm ded"|«Estoy muelto».
+"u dont need 2 be alone, bby."|«tu ne sera plus seul, bb»
+"sometimes i wake up with a friend ive never met b4"|«parfois je me lève avec un ami que je n'ai jamais jamais vu avant»
+"i luv u <3"|«Je t'M <3».
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|POURQUOI CE TRUC EST UNE VARIABLE ??<LINE>num2 EST LITTÉRALEMENT 0
+Don't Care<LINE>Nuh<LINE>Yuh|M'en fous<LINE>Nah<LINE>Ouais
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|Et soudain, le rectangle des résultats de session n'apparait plus, tu est softlock.<LINE>Hein ??<LINE>Je pensais qu'on avait réglé ce bug il y a un bail...
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|Avez-vous déjà envisagé à contribuer à<LINE>https://github.com/henpemaz/Rain-Meadow ?
+Be careful when selecting the Fartificer|Faite gafe quand vous sélectionnez Pettificer
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|Asy j'ai la vibe «potion d'among us à 3h du mat»<LINE>ajoute ce truc /lh
+Playtesters<LINE>Are<LINE>Replaceable|Les<LINE>playtesters<LINE>sont<LINE>substituable
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Y'a assez de description de Inv.<LINE>ÇA REMPLIT PAS MON ESTOMAC
+"hiiii!"|«Heyyyyy !».
+"i'm ded"|«Suis mort».
 bleh|bleh
-inv? like invalidunits?|¿inv?, o sea, ¿invalidunits?
+inv? like invalidunits?|inv ?, genre invalidunits ?
 
 // Scugslots
-Press and hold something on screen to spin the slots / Hope you brought green|Mantén pulsado algo en la pantalla para probar tu suerte / Espero que hayas traído plata
-One, two three of a kind / Somewhere on this page you will find|Tres caras iguales en uno / Puedes encontrar aquí en alguno
-A joke started from the Meadow Discord / Makes all players broke, and none can afford|Un chiste iniciado del Discord de Meadow / Hace que todos se queden sin dinerillow
-SCUGSLOTS|BABOFORTUNA
-LET'S ROLL!|¡A TIRAR!
-Oops, better luck next time!|¡Ay, buena suerte en la próxima!
-Try your luck again!|¡Prueba de nuevo tu suerte!
-99% of gamblers quit before they win big|El 99% de los apostadores abandonan antes de ganar en grande.
-So Close! Keep trying!|¡Tan cerca! ¡Sigue intentándolo!
-Almost there!|¡Casi lo lograste!
-Congratulations! You have achieved the ultimate gamble skill!!!|¡Felicidades! ¡¡Acabas de conseguir la habilidad apostante definitiva!!
-Gahh?? Impossible?!|¡¿Cómo?! ¡No me lo puedo creer!
-You got a <SLUGCATNAME>!|¡Obtuviste <SLUGCATNAME>!
+Press and hold something on screen to spin the slots / Hope you brought green|Maintenez le clique sur un élement du menu pour faire tourner les fentes / Espèrons que t'as amené du cash
+One, two three of a kind / Somewhere on this page you will find|Un, deux, trois de ces choses / Quelque part sur cette page vous trouverez
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|Une blague démarrée sur Discord / Fauchant tous les joueurs, que personne ne peut payer
+SCUGSLOTS|CHAT-ROULETTE
+LET'S ROLL!|FAIT ROULER TA FORTUNE
+Oops, better luck next time!|Mince, peut-être la prochaine est gagnante !
+Try your luck again!|Réessaye encore !
+99% of gamblers quit before they win big|99% des joueurs arrête avant de gagner gros
+So Close! Keep trying!|Si proche ! Continue comme ça !
+Almost there!|Presque !!
+Congratulations! You have achieved the ultimate gamble skill!!!|Félicitation ! Vous avez atteint la compétence de pari ultime !
+Gahh?? Impossible?!|Hein ??? Impossible ?!
+You got a <SLUGCATNAME>!|Vous avez eu un <SLUGCATNAME> !
 
 // Chat Tutorial
-Press '|Pulsa «
-' to chat, press '|» para chatear y «
-' to toggle the chat log|» para ver o quitar el chat
+Press '|Appuyez sur «
+' to chat, press '|» pour chat, appuyez sur «
+' to toggle the chat log|» pour activer/déactiver le journal de chat
 
 // Player Joining / Leaving
-joined the game.|se ha unido a la partida.
-tried to join the game but was kicked.|ha intentado unirse a la partida, pero fue echado.
-left the game.|se ha ido de la partida.
+joined the game.|a rejoint la partie.
+tried to join the game but was kicked.|a essayé de rejoindre la partie, mais a été expulsé.
+left the game.|a quitté la partie.
 
 // Death Messages
-died.|ha muerto.
-was crushed by the rain.|ha perecido por la lluvia.
-fell into the abyss.|se ha caído al abismo.
-drowned.|se ha ahogado.
-hit the ground too hard.|se ha golpeado muy fuerte contra el suelo.
-was killed through unknown means.|ha sido asesinado por medios desconocidos.
-tried to swim in burning liquid.|ha intentado nadar en líquido ardiente.
-spontaneously combusted.|se ha quemado espontáneamente.
-froze to death.|se ha congelado hasta la muerte.
-was swallowed by the grass.|ha sido tragado por el césped.
-was swallowed by the walls.|ha sido tragado por las paredes.
-was electrocuted.|ha sido electrocutado.
-licked the power.|ha lamido la energía.
-was consumed by the swarm.|ha sido consumido por el enjambre de arañas.
-was electrocuted in the water.|ha sido electrocutado en el agua.
-was obliterated by the sandstorm.|ha sido arrasado por el terregal.
-died from poison.|ha muerto de envenenamiento.
-was struck by lightning.|ha sido golpeado por un rayo.
-was consumed by locusts.|ha sido consumido por las langostas.
-swam with the ripples.|ha nadado con las ondas.
-experienced the force of fresh fruit.|ha experimentado la fuerza de la fruta fresca.
-was burnt to a crisp.|ha sido achicharrado.
-was taken into the abyss by|ha caído al abismo por
-was drowned by|se ha ahogado por
-was slain by|ha muerto por
-was ascended by|ha ascendido por
-was zapped by a|ha sido electrocutado por un
-was ambushed by a|ha sido cazado por una
-was taken by a|ha sido llevado por
-was slain by a|ha sido asesinado por
+died.|est mort.
+was crushed by the rain.|a été écrasé par la pluit.
+fell into the abyss.|est tombé dans les abymes.
+drowned.|s'est noyé.
+hit the ground too hard.|s'est écrasé au sol.
+was killed through unknown means.|est mort d'une source incconue.
+tried to swim in burning liquid.|a essayé de nager dans de l'eau brulante.
+spontaneously combusted.|a été victime d'une combustion spontanée.
+froze to death.|est mort hypothermie.
+was swallowed by the grass.|s'est fait dévoré par l'herbe.
+was swallowed by the walls.|s'est fait dévoré par les murs.
+was electrocuted.|s'est fait électrocuté
+licked the power.|a découvert que la langue est un très bon conducteur.
+was consumed by the swarm.|a été comsumé par l'essaim.
+was electrocuted in the water.|s'est fait électrocuté dans l'eau.
+was obliterated by the sandstorm.|a été anéanti par la tempête de sable.
+died from poison.|est mort empoisonné.
+was struck by lightning.|s'est pris la fureur de la foudre.
+was consumed by locusts.|s'est fait dévoré par les criquets.
+swam with the ripples.|s'est fait emporter par les murmures d'un autre monde.
+experienced the force of fresh fruit.|a fait l'experience du punch un fruit bien frais.
+was burnt to a crisp.|a été carbonisé.
+was taken into the abyss by|a été emporté dans les abymes par
+was drowned by|s'est fait noyé par
+was slain by|s'est fait tué par
+was ascended by|a été transcendé de force par
+was zapped by a|a été électrocuté par un
+was ambushed by a|a été pris en embuscade par un
+was taken by a|s'est fait emporté par un
+was slain by a|s'est fait tué par un
 
 // creature names for death messages
-Pink Lizard|Lagarto Rosa
-Green Lizard|Lagarto Verde
-Blue Lizard|Lagarto Azul
-Yellow Lizard|Lagarto Amarillo
-White Lizard|Lagarto Blanco
-Red Lizard|Lagarto Rojo
-Black Lizard|Lagarto Negro
-Salamander|Salamandra
-Cyan Lizard|Lagarto Cian
-Leech|Sanguijuela
-Sea Leech|Sanguijuela Marina
-Snail|Caracol
-Vulture|Buitre
-Garbage Worm|Gusano de la Basura
-Lantern Mouse|Ratón Farol
-Cicada A|Calamigarra Blanca
-Cicada B|Calamigarra Oscura
-Jet Fish|Impulpez
-Big Eel|Leviatán
-Deer|Ciervo Pluvial
-Tube Worm|Gusano Gancho
-Daddy Long Legs|Papá Patilargo
-Brother Long Legs|Hermano Patilargo
-Tentacle Plant|Monstrualga
-Pole Mimic|Planta de Postes
-Miros Bird|Pájaro Miró
-Temple Guard|Guardián
-Centipede|Ciempiés
-Red Centipede|Ciempiés Rojo
-Scavenger|Carroñero
-Centiwing|Cienalas
-Small Centipede|Ciempiés Pequeño
-Overseer|Supervisor
-Vulture Grub|Larva de Buitre
-Big Spider|Araña Gigante
-Spitter Spider|Araña Escupidora
-Egg Bug|Bichohuevo
-Small Needle|Cría de Moscafideo
-Big Needle|Moscafideo
-Drop Bug|Tijereta
-King Vulture|Buitre Real
-Hazer|Calamar Humeante
-Miros Vulture|Buitre Miró
-Caramel Lizard|Lagarto Caramelo
-Eel|Lagarto Anguila
-Strawberry|Lagarto Fresa
-Mother Spider|Araña Nodriza
-Terror Long Legs|Madre Patilarga
-Aquapede|Acuípedo
-Stowaway Bug|Bichogancho
-Elite Scavenger|Carroñero de Élite
-Inspector|Inspector
-Yeek|Yeek
-Big Jellyfish|Medusa Gigante
-Jungle Leech|Sanguijuela Selvática
-Hell Bug|Bichofuego
-King Scavenger|Carroñero Líder
-Slugpup|Cría de Gato-babosa
-Train Lizard|Lagarto Tren
-Barnacle|Percebe
-DrillCrab|Cangrejo Perforador
-SandGrub|Larva de Arena
-BigSandGrub|Gusano de Arena
-BigMoth|Polilla Gigante
-SmallMoth|Polilla Pequeña
-Box Worm|Gusano de Caja
-Fire Sprite|Duende de Fuego
-Rattler|Agitahuesos
-SkyWhale|Ballena Celestial
-ScavengerTemplar|Carroñero Templario
-ScavengerDisciple|Carroñero Discípulo
-Loach|Locha
-Rot Behemoth|Mastodonte Putrefacto
-Blizzard Lizard|Lagarto Ventisca
-Basilisk Lizard|Lagarto Basilisco
-Indigo Lizard|Lagarto Índigo
-Rat|Rata
-Frog|Rana
-Tardigrade|Tardígrado
+Pink Lizard|Lézard Rose
+Green Lizard|Lézard Vert
+Blue Lizard|Lézard Bleu
+Yellow Lizard|Lézard Jaune
+White Lizard|Lézard Blanc
+Red Lizard|Lézard Rouge
+Black Lizard|Lézard Noir
+Salamander|Salamandre
+Cyan Lizard|Lézard Cyan
+Leech|Sangsue
+Sea Leech|Sangsue des mers
+Snail|Escargo
+Vulture|Vautour
+Garbage Worm|Ver Des Ordures
+Lantern Mouse|Souris-Lanterne
+Cicada A|Cigalamard Blanc
+Cicada B|Cigalamard Noir
+Jet Fish|Poissonvif
+Big Eel|Léviathan
+Deer|Cerf de Pluie
+Tube Worm|Vers à Grappin
+Daddy Long Legs|Père Pholcidae
+Brother Long Legs|Frère Pholcidae
+Tentacle Plant|Goémonstre
+Pole Mimic|Plante Poteau
+Miros Bird|Oiseaux de Miró
+Temple Guard|Guardien
+Centipede|Mille-patte
+Red Centipede|Mille-patte Rouge
+Scavenger|Farfouilleurs
+Centiwing|Mille-ailes
+Small Centipede|Petit Mille-patte
+Overseer|Superviseur
+Vulture Grub|Larve de Vautour
+Big Spider|Grosse Araignée
+Spitter Spider|Araignée Éclabousseuse
+Egg Bug|Insecte Ovoïde
+Small Needle|Bébé Vermimouche
+Big Needle|Vermimouche
+Drop Bug|Perce-oreille
+King Vulture|Roi Vautour
+Hazer|Calamar à Fumée
+Miros Vulture|Vautour de Miró
+Caramel Lizard|Lézard Caramel
+Eel|Lézard Anguille
+Strawberry|Lézard Fraise
+Mother Spider|Mère-araignée
+Terror Long Legs|Mère Pholcidae
+Aquapede|Mille-rame
+Stowaway Bug|Parasite
+Elite Scavenger|Farfouilleur d'Élite
+Inspector|Inspecteur
+Yeek|Croâque
+Big Jellyfish|Méduse Géante
+Jungle Leech|Sangsue de la Jungle
+Hell Bug|Insecte explosif
+King Scavenger|Chef des Farfouilleurs
+Slugpup|Chatton-limace
+Train Lizard|Lézard Train
+Barnacle|Balane
+DrillCrab|Crabe Foreur
+SandGrub|Larve des Sables
+BigSandGrub|Vers des Sables
+BigMoth|Phalène Géante
+SmallMoth|Petite Phalène
+Box Worm|Vers en Boîte
+Fire Sprite|Lutins de Feu
+Rattler|Secoueur d'Os
+SkyWhale|Baleine Céleste
+ScavengerTemplar|Templier Farfouilleur
+ScavengerDisciple|Disciple Farfouilleur
+Loach|Loche
+Rot Behemoth|Béhémoth en Putréfaction
+// went for a different name for Blizzard Lizard than the wiki, it sounds... abit better imo
+Blizzard Lizard|Lézard Tempestueux
+Basilisk Lizard|Lézard Basilic
+Indigo Lizard|Lézard Indigos
+Rat|Rat
+Frog|Grenouille
+Tardigrade|Tardigrade
 
 // Direct Connection Dialogue
-Direct Connection... |Conexión directa... 
+Direct Connection... |Conection directe... 
 Password:|Mot de passe:
-Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|Dirección inválida, el formato de la dirección IP debería ser «xxx.xxx.xxx.xxx:puerto».
-This address is possibly not local to your current network.|Esta dirección posiblemente no sea local con tu red actual.
-If so, This is very unstable and will most likely NOT work|Es muy inestable y puede que NO funcione.
-Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás haciendo?
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|Adresse invalide, le format de l'adresse IP devrait être «xxx.xxx.xxx.xxx:port».
+This address is possibly not local to your current network.|Cette adresse n'ets peut-être pas une adresse locale dans votre réseau.
+If so, This is very unstable and will most likely NOT work|Dans le cas contraire, elle est très instable and ne fonctionnera sûrement pas
+Are you SURE you know what you're doing?|Êtes-vous SUR de ce que vous faite ?
 
 // LAN Matchmaking Manager
-LAN Lobby|Sala de LAN
-Nobody|Nadie
-Your network interface(s) are|Tus interfaces de red son
-<NAME> network interface is |La interfaz de red de <NAME> es 
-You are the owner of the lobby.|Tú eres el dueño de la sala.
-This player is the owner of the lobby.|Este jugador es el dueño de la sala.
-Players can “Direct Connect” to this lobby through your interface(s).|Los jugadores pueden conectarse directamente a esta sala vía tus interfaces.
-Players can “Direct Connect” to this lobby through their interface(s).|Los jugadores pueden conectarse directamente a esta sala vía sus interfaces.
-You cannot use this feature here.|No puedes usar esta característica aquí.
+LAN Lobby|Lobby en LAN
+Nobody|Personne
+Your network interface(s) are|Votre interface de réseau est
+<NAME> network interface is |L'interface de réseau de <NAME> est 
+You are the owner of the lobby.|Vous êtes le propriétaire du lobby.
+This player is the owner of the lobby.|Ce joueur est le propriétaire du lobby.
+Players can “Direct Connect” to this lobby through your interface(s).|Les joueurs peuveut se connecter directement à ce lobby grâce à votre(vos) interface(s) réseau.
+Players can “Direct Connect” to this lobby through their interface(s).|Les joueurs peuveut se connecter directement à ce lobby grâce à leur(s) interface(s) réseau.
+You cannot use this feature here.|Vous ne pouvez pas utiliser cette fonctionnalité ici
 
 // Mod Applier
-Error loading mods!|¡Error al cargar mods!
-A restart is required to finish applying the mod changes.|Es necesario un reinicio para terminar de aplicar los cambios de mod.
-Restarting now...|Reiniciando...
-Mod Mismatch!|¡Mods desvinculados!
-Mods that have to be enabled: |Mods que deben estar activados: 
-Mods that have to be disabled: |Mods que deben estar desactivados: 
-Mods that have to be installed: |Mods que deben estar instalados: 
-Apply these changes now?|¿Aplicar ahora estos cambios?
-Warning: Differing Mod Load Orders!|Advertencia: ¡Órdenes discrepantes en la carga de mods!
-This may cause unstable play.|Esto puede ocasionar una jugabilidad inestable.
-Reorder your mods now?|¿Reordenar ahora tus mods?
-Cannot join due to missing DLC!|¡No puedes unirte debido a la falta de DLC!
-Missing DLC Mods that have to be enabled: |Mods DLC perdidos que deben estar activados: 
+Error loading mods!|Erreur pendant le chargement des mods !
+A restart is required to finish applying the mod changes.|Un redémarrage est nécessaire pour appliquer les changements des mods.
+Restarting now...|Redémarrage...
+Mod Mismatch!|Incompatibilité de mods !
+Mods that have to be enabled: |Mods qui doivent être activé : 
+Mods that have to be disabled: |Mods qui doivent être désactivé : 
+Mods that have to be installed: |Mods qui doivent être installé : 
+Apply these changes now?|Appliquer ces changements ?
+Warning: Differing Mod Load Orders!|Attention : l'ordre de chargement des mods est différent !
+This may cause unstable play.|Cela peut causer des instabilités en cours de partie.
+Reorder your mods now?|Voulez-vous réordonner les mods ?
+Cannot join due to missing DLC!|Vous ne pouvez pas rejoindre car un DLC est manquant !
+Missing DLC Mods that have to be enabled: |Mods DLC qui doivent être activé : 
 
 // Remix Options
-Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo meadow.
-Show usernames|Mostrar nombres de usuario
-Username Toggle|Pulsar para ver los nombres de usuario
-Replace holding with toggling|Reemplazar «mantener» con «pulsar».
-Key used for toggling spectator mode|Activar o desactivar el modo espectador
-Stop Inputs While Spectating|Detener entradas al espectear
-Pointing Key|Botón para señalar
-Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Controla qué mods están permitidos en los clientes, editando los archivos de abajo.<LINE>Incluyen instrucciones (en inglés) dentro.
-Edit High-Impact Mods|Editar mods de alto imp.
-Edit Banned Mods|Editar mods prohibidos
-Chat Log Toggle|Botón para ver o quitar el chat
-Chat Talk Button|Botón para hablar por el chat
-Chat Background Opacity|Opacidad del fondo del chat
-Show Ping|Mostrar el ping
-Playtesting Gift|Regalo de testeo
-Chat Log On/Off|Mostrar el chat
-Introroll|Intro de apertura
+Note: These inputs are not used in Meadow mode|Note : Ces entrées ne sont pas utilisées dans le mode de jeu Meadow.
+Show usernames|Montrer les pseudos
+Username Toggle|Activer/Déactiver l'affichage des pseudos
+Replace holding with toggling|Basculer de mode au lieu de maintenir
+Key used for toggling spectator mode|Touche pour activer le mode spectateur
+Stop Inputs While Spectating|Bloquer les touches pendant le mode spectateur
+Pointing Key|Touche pour pointer
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Ces fichiers controlent les mods permis pour les autres clients.<LINE>Instruction ci-dedans.
+Edit High-Impact Mods|Éditer les mods à haute importance
+Edit Banned Mods|Éditer les mods bannis
+Chat Log Toggle|Activer/Déactiver le Journal de Chat
+Chat Talk Button|Bouton pour ouvrir le chat
+Chat Background Opacity|Opacité du fond du chat
+Show Ping|Montrez le ping
+Playtesting Gift|Câdeau de playtest
+Chat Log On/Off|On/Off Journal de Chat
+Introroll|Scène d'introduction
 Vanilla|Vanilla
 Downpour|Downpour
-Downpour DLC is not activated, vanilla intro will be used instead|El DLC de Downpour no está activado, la intro vanilla será usada en su lugar.
-Watcher DLC is not activated, vanilla intro will be used instead|El DLC del Vigilante no está activado, la intro vanilla será usada en su lugar.
+Downpour DLC is not activated, vanilla intro will be used instead|Le DLC Downpour n'est pas activé, l'intro vanilla sera utilisé à la place.
+Watcher DLC is not activated, vanilla intro will be used instead|Le DLC Guetteur n'est pas activé, l'intro vanilla sera utilisé à la place.
 Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
 Disable Pause Menu Animation|Desactivar animación del menú de pausa
 If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
