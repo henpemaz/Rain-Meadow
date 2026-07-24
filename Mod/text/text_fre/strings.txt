@@ -1,0 +1,582 @@
+0// Mod Name & Description
+henpemaz_rainmeadow-name|Rain Meadow
+henpemaz_rainmeadow-description|Une engine multijoueur, inspiré de Might & Delight's "Meadow", ajoutant le mode custom Meadow, ainsi que le mode histoire et arène en ligne.<LINE><LINE>Pour les crédits, voir le workshop ou la page des crédits dans le menu Meadow.
+
+// Mod Tab
+MEADOW|MEADOW
+
+// Lobby Select Menu
+Lobby Mode|Mode de jeu
+All|Tous
+Public Lobbies Only|Lobbys publiques
+Max Lobby Size|Taille maximum du lobby
+Lobby Mods|Mods du lobby
+Unfiltered|Sans filtre
+Exact order|Ordre exact
+Any order|Ordre quelconque
+Direct Connect|Connexion directe
+Direct Connection is only available in the Local Matchmaker|La connexion directe est seulement disponible pour le domaine local
+Lobby Domain|Domaine de connexion
+Local|Local
+Router|Routeur
+Steam|Steam
+Failed to join lobby.<LINE> Lobby is full|Erreur en essayant de rejoindre le lobby :<LINE>Le lobby est complet
+Failed to join lobby.<LINE>|Erreur en essayant de rejoindre le lobby.<LINE>
+Password Required|Mot de passe
+Wrong password!|Mot de passe incorrect !
+Joining lobby...|Connexion au lobby...
+Online:|En ligne :
+Lobbies:|Lobbys :
+Rain Meadow Version:|Version de Rain Meadow:
+Credits|Crédits
+
+// Lobby Cards Selector
+Search Lobbies|Rechercher des lobbies
+Click to join|Cliquer pour rejoindre
+<USERNAME>'s Lobby|Lobby de <USERNAME>
+Private|Privé
+max|max
+player|joueur
+players|joueurs
+Sort by Ping|Trier par ping
+Sort A to Z|Trier de A à Z
+Sort Z to A|Trier de Z à A
+Sort by Fullest Lobby|Trier par remplissage décroissant
+Sort by Emptiest Lobby|Trier par remplissage croissant
+Unknown Sorting Method|Trier par une méthode inconnue
+Refresh list|Actualiser la liste
+
+// Lobby Create Menu
+CREATE!|CRÉER !
+Mode:|Mode de jeu :
+Meadow|Meadow
+A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|Un mode paisible qui privilège l'exploration et la découverte de petit secret,<LINE>à plusieurs ou non.
+Story|Histoire
+Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|Par à l'aventure avec tes amis dans le monde de Rain World, combatez ensemble<LINE>et mourez ensemble.
+Arena|Arène
+Fight against unforgiving creatues and foes where only the strong survive.|Combat des crétures impitoyables et des ennemies redoutables, où seuls les plus forts subsistent.
+Visibility:|Visibilité:
+Public|Public
+Friends Only|Amis seulement
+Invite Only|Sur invitation
+Password|Mot de passe
+Lobby Password|Mot de passe du lobby
+Player max:|Joueurs max:
+Maximum number of players that can be in the lobby (up to 32)|Nombre de joueurs maximum qui peuvent être dans ce lobby (jusqu'à 32)
+Creating lobby...|Création du lobby...
+
+// Meadow Character Select
+Locked|Verrouillé
+ENTER|REJOINDRE
+Tint color|Couleur de teinte
+Tint amount|Atténuation de la teinte
+SKINS|ASPECT
+SLUGCAT|CHAT-LIMACE
+Survivor|Survivant
+Monk|Moine
+Hunter|Chasseur
+Fluffy|Duveteux
+Night|Nocturne
+LIZARD|LÉZARD
+Pink|Rose
+Blue|Bleu
+Yellow|Jaune
+Red|Rouge
+Black|Noir
+Axo|Axolotl
+Sala|Salamandre
+Cyan|Cyan
+Fluffers|Duvet
+CICADA|CIGALAMARS
+White|Blanc
+Dark|Obscur
+SCAVENGER|FARFOUILLER
+Twigs|Tige
+Acorn|Grand
+Oak|Chêne
+Shrub|Arbrisseau
+Branches|Branche
+Sage|Sage
+Cherry|Cerise
+Lavender|Lavandre
+Peppermint|Menthe
+Juniper|Bleuet
+NOODLEFLY|VERMIMOUCHE
+Lily|Lilie
+Rose|Rose
+Poppy|Coquelicot
+Lotus|Lotus
+Lilac|Lila
+Petunia|Pétunia
+Jasmine|Jasmin
+Gardenia|Gardénia
+EGGBUG|INSECTE OVOÏDE
+Citrus|Citron
+Blueberry|Myrtille
+Kiwi|Kiwi
+Mango|Mangue
+Dragonfruit|Fruit du Dragon
+LANTERN MOUSE|SOURIS LANTERNE
+Saphire|Saphire
+Ruby|Rubis
+Acquamarine|Aquamarine
+Citrine|Citrine
+Emerald|Émeraude
+Quartz|Quartz
+Amethyst|Améthyste
+Opal|Opale
+Garnet|Grenat
+New character!|Nouveau personnage !
+
+// Meadow Mode
+CLEAR|EFFACER
+CONTINUE|CONTINUER
+Close this menu|Fermer ce menu
+TO HUB|VERS LE HUB
+Teleport to the closest hub|Se teleporter au hub le plus proche
+TO OUTSKIRTS|VERS LA PÉRIPHÉRIE
+Teleport to outskirts|Se teleporter à la région de la Périphérie
+PASSAGE|PASSAGE
+Passage to another shelter|Utiliser un passage vers un autre abri
+UNSTUCK|DÉCOINCER
+Teleport to a nearby pipe|Se teleporter au tuyau le plus proche
+LOBBY|LOBBY
+Go back to the charater selection screen|Revenir à l'écran de sélection des personnages
+QUIT|QUITTER
+Exit back to the main menu|Revenir au menu pricipal
+Hub zone volume|Volume de la zone du hub
+Display names|Montrez les noms
+Collision|Colision
+New character unlocked|Nouveau personnage débloqué
+New emote unlocked|Nouvelle emote débloqué
+New skin unlocked|Nouvelle aspect débloqué
+
+// Story Mode
+Selected Slugcat|Chat-limace<LINE>sélectionné
+Press on the button to open/close the slugcat selection list|Appuyez sur le bouton pour ouvrir/fermer la liste de sélection des chat-limaces
+Current Campaign: |Campagne actuelle :
+ - New Game| - Nouvelle Partie
+Unknonw Region|Région inconnue
+Invite Friends|Invitez des amis
+Friendly Fire|Tir ami
+Require Campaign Slugcat|Forcez le chat-limace de la campagne
+Sync Save|Synchroniser la sauvegarde
+PLAYERS|JOUEURS
+Press again to ban player!|Appuyer encore pour confirmer le ban
+Wait for others to shelter or rescue you, press |Attendez que les autres s'abritent ou vous sauvent, appuyez sur 
+ to spectate, or press PAUSE BUTTON to dismiss message| to regarder les autres, ou appuyez sur le bouton PAUSE pour ignorer ce message
+READY|PRÊT
+
+// Arena Mode
+ME|MOI
+Got All<LINE>ScugSlots!!|Got All<LINE>ScugSlots!!
+Joining<LINE>soon!|Rejoint<LINE>bientôt !
+Ready!|Prêt !
+Selecting<LINE>Slugcat|Sélectionne<LINE>son chat-limace
+In Game!|En Jeu !
+Showing players in thumbnail view|Montrer les joueurs en mode vignette
+Showing players in list view|Montrer les joueurs en mode liste
+Current Mode:|Mode de jeu actuel:
+Do some wacky stuff around here!|Les dingueries c'est par ici !
+Free For All|Chacun pour soi
+Trust no one. Last scug standing wins|Pas d'alliances. Le dernier survivant gagnent.
+Team Battle|Bataille en équipe
+Choose a faction. Last team standing wins.|Rejoint une équipe. La dernière équipe en vie gagne.
+Join Team "<TEAMNAME>"|Rejoindre l'équipe «<TEAMNAME>»
+POST-GAME STATS|STATS POST-PARTIE
+WINS|VICTOIRES
+KILLS|KILLS
+DEATHS|MORTS
+This game mode doesnt have any info to give|Ce mode de jeu n'a aucune description
+Ready:|Prêt(s):
+Playlist Progress:|Progression de la playlist:
+WAIT FOR OTHERS|EN ATTENTE DES AUTRES
+FORCE READY|FORCER PRÊT
+LOBBY WILL LOCK|LOBBY SERA VERROUILLÉ
+JOIN?|REJOINDRE ?
+QUEUED TO JOIN|EN ATTENTE DE REJOIDRE
+READY?|PRÊT ?
+UNREADY|PAS PRÊT
+WAITING|EN ATTENTE
+Ready up to join the host when the match begins|Marquez-vous prêt pour rejoidre l'hôte quand le match commence
+START MATCH!|COMMENCER LE MATCH !
+Waiting for others...|En attente des autres...
+Waiting for host...|En attente de l'hôte...
+Welcome to Arena Online!<LINE>All players must ready up to begin.|Bienvenue dans l'arène en ligne !<LINE>Tous les joueurs doivent être prêt pour commencer.
+Exit to Lobby Select|Revenir au lobby
+Click to open <TABNAME> tab|Cliquez pour ouvrir l'onglet «<TABNAME>»
+Arena Playlist|Playliste d'arène
+Search for levels|Recherchez un niveau
+Search levels|Rechercher un niveau
+Match Settings|Paramètre du match
+Spears Hit:|Dégats de lance:
+Repeat Rooms:|Répéter les niveaux:
+Allow Item Stealing:|Vol d'object:
+Players can steal items from each other|Les joueurs peuvent voler les objets des autres
+Players cannot steal items from each other|Les joueurs ne peuvent pas voler les objets des autres
+Allow Mid-Game Join:|Permettre de rejoindre pendant la partie :
+Players can join each round|Les joueurs peuvent rejoidre entre chaque round
+Players can only join at the first round|Les joueurs peuvent rejoidre seulement au premier round
+Better Hitbox:|Meilleur colisions:
+Thrown weapons are corrected to prevent no-clips|Les trajectoires des armes sont corrigées pour éviter les no-clips.
+Thrown weapons follow vanilla behaviour|Les trajectoires des armes ne sont pas modifiée.
+Countdown Timer:|Compte à rebours :
+How long the grace timer at the beginning of rounds lasts for. Default 5s.|Durée du temps de grâce au début du round. Défaut : 5s.
+Arena Game Mode:|Mode de jeu Arène :
+The game mode for this match|Le mode de jeu pour ce match
+Slugcat Abilities|Abilités des chat-limaces
+Disable Mauling:|Désactiver la morsure :
+Prevent Artificer and <PAINCATNAME> from mauling|Désactive l'abilité de l'Artificier et de <PAINCATNAME> de pouvoir mordre.
+Disable Artificer Stun:|Désactiver l'onde de choc de l'Artificier :
+Prevent Artificer from stunning other players|Empêche l'Artificier de pouvoir assommer ces adversaires avec son onde de choc
+Sain't:|Saintpas:
+Disable Saint ascendance ability, but allow it to throw spears|Le Saint perd son pouvoir d'ascension, mais peut lancer des lances.
+Saint Ascendance Duration:|Durée d'ascension du Saint :
+How long Saint's ascendance ability lasts for. Default: 3s|Le temps maximum que le Saint peut utiliser son pouvoir d'ascension. Défaut : 3s.
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> obtient un œuf à habileté de la lance 0 :
+If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATNAME> apparait avec 0 d'habileté de la lance, il obtient un desto-œuf 3000
+<PAINCATNAME> can always throw spears:|<PAINCATNAME> peut toujours lancer des lances :
+Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permet à <PAINCATNAME> de toujours pouvoir lancer des lances, même avec 0 d'habileté de la lance.
+<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> peut parfois obtenir un ami :
+Allow <PAINCATNAME> to rarely spawn with a little friend|Permet à <PAINCATNAME> d'apparaître occassionellement avec un certain ami
+Watcher Camo Duration:|Durée du camouflage du Guetteur :
+How long Wacher's abilities last for. Default: 12s|Le temps maximum que le Guetteur peut utiliser son pouvoir. Défaut : 12s.
+Team Settings|Paramètre d'équipe
+TEAM|ÉQUIPE
+Team Lerp Color:|Couleur d'interpolation de l'équipe :
+How much do you want team color to show on players? From 0 to 1|Quel atténuation de la couleur d'équipe voulez-vous montrer sur les joueurs ? De 0 à 1
+You cant color without Remix on!|Vous ne pouvez pas colorer les joueurs sans le mod Remix !
+Waiting|En attente
+Prepare for combat,|Préparez-vous au combat,
+Prepare for war,|Préparez-vous à la guerre,
+Winner!|Vainqueur !
+<TEAMNAME> WIN!|L'ÉQUIPE «<TEAMNAME>» GAGNE !
+Unknown user|Utilisateur inconnu
+TO LOBBY|VERS LE LOBBY
+
+// Arena Slugcat Select
+Back To Lobby|Retourner au Lobby
+Go back to main lobby|Retourner au Lobby principal
+You have been unreadied. Switch back to re-ready yourself automatically|Vous n'êtes plus marqué comme prêt. Revenez au menu d'avant pour être re-marqué comme prêt automatiquement.
+The match is starting in <COUNTDOWN>! Ready up!!|Le match commence dans <COUNTDOWN> seconds ! Marquez-vous prêt !!
+THE NIGHTCAT|LE NOCTURNE
+THE FARTIFICER|LE PETTIFICIER
+THE SLUGPUP|LE CHATTON-LIMACE
+THE UNKNOWN|L'INCONNU
+Unknown|Inconnu
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Les enemies approchent, mais ça ne se déroulera pas comme la première fois.<LINE>Attrape ta lance et ta pièrre.
+Remember: they struck first, so you'll need to hit back harder.|Rappelle-toi : ils ont lancé la première pièrre, tu devras donc la renvoyer plus fort.
+Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Affligé dès le début, combattant jusqu'à la fin.<LINE>Montre-leur le vrai sens de la souffrance.
+Observe all weakness - then strike while cloaked in shadows.|Guette leur faiblesse. Attaque cammouflé dans les ombres.
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Votre histoire pleine de rebondissements touche à sa fin.<LINE>Terrase cette dernière quête.
+An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|Une personnalité explosive et une haine sans précédant<LINE>Broie et détruit tout tes adversaires sur le chemin de ta vengeance.
+A gnawing hunger grows inside you. Feed it with spears.|Une faim dévorante t'accable. Nourris-la avec des lances.
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|Dans un monde qui perd son sens, tu as peut-être trouvé le tien.<LINE>Agit vite avant de le perdre.
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lance est un faible récipient.<LINE>Forge le monde de ton esprit.
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|L'esprit est un faible récipient.<LINE>Montre ta vaillance par la lance dans ta main.
+Desperate. Fearful. Violent.|Désespéré. Terrifié. Violent.
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Overt: Voix. Choix. Fardeau.<LINE>Fermé: Murmures. Convergence. Étouffement.<LINE>Ouvert: Échos. Claireté. Flottement.
+Am I Warrior from the past, or a Messiah from the future?|Suis-je un guerrier du passé, ou un Messie du future ?
+Am I Cat Searching for many, or a Mouse searching for one?|Suis-je un cat à la recherche de tous, ou une souris à la recherche de un ?
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>Suis-je un samaritain maudit, ou une anomalie à travers l'espace et le temps ?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>Suis-je un samaritain maudit, ou suis-je coincé pour toujours dans l'ombre ?
+<LINE>I do not know, for I am not one. I am many.|<LINE>Je ne sais point, car je ne suis plus. Nous sommes.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Ceux qui traverse un chemin trouveront peut-être un trésor.<LINE>Ceux qui en traverse beaucoup trouveront la vérité.
+
+// Paincat's Names & Descriptions
+Paincat|Chat-douleur
+PAINCAT|CHAT-DOULEUR
+Inv|Inv
+INV|INV
+Enot|Enot
+ENOT|ENOT
+Sofanthiel|Sofanthiel
+SOFANTHIEL|SOFANTHIEL
+Gorbo|Gorbo
+GORBO|GORBO
+???|???
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Vous avez passé une vie en enfer, mais il est maintenant<LINE>temps de vous racheter de vos pêchers.
+...why are you here|...que fais-tu ici
+Thanks, Andrew.|Merci, Andrew.
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.erreip at te ecnal at eparttA<LINE>.siof ereimerp al emmoc sap areluored es en ac siam ,tnehcorppa seimene seL
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Bienvenue dans la tour des épreuves : ici, le boulot, ça sera du lourd !<LINE>Espèrons que vous avez pris de quoi vous hydrater, <USERNAME> !
+$5 to unlock this description.|5€ pour débloquer cette description.
+egg|œuf
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|L'amour te guidera dans la magnifique rive des nafrages amoureux.
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|Six cent cinq saints sont sans scie.<LINE>Si six cent cinq saints avaient une scie,<LINE> six cent cinq saints scieraient sans soucis.
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|La chance est avec vous ?<LINE>Essayer de maintenir le clique sur le portrait de votre chat-limace ;)
+Did you know:<LINE>Meadow was released this Friday|Le savez-vous ?<LINE>Meadow est sorti ce vendredi !
+Did you know:<LINE>You're bad at Arena|Le savez-vous ?<LINE>Vous semblez manquer d'expertise dans le mode de jeu d'Arène
+Did you know:<LINE>There's more "Did you know"s.|Le savez-vous ?<LINE>Il existe encore plus de «Le savez-vous ?»
+Did you know:<LINE>This is the only "Did you know".|Le savez-vous ?<LINE>>Il n'existe que ce «Le savez-vous ?»
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|Tu perdras ce round<LINE>Ton corps ne sera pas trouvé<LINE>Six pieds sous terre
+"<USERNAME>, youre gonna get us both killed"|«<USERNAME>, tu vas nous faire tuer !».
+"no srsly wheres my egg"|«ok srx ou est mon oeuf».
+"u dont need 2 be alone, bby."|«tu ne sera plus seul, bb»
+"sometimes i wake up with a friend ive never met b4"|«parfois je me lève avec un ami que je n'ai jamais jamais vu avant»
+"i luv u <3"|«Je t'M <3».
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|POURQUOI CE TRUC EST UNE VARIABLE ??<LINE>num2 EST LITTÉRALEMENT 0
+Don't Care<LINE>Nuh<LINE>Yuh|M'en fous<LINE>Nah<LINE>Ouais
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|Et soudain, le rectangle des résultats de session n'apparait plus, tu est softlock.<LINE>Hein ??<LINE>Je pensais qu'on avait réglé ce bug il y a un bail...
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|Avez-vous déjà envisagé à contribuer à<LINE>https://github.com/henpemaz/Rain-Meadow ?
+Be careful when selecting the Fartificer|Faite gafe quand vous sélectionnez Pettificer
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|Asy j'ai la vibe «potion d'among us à 3h du mat»<LINE>ajoute ce truc /lh
+Playtesters<LINE>Are<LINE>Replaceable|Les<LINE>playtesters<LINE>sont<LINE>substituable
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Y'a assez de description de Inv.<LINE>ÇA REMPLIT PAS MON ESTOMAC
+"hiiii!"|«Heyyyyy !».
+"i'm ded"|«Suis mort».
+bleh|bleh
+inv? like invalidunits?|inv ?, genre invalidunits ?
+
+// Scugslots
+Press and hold something on screen to spin the slots / Hope you brought green|Maintenez le clique sur un élement du menu pour faire tourner les fentes / Espèrons que t'as amené du cash
+One, two three of a kind / Somewhere on this page you will find|Un, deux, trois de ces choses / Quelque part sur cette page vous trouverez
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|Une blague démarrée sur Discord / Fauchant tous les joueurs, que personne ne peut payer
+SCUGSLOTS|CHAT-ROULETTE
+LET'S ROLL!|FAIT ROULER TA FORTUNE
+Oops, better luck next time!|Mince, peut-être la prochaine est gagnante !
+Try your luck again!|Réessaye encore !
+99% of gamblers quit before they win big|99% des joueurs arrête avant de gagner gros
+So Close! Keep trying!|Si proche ! Continue comme ça !
+Almost there!|Presque !!
+Congratulations! You have achieved the ultimate gamble skill!!!|Félicitation ! Vous avez atteint la compétence de pari ultime !
+Gahh?? Impossible?!|Hein ??? Impossible ?!
+You got a <SLUGCATNAME>!|Vous avez eu un <SLUGCATNAME> !
+
+// Chat Tutorial
+Press '|Appuyez sur «
+' to chat, press '|» pour chat, appuyez sur «
+' to toggle the chat log|» pour activer/déactiver le journal de chat
+
+// Player Joining / Leaving
+joined the game.|a rejoint la partie.
+tried to join the game but was kicked.|a essayé de rejoindre la partie, mais a été expulsé.
+left the game.|a quitté la partie.
+
+// Death Messages
+died.|est mort.
+was crushed by the rain.|a été écrasé par la pluit.
+fell into the abyss.|est tombé dans les abymes.
+drowned.|s'est noyé.
+hit the ground too hard.|s'est écrasé au sol.
+was killed through unknown means.|est mort d'une source incconue.
+tried to swim in burning liquid.|a essayé de nager dans de l'eau brulante.
+spontaneously combusted.|a été victime d'une combustion spontanée.
+froze to death.|est mort hypothermie.
+was swallowed by the grass.|s'est fait dévoré par l'herbe.
+was swallowed by the walls.|s'est fait dévoré par les murs.
+was electrocuted.|s'est fait électrocuté
+licked the power.|a découvert que la langue est un très bon conducteur.
+was consumed by the swarm.|a été comsumé par l'essaim.
+was electrocuted in the water.|s'est fait électrocuté dans l'eau.
+was obliterated by the sandstorm.|a été anéanti par la tempête de sable.
+died from poison.|est mort empoisonné.
+was struck by lightning.|s'est pris la fureur de la foudre.
+was consumed by locusts.|s'est fait dévoré par les criquets.
+swam with the ripples.|s'est fait emporter par les murmures d'un autre monde.
+experienced the force of fresh fruit.|a fait l'experience du punch un fruit bien frais.
+was burnt to a crisp.|a été carbonisé.
+was taken into the abyss by|a été emporté dans les abymes par
+was drowned by|s'est fait noyé par
+was slain by|s'est fait tué par
+was ascended by|a été transcendé de force par
+was zapped by a|a été électrocuté par un
+was ambushed by a|a été pris en embuscade par un
+was taken by a|s'est fait emporté par un
+was slain by a|s'est fait tué par un
+
+// creature names for death messages
+Pink Lizard|Lézard Rose
+Green Lizard|Lézard Vert
+Blue Lizard|Lézard Bleu
+Yellow Lizard|Lézard Jaune
+White Lizard|Lézard Blanc
+Red Lizard|Lézard Rouge
+Black Lizard|Lézard Noir
+Salamander|Salamandre
+Cyan Lizard|Lézard Cyan
+Leech|Sangsue
+Sea Leech|Sangsue des mers
+Snail|Escargo
+Vulture|Vautour
+Garbage Worm|Ver Des Ordures
+Lantern Mouse|Souris-Lanterne
+Cicada A|Cigalamard Blanc
+Cicada B|Cigalamard Noir
+Jet Fish|Poissonvif
+Big Eel|Léviathan
+Deer|Cerf de Pluie
+Tube Worm|Vers à Grappin
+Daddy Long Legs|Père Pholcidae
+Brother Long Legs|Frère Pholcidae
+Tentacle Plant|Goémonstre
+Pole Mimic|Plante Poteau
+Miros Bird|Oiseaux de Miró
+Temple Guard|Guardien
+Centipede|Mille-patte
+Red Centipede|Mille-patte Rouge
+Scavenger|Farfouilleurs
+Centiwing|Mille-ailes
+Small Centipede|Petit Mille-patte
+Overseer|Superviseur
+Vulture Grub|Larve de Vautour
+Big Spider|Grosse Araignée
+Spitter Spider|Araignée Éclabousseuse
+Egg Bug|Insecte Ovoïde
+Small Needle|Bébé Vermimouche
+Big Needle|Vermimouche
+Drop Bug|Perce-oreille
+King Vulture|Roi Vautour
+Hazer|Calamar à Fumée
+Miros Vulture|Vautour de Miró
+Caramel Lizard|Lézard Caramel
+Eel|Lézard Anguille
+Strawberry|Lézard Fraise
+Mother Spider|Mère-araignée
+Terror Long Legs|Mère Pholcidae
+Aquapede|Mille-rame
+Stowaway Bug|Parasite
+Elite Scavenger|Farfouilleur d'Élite
+Inspector|Inspecteur
+Yeek|Croâque
+Big Jellyfish|Méduse Géante
+Jungle Leech|Sangsue de la Jungle
+Hell Bug|Insecte explosif
+King Scavenger|Chef des Farfouilleurs
+Slugpup|Chatton-limace
+Train Lizard|Lézard Train
+Barnacle|Balane
+DrillCrab|Crabe Foreur
+SandGrub|Larve des Sables
+BigSandGrub|Vers des Sables
+BigMoth|Phalène Géante
+SmallMoth|Petite Phalène
+Box Worm|Vers en Boîte
+Fire Sprite|Lutins de Feu
+Rattler|Secoueur d'Os
+SkyWhale|Baleine Céleste
+ScavengerTemplar|Templier Farfouilleur
+ScavengerDisciple|Disciple Farfouilleur
+Loach|Loche
+Rot Behemoth|Béhémoth en Putréfaction
+// went for a different name for Blizzard Lizard than the wiki, it sounds... abit better imo
+Blizzard Lizard|Lézard Tempestueux
+Basilisk Lizard|Lézard Basilic
+Indigo Lizard|Lézard Indigos
+Rat|Rat
+Frog|Grenouille
+Tardigrade|Tardigrade
+
+// Direct Connection Dialogue
+Direct Connection... |Conection directe... 
+Password:|Mot de passe:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|Adresse invalide, le format de l'adresse IP devrait être «xxx.xxx.xxx.xxx:port».
+This address is possibly not local to your current network.|Cette adresse n'ets peut-être pas une adresse locale dans votre réseau.
+If so, This is very unstable and will most likely NOT work|Dans le cas contraire, elle est très instable and ne fonctionnera sûrement pas
+Are you SURE you know what you're doing?|Êtes-vous SUR de ce que vous faite ?
+
+// LAN Matchmaking Manager
+LAN Lobby|Lobby en LAN
+Nobody|Personne
+Your network interface(s) are|Votre interface de réseau est
+<NAME> network interface is |L'interface de réseau de <NAME> est 
+You are the owner of the lobby.|Vous êtes le propriétaire du lobby.
+This player is the owner of the lobby.|Ce joueur est le propriétaire du lobby.
+Players can “Direct Connect” to this lobby through your interface(s).|Les joueurs peuveut se connecter directement à ce lobby grâce à votre(vos) interface(s) réseau.
+Players can “Direct Connect” to this lobby through their interface(s).|Les joueurs peuveut se connecter directement à ce lobby grâce à leur(s) interface(s) réseau.
+You cannot use this feature here.|Vous ne pouvez pas utiliser cette fonctionnalité ici
+
+// Mod Applier
+Error loading mods!|Erreur pendant le chargement des mods !
+A restart is required to finish applying the mod changes.|Un redémarrage est nécessaire pour appliquer les changements des mods.
+Restarting now...|Redémarrage...
+Mod Mismatch!|Incompatibilité de mods !
+Mods that have to be enabled: |Mods qui doivent être activé : 
+Mods that have to be disabled: |Mods qui doivent être désactivé : 
+Mods that have to be installed: |Mods qui doivent être installé : 
+Apply these changes now?|Appliquer ces changements ?
+Warning: Differing Mod Load Orders!|Attention : l'ordre de chargement des mods est différent !
+This may cause unstable play.|Cela peut causer des instabilités en cours de partie.
+Reorder your mods now?|Voulez-vous réordonner les mods ?
+Cannot join due to missing DLC!|Vous ne pouvez pas rejoindre car un DLC est manquant !
+Missing DLC Mods that have to be enabled: |Mods DLC qui doivent être activé : 
+
+// Remix Options
+Note: These inputs are not used in Meadow mode|Note : Ces entrées ne sont pas utilisées dans le mode de jeu Meadow.
+Show usernames|Montrer les pseudos
+Username Toggle|Activer/Déactiver l'affichage des pseudos
+Replace holding with toggling|Basculer de mode au lieu de maintenir
+Key used for toggling spectator mode|Touche pour activer le mode spectateur
+Stop Inputs While Spectating|Bloquer les touches pendant le mode spectateur
+Pointing Key|Touche pour pointer
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Ces fichiers controlent les mods permis pour les autres clients.<LINE>Instruction ci-dedans.
+Edit High-Impact Mods|Éditer les mods à haute importance
+Edit Banned Mods|Éditer les mods bannis
+Chat Log Toggle|Activer/Déactiver le Journal de Chat
+Chat Talk Button|Bouton pour ouvrir le chat
+Chat Background Opacity|Opacité du fond du chat
+Show Ping|Montrez le ping
+Playtesting Gift|Câdeau de playtest
+Chat Log On/Off|On/Off Journal de Chat
+Introroll|Scène d'introduction
+Vanilla|Vanilla
+Downpour|Downpour
+Downpour DLC is not activated, vanilla intro will be used instead|Le DLC Downpour n'est pas activé, l'intro vanilla sera utilisé à la place.
+Watcher DLC is not activated, vanilla intro will be used instead|Le DLC Guetteur n'est pas activé, l'intro vanilla sera utilisé à la place.
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
+Disable Pause Menu Animation|Desactivar animación del menú de pausa
+If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
+Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos.
+Just make sure not to ruin the fun for yourself...|Sólo asegúrate de no arruinarte la diversión...
+Emote and skin unlocks will affect the currently selected character|Los desbloqueables de abajo afectarán al personaje seleccionado actualmente.
+Unlock Emote|Desbl. emote
+Unlock Skin|Desbl. aspecto
+Unlock Character|Desbl. personaje
+Reset all progression|Reiniciar todo el progreso
+Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|Los ajustes de las partidas han sido reubicados al menú de la sala de arena.<LINE>Las opciones restantes solo activan easter eggs.
+The following option may contain spoilers for Saint's campaign.|La opción a continuación puede contener spoilers de la campaña del Santo.
+OKIE DOKIE|VAMOS AL LÍO
+Slugpup: Rubicon background in select menu|Cría de Gato-babosa: Fondo de Rubicón en el menú de selección
+Ready to shelter/gate|Preparado para hibernar o pasar de región
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los íconos siempre aparecerán en pantalla en una puerta o refugio.
+[Experimental Features]|[Características experimentales]
+WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden causar corrupciones de datos, realiza una copia de seguridad de tus partidas.
+Custom Story Slugcat:|Campañas personalizadas:
+If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gato-babosa que sean inestables.
+Steal items from other players in Story mode|Robar objetos de otros jugadores en el modo historia
+LAN|LAN
+Username|Nombre de usuario
+UDP timeout (ms)|Tiempo de espera de UDP (ms)
+UDP heartbeat (ms)|Chequeo de vida UDP (ms)
+
+// Credits
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow es un modo de juego inspirado en el videojuego del mismo nombre de Might & Delight. Es un juego apenas jugable y con errores, que a uno le puede encantar. ¿Suena familiar?
+This mod and all its features were brought to you by really awesome people from the community.|Este mod y todas sus características fueron traídas a ti por personas muy estupendas de la comunidad.
+Lead Developer|Desarrollador principal
+Lead Artist|Artista principal
+Lead Audio Designer|Diseñador de audio principal
+Programming, engine|Programación, motor
+Programming, sound|Programación, sonido
+UI Design|Diseño de IU
+Programming, menus|Programación, menús
+Programming, arena|Programación, arena
+Programming, story|Programación, historia
+Programming, modsync|Programación, sincronización de mods
+Programming, story, arena|Programación, historia, arena
+Programming, UI, chat|Programación, IU, chat
+Illustration|Ilustración
+Programming, UI, menus|Programación, IU, menús
+Programming, UI, story|Programación, IU, historia
+Programming, UI, LAN|Programación, IU, LAN
+Thank you playtesters from the Rain Meadow discord as well.|Gracias también a los playtesters del discord de Rain Meadow.
+
+// misc
+Players|Jugadores
+CONFIRM|CONFIRMAR
+Leaving Lobby|Saliendo de la sala
+You were removed from the previous online game|Has sido echado de la partida en línea anterior.
+This player does not have a profile.|Este jugador no tiene un perfil.
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente.<LINE>Algunas características de Rain Meadow han sido desactivadas.
+Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
+Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Por favor, usa un mod externo para acceder a la campaña de Inv.
