@@ -220,23 +220,30 @@ namespace RainMeadow
         // Unloads a room left behind by the spectator camera if no local players remain in it.
         private void AbstractizeIfSafe(AbstractRoom oldRoom)
         {
-            if (oldRoom == null || oldRoom.realizedRoom == null) return;
+            if (oldRoom?.realizedRoom == null) return;
+            if (camera.room?.abstractRoom == oldRoom) return; 
+            if (spectatee?.Room == oldRoom) return;
 
-            bool keepLoaded = false;
+            if (!RoomSession.map.TryGetValue(oldRoom, out var rs)) return;
+            if (rs.isPending || !rs.isAvailable) return;
+            if (rs.participants.Any(p => !p.isMe)) return; 
+
             for (int i = 0; i < game.Players.Count; i++)
-            {
-                if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal())
-                {
-                    keepLoaded = true;
-                    break;
-                }
-            }
+                if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal()) return;
 
-            if (!keepLoaded)
+            // don't yank a room out from under an entity that's mid-transfer
+            foreach (var ent in oldRoom.entities.Concat(oldRoom.entitiesInDens))
+                if (ent is AbstractPhysicalObject apo
+                    && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
+                    && (oe.isPending || oe.isMine))
+                    return;
+
+            OnlineManager.RunDeferred(() =>
             {
-                RainMeadow.Debug($"Spectator leaving room {oldRoom.name}, abstractizing it to prevent leaks.");
-                oldRoom.Abstractize();
-            }
+                if (oldRoom.realizedRoom != null && camera.room?.abstractRoom != oldRoom)
+                    oldRoom.Abstractize();
+            });
         }
+
     }
 }
