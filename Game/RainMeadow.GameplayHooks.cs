@@ -89,8 +89,9 @@ namespace RainMeadow
                     if (!cs.isThinking) cs.isThinking = true;
                     self.LookAtPoint(self.player.mainBodyChunk.pos + Vector2.up * 25f, 100);
                     self.player.Blink(10);
-                    if (self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame 
+                    if ((self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame 
                         || storyGame.saveState.deathPersistentSaveData.theMark)
+                        && self.player.abstractCreature.world.game.ActiveRippleLayer == self.player.abstractCreature.rippleLayer)
                     {
                         self.markAlpha = Custom.LerpAndTick(
                             self.lastMarkAlpha, 
