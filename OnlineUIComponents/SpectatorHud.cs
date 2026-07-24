@@ -221,7 +221,7 @@ namespace RainMeadow
         private void AbstractizeIfSafe(AbstractRoom oldRoom)
         {
             if (oldRoom?.realizedRoom == null) return;
-            if (camera.room?.abstractRoom == oldRoom) return;   // camera hasn't actually left yet
+            if (camera.room?.abstractRoom == oldRoom) return; 
             if (spectatee?.Room == oldRoom) return;
 
             if (!RoomSession.map.TryGetValue(oldRoom, out var rs)) return;
