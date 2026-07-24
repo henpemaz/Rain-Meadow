@@ -41,10 +41,44 @@ namespace RainMeadow
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
             On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update;
+            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
+        private void StowawayBug_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            var skip = c.DefineLabel();
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(PhysicalObject).GetMethod("get_graphicsModule")),
+                x => x.MatchBrfalse(out _),
+
+                x => x.MatchCall(typeof(UnityEngine.Random).GetMethod("get_value")),
+                x => x.MatchLdcR4(.02f),
+                x => x.MatchClt(),
+                x => x.MatchLdloc(2),
+                x => x.MatchOr(),
+                x => x.MatchBr(out _),
+
+                x => x.MatchLdcI4(0),
+
+                x => x.MatchLdloc(1),
+                x => x.MatchAnd(),                
+                x => x.MatchBrfalse(out skip)
+                );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((MoreSlugcats.StowawayBug stowaway) => {
+                if (OnlineManager.lobby is null) return false;
+                if(stowaway.IsLocal()) return false;
+                return true;
+            });
+            c.Emit(OpCodes.Brtrue, skip);           
+        }
+        
         private void StowawayBugAI_Update(On.MoreSlugcats.StowawayBugAI.orig_Update orig, MoreSlugcats.StowawayBugAI self)
         {
             var behavior = self.behavior;
@@ -53,7 +87,7 @@ namespace RainMeadow
             {
                 self.behavior = behavior;
             }
-        }                      
+        }
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try
@@ -575,7 +609,7 @@ namespace RainMeadow
                 oldWorldSession.NotNeeded(); // done? let go
             }
 
-            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));            
+            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
             return;
         }
         // world transition at gatesactiveEntities

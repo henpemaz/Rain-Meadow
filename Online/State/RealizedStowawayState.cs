@@ -16,10 +16,7 @@ namespace RainMeadow
 
         [OnlineField]
         bool mawOpen;
-        //[OnlineFieldHalf]
-        //Vector2 originalPos;
-        //[OnlineFieldHalf]
-        //Vector2 placedDirection;
+       
         [OnlineFieldHalf]
         Vector2 currentDirection;
         [OnlineFieldHalf]
@@ -30,8 +27,15 @@ namespace RainMeadow
         int spitCooldown;
         [OnlineField(group = "counters")]
         int huntDelay;
-       [OnlineField]
-       byte behavior;       
+        [OnlineField]
+        byte behavior;
+
+        [OnlineField]
+        float digestPrey;
+
+        [OnlineField]
+        float biting;
+
         public RealizedStowawayState() { }
 
         public RealizedStowawayState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -48,6 +52,13 @@ namespace RainMeadow
             sleepScale = stowaway.sleepScale;
             spitCooldown = stowaway.spitCooldown;
             huntDelay = stowaway.huntDelay;
+
+            if (stowaway.graphicsModule is not null)
+            {
+                StowawayBugGraphics stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
+                biting = stowawayGraphics.biting;
+                digestPrey = stowawayGraphics.digestPrey;
+            }
 
             heads = new(stowaway.heads.Select((t, i) => new StowawayTentacleState(t, i)).ToList());
         }
@@ -66,15 +77,40 @@ namespace RainMeadow
                 5 => StowawayBugAI.Behavior.Sleeping
             };
 
-            stowaway.headFired = headsfired;         
-            stowaway.mawOpen = mawOpen;
-            // stowaway.originalPos = originalPos;
-            // stowaway.placedDirection = placedDirection;
+            stowaway.headFired = headsfired;
+            stowaway.mawOpen = mawOpen;            
             stowaway.currentDirection = currentDirection;
             stowaway.headCooldown = headCooldown;
             stowaway.sleepScale = sleepScale;
             stowaway.spitCooldown = spitCooldown;
             stowaway.huntDelay = huntDelay;
+
+            if (stowaway.graphicsModule is not null)
+            {
+                StowawayBugGraphics stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
+
+                if (stowawayGraphics.biting < .01f && stowawayGraphics.biting < biting)
+                {                 
+                    for (int n = UnityEngine.Random.Range(1, 5); n > 0; n--)
+                    {
+                        stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, RWCustom.Custom.DirVec(stowaway.firstChunk.pos, stowaway.bodyChunks[1].pos) * 10f + RWCustom.Custom.RNV(), true));
+                    }
+                    stowaway.room.PlaySound(SoundID.Lizard_Jaws_Shut_Miss_Creature, stowaway.firstChunk);
+                }
+                stowawayGraphics.biting = biting;
+
+                if (stowawayGraphics.digestPrey < 0.01f && stowawayGraphics.digestPrey < digestPrey)
+                {            
+                    for (int i = UnityEngine.Random.Range(4, 8); i > 0; i--)
+                    {
+                        stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, default(UnityEngine.Vector2) + RWCustom.Custom.RNV(), true));
+                    }                    
+                    stowaway.LoseAllGrasps();                    
+                    stowaway.room.PlaySound(SoundID.Bro_Digestion_Init, stowaway.firstChunk);
+                    stowaway.room.PlaySound(SoundID.Lizard_Jaws_Grab_Player, stowaway.firstChunk);
+                }
+                stowawayGraphics.digestPrey = digestPrey;
+            }
 
             for (int i = 0; i < stowaway.heads.Length; i++)
             {
@@ -106,6 +142,9 @@ namespace RainMeadow
         Vector2? grabdest;
         [OnlineFieldHalf]
         float idealLength;
+
+        int chunksToSync = 3;
+
         public StowawayTentacleState() { }
 
         public StowawayTentacleState(Tentacle tentacle, int index)
@@ -116,15 +155,15 @@ namespace RainMeadow
             fired = owner.headFired[index];
             hcooldown = owner.headCooldown[index];
             scooldown = owner.spitCooldown;
-            
-            pos = new Vector2[3];
-            vel = new Vector2[3];
-            for (int i = 0; i < 3; i++)
+
+            pos = new Vector2[chunksToSync];
+            vel = new Vector2[chunksToSync];
+            for (int i = 0; i < chunksToSync; i++)
             {
                 pos[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos;
                 vel[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel;
             }
-            
+
             idealLength = tentacle.idealLength;
             grabdest = tentacle.floatGrabDest;
         }
@@ -138,13 +177,13 @@ namespace RainMeadow
             owner.headFired[index] = fired;
             owner.headCooldown[index] = hcooldown;
             owner.spitCooldown = scooldown;
-            
-            for (int i = 0; i < 3; i++)
+
+            for (int i = 0; i < chunksToSync; i++)
             {
                 tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos = pos[i];
                 tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel = vel[i];
             }
-            
+
             tentacle.idealLength = idealLength;
             tentacle.floatGrabDest = grabdest;
 
