@@ -203,12 +203,15 @@ namespace RainMeadow
         // Get our own shader into the mix, so we can color the Amoeba
         private void VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba(On.VoidSpawnGraphics.orig_UpdateGlowSpriteColor orig, VoidSpawnGraphics self, RoomCamera.SpriteLeaser sLeaser)
         {
-            if (isArenaMode(out _) 
+            if (isArenaMode(out var arena) 
                 && self.spawn.rippleSpawn
-                && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer
-                && ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.slugcatColor is Color bodyColor) 
+                && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer) 
             {
-                // Debug($"Changing color of ripple {self.spawn} from player {onlinePlayer} to {bodyColor}");
+                Color bodyColor = (TeamBattleMode.isTeamBattleMode(arena, out var tb) 
+                    && OnlineManager.lobby.clientSettings[onlinePlayer]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
+                        ? tb.teamColors[tcs.team]
+                        : ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.slugcatColor) ?? RainWorld.RippleColor;
+
                 sLeaser.sprites[self.GlowSprite].color = bodyColor;
                 sLeaser.sprites[self.BodyMeshSprite].color = bodyColor;
                 if (self.hasOwnGoldEffect)
