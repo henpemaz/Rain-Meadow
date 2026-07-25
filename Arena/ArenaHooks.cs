@@ -207,10 +207,7 @@ namespace RainMeadow
                 && self.spawn.rippleSpawn
                 && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer) 
             {
-                Color bodyColor = (TeamBattleMode.isTeamBattleMode(arena, out var tb) 
-                    && OnlineManager.lobby.clientSettings[onlinePlayer]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
-                        ? tb.teamColors[tcs.team]
-                        : ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.slugcatColor) ?? RainWorld.RippleColor;
+                Color bodyColor = ArenaHelpers.GetAmoebaColor(onlinePlayer);
 
                 sLeaser.sprites[self.GlowSprite].color = bodyColor;
                 sLeaser.sprites[self.BodyMeshSprite].color = bodyColor;
