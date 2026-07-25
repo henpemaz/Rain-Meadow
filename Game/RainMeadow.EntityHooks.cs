@@ -43,14 +43,14 @@ namespace RainMeadow
             On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
             On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update; // clients will not change behavior on their own
-            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update; // clients will not bite on their own         
+            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update; // clients will not bite on their own
             IL.MoreSlugcats.StowawayBug.bodySetup += StowawayBug_bodySetup; // calling homepos instead of bodyChunk.pos because bodyChunk.pos will be different for clients due to sync
             
-            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);            
+            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
         private void StowawayBug_bodySetup(ILContext il)
-        {            
+        {
             var c = new ILCursor(il);
 
             Func<Instruction, bool>[] predicates = {
@@ -123,7 +123,7 @@ namespace RainMeadow
                 x => x.MatchLdcI4(0),
 
                 x => x.MatchLdloc(1),
-                x => x.MatchAnd(),                
+                x => x.MatchAnd(),
                 x => x.MatchBrfalse(out skip)
                 );
 
@@ -147,11 +147,11 @@ namespace RainMeadow
         }
 
         private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
-        {         
+        {
             orig(self);
             if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
             {
-                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
             }
         }
 

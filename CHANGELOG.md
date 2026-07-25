@@ -3,6 +3,7 @@
 ## Engine
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
+- Improved Stowaway sync
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
 - Improved the Russian translation

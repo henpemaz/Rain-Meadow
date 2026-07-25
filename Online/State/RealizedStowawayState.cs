@@ -13,7 +13,7 @@ namespace RainMeadow
         [OnlineField]
         bool mawOpen;
         [OnlineField]
-        bool activeThisCycle; // check if its needed
+        bool activeThisCycle;
         [OnlineField]
         bool[] headsfired;
                
@@ -30,7 +30,7 @@ namespace RainMeadow
         [OnlineFieldHalf]
         float biting; // biting
         [OnlineFieldHalf]
-        float headLength; // needed cause can somethimes be dife=rent, and when diferent this makes heads to be buggy
+        float headLength; // needed cause can somethimes be diferent, and when diferent this makes heads to be buggy
         [OnlineFieldHalf(group = "counters")]
         float[] headCooldown;
         
