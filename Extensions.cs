@@ -102,9 +102,6 @@ namespace RainMeadow
                 }
             }
         }
-        /// ChangeRooms dereferences world.GetAbstractRoom for both the old and the new coordinate, and
-        /// either resolves to null once a coordinate names a room outside this world - which is routine
-        /// when a state arrives from a player who has already warped to another region.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CanChangeRoomsTo(this AbstractPhysicalObject apo, WorldCoordinate newCoord)
         {
