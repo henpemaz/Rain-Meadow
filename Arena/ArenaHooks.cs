@@ -180,8 +180,8 @@ namespace RainMeadow
             On.Room.Loaded += Room_Loaded_AddRippleCreatureTracker;
             IL.VoidSpawn.Update += VoidSpawn_Update_DontAutoDespawnIfArena;
             IL.Player.WatcherUpdate += Player_WatcherUpdate_DampenCamoEffects;
-            IL.Player.SpawnRippleRing += Player_DampenCamoEffects;
-            IL.Player.TransitionRippleUpdate += Player_DampenCamoEffects;
+            IL.Player.SpawnRippleRing += Player_SpawnRippleRing_DampenCamoEffects;
+            IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate_DampenCamoEffects;
             On.Creature.Update += Creature_Update_GetAttackedByAmoeba;
 
             DrownHooks();
@@ -205,7 +205,7 @@ namespace RainMeadow
             }
         }
 
-        private void Player_DampenCamoEffects(ILContext il)
+        private void DampenCamoEffects(ILContext il, bool includeRippleMax = false)
         {
             try
             {
@@ -215,7 +215,7 @@ namespace RainMeadow
                     x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod())))
                 {
                     // Set the level artificially to 0.5 when in arena, no matter the real level... unless it's max ripple.
-                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && orig < 5 ? 0.5f : orig);
+                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && (includeRippleMax || orig < 5) ? 0.5f : orig);
                 }
             }
             catch (Exception e)
@@ -223,6 +223,8 @@ namespace RainMeadow
                 RainMeadow.Error("Error while hooking ! " + e);
             }
         }
+        private void Player_SpawnRippleRing_DampenCamoEffects(ILContext il) => DampenCamoEffects(il, true);
+        private void Player_TransitionRippleUpdate_DampenCamoEffects(ILContext il) => DampenCamoEffects(il, false);
 
         private void Player_WatcherUpdate_DampenCamoEffects(ILContext il)
         {
@@ -240,7 +242,7 @@ namespace RainMeadow
                 {
                     // If it's areana mode, don't spawn 4373 bajilion effects
                     cursor.Emit(OpCodes.Ldarg_0);
-                    cursor.EmitDelegate((Player player) => isArenaMode(out _) && player.rippleLevel < 5);
+                    cursor.EmitDelegate((Player player) => isArenaMode(out _)); // && player.rippleLevel < 5
                     cursor.Emit(OpCodes.Brtrue, label);
                 }
                 else
