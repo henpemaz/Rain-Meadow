@@ -10,10 +10,6 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.overworld != null && OnlineManager.lobby.overworld.isAvailable)
             {
-                // NotNeeded first: it's the only thing that cascades releases down to the world and
-                // room sessions, and it skips that cascade unless we're still active. Deactivate
-                // clears isActive and empties subresources, so doing it first left everything to be
-                // dropped locally without ever telling the supervisor we'd let go.
                 OnlineManager.lobby.overworld.NotNeeded();
                 OnlineManager.lobby.overworld.Deactivate();
             }
