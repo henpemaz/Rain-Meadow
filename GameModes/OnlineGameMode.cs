@@ -288,17 +288,66 @@ namespace RainMeadow
             return true;
         }
 
+        // OverWorld.region calls Region.LoadAllRegions. 
+        // Vanilla == 11
+        // MSC == 22
+        // Watcher == 52
+        // We do not need to store that much crap at once for Watcher in our OverworldSession resource, it breaks WorldState zipping
         public virtual void EstablishWorlds(OverworldSession overworldSession)
         {
+            var reachable = ReachableRegions(overworldSession);
+            var skipped = new List<string>();
             foreach (Region region in overworldSession.overWorld.regions)
             {
-                overworldSession.EstablishWorld(region.name, checked((ushort)region.regionNumber));
+                if (reachable == null || reachable.Contains(region.name) || reachable.Any(r => Region.EquivalentRegion(r, region.name)))
+                {
+                    overworldSession.EstablishWorld(region.name, checked((ushort)region.regionNumber));
+                }
+                else
+                {
+                    skipped.Add(region.name);
+                }
             }
+            if (skipped.Count > 0) RainMeadow.Debug($"Established {overworldSession.worldSessions.Count}/{overworldSession.overWorld.regions.Length} regions, skipped: {string.Join(" ", skipped)}");
+        }
+
+        /// <summary>
+        /// The regions this session is able to load, or null to establish all
+        /// </summary>
+        protected virtual HashSet<string>? ReachableRegions(OverworldSession overworldSession)
+        {
+            return RegionsReachableBy(LoadWorldAs(overworldSession.overWorld.game));
+        }
+
+        protected static HashSet<string>? RegionsReachableBy(SlugcatStats.Name? slugcat)
+        {
+            if (slugcat == null) return null;
+            // rift warps can drop the Watcher into any region in the file
+            if (slugcat == Watcher.WatcherEnums.SlugcatStatsName.Watcher) return null;
+
+            var reachable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                reachable.UnionWith(SlugcatStats.SlugcatStoryRegions(slugcat));
+                reachable.UnionWith(SlugcatStats.SlugcatOptionalRegions(slugcat));
+            }
+            catch (Exception e) // a slugcat from another mod, who knows
+            {
+                RainMeadow.Error($"Couldn't determine reachable regions for {slugcat}, establishing all of them: " + e);
+                return null;
+            }
+
+
+            return reachable.Count > 0 ? reachable : null;
         }
 
         public virtual WorldSession LinkWorld(World world)
         {
-            OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession);
+            if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession))
+            {
+                // log error
+                RainMeadow.Error($"No WorldSession established for region {world.region.name}, it will not be synced");
+            }
             return worldSession;
         }
 

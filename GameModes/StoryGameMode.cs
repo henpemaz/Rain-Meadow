@@ -176,6 +176,14 @@ namespace RainMeadow
             return game?.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
         }
 
+        protected override HashSet<string>? ReachableRegions(OverworldSession overworldSession)
+        {
+            var reachable = base.ReachableRegions(overworldSession); // LoadWorldAs == currentCampaign
+            // whatever region the lobby is currently sitting in
+            if (reachable != null && region != null) reachable.Add(region);
+            return reachable;
+        }
+
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
             if (OnlineManager.mePlayer.isActuallySpectating)
@@ -299,7 +307,6 @@ namespace RainMeadow
 
             if (MainAvatar is null) throw new InvalidProgrammerException("MainAvatar is null somehow");
             return MainAvatar;
-            return null;
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)

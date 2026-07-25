@@ -22,7 +22,7 @@ namespace RainMeadow
         public override List<string> nonGameplayRemixSettings
         {
             get => null;
-            set { }  
+            set { }
         }
 
 
@@ -137,7 +137,7 @@ namespace RainMeadow
 
         public override void PlayerLeftLobby(OnlinePlayer player)
         {
-            base.PlayerLeftLobby(player); 
+            base.PlayerLeftLobby(player);
             if (lobby.isOwner)
             {
                 var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
@@ -154,24 +154,20 @@ namespace RainMeadow
                 RainMeadow.Debug("Setting up region data");
                 MeadowRegionData regionData = overworld.GetData<MeadowRegionData>();
 
-                var totalRooms = 0;
-                var totalRegions = overworld.overWorld.regions.Length;
+                // Little update to accomodate which regions have actually been added to the Overworld worldSessions
+                var established = overworld.overWorld.regions.Where(r => overworld.worldSessions.ContainsKey(r.name)).ToArray();
+                var totalRegions = established.Length;
+                var totalRooms = established.Sum(r => r.numberOfRooms);
 
-                regionData.regionSpawnWeights = new float[totalRegions];
+                regionData.regionSpawnWeights = new float[overworld.overWorld.regions.Length];
                 if (overworld.isOwner)
                 {
                     RainMeadow.Debug($"Goal setup for {totalRegions} regions");
-                    regionData.regionRedTokensGoal = new ushort[totalRegions];
-                    regionData.regionBlueTokensGoal = new ushort[totalRegions];
-                    regionData.regionGoldTokensGoal = new ushort[totalRegions];
-                    regionData.regionGhostsGoal = new ushort[totalRegions];
+                    regionData.regionRedTokensGoal = new ushort[overworld.overWorld.regions.Length];
+                    regionData.regionBlueTokensGoal = new ushort[overworld.overWorld.regions.Length];
+                    regionData.regionGoldTokensGoal = new ushort[overworld.overWorld.regions.Length];
+                    regionData.regionGhostsGoal = new ushort[overworld.overWorld.regions.Length];
                 } // otherwise the above is initialized on state receive
-
-                for (int i = 0; i < totalRegions; i++)
-                {
-                    var region = overworld.overWorld.regions[i];
-                    totalRooms += region.numberOfRooms;
-                }
 
                 // around 60 per region, or 1 per room
                 regionData.redTokensGoal = (int)(16 * totalRegions + 0.4f * totalRooms);
@@ -181,20 +177,19 @@ namespace RainMeadow
                 // around 7 per region
                 regionData.ghostsGoal = (int)(5 * totalRegions + 0.05f * totalRooms);
 
-                for (int i = 0; i < totalRegions; i++)
+                foreach (var region in established)
                 {
-                    var region = overworld.overWorld.regions[i];
                     // weighted half by region plus half by relative number of rooms
                     var spawnWeight = 0.5f / totalRegions + 0.5f * region.numberOfRooms / (float)totalRooms;
 
-                    regionData.regionSpawnWeights[i] = spawnWeight;
+                    regionData.regionSpawnWeights[region.regionNumber] = spawnWeight;
                     if (overworld.isOwner)
                     {
                         // default starting values
-                        regionData.regionRedTokensGoal[i] = (ushort)(regionData.redTokensGoal * spawnWeight);
-                        regionData.regionBlueTokensGoal[i] = (ushort)(regionData.blueTokensGoal * spawnWeight);
-                        regionData.regionGoldTokensGoal[i] = (ushort)(regionData.goldTokensGoal * spawnWeight);
-                        regionData.regionGhostsGoal[i] = (ushort)(regionData.ghostsGoal * spawnWeight);
+                        regionData.regionRedTokensGoal[region.regionNumber] = (ushort)(regionData.redTokensGoal * spawnWeight);
+                        regionData.regionBlueTokensGoal[region.regionNumber] = (ushort)(regionData.blueTokensGoal * spawnWeight);
+                        regionData.regionGoldTokensGoal[region.regionNumber] = (ushort)(regionData.goldTokensGoal * spawnWeight);
+                        regionData.regionGhostsGoal[region.regionNumber] = (ushort)(regionData.ghostsGoal * spawnWeight);
                     } // otherwise received from owner
                 }
             }
@@ -331,7 +326,12 @@ namespace RainMeadow
                 weight += weights[i];
                 if (weight > rnd) return i;
             }
-            return weights.Length - 1; // exact 1 or fpe
+            // walk back to the last entry that could actually have been picked
+            for (int i = weights.Length - 1; i >= 0; i--)
+            {
+                if (weights[i] > 0f) return i;
+            }
+            return weights.Length - 1;
         }
 
         [RPCMethod]
@@ -339,16 +339,28 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.overworld.isOwner && OnlineManager.lobby.overworld.isActive)
             {
-                RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.overworld.subresources[region].Id()} {type} from {evt.from}");
+                var consumedIn = OnlineManager.lobby.overworld.SubresourceFromShortId(region);
+                if (consumedIn == null)
+                {
+                    RainMeadow.Error($"Item consumed in region {region}, which we never established");
+                    return;
+                }
+                RainMeadow.Debug($"Item consumed: {consumedIn.Id()} {type} from {evt.from}");
                 var lobbyData = OnlineManager.lobby.overworld.GetData<MeadowRegionData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
+                var spawnIn = OnlineManager.lobby.overworld.SubresourceFromShortId((ushort)newRegion);
+                if (spawnIn == null)
+                {
+                    RainMeadow.Error($"Picked region {newRegion} to respawn in, which isn't established");
+                    return;
+                }
                 if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
                 {
                     if (lobbyData.regionRedTokensGoal[region] > 0)
                     {
                         lobbyData.regionRedTokensGoal[region] -= 1;
                         lobbyData.regionRedTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        spawnIn.owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
@@ -357,7 +369,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionBlueTokensGoal[region] -= 1;
                         lobbyData.regionBlueTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        spawnIn.owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
@@ -366,7 +378,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionGoldTokensGoal[region] -= 1;
                         lobbyData.regionGoldTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        spawnIn.owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
@@ -375,7 +387,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionGhostsGoal[region] -= 1;
                         lobbyData.regionGhostsGoal[newRegion] += 1;
-                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        spawnIn.owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
             }
@@ -386,8 +398,13 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.overworld.isActive)
             {
-                RainMeadow.Debug($"Item respawning: {OnlineManager.lobby.overworld.subresources[region].Id()} {type} from {evt.from}");
-                var ws = OnlineManager.lobby.overworld.subresources[region] as WorldSession;
+                var ws = OnlineManager.lobby.overworld.SubresourceFromShortId(region) as WorldSession;
+                if (ws == null)
+                {
+                    RainMeadow.Error($"Asked to respawn an item in region {region}, which isn't established");
+                    return;
+                }
+                RainMeadow.Debug($"Item respawning: {ws.Id()} {type} from {evt.from}");
                 if (ws.isActive && ws.isOwner)
                 {
                     var regionData = ws.GetData<MeadowWorldData>();
