@@ -1370,6 +1370,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.aliveScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.allowJoiningMidRound)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaControl)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.fullInvisInRippleSpace)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaDuration)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.arenaSaintAscendanceTimer)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiExplosionCount)),

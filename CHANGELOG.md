@@ -44,20 +44,24 @@
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
 ### Watcher
+- Disabling Ripple Trail in online arena
 - Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
 - Amoeba is now going in the right layer when summoned
-- Disabling Ripple Trail in online arena
+- Summoned amoebas have idle behaviors now
+- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned amoebas can stun non-player creatures now
+- Amoeba won't slow down for dead players or friendlies
+- Distortion effect fades away on player's death
+- Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
 - Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
 - Watcher will always have while eyes in camo
-- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity. 
+- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
 - Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
 - Dev skin doesn't show in ripple space anymore
 - Hands or mud doesn't show in ripple space anymore
-- Amoeba won't slow down for dead players
-- Distortion effect fades away on player's death
-- Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
 - Watcher camo effect has been reduced for all ripple level
 - Player Tag now interacts well with ripple layer change
+- Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow

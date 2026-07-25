@@ -76,7 +76,7 @@ namespace RainMeadow.UI.Components
             }
             if (ModManager.Watcher)
             {
-                watcherSettingsTab = new(menu, this, new(0f, 50f));
+                watcherSettingsTab = new(menu, this, new(0f, 44f));
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
         }
@@ -299,14 +299,16 @@ namespace RainMeadow.UI.Components
         {
             public SimplerButton? backButton;
             public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel, amoebaLethalityFactorLabel;
+            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel, amoebaLethalityFactorLabel, fullInvisRippleSpaceLabel;
             public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox, amoebaLethalityFactorTextBox;
-            public OpCheckBox weaverWatcherCheckBox, voidMasterCheckbox, amoebaControlCheckbox;
+            public OpCheckBox weaverWatcherCheckBox, voidMasterCheckbox, amoebaControlCheckbox, fullInvisRippleSpaceCheckbox;
             public override string Name => "Watcher Settings";
             public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
             {
                 tabWrapper = new(menu, this);
-                Vector2 positioner = new(360, 380);
+                Vector2 positioner = new(360, 400);
+
+                // Watcher Camo duration
                 watcherCamoLimitTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value), new(positioner.x - 7.5f, positioner.y), 40)
                 {
                     alignment = FLabelAlignment.Center,
@@ -321,7 +323,7 @@ namespace RainMeadow.UI.Components
                 watcherCamoLimitLabel = new(menu, this, menu.Translate("Watcher Camo Duration:"), watcherCamoLimitTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherCamoLimitLabel.label.alignment = FLabelAlignment.Left;
 
-
+                // Watcher Ripple Level
                 watcherRippleLevelTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value), positioner - spacing + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
@@ -336,8 +338,24 @@ namespace RainMeadow.UI.Components
                 new PatchedUIelementWrapper(tabWrapper, watcherRippleLevelTextBox);
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
+                
 
-                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 2)
+                //Full Invisibility in Ripple Space
+                fullInvisRippleSpaceCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace.Value), positioner - spacing * 2);
+                fullInvisRippleSpaceCheckbox.OnChange += () =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.fullInvisInRippleSpace = fullInvisRippleSpaceCheckbox.GetValueBool();
+                    fullInvisRippleSpaceCheckbox.description = fullInvisRippleSpaceCheckbox.GetValueBool() ? menu.Translate("Watcher will be fully invisible to everyone when in ripple space") : menu.Translate("Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.");
+                };
+                new PatchedUIelementWrapper(tabWrapper, fullInvisRippleSpaceCheckbox);
+                fullInvisRippleSpaceLabel = new(menu, this, menu.Translate("Full Invisibility In Ripple Space:"), fullInvisRippleSpaceCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                fullInvisRippleSpaceLabel.label.alignment = FLabelAlignment.Left;
+
+                fullInvisRippleSpaceCheckbox.Change();
+
+                // Weaver graphics
+                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 3)
                 {
                     colorEdge = RainWorld.GoldRGB * 1.5f
                 };
@@ -350,7 +368,7 @@ namespace RainMeadow.UI.Components
 
 
                 // Voidmaster
-                voidMasterCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.VoidMaster.Value), positioner - spacing * 3)
+                voidMasterCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.VoidMaster.Value), positioner - spacing * 4)
                 {
                     colorEdge = RainWorld.RippleColor * 1.5f
                 };
@@ -369,7 +387,7 @@ namespace RainMeadow.UI.Components
 
 
                 //Amoeba duration
-                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
+                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
                     description = menu.Translate("Amoeba duration time in seconds")
@@ -386,7 +404,7 @@ namespace RainMeadow.UI.Components
                 amoebaLifespanTextBox.Change();
 
                 //Amoeba Lethality Factor 
-                amoebaLethalityFactorTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
+                amoebaLethalityFactorTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value), positioner - spacing * 6 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
                     description = menu.Translate("Multiplier for amoeba lethality"),
@@ -404,7 +422,7 @@ namespace RainMeadow.UI.Components
                 amoebaLethalityFactorTextBox.Change();
 
                 //Void's Vengeance (pointing control)
-                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 6);
+                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 7);
                 amoebaControlCheckbox.OnChange += () =>
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
@@ -417,7 +435,7 @@ namespace RainMeadow.UI.Components
 
                 amoebaControlCheckbox.Change();
 
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaLethalityFactorLabel, amoebaControlLabel);
+                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaLethalityFactorLabel, amoebaControlLabel, fullInvisRippleSpaceLabel);
 
             }
             public override void SaveInterfaceOptions()
@@ -429,6 +447,7 @@ namespace RainMeadow.UI.Components
                 RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value = amoebaLethalityFactorTextBox.valueFloat;
                 RainMeadow.rainMeadowOptions.AmoebaDuration.Value = amoebaLifespanTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.AmoebaControl.Value = amoebaControlCheckbox.GetValueBool();
+                RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace.Value = fullInvisRippleSpaceCheckbox.GetValueBool();
 
             }
             public override void SaveInterfaceClientOptions()
@@ -444,7 +463,7 @@ namespace RainMeadow.UI.Components
                         signalText = BACKTOSELECT,
                     };
                     AddObjects(backButton);
-                    menu.TrySequentialMutualBind([backButton, amoebaControlCheckbox.wrapper, amoebaLifespanTextBox.wrapper, voidMasterCheckbox.wrapper, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
+                    menu.TrySequentialMutualBind([backButton, amoebaControlCheckbox.wrapper, amoebaLifespanTextBox.wrapper, voidMasterCheckbox.wrapper, weaverWatcherCheckBox.wrapper, fullInvisRippleSpaceCheckbox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
                 }
                 if (forceSelectedObject)
                     menu.selectedObject = watcherCamoLimitTextBox.wrapper;
@@ -458,6 +477,7 @@ namespace RainMeadow.UI.Components
                 arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
                 arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
                 arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
+                arena.fullInvisInRippleSpace = fullInvisRippleSpaceCheckbox.GetValueBool();
             }
             public override void Update()
             {
@@ -470,13 +490,15 @@ namespace RainMeadow.UI.Components
 
                 ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
                 ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
+                
+                ShowSyncInRemixCheckbox(fullInvisRippleSpaceCheckbox, greyoutall, arena.fullInvisInRippleSpace);
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
 
                 ShowSyncInRemixCheckbox(voidMasterCheckbox, greyoutall, arena.voidMasterEnabled);
-                ShowSyncInTextbox(amoebaLethalityFactorTextBox, greyoutall, arena.voidSpawnLethalityFactor);
 
                 bool lockvoidmastersettings = !voidMasterCheckbox.GetValueBool() || greyoutall;
+                ShowSyncInTextbox(amoebaLethalityFactorTextBox, lockvoidmastersettings, arena.voidSpawnLethalityFactor);
                 ShowSyncInRemixCheckbox(amoebaControlCheckbox, lockvoidmastersettings, arena.amoebaControl);
                 ShowSyncInTextbox(amoebaLifespanTextBox, lockvoidmastersettings, arena.amoebaDuration);
             }
@@ -488,6 +510,7 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelLabel.label.color = watcherRippleLevelTextBox.rect.colorEdge;
                 weaverWatcherLabel.label.color = weaverWatcherCheckBox.rect.colorEdge;
                 voidMasterLabel.label.color = voidMasterCheckbox.rect.colorEdge;
+                fullInvisRippleSpaceLabel.label.color = fullInvisRippleSpaceCheckbox.rect.colorEdge;
                 amoebaDurationLabel.label.color = amoebaLifespanTextBox.rect.colorEdge;
                 amoebaControlLabel.label.color = amoebaControlCheckbox.rect.colorEdge;
                 amoebaLethalityFactorLabel.label.color = amoebaLethalityFactorTextBox.rect.colorEdge;
