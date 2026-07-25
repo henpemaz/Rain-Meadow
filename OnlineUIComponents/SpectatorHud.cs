@@ -143,7 +143,7 @@ namespace RainMeadow
                     && camera.room.abstractRoom != return_to_player.Room
                 )
                 {
-                    var oldRoom = camera.room?.abstractRoom;
+                    //var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
                     //AbstractizeIfSafe(oldRoom);
                 }
@@ -209,7 +209,7 @@ namespace RainMeadow
                         && camera.room.abstractRoom != spectatee.Room
                     )
                     {
-                        var oldRoom = camera.room?.abstractRoom;
+                        // var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
                         //AbstractizeIfSafe(oldRoom);
                     }
