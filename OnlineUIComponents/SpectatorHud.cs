@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using HUD;
 using UnityEngine;
 
@@ -145,7 +145,7 @@ namespace RainMeadow
                 {
                     var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
-                    AbstractizeIfSafe(oldRoom);
+                    //AbstractizeIfSafe(oldRoom);
                 }
             }
         }
@@ -211,12 +211,12 @@ namespace RainMeadow
                     {
                         var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
-                        AbstractizeIfSafe(oldRoom);
+                        //AbstractizeIfSafe(oldRoom);
                     }
                 }
             }
         }
-
+        // Todo: still not safe
         // Unloads a room left behind by the spectator camera if no local players remain in it.
         private void AbstractizeIfSafe(AbstractRoom oldRoom)
         {
