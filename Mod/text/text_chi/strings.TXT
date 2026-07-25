@@ -1,7 +1,7 @@
 // Rain Meadow Chinese Translation by METeam(Mass-Energy Trans team)
 // 模组名 & 简介
 henpemaz_rainmeadow-name|雨甸
-henpemaz_rainmeadow-description|多人游戏引擎，包含剧情，竞技场和一个受Might和Delight的“Meadow”所启发的自定义模式。
+henpemaz_rainmeadow-description|多人游戏引擎，包含剧情，竞技场和一个受Might&Delight的“Meadow”所启发的自定义模式。
 
 // 模组入口
 MEADOW|联机
@@ -21,7 +21,7 @@ Lobby Domain|房间服务器
 Local|局域网
 Router|路由器
 Steam|Steam
-Failed to join lobby.<LINE> Lobby is full|加入房间失败。<LINE> 房间已满
+Failed to join lobby.<LINE> Lobby is full|加入房间失败。<LINE> 房间已满。
 Failed to join lobby.<LINE>|加入房间失败。<LINE>
 Password Required|需要密码
 Wrong password!|密码错误！
@@ -55,7 +55,7 @@ A peaceful mode about exploring around and discovering little secrets, together 
 Story|剧情
 Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|与朋友一同在雨世界的世界里冒险，一起战斗，一起死亡。
 Arena|竞技场
-Fight against unforgiving creatues and foes where only the strong survive.|与无情的生物和敌人战斗，唯强者生。
+Fight against unforgiving creatures and foes where only the strong survive.|与无情的生物和敌人战斗，唯强者生。
 Visibility:|可见性:
 Public|公开
 Friends Only|仅好友可见
@@ -66,10 +66,11 @@ Player max:|玩家上限:
 Maximum number of players that can be in the lobby (up to 32)|房间可容纳的人数上限【至多32人】
 Creating lobby...|正在创建房间...
 Timeline:|时间线:
+Spear|矛大师
 Anniversary Gags:|周年庆乐子:
 
 // 牧原选角场景
-Locked|未锁定
+Locked|锁定
 ENTER|进入
 Tint color|色彩
 Tint amount|色彩强度
@@ -84,7 +85,7 @@ LIZARD|蜥蜴
 Pink|粉色
 Blue|蓝色
 Yellow|黄色
-Red|烈焰
+Red|红色
 Black|黑色
 Axo|白蝾螈
 Sala|黑蝾螈
@@ -153,6 +154,7 @@ Collision|碰撞
 New character unlocked|新角色已解锁
 New emote unlocked|新表情已解锁
 New skin unlocked|新皮肤已解锁
+Eye color|眼睛颜色
 
 // 故事模式
 Selected Slugcat|选择实际游玩蛞蝓猫
@@ -173,7 +175,7 @@ READY|准备
 
 // 竞技场模式
 ME|我
-Got All<LINE>ScugSlots!!|获得全部<LINE>蛞蝓猫槽位！！
+Got All<LINE>ScugSlots!!|蛞蝓猫老虎机<LINE>已满！！
 Joining<LINE>soon!|即将<LINE>加入！
 Ready!|准备就绪！
 Selecting<LINE>Slugcat|正在选择<LINE>蛞蝓猫
@@ -186,11 +188,14 @@ Free For All|自由混战
 Trust no one. Last scug standing wins|不要相信任何人，站到最后的蛞蝓猫获胜
 Team Battle|团队战
 Choose a faction. Last team standing wins.|选择阵营，站到最后的队伍获胜
+Challenge|挑战
+Pit yourself against a series of challenges|投身于重重挑战之中
 Join Team "<TEAMNAME>"|加入队伍"<TEAMNAME>"
 POST-GAME STATS|赛后统计
 WINS|胜利
 KILLS|击杀
 DEATHS|死亡
+RESET|重置
 This game mode doesnt have any info to give|此游戏模式没有信息可提供
 Ready:|准备:
 Playlist Progress:|游戏列表进度:
@@ -214,6 +219,9 @@ Search for levels|搜索关卡
 Search levels|搜索关卡
 Match Settings|比赛设置
 Spears Hit:|长矛命中:
+Overseers Show:|显示监视者:
+Overseer Spectators spawn in-game|监视者会在游戏中生成
+Overseer Spectators do not spawn in-game|监视者不会在游戏中生成
 Repeat Rooms:|房间重复次数:
 Invite friends|邀请朋友
 Item Stealing|物品偷窃
@@ -262,6 +270,7 @@ Amoeba duration time in seconds|阿米巴持续时长，以秒为单位
 Void's Vengeance:|虚空的复仇:
 Amoeba's direction is influenced by pointing|阿米巴的方向受指向方向影响
 Amoebas chase targets at-will|阿米巴会随意追逐目标
+How many explosions Artificer can use before cooldown|工匠在冷却前可用的爆炸次数
 Disable Mauling:|禁用撕咬:
 Prevent Artificer and <PAINCATNAME> from mauling|阻止工匠和<PAINCATNAME>撕咬
 Disable Artificer Stun:|禁用工匠眩晕:
@@ -276,11 +285,40 @@ If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|如果<PAINC
 Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|允许<PAINCATNAME>总是能投掷长矛，即使投掷技能为0
 <PAINCATNAME> sometimes gets a friend:|<PAINCATNAME>有时获得朋友:
 Allow <PAINCATNAME> to rarely spawn with a little friend|允许<PAINCATNAME>偶尔带着小伙伴生成
+Arena Settings|竞技场设置
+Food Score:|食物分值:
+Food points multiplier|食物分数倍率
+Spear Hit Score:|矛击分值:
+Points a spear is worth (non-lethal)|每次长矛（非致命）攻击所获分数
+Kill Score:|击杀分值:
+Points a kill is worth|每次击杀所获分数
+Survival Score:|生存分值:
+Points for surviving inside the shelter|每次于避难所生还所获分数
+Empty Kill Score:|空头击杀分值:
+Points for other players if someone dies without a killer|若某人死亡且没有凶手，其他玩家可获得的分数
+Unlock Dens:|解锁避难所:
+Points required to unlock dens|解锁避难所所需要的分数
+Den Entry:|避难所开启:
+Den entry behavior|避难所开启条件
+Score|得分
+Standard|标准
+Always|永远
+Den Ejection:|避难所弹射:
+Dens eject and block players after some time|避难所在一段时间过后，弹出并拦截玩家
+Playlist:|游玩列表:
+Copy playlist to clipboard|复制游玩列表到剪贴板
+Copied|已复制
+Import playlist from clipboard|从剪贴板导入游玩列表
+Imported|已导入
+Den entry behavior|巢穴入口行为
 Team Settings|队伍设置
 TEAM|队伍
 Team Lerp Color:|队伍过渡颜色:
+Friendly Fire:|友伤:
 How much do you want team color to show on players? From 0 to 1|你想在玩家身上显示多深的队伍颜色？可输入0到1
 You cant color without Remix on!|没有开启Remix无法着色！
+Challenge ID|挑战编号
+Challenge Settings|挑战设置
 Waiting|等待中
 Prepare for combat,|准备战斗，
 Prepare for war,|准备战争，
@@ -293,9 +331,6 @@ View Current Mode Info|查看当前模式信息
 Customize your colors|自定义颜色
 Go to Slugcat Selection Page|前往蛞蝓猫选择页面
 This user is the lobby host|此用户是房主
-Overseer:|监视者:
-Overseer Spectator spawn|生成监视者
-No overseers|不会生成监视者
 
 // 竞技场蛞蝓猫选择
 Back To Lobby|返回房间
@@ -377,9 +412,9 @@ bleh|呃
 inv? like invalidunits?|inv？就像invalidunits吗？
 
 // 蛞蝓猫老虎机！
-Press and hold something on screen to spin the slots / Hope you brought green|按住屏幕上的元素来旋转老虎机 / 希望你带了钱来
-One, two three of a kind / Somewhere on this page you will find|三个相同 / 你会在这页某处找到
-A joke started from the Meadow Discord / Makes all players broke, and none can afford|发源自Meadow Discord的笑话 / 让所有玩家破产，没人再买得起
+Press and hold something on screen to spin the slots / Hope you brought green|按住屏幕上的某物来旋转老虎机 / 希望你带了钱来
+One, two three of a kind / Somewhere on this page you will find|一、二、凑齐三张同点 / 你会在这页某处找到
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|发源自Meadow Discord的笑话 / 让所有玩家破产，没人负担得起
 SCUGSLOTS|蛞蝓猫老虎机
 LET'S ROLL!|开始吧！
 Oops, better luck next time!|哎呀，下次好运！
@@ -397,9 +432,9 @@ Press '|按下'
 ' to toggle the chat log|'来切换聊天记录
 
 // 玩家加入/离开
-joined the game.|加入了游戏
-tried to join the game but was kicked.|尝试加入游戏但被踢出
-left the game.|离开了游戏
+joined the game.|加入了游戏。
+tried to join the game but was kicked.|尝试加入游戏但被踢出。
+left the game.|离开了游戏。
 
 // 死亡信息
 died.|死了。
@@ -428,10 +463,12 @@ was taken into the abyss by|被带入了无底深渊，凶手是
 was drowned by|淹死了，凶手是
 was slain by|被杀了，凶手是
 was ascended by|被超度了，凶手是
+was blown up by|被炸飞了，凶手是
 was zapped by a|被电击了，凶手是一只
 was ambushed by a|被伏击了，凶手是一只
 was taken by a|被带走了，凶手是一只
 was slain by a|被杀了，凶手是一只
+blew up.|爆炸了。
 
 // 死亡信息中出现的生物名称
 Pink Lizard|粉蜥蜴
@@ -439,7 +476,7 @@ Green Lizard|绿蜥蜴
 Blue Lizard|蓝蜥蜴
 Yellow Lizard|金蜥蜴
 White Lizard|白蜥蜴
-Red Lizard|红蜥蜴
+Red Lizard|烈焰蜥蜴
 Black Lizard|黑蜥蜴
 Salamander|蝾螈
 Cyan Lizard|青蜥蜴
@@ -551,6 +588,7 @@ Missing DLC Mods that have to be enabled: |需要启用的缺失DLC模组:
 
 // 拓展菜单设定
 Note: These inputs are not used in Meadow mode|注意:这些按键在牧原模式中不可使用
+Global Mute|全局静音
 Show usernames|显示用户名
 Username Toggle|开关用户名
 Replace holding with toggling|用开关切换代替长按显示
@@ -562,11 +600,14 @@ Edit High-Impact Mods|编辑高影响模组
 Edit Banned Mods|编辑禁止模组
 Chat Log Toggle|聊天记录切换
 Chat Talk Button|聊天说话按钮
-Chat Background Opacity|聊天背景透明度
+Chat Background Opacity|聊天框背景透明度
+Chat Inactivity Opacity|闲置聊天框透明度
+Chat Inactivity Timer|聊天框闲置计时器
 Show Ping|显示延迟
 Playtesting Gift|游玩测试礼物
 Anniversary Gift|周年庆礼物
 Chat Log On/Off|聊天记录开关
+Sound on Mention|提及声效
 Introroll|开场动画
 Vanilla|原版
 Downpour|倾盆大雨
@@ -606,11 +647,16 @@ LAN|局域网
 Username|用户名
 UDP timeout (ms)|UDP超时（毫秒）
 UDP heartbeat (ms)|UDP心跳（毫秒）
+Cape Colors|斗篷颜色
+Default|默认
+Log Level|日志级别
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: $10|旁观模式、故事菜单、竞技场结果的玩家页面滚动速度，默认为10
+Flair|风格
 
 // 制作人名单
-Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|雨甸（Rain Meadow）是为这款独特游戏打造的独特多人在线引擎，无可替代的默契。- Henpemaz
-Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow是受Might&Delight同名游戏启发的游戏模式。它是一个有bug、几乎无法玩的游戏，但你会爱上它，这听起来熟悉吗？
-This mod and all its features were brought to you by really awesome people from the community.|这个模组及其所有功能由RW社区中一群真的很了不起的人带来。
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|雨甸（Rain Meadow）是为一款独一无二的游戏打造的独特联机引擎，非它莫属。- Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow是受Might&Delight的同名游戏启发的游戏模式。一款漏洞百出、勉强能玩的游戏，却能让人爱不释手。这听起来熟悉吗？
+This mod and all its features were brought to you by really awesome people from the community.|这个模组及其所有功能，皆由RW社区中一群超级棒的小伙伴为您呈现。
 Lead Developer|首席开发者
 Lead Artist|首席艺术家
 Lead Audio Designer|首席音频设计师
@@ -627,6 +673,10 @@ Illustration|插画
 Programming, UI, menus|编程，UI，菜单
 Programming, UI, story|编程，UI，故事
 Programming, UI, LAN|编程，UI，局域网
+Programming, gameplay|编程，游戏玩法
+Arena, story, UI|竞技场，故事，UI
+Programming, story, UI|编程，故事，UI
+Meadow, story|牧原，故事
 Thank you playtesters from the Rain Meadow discord as well.|也感谢来自Rain Meadow discord的游玩测试员们。
 
 // 杂项

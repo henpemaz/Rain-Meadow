@@ -314,7 +314,9 @@ namespace RainMeadow {
                 RainMeadow.Error($"invalid address and port: {string.Join(" ", args)}");
         }
 
+        /// <inheritdoc/>
         public override void LeaveLobby() {
+            OnLobbyLeavingEvent();
 
             if (OnlineManager.players is not null) {
                 if (OnlineManager.players.Count > 1) {

@@ -4,6 +4,7 @@ using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -39,6 +40,7 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
+            On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
             On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update; // clients will not change behavior on their own
             IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update; // clients will not bite on their own         
@@ -143,6 +145,16 @@ namespace RainMeadow
                 self.behavior = behavior;
             }
         }
+
+        private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
+        {         
+            orig(self);
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
+            {
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
+            }
+        }
+
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try
@@ -442,7 +454,7 @@ namespace RainMeadow
 
 
 
-        // echo warps from the waher
+        // echo warps from the watcher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
             if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)

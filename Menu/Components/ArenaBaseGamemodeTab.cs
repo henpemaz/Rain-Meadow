@@ -525,12 +525,12 @@ namespace RainMeadow.UI.Components
                 }
             }
 
-            if (arenaImportExportLabel.text != "Playlist:")
+            if (arenaImportExportLabel.text != menu.Translate("Playlist:"))
             {
                 timeToClearMessage--;
                 if (timeToClearMessage <= 0)
                 {
-                    arenaImportExportLabel.text = "Playlist:";
+                    arenaImportExportLabel.text = menu.Translate("Playlist:");
                     arenaImportExportLabel.label.color = Color.white;
 
                     timeToClearMessage = 120;
@@ -541,12 +541,12 @@ namespace RainMeadow.UI.Components
                 arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
             }
 
-            if (arenaSettingsImportExportLabel.text != "Settings:")
+            if (arenaSettingsImportExportLabel.text != menu.Translate("Settings:"))
             {
                 timeToClearMessage--;
                 if (timeToClearMessage <= 0)
                 {
-                    arenaSettingsImportExportLabel.text = "Settings:";
+                    arenaSettingsImportExportLabel.text = menu.Translate("Settings:");
                     arenaSettingsImportExportLabel.label.color = Color.white;
 
                     timeToClearMessage = 120;

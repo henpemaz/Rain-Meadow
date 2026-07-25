@@ -1178,7 +1178,10 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
+                && (hud.textPrompt?.pausedMode is true 
+                    || RMOverlayHUDMenu.GetOverlay()?.isFocusedOnMenu is true
+                    || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) 
+                        && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
                 GameplayOverrides.StopPlayerMovement(self);
             }
@@ -1245,6 +1248,19 @@ public partial class RainMeadow
             c.Emit(OpCodes.Brfalse, skip);
             c.Index += 6;
             c.MarkLabel(skip);
+
+            // infinite tinnitus fix
+            c.Index = 0;
+            ILLabel skipTinnitus = il.DefineLabel();
+            c.GotoNext(MoveType.After,
+                i => i.MatchStfld<Player>(nameof(Player.mushroomEffect)),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Player>("get_AI"),
+                i => i.MatchBrtrue(out skipTinnitus)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skipTinnitus);
 
             // don't try teleporting remote players when using dev tools
             c.Index = 0;
@@ -1469,7 +1485,7 @@ public partial class RainMeadow
 
             if (self.IsLocal())
             {
-                if (CapeManager.HasCape(OnlineManager.mePlayer.id) is not null && !self.isNPC)
+                if (self.graphicsModule is not null && RainMeadow.cosmeticed_avatars.TryGetValue(self.graphicsModule, out var cosmetic) && cosmetic is SlugcatCape && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)

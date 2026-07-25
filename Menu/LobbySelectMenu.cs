@@ -153,11 +153,7 @@ namespace RainMeadow
             filterModsDropDown.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterModsDropDown);
 
-            //
-            where = new Vector2(manager.rainWorld.screenSize.x - 320f , 400f);
-
-
-            directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
+            directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(1020, 400), new Vector2(160f, 30f));
             directConnectButton.OnClick += (_) =>
             {   
                 if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN)
@@ -168,16 +164,11 @@ namespace RainMeadow
                 ShowDirectConnectionDialogue();
             };
 
-            where.y -= 30;
-            var domainlabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Domain"), where, new Vector2(200f, 20f), false);
+            var domainlabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Domain"), new Vector2(1020, 370), new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(domainlabel);
-            where.y -= 27;
-
-
             mainPage.subObjects.Add(directConnectButton);
-            
             domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
-                MatchmakingManager.currentDomain), where, 160f - 35f, 
+                MatchmakingManager.currentDomain), new Vector2(1020, 343), 125f, 
                 MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value, Utils.Translate(x.value))).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
                 MatchmakingManager.currentDomain = new MatchmakingManager.MatchMakingDomain(domainDropDown.value, false);
@@ -185,9 +176,6 @@ namespace RainMeadow
                 lobbyList.CreateCards();
                 RefreshLobbyList(null);
             };
-
-
-
 
             new UIelementWrapper(this.tabWrapper, domainDropDown);
 

@@ -45,7 +45,7 @@ namespace RainMeadow
                     self.world.GetResource()?.ApoEnteringWorld(apo);
                     self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
                 }
-            }
+            }            
         }
 
         // removes entities that should be deleted when going between rooms

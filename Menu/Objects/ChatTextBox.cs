@@ -78,7 +78,8 @@ namespace RainMeadow
         public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
         //
 
-        public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
+        public static bool AnyCtrl => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple);
+        public static bool AnyShift => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         // Store matches found for the current cycle
         private List<string> completionMatches;
@@ -184,9 +185,16 @@ namespace RainMeadow
                     bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
                     if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput && !TypingOnOtherObjects)
                     {
-                        SetFocused(true);
-                        forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
-                        if (!forceMenuMouseMode) menu.selectedObject = this;
+                        if (AnyShift && RainMeadow.rainMeadowOptions.EnableChatLogErrorToggle.Value)
+                        {
+                            ChatLogManager.ToggleLogErrorInChat();
+                        }
+                        else
+                        {
+                            SetFocused(true);
+                            forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
+                            if (!forceMenuMouseMode) menu.selectedObject = this;
+                        }
                     }
                     return;
                 }

@@ -17,27 +17,27 @@ namespace RainMeadow
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
-        public List<(string, string)> chatLog = new();
-        public float logScrollPos;
+        public float logScrollPos = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value ? 0 : -1;
 
-        public bool Active => game.processActive;
-        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || game.manager.upcomingProcess != null || slatedForDeletion;
+        public bool Active => true; //=> game.processActive;
+        public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;
+        public bool InGameTransition => game.processActive || game.manager.upcomingProcess != null;
 
         public static bool isLogToggled
         {
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
             set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
         }
-        public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
+        public ChatHud(RoomCamera camera) : base(RMOverlayHUD.GetOverlay())
         {
-            textPrompt = hud.textPrompt;
+            this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
-            game = camera.game;
+            this.game = camera.game;
 
             ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
             {
-                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
+                this.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
                 ChatLogManager.shownChatTutorial = true;
             }
 
@@ -51,24 +51,38 @@ namespace RainMeadow
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
         }
 
+        public void UpdateCamera(RoomCamera camera)
+        {
+            this.camera = camera;
+            this.game = camera.game;
+            this.textPrompt = camera.hud.textPrompt;
+        }
+
         public void AddMessage(string user, string message)
         {
             if (!Active) return;
             if (OnlineManager.lobby == null) return;
+            if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
 
-            if (RainMeadow.rainMeadowOptions.GlobalMute.Value && user != "") return;
-            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (ChatLogManager.ShouldPingFromMessage(user, message))
             {
-                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1f);
+                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1.2f);
             }
-            chatLog.Add((user, message));
             if (chatLogOverlay != null)
             {
-                bool shouldGoDown = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll;
+                if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
+                {
+                    camera.virtualMicrophone.PlaySound(
+                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
+                        0, 
+                        quiet ? 0.7f : 1.5f, 
+                        quiet ? 0.7f : 0.6f
+                    );
+                }
+                bool shouldGoDown = chatLogOverlay.scroller.IsAtBottom();
                 chatLogOverlay.UpdateLogDisplay();
-                if (shouldGoDown) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
+                if (shouldGoDown) chatLogOverlay.scroller.MoveAtBottom();
             }
         }
 
@@ -93,14 +107,22 @@ namespace RainMeadow
             }
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
             {
-                if (chatInputOverlay == null && !textPrompt.pausedMode && !ShouldForceCloseChat)
+                // RainMeadow.Debug($"Chat button pressed ! Input is [{chatInputOverlay}], can chat is <{InGameTransition || !textPrompt.pausedMode}><{!ShouldForceCloseChat}>");
+                if (chatInputOverlay is null && (InGameTransition || !textPrompt.pausedMode) && !ShouldForceCloseChat)
                 {
-                    RainMeadow.Debug("creating input");
-                    chatInputOverlay = new ChatInputOverlay(game.manager);
-                    if (chatLogOverlay is null)
+                    if (ChatTextBox.AnyShift && RainMeadow.rainMeadowOptions.EnableChatLogErrorToggle.Value)
                     {
-                        RainMeadow.Debug("creating log");
-                        chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                        ChatLogManager.ToggleLogErrorInChat();
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("creating input");
+                        chatInputOverlay = new ChatInputOverlay(game.manager);
+                        if (chatLogOverlay is null)
+                        {
+                            RainMeadow.Debug("creating log");
+                            chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                        }
                     }
                 }
             }
@@ -130,7 +152,7 @@ namespace RainMeadow
             if (chatLogOverlay != null)
             {
                 logScrollPos = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll ? -1 : chatLogOverlay.scroller.DownScrollOffset;
-                chatLogOverlay.ShutDownProcess();
+                chatLogOverlay.RemoveSprites();
                 chatLogOverlay = null;
             }
         }
@@ -139,9 +161,9 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatInputOverlay != null)
             {
-                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
+                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveAtBottom();
                 chatInputOverlay.chat.DelayedUnload(0.1f);
-                chatInputOverlay.ShutDownProcess();
+                chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;
             }
 

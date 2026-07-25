@@ -12,269 +12,25 @@ using static RainMeadow.RainMeadow;
 namespace RainMeadow
 {
 
-    public interface ICapeColor
+    class SlugcatCape : CosmeticManager.IMeadowCosmetic
     {
-        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam);
-    }
-
-    public class RainbowCapeColor : ICapeColor
-    {
-        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam)
-        {
-            Color color = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f); ;
-            mesh.verticeColors[vertex] = color;
-        }
-
-        public override string ToString() => "rainbow";
-    }
-
-    public class CosmicCapeColor : ICapeColor
-    {
-        public bool shaderApplied;
-
-        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam)
-        {
-            if (!shaderApplied)
-            {
-                var nightsky = rCam?.game.rainWorld.Shaders["RM_NightSkySkin"];
-                mesh.shader = nightsky;
-                OnPopulateRenderLayer.Get(mesh).onEvent += (FFacetNode node) =>
-                {
-                    node._renderLayer._material.SetTexture("_RM_NightSky", RainMeadow.nightsky);
-                };
-                shaderApplied = true;
-            }
-        }
-
-        public override string ToString() => "cosmic";
-    }
-
-    public class SolidCapeColor : ICapeColor
-    {
-        public readonly Color color;
-        public SolidCapeColor(Color color)
-        {
-            this.color = color;
-        }
-
-        public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera? rCam = null)
-        {
-            mesh.verticeColors[vertex] = color;
-        }
-
-        public override string ToString() => $"{color.r}, {color.g}, {color.b}";
-    }
-
-    static class CapeManager
-    {
-        const string capes_latest_commit = "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
-        static string getRemoteLatestCommit()
-        {
-            using (WebClient client = new WebClient())
-            {
-                string response = client.DownloadString(capes_latest_commit);
-
-                // Split by lines
-                var lines = response.Split('\n');
-
-                foreach (var line in lines)
-                {
-                    if (line.Contains("refs/heads/master"))
-                    {
-                        RainMeadow.Debug(line);
-                        // Line format: <length><sha1> refs/heads/master
-                        // Strip off the first 4 chars (pkt-line length)
-                        string trimmed = line.Length > 4 ? line.Substring(4) : line;
-                        string[] parts = trimmed.Split(' ');
-                        if (parts.Length > 0)
-                        {
-                            RainMeadow.Debug($"recieved the hash latest commit: {parts[0]}");
-                            return parts[0];
-                        }
-                    }
-                }
-
-                throw new Exception("We couldn't find the remote hash");
-            }
-        }
-
-
-        const string capes_remote_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics16/refs/heads/master/capes.txt";
-        static public void FetchCapes()
-        {
-            try
-            {
-                using (WebClient client = new WebClient())
-                {
-                    var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
-                    var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
-
-                    // Download remote commit hash.
-                    string commithash = getRemoteLatestCommit();
-
-                    // Read local commit hash from file.
-                    string commithashlocal = string.Empty;
-                    if (File.Exists(cape_hash_file))
-                    {
-                        using (FileStream stream = File.OpenRead(cape_hash_file))
-                        using (StreamReader reader = new(stream))
-                        {
-                            commithashlocal = reader.ReadLine();
-                        }
-                    }
-
-
-                    // Only download the new capes when we hashes don't match.
-                    if (commithash != commithashlocal)
-                    {
-                        RainMeadow.Debug("Local hash doesn't match, downloading remote.");
-                        using (FileStream stream = File.Create(cape_hash_file))
-                        using (StreamWriter writer = new(stream))
-                        {
-                            writer.WriteLine(commithash);
-                        }
-                        string response = client.DownloadString(capes_remote_txt);
-                        using (FileStream stream = File.Create(capes_txt))
-                        using (StreamWriter writer = new(stream))
-                        {
-                            writer.WriteLine(response);
-                        }
-                    }
-
-                    entries.Clear();
-                    // process capes from file.
-                    using (FileStream capefile = File.OpenRead(capes_txt))
-                    using (StreamReader capestream = new StreamReader(capefile))
-                    {
-                        while (true)
-                        {
-                            var line = capestream.ReadLine();
-                            if (line == null) break;
-
-                            // Skip the header or empty lines
-                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
-                                continue;
-
-                            // Split the line into parts
-                            string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                            if (parts.Length < 2) continue;
-
-                            string HashedsteamId64 = parts[0].Trim();
-                            string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
-                            string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
-
-                            // Check if the color is a list of floats (RGB)
-                            ICapeColor capeColor = ParseCapeColor(color);
-
-                            // Add the parsed entry to the list
-                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
-                        }
-                    }
-                }
-            }
-            catch (Exception except)
-            {
-                RainMeadow.Error(except);
-            }
-        }
-
-        static public ICapeColor ParseCapeColor(string color)
-        {
-            if (color.Contains(","))
-            {
-                string[] rgbParts = color.Split(',');
-                if (rgbParts.Length == 3 &&
-                    float.TryParse(rgbParts[0].Trim(), out float r) &&
-                    float.TryParse(rgbParts[1].Trim(), out float g) &&
-                    float.TryParse(rgbParts[2].Trim(), out float b))
-                {
-
-                    return new SolidCapeColor(new Color(r, g, b));
-
-
-                }
-            }
-            else
-            {
-                if (color == "sgold") return new SolidCapeColor(RainWorld.SaturatedGold);
-                if (color == "rainbow") return new RainbowCapeColor();
-                if (color == "cosmic") return new CosmicCapeColor();
-            }
-
-            return new SolidCapeColor(Color.red);
-        }
-
-        private static Dictionary<string, ICapeColor> entries = new();
-        private static ConditionalWeakTable<MeadowPlayerId, ICapeColor> cape_cache = new();
-        static public ICapeColor? HasCape(MeadowPlayerId player)
-        {
-            if (cape_cache.TryGetValue(player, out var entry) && entry is not null) return entry;
-            if (player is SteamMatchmakingManager.SteamPlayerId steamid)
-            {
-                ulong steamID = steamid.oid.GetSteamID64();
-                SHA256 Sha = SHA256.Create();
-                var hashed_cape_str = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
-
-                if (entries.TryGetValue(hashed_cape_str, out ICapeColor found_entry))
-                {
-                    cape_cache.Add(player, found_entry);
-                    return found_entry;
-                }
-            }
-
-            if (player is LANMatchmakingManager.LANPlayerId lanPlayer)
-            {
-                if (lanPlayer.name == "goldcape") return new SolidCapeColor(RainWorld.SaturatedGold);
-                if (lanPlayer.name == "redcape") return new SolidCapeColor(Color.red);
-                if (lanPlayer.name == "bluecape") return new SolidCapeColor(Color.blue);
-            }
-
-
-            return null;
-        }
-
-        public static void RefreshGraphicalModule(PhysicalObject obj)
-        {
-            if (obj is not null && obj.graphicsModule is GraphicsModule module && obj.room is Room r)
-            {
-                r.drawableObjects.Remove(module);
-                obj.graphicsModule = null;
-                obj.InitiateGraphicsModule();
-                for (int k = 0; k < r.game.cameras.Length; k++)
-                {
-                    if (r.game.cameras[k].room == r)
-                    {
-                        r.game.cameras[k].ReplaceDrawable(module, obj.graphicsModule);
-                    }
-                }
-
-                for (int i = 0; i < 40; i++)
-                {
-                    obj.graphicsModule?.Update();
-                }
-            }
-
-        }
-    }
-
-    class SlugcatCape
-    {
-        public static ConditionalWeakTable<PlayerGraphics, SlugcatCape> cloaked_slugcats = new();
         public PlayerGraphics playerGFX { get; private set; }
-        public ICapeColor cloakColor;
+
+        public int totalSprites => 1;
+
+        public CosmeticManager.ICosmeticSkin cloakColor;
         private SimpleSegment[,] segments;
         private const int size = 5;
         private const float targetLength = 50f;
-        public const int totalSprites = 1;
         public int firstSpriteIndex;
 
-        public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, ICapeColor cloakColor)
+        public SlugcatCape(GraphicsModule gfx, int firstSpriteIndex, CosmeticManager.ICosmeticSkin cloakColor)
         {
-            cloaked_slugcats.Add(gfx, this);
+            if (gfx is not PlayerGraphics pgfx) throw new InvalidOperationException("only slugcats have capes");
+            playerGFX = pgfx;
             this.segments = new SimpleSegment[size + 1, size + 1];
             this.firstSpriteIndex = firstSpriteIndex;
             this.cloakColor = cloakColor;
-            this.playerGFX = gfx;
         }
 
         public void Reset()
@@ -292,7 +48,7 @@ namespace RainMeadow
         {
             sLeaser.sprites[this.firstSpriteIndex] = TriangleMesh.MakeGridMesh("Futile_White", SlugcatCape.size);
             sLeaser.sprites[this.firstSpriteIndex].shader = rCam.game.rainWorld.Shaders["TemplarCloak"];
-            if (cloakColor is CosmicCapeColor ccc)
+            if (cloakColor is CosmeticManager.CosmicCapeColor ccc)
             {
                 ccc.shaderApplied = false;
             }
@@ -300,25 +56,25 @@ namespace RainMeadow
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
+            Color customColor = Color.red;
+            if (playerGFX.owner.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject ent)
+            {
+                if (ent.TryGetData<SlugcatCustomization>(out var s))
+                {
+                    customColor = s.customCosmeticColor;
+                }
+            }
+
+
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
             int num = 0;
             for (int i = 0; i <= SlugcatCape.size; i++)
             {
                 for (int j = 0; j <= SlugcatCape.size; j++)
                 {
-                    triangleMesh.MoveVertice(num++, this.segments[j, i].DrawPos(timeStacker) - camPos);
-                }
-            }
-            num = 0;
-            for (int k = 0; k <= SlugcatCape.size; k++)
-            {
-                for (int l = 0; l <= SlugcatCape.size; l++)
-                {
-                    ;
-                    Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
-                    Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
-                    Vector2 vector = Custom.DirVec(p, p2) * 5f;
-                    cloakColor.ApplyColor(triangleMesh, num++, rCam);
+                    triangleMesh.MoveVertice(num, this.segments[j, i].DrawPos(timeStacker) - camPos);
+                    cloakColor.ApplyColor(triangleMesh, num, rCam, customColor);
+                    ++num;
                 }
             }
         }
@@ -471,6 +227,11 @@ namespace RainMeadow
             }
 
             this.ConnectEnd();
+        }
+
+        public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+        {
+            throw new NotImplementedException();
         }
     }
 }

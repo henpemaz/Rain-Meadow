@@ -57,6 +57,50 @@ namespace RainMeadow
             On.MoreSlugcats.BackgroundOptionsMenu.PopulateButtons += BackgroundOptionsMenu_PopulateButtons;
 
             new Hook(typeof(MoreSlugcats.BackgroundOptionsMenu).GetProperty(nameof(MoreSlugcats.BackgroundOptionsMenu.NonRegionButtons)).GetGetMethod(), BackgroundOptionsMenu_NonRegionButtons);
+
+            _ = Ext_HUD_OwnerType.RainMeadowOverlay;
+            On.ProcessManager.Update += ProcessManager_Update_UpdateOverlay;
+            IL.ProcessManager.InitFadeSprite += ProcessManager_InitFadeSprite_SwitchTextSide;
+        }
+
+        private void ProcessManager_InitFadeSprite_SwitchTextSide(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                cursor.GotoNext(MoveType.After,x => x.MatchLdcR4(100.2f));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(
+                    (float orig, ProcessManager self) =>
+                    {
+                        // Put it on the right, so chat can don't overlap with it
+                        if (RMOverlayHUDMenu.GetOverlay()?.chatHud is not null)
+                        {
+                            // RainMeadow.Debug($"orig was <{orig}>, now <{self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x)}> (<{self.rainWorld.options.ScreenSize.x}><{self.loadingLabel.textRect.x}>)");
+                            return self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x); // textRech can be negative ????
+                        }
+                        return orig;
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                Error("Error while hooking : " + e);
+            }
+        }
+
+        private void ProcessManager_Update_UpdateOverlay(On.ProcessManager.orig_Update orig, ProcessManager self, float deltaTime)
+        {
+            orig(self, deltaTime);
+            if (RMOverlayHUDMenu.TryGetOverlayMenu(out var overlayHUDsManager))
+            {
+                overlayHUDsManager.RawUpdate(deltaTime);
+            }
+            else
+            {
+                new RMOverlayHUDMenu(self).AddOverlayHUD();
+                Debug("Rain Meadow Overlay HUD had been added");
+            }
         }
 
         public void BackgroundOptionsMenu_PopulateButtons(On.MoreSlugcats.BackgroundOptionsMenu.orig_PopulateButtons orig, MoreSlugcats.BackgroundOptionsMenu self)

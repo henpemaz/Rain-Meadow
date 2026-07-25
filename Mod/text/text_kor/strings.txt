@@ -1,0 +1,684 @@
+0// Mod Name & Description
+henpemaz_rainmeadow-name|레인 메도우
+henpemaz_rainmeadow-description|멀티플레이어 엔진과 Might&Delight의 Meadow에서 영감을 받은 커스텀 <LINE> 게임, 온라인 아레나와 스토리 플레이. 메도우의 모든 크레딧은 레인메도우의 모드 메뉴에서 확인할 수 있습니다.
+
+
+// Mod Tab
+MEADOW|메도우
+
+// Lobby Select Menu
+Lobby Mode|로비 모드
+All|전부
+Public Lobbies Only|공개 로비만
+Max Lobby Size|로비 최대 인원
+Lobby Mods|로비 모드
+Unfiltered|없음
+Exact order|전부 일치
+Any order|부분 일치
+Direct Connect|직접 연결
+Direct Connection is only available in the Local Matchmaker|직접 연결하는 방법은 로컬 연결에서만 사용할 수 있습니다
+Lobby Domain|도메인 명
+Local|로컬
+Router|라우터
+Steam|Steam
+Failed to join lobby.<LINE> Lobby is full|로비 연결에 실패했습니다. <LINE>로비 인원이 가득찼습니다.
+Failed to join lobby.<LINE>|로비에 참여하지 못했습니다.<LINE>
+Password Required|비밀번호를 입력하세요.
+Wrong password!|비밀번호가 일치하지 않습니다!
+Joining lobby...|로비에 참가하는 중...
+Online:|온라인:
+Lobbies:|로비:
+Rain Meadow Version:|레인 메도우의 버전:
+Credits|크레딧
+
+// Lobby Cards Selector
+Search Lobbies|로비 검색
+Click to join|클릭해 참가:
+<USERNAME>'s Lobby|<USERNAME>의 로비
+Private|비공개
+max|최대
+player|명
+players|명
+Sort by Ping|통신 속도
+Sort A to Z|오름차순
+Sort Z to A|내림차순
+Sort by Fullest Lobby|최대 인원별 정렬
+Sort by Emptiest Lobby|비어있는 로비별 정렬
+Unknown Sorting Method|미지의 정렬 방법
+Refresh list|로비 리스트 갱신
+
+// Lobby Create Menu
+CREATE!|만들기!
+Mode:|모드:
+Meadow|메도우
+A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|맵을 탐색하며 작은 비밀을 발견할 수 있는 평화로운 모드. 혼자서도, 함께여도 즐길 수 있습니다.
+Story|스토리
+Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|레인월드 세계에서 친구와 함께 모험하고, 함께 전투하고, 함께 죽습니다…
+Arena|아레나
+Fight against unforgiving creatures and foes where only the strong survive.|강자만이 살아남는 세계에서, 가차 없는 생물과 적과 싸워보세요.
+Visibility:|공개 범위:
+Public|공개
+Friends Only|친구만
+Invite Only|초대 전용
+Password|비밀번호
+Lobby Password|로비 비밀번호
+Player max:|최대 인원:
+Maximum number of players that can be in the lobby (up to 32)|로비에 참여할 수 있는 최대 인원 (최대 32명)
+Creating lobby...|로비를 생성하는 중...
+//抜け
+Password:|로비 비밀번호:
+
+// Meadow Character Select
+Locked|잠금
+ENTER|입장
+Tint color|색깔
+Tint amount|불투명도
+SKINS|스킨
+SLUGCAT|슬러그캣
+Survivor|생존자
+Monk|수도승
+Hunter|사냥꾼
+Fluffy|스트림
+Night|나이트
+LIZARD|도마뱀
+Pink|분홍
+Blue|파랑
+Yellow|노랑
+Red|빨강
+Black|검정
+Axo|도롱뇽
+Sala|도롱뇽
+Cyan|시안
+Fluffers|플러퍼
+CICADA|오징어 매미
+White|하양
+Dark|검정
+SCAVENGER|스캐빈저
+Twigs|잔가지
+Acorn|도토리
+Oak|오크
+Shrub|관목
+Branches|나뭇가지
+Sage|현자
+Cherry|체리
+Lavender|라벤더
+Peppermint|박하
+Juniper|주니퍼
+NOODLEFLY|국수 파리
+Lily|백합
+Rose|장미
+Poppy|양귀비
+Lotus|연꽃
+Lilac|라일락
+Petunia|페튜니아
+Jasmine|재스민
+Gardenia|치자나무
+EGGBUG|알벌레
+Citrus|시트라스
+Blueberry|블루베리
+Kiwi|키위
+Mango|망고
+Dragonfruit|용과
+LANTERN MOUSE|등불 쥐
+Saphire|사파이어
+Ruby|루비
+Acquamarine|아쿠아마린
+Citrine|황수정
+Emerald|에메랄드
+Quartz|석영
+Amethyst|자수정
+Opal|오팔
+Garnet|가넷
+New character!|새로운 캐릭터!
+
+// Meadow Mode
+CLEAR|선택 취소
+//CONTINUE|계속하기
+Close this menu|이 메뉴를 닫는다
+TO HUB|피난처로
+Teleport to the closest hub|가장 가까운 피난처로 텔레포트한다
+TO OUTSKIRTS|교외로 텔레포트
+Teleport to outskirts|교외로 텔레포트
+PASSAGE|통행권
+Passage to another shelter|피난처 안에서 알고 있는 다른 피난처 장소로 이동합니다
+UNSTUCK|갇힘 해소
+Teleport to a nearby pipe|가장 가까운 파이프로 워프해 움직일 수 없는 현상을 해소합니다
+LOBBY|로비
+Go back to the charater selection screen|캐릭터 선택 화면으로 돌아갑니다
+QUIT|종료
+Exit back to the main menu|메인 메뉴로 이동합니다
+Hub zone volume|허브 구역 볼륨
+Display names|이름 표시
+Collision|충돌
+New character unlocked|새로운 캐릭터 잠금 해제
+New emote unlocked|새로운 이모티콘 잠금 해제
+New skin unlocked|새로운 스킨 잠금 해제
+
+// Story Mode
+Selected Slugcat|슬러그캣 선택
+Press on the button to open/close the slugcat selection list|클릭하면 슬러그캣 선택 리스트를 엽니다
+Current Campaign: |현재 진행 중인 캠페인:
+ - New Game| - 새 게임
+Unknonw Region|불분명한 지역
+Invite Friends|친구 초대
+/// ↓If translated, this text is coverd by check box but there is no word to explaing this text... :( If return key is enable...
+Friendly Fire| 팀킬 적용
+Require Campaign Slugcat|               슬러그캣 고정
+Sync Save|매치 저장
+Restart game|개임을 재시작
+PLAYERS|플레이어
+Press again to ban player!|차단할 플레이어를 다시 선택해 주세요!
+Wait for others to shelter or rescue you, press |다른 플레이어가 당신을 구출하거나 비를 피할 곳에 도착하기를 기다리는 동안「
+ to spectate, or press PAUSE BUTTON to dismiss message|」키를 눌러 다른 플레이어를 관전할 수 있습니다. 「일시정지」키로 이 메시지를 숨기기
+READY|준비
+
+// Arena Mode
+How many explosions Artificer can use before cooldown|기술병이 죽지 않고 사용할 수 있는 폭발 횟수
+ME|자신
+Got All<LINE>ScugSlots!!|슬롯이<LINE>가득 찼습니다!!
+Joining<LINE>soon!|참가 대기 중!
+Ready!|준비!
+Selecting<LINE>Slugcat|캐릭터를<LINE>선택하는 중
+In Game!|플레이 중!
+Showing players in thumbnail view|썸네일 표시
+Showing players in list view|리스트 표시
+Current Mode:|현재 모드:
+Do some wacky stuff around here!|여기서 조금 이상한 걸 해봐!
+Free For All|자유 참여
+Trust no one. Last scug standing wins|아무도 믿지 마세요. 마지막까지 살아있는 팀이 승리합니다.
+Team Battle|팀 배틀
+Choose a faction. Last team standing wins.|팀을 선택합니다. 마지막까지 살아있는 팀이 승리합니다.
+Join Team "<TEAMNAME>"|"<TEAMNAME>"에 참여
+POST-GAME STATS|아레나 통계
+WINS|승리
+KILLS|킬
+DEATHS|죽음
+This game mode doesnt have any info to give|이 게임 모드에는 설정 항목이 없습니다
+Ready:|준비 완료:
+Playlist Progress:|진행 상황:
+WAIT FOR OTHERS|다른 플레이어를 기다리는 중...
+FORCE READY|강제 준비
+LOBBY WILL LOCK|로비가 잠겨 있습니다.
+JOIN?|참여?
+QUEUED TO JOIN|가입 대기 중입니다
+READY?|준비?
+UNREADY|준비 취소
+WAITING|대기 중
+Ready up to join the host when the match begins|경기가 시작되면 호스트에 합류합니다
+START MATCH!|매칭 시작!
+Waiting for others...|다른 플레이어를 대기 중...
+Waiting for host...|호스트 대기 중...
+Welcome to Arena Online!<LINE>All players must ready up to begin.|아레나 온라인에 오신 것을 환영합니다, <LINE> 모든 플레이어가 준비가 완료될 때까지 시작되지 않습니다
+Exit to Lobby Select|로비 선택화면으로 나가기
+Click to open <TABNAME> tab|<TABNAME> 탭을 클릭해 선택
+Arena Playlist|아레나 리스트
+Search for levels|레벨을 검색
+Search levels|레벨 검색
+Match Settings|매칭 설정
+Spears Hit:|창 적중:
+Repeat Rooms:|반복 횟수:
+Allow Item Stealing:|날치기 허용:
+Item Stealing|날치기
+Piggybacking|등에 업기
+Bombs|폭탄
+Scavenger bombs follow vanilla spawn behavior|스캐빈저 폭탄은 바닐라 스폰 규칙을 따라 스폰 됨
+No scavenger bombs spawn|스캐빈저 폭탄이 생성되지 않음
+Corpes grab|시체 잡기
+Players can grab dead players|플레이어가 다른 플레이어의 시체를 잡을 수 있음
+Players cannot grab dead players|플레이어가 다른 플레이어의 시체를 잡을 수 없음
+Join In Progress|라운드마다 참여
+Better Hitbox|히트박스 개선
+Bees|벌집
+Bee hives follow vanilla spawn behavior|벌집은 바닐라 스폰 규칙을 따라 스폰 됨
+No beehives spawn|벌집이 생성되지 않음
+Players can steal items from each other|플레이어들은 서로 아이템을 훔칠 수 있음
+Players cannot steal items from each other|현재 플레이어들은 서로 아이템을 훔칠 수 없음
+Allow Mid-Game Join:|중도 참여 허용:
+Players can join each round|플레이어들은 각 라운드마다 참여할 수 있음
+Players can only join at the first round|현재 플레이어들은 모든 라운드가 끝날 때까지 참여할 수 없음
+Allow Piggyback:|등에 업히기:
+Players can piggyback each other|플레이어들은 서로를 등에 업을 수 있음
+Players cannot piggyback each other|플레이어들은 아무도 등에 기대지 못함
+Better Hitbox:|충돌 판정 수정:
+Thrown weapons are corrected to prevent no-clips|투척 무기가 충돌 판정을 방해하게 됨
+Thrown weapons follow vanilla behaviour|투척 무기가 바닐라와 같은 동작을 함
+Countdown Timer:|카운트 다운 (초):
+How long the grace timer at the beginning of rounds lasts for. Default 5s.|라운드 시작 전 여유 시간을 설정합니다. (기본값: 5초)
+Arena Game Mode:|아레나 게임 모드:
+The game mode for this match|현재 매치의 게임 모드
+Slugcat Abilities|어빌리티
+Disable Mauling:|깨물기 무효:
+Prevent Artificer and <PAINCATNAME> from mauling|<PAINCATNAME>와 기술병의 깨물기를 무효화 함
+Disable Artificer Stun:|기술병 스턴 무효:
+Prevent Artificer from stunning other players|기술병의 스턴이 다른 플레이어에게 영향을 미치지 않음
+Sain't:|살육자:
+Disable Saint ascendance ability, but allow it to throw spears|성자의 ‘승천’ 능력을 무효화하고, 투척 스킬을 부여
+Saint Ascendance Duration:|성자 ‘승천’ 지속시간 (초):
+How long Saint's ascendance ability lasts for. Default: 3s|성자의 ‘승천’ 지속 시간 (기본값: 3초)
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME>의 투척 스킬이 0이라면 알을 생성:
+If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|<PAINCATNAME>가 투척 스킬 제로 상태로 스폰한다면, 알도 함께 생성 됨
+<PAINCATNAME> can always throw spears:|<PAINCATNAME>이 항상 창을 던짐:
+Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|투척 스킬이 0이라 하더라도, <PAINCATNAME> 창 투척을 항상 허용
+<PAINCATNAME> sometimes gets a friend:|드물게 <PAINCATNAME>의 친구 소환:
+Allow <PAINCATNAME> to rarely spawn with a little friend|낮은 확률로 <PAINCATNAME> 작은 친구를 생성
+Watcher Camo Duration:|관찰자의 은신 지속시간 (초):
+How long Watcher's abilities last for. Default: 12s|관찰자의 “은신” 지속 시간을 설정 (기본값: 12초)
+Team Settings|팀 설정
+TEAM|팀
+Team Lerp Color:|팀 색깔:
+How much do you want team color to show on players? From 0 to 1|플레이어를 표시할 팀 색상 지정 (0 혹은 1로 지정)
+You cant color without Remix on!|레인월드 Remix가 활성화되지 않으면 변경할 수 없습니다!
+Waiting|대기
+Prepare for combat,|전투에 대비해, 
+Prepare for war,|전쟁에 대비해, 
+Winner!|승리!
+<TEAMNAME> WIN!|<TEAMNAME>의 승리!
+Unknown user|알 수 없는 유저
+TO LOBBY|로비로
+
+// Arena Slugcat Select
+Back To Lobby|돌아간다
+Go back to main lobby|메인 로비로
+You have been unreadied. Switch back to re-ready yourself automatically|준비가 해제되었습니다. 자동으로 다시 준비하려면 전환하세요.
+The match is starting in <COUNTDOWN>! Ready up!!|매칭 시작까지 <COUNTDOWN>초! 준비하세요!
+CHOOSE YOUR CHARACTER|슬러그캣 선택
+THE NIGHTCAT|밤 고양이
+THE FARTIFICER|???
+THE SLUGPUP|아기 슬러그캣
+THE OVERSEER|감시자
+THE UNKNOWN|불명
+Unknown|불명
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|적이 당신을 둘러싸지만, 처음 때처럼 되지는 않을것이다. <LINE> 창과 돌을 손에 들고 싸워야만 한다.
+Remember: they struck first, so you'll need to hit back harder.|기억해 두자: 그들이 먼저 공격했으니, 그보다 더 강하게 반격해야 한다
+Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|처음부터 고통받으며 끝까지 싸우는 자.<LINE> 그들에게 고통의 의미를 보여주어야 한다.
+Observe all weakness - then strike while cloaked in shadows.|모든 약점을 관찰하고, 그림자에 숨어 공격하라.
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|당신의 파란만장한 이야기가 거의 끝을 맞이하고 있다. <LINE> 마지막 임무를 수행해라.
+An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|폭발적인 성격과 비할 데 없는 분노. <LINE> 복수를 위해 부수고, 폭파해
+Go to Slugcat Selection Page|슬러그캣 선택 페이지로 이동
+A gnawing hunger grows inside you. Feed it with spears.|자신의 안에서 욱신거리는 듯한 허기가 열매를 맺는다. <LINE> 그 창으로 허기를 채워라.
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|목적 없는 세계에서, 마침내 자신의 목적을 찾은 것일지도 모른다. <LINE> 지금 바로 행동하고, 그것을 잃지 않도록 반드시 지켜야만 한다.
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|창은 약한 그릇일 뿐, <LINE> 당신의 승천의 표시로 세상을 만들어라.
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|승천은 약한 그릇일 뿐, <LINE> 손에 쥔 창으로 실력을 보여라.
+Desperate. Fearful. Violent.|필사. 공포. 폭력.
+Pit yourself against a series of challenges|일련의 도전에 맞서 싸우세요
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|열기: 목소리. 선택. 무거운 짐. <LINE> 닫기: 속삭임. 융합. 빠져들다. <LINE> 열기: 반응. 명료함. 무중력.
+Am I Warrior from the past, or a Messiah from the future?|나는 과거의 전사일까, 아니면 미래에서 온 구세주일까?
+Am I Cat Searching for many, or a Mouse searching for one?|나는 ‘많은 것’을 찾는 고양이일까, 아니면 ‘하나’를 찾는 쥐일까?
+Normal den behavior|일반적인 굴 동작
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>나는 운명에 걸린 사마리아인일까, 아니면 시공을 초월한 이상한 자?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>나는 사마리아인으로 운명 지어진 걸까, 아니면 영원히 당신의 그림자에 묶여 있는 걸까?
+<LINE>I do not know, for I am not one. I am many.|<LINE>모르겠어, 나는 그렇지 않아. 나는 많은 것을 아는 슬러그캣이다.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|한 길을 걷는 사람은 큰 보물을 찾을지도 모른다. <LINE> 많은 길을 헤매는 사람은 큰 진실을 찾을 것이다.
+Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?|파도 속에 홀로 고립되어 멀리 떨어져 있다.<LINE>당신은 조류와 함께 흘러갈 것인가, 아니면 거슬러 올라갈 것인가?
+Observe without peril|위험 없이 관찰한다
+Weaver Watcher:|엮는 이 관찰자:
+Your watcher has synced normal cosmetics|당신의 관찰자 형태를 일반 모습으로 교체했다
+Your watcher has synced weaver cosmetics|당신의 관찰자 형태를 엮는 이의 모습으로 교체했다
+Voidkeeper:|공허의 수호자:
+Summon amoebas at the cost of your camo timer|은신 타이머를 소모하여 아메바를 소환할 수 있음
+Amoeba summoning is disabled lobby-wide|로비 전체에서 아메바 소환이 비활성화 됨
+Voidkeeper Amoeba Duration:|공허의 수호자 아메바 지속 시간:
+Amoeba duration time in seconds|아메바의 지속 시간 (초)
+Void's Vengeance:|공허의 복수:
+Amoebas chase targets at-will|아메바가 대상들을 자유롭게 추격 함
+Amoeba's direction is influenced by pointing|아메바의 이동 방향은 포인팅 방향에 영향 받음
+Food Score:|음식 스코어:
+Food points multiplier|음식 점수 배율
+Spear Hit Score:|창 명중 점수:
+Points a spear is worth (non-lethal)|창으로 적을 공격했을 때 얻는 점수 (치명타 아닌 경우)
+Kill Score:|처치 점수:
+Points a kill is worth|적을 처치했을 때 얻는 점수
+Survival Score:|생존 점수:
+Points for surviving inside the shelter|대피소 내로 피난에 성공했을 때 얻는 점수
+Empty Kill Score:|무인 처치 점수:
+Points for other players if someone dies without a killer|살인자가 없는 상태에서 다른 플레이어가 사망했을 때 얻는 점수
+Unlock Dens:|굴 요구 점수:
+Points required to unlock dens|굴을 잠금 해제 필요 포인트
+Den Entry:|굴 진입:
+Den entry behavior|굴 진입 방식
+Score|스코어
+Standard|표준
+Always|항상
+Den Ejection:|굴 퇴출:
+Dens eject and block players after some time|일정 시간이 지나면 덴에서 플레이어를 퇴출하고 차단함
+Playlist: |플레이 리스트:
+Copy playlist to clipboard|리스트를 클립보드에 복사
+Copied|복사 완료
+Import playlist from clipboard|클립보드 리스트 가져오기
+Imported|성공함
+Failed|실패함
+Arena Settings|아레나 설정
+Overseers Show:|오버시어 표시:
+Overseer Spectators spawn in-game|오버시어 플레이어를 인게임에 표시함
+Overseer Spectators do not spawn in-game|오버시어 플레이어를 인게임에 표시하지 않음
+Corpse grab|시체 잡기
+Challenge ID|챌린지 ID
+Challenge Settings|챌린지 설정
+
+// Paincat's Names & Descriptions
+Paincat|Paincat
+PAINCAT|PAINCAT
+Inv|Inv
+INV|INV
+Enot|Enot
+ENOT|ENOT
+Sofanthiel|Sofanthiel
+SOFANTHIEL|SOFANTHIEL
+Gorbo|Gorbo
+GORBO|GORBO
+???|???
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|당신은 지옥에서 탈출했으며, 이제 과거 주기에서 지은 죄를 속죄할 때입니다.
+...why are you here|...왜 여기에
+Thanks, Andrew.|감사합니다. Andrew.
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.요세꾸바 를위바 과창 .다니입것 닐아 은럼처음처 ,<LINE>만지있 이까가 에위주 신당 이들적
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|이익의 탑에 오신 것을 환영합니다: 체류하는 동안 항상 고통을을 겪게 됩니다. <LINE> 물을 잊지 말고 챙겨오길 바랄게요, <USERNAME>!
+$5 to unlock this description.|5달러로 이 설명을 잠금 해제
+egg|알.
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|사랑을 구하는 것은 마음을 부수는 비극적인 아름다운 길로 이끌 것이다.
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|나무 척이 나무를 척할 수 있다면,<LINE>나무 척이 얼마나 많은 나무를 척할 수 있을까요?
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|운을 시험해볼까? 슬러그캣 사진을 가져와 줘 ;)
+Did you know:<LINE>Meadow was released this Friday|그거 아시나요? <LINE> 레인메도우는 금요일에 출시되었습니다.
+Did you know:<LINE>You're bad at Arena|아시나요? :<LINE> 아레나에서는 당신이 안 되겠네요.
+Did you know:<LINE>There's more "Did you know"s.|아시나요? :<LINE> 여기에는 또 ‘아시나요?’ 시리즈가 있습니다.
+Did you know:<LINE>This is the only "Did you know".|이것이 마지막 ‘아시나요?’입니다.
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|당신은 이 라운드에서 질 겁니다.<LINE>당신의 몸은 찾을 수 없을 겁니다.<LINE>6피트 아래 지하로 갈거야.
+"<USERNAME>, youre gonna get us both killed"|「<USERNAME>、네 덕에 우리 둘 다 죽게 될 거야.」
+"no srsly wheres my egg"|「卵は一体どこ?」
+"u dont need 2 be alone, bby."|「혼자 있을 필요 없어, 베이비.」
+"sometimes i wake up with a friend ive never met b4"|「가끔 모르는 친구와 함께 깨어나는 경우가 있어」
+"i luv u <3"|「정말 조아해 <3」
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|왜 “num2”가 변수여야만 했는지, 문자 그대로 “0”인데도
+Don't Care<LINE>Nuh<LINE>Yuh|신경 안 써.<LINE> 응<LINE> 응.
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|갑자기 결과가 직사각형으로 표시되지 않게 되고, 소프트 락 상태가 되었습니다. <LINE> 대체 뭐야. 그 버그는 얼마 전에 고쳐진 줄 알았는데…
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|기여에 대해 생각해 본 적이 있나요?<LINE>https://github.com/henpemaz/Rain-Meadow?
+Be careful when selecting the Fartificer|그 녀석을 선택하실 때는 주의해 주세요.
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|새벽 3시에 “Among Us 포션”을 얻을 것 같은 느낌이 들어. <LINE> 그걸 추가해 줘. (농담)
+Playtesters<LINE>Are<LINE>Replaceable|테스트 플레이어 <LINE>들은 <LINE> 교환 가능
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|inv에 대해 충분히 설명할 수 있는 말이야. <LINE> 배 가 채 워 지 지 않 아 .
+"hiiii!"|「완뇽!!!!」
+"i'm ded"|「죽음.」
+bleh|에휴.
+inv? like invalidunits?|inv?「invalidunits」같은건가?
+
+// Scugslots
+Press and hold something on screen to spin the slots / Hope you brought green|화면 어딘가를 길게 눌러 슬롯을 돌리세요 / 초록색이길 바랍니다.
+One, two three of a kind / Somewhere on this page you will find|1, 2, 3이 모두 모인 모습 / 이 페이지 어딘가에서 찾을 수 있을 겁니다
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|메도우의 디스코드에서 시작된 농담 / 모든 플레이어가 파산하고, 아무도 돈을 낼 수 없게 되다.
+SCUGSLOTS|SCUGSLOTS
+LET'S ROLL!|롤링!
+Oops, better luck next time!|앗, 다음엔 운이 좋았으면 좋겠네요!
+Try your luck again!|다시 한 번 네 운을 시험해 봐!
+99% of gamblers quit before they win big|99%의 도박꾼은 대승을 거두기 전에 그만두어 버린다
+So Close! Keep trying!|아까워! 다시 시도해 봐!
+Almost there!|이제 정말 곧 이야!
+Congratulations! You have achieved the ultimate gamble skill!!!|축하해! 너는 궁극의 도박 스킬을 달성했어!!!!!!!
+Gahh?? Impossible?!|하아~?! 말도 안 돼?!
+You got a <SLUGCATNAME>!|<SLUGCATNAME>을 획득했다!
+
+// Chat Tutorial
+Press '|「
+' to chat, press '|」로 채팅,「
+' to toggle the chat log|」로 채팅 로그를 확인
+
+// Player Joining / Leaving
+joined the game.|님이 참여했습니다.
+tried to join the game but was kicked.|님이 참가하려 했지만 추방 당했습니다.
+left the game.|님이 게임에서 나갔습니다.
+
+// Death Messages
+died.|님이 죽었습니다.
+was crushed by the rain.|님이 비에 짖눌렸습니다.
+fell into the abyss.|님이 추락했습니다.
+drowned.|님이 익사했습니다.
+hit the ground too hard.|님이 바닥에 곤두박질 쳤습니다.
+was killed through unknown means.|님이 원인 불명으로 살해당했습니다.
+tried to swim in burning liquid.|님이 산성 액체에 몸을 맏겼습니다.
+spontaneously combusted.|님은 자연 발화 했습니다.
+froze to death.|님이 추위에 의해 사망했습니다.
+was swallowed by the grass.|님이 잔디에 짓눌렸습니다.
+was swallowed by the walls.|님이 벽에 삼켜졌습니다.
+was electrocuted.|님이 감전됐습니다.
+licked the power.|님이 운동 에너지를 경험했습니다.
+was consumed by the swarm.|님이 무리에 의해 소비되었습니다.
+was electrocuted in the water.|님이 물속에서 감전되었습니다.
+was obliterated by the sandstorm.|님이 모래 폭풍에 의해 사라졌습니다.
+died from poison.|님이 독에 중독되었습니다.
+was struck by lightning.|님이 번개에 직격으로 맞았습니다.
+was consumed by locusts.|님은 메뚜기에게 물어뜯겼습니다.
+swam with the ripples.|님이 잔물견 안을 해엄쳤습니다.
+experienced the force of fresh fruit.|님은 신선한 과일의 힘을 체험했습니다.
+was burnt to a crisp.|님은 노릇하게 구워졌습니다.
+was taken into the abyss by|님이 추락했습니다. 
+was drowned by|님이 물에 빠졌습니다. 처치한 이:
+was slain by|님이 살해당했습니다. 처치한 이:
+was ascended by|님이 승천했습니다. 처치한 이:
+was zapped by a|님이 감전되었습니다. 처치한 이:
+was ambushed by a|님이 매복당했습니다. 처치한 이:
+was taken by a|님이 납치되었습니다 처치한 이:
+was slain by a|님이 살해되었습니다. 처치한 이:
+
+// creature names for death messages
+Pink Lizard|분홍 도마뱀
+Green Lizard|초록 도마뱀
+Blue Lizard|파랑 도마뱀
+Yellow Lizard|노랑 도마뱀
+White Lizard|하양 도마뱀
+Red Lizard|빨강 도마뱀
+Black Lizard|검정 도마뱀
+Salamander|도롱뇽
+Cyan Lizard|하늘 도마뱀
+Leech|거머리
+Sea Leech|바다 거머리
+Snail|달팽이
+Vulture|독수리
+Garbage Worm|쓰레기 벌레
+Lantern Mouse|등불 쥐
+Cicada A|오징어 매미 A
+Cicada B|오징어 매미 B
+Jet Fish|제트 물고기
+Big Eel|레비아탄
+Deer|사슴
+Tube Worm|끈끈이 벌레
+Daddy Long Legs|대디 롱 레그
+Brother Long Legs|브라더 롱 레그
+Tentacle Plant|괴물 해초
+Pole Mimic|장대 식물
+Miros Bird|가위새
+Temple Guard|守護者
+Centipede|지네
+Red Centipede|빨간 지네
+Scavenger|스캐빈저
+Centiwing|날개 지네
+Small Centipede|작은 지네
+Overseer|감시자
+Vulture Grub|독수리 애벌레
+Big Spider|늑대 거미
+Spitter Spider|스피터 거미
+Egg Bug|알벌레
+Small Needle|아기 국수파리
+Big Needle|국수파리 어미
+Drop Bug|집게 벌레
+King Vulture|왕벌쳐
+Hazer|오징어
+Miros Vulture|가위 독수리
+Caramel Lizard|카라멜 도마뱀
+Eel|장어 도마뱀
+Strawberry|딸기 도마뱀
+Mother Spider|어미 거미
+Terror Long Legs|마더 롱 레그
+Aquapede|물지네
+Stowaway Bug|빈디 벌레
+Elite Scavenger|엘리트 스캐빈저
+Inspector|감독관
+Yeek|이크
+Big Jellyfish|거대 해파리
+Jungle Leech|정글 거머리
+Hell Bug|불벌레
+King Scavenger|스캐빈저 족장
+Slugpup|아기 슬러그캣
+Train Lizard|기차 도마뱀
+Barnacle|따개비
+DrillCrab|드릴 게
+SandGrub|모래 벌레 유충
+BigSandGrub|모래 벌레
+BigMoth|큰 나방
+SmallMoth|나방
+Box Worm|박스 벌레
+Fire Sprite|불 요정
+Rattler|뼈덜컹이
+SkyWhale|하늘 고래
+ScavengerTemplar|스캐빈저 기사
+ScavengerDisciple|스캐빈저 제자
+Loach|수염바퀴
+Rot Behemoth|부패 수염바퀴
+Blizzard Lizard|블리자드 도마뱀
+Basilisk Lizard|바실리스크 도마뱀
+Indigo Lizard|인디고 도마뱀
+Rat|쥐
+Frog|개구리
+Tardigrade|물곰
+
+// Direct Connection Dialogue
+Direct Connection... |직접 연결 중...
+Password:|パスワード:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|유효하지 않은 주소. <LINE> IP 주소는 "xxx.xxx.xxx.xxx:port " 형태여야 합니다.
+This address is possibly not local to your current network.|주소가 현재 네트워크 상에서는 로컬 IP가 아닐 수도 있습니다.
+If so, This is very unstable and will most likely NOT work|만약에 참이라면, 매우 불안정해 제대로 동작하지 않을 가능성이 높습니다.
+Are you SURE you know what you're doing?|정말로 실행하겠습니까?
+
+// LAN Matchmaking Manager
+LAN Lobby|랜선 로비
+Nobody|누구나
+Your network interface(s) are|당신의 네트워크 인터페이스는
+<NAME> network interface is |<NAME>님의 네트워크 인터페이스는
+You are the owner of the lobby.|당신이 로비의 주인입니다.
+This player is the owner of the lobby.|이 플레이어가 로비의 주인입니다.
+This user is the lobby host|이 플레이어가 로비의 주인입니다
+Customize your colors|색 커스터마이징
+Players can “Direct Connect” to this lobby through your interface(s).|당신의 네트워크 인터페이스를 통해 플레이어는 ‘직접 연결’할 수 있습니다.
+Players can “Direct Connect” to this lobby through their interface(s).|그들의 네트워크 인터페이스를 통해 플레이어는 직접 연결할 수 있습니다.
+You cannot use this feature here.|이 기능을 사용할 수 없습니다.
+
+// Mod Applier
+Error loading mods!|모드 로드 에러!
+A restart is required to finish applying the mod changes.|Mod의 변경 사항을 저장하려면 게임을 재시작해야 합니다.
+Restarting now...|재시작 중...
+Mod Mismatch!|모드가 일치하지 않습니다!
+Mods that have to be enabled: |요구 모드:
+Mods that have to be disabled: |비 활성화 되야하는 모드:
+Mods that have to be installed: |도입이 필요한 모드:
+Apply these changes now?|변경 사항을 바로 적용하시겠습니까?
+Warning: Differing Mod Load Orders!|!경고! 다른 모드 로더를 사용하고 있습니다!
+This may cause unstable play.|플레이가 불안정해질 가능성이 있습니다.
+Reorder your mods now?|다시 모드를 요청하시겠습니까?
+Cannot join due to missing DLC!|필요한 DLC가 없어서 참여할 수 없습니다!
+Missing DLC Mods that have to be enabled: |활성화해야 하는 모드 혹은 DLC:
+
+// Remix Options
+Note: These inputs are not used in Meadow mode|주의: 이 입력 설정은 메도우 모드에서는 사용되지 않습니다
+Show usernames|사용자 이름 표시
+Username Toggle|사용자 이름·전환
+Replace holding with toggling|홀드를 전환으로 변경한다
+Key used for toggling spectator mode|관전 모드 전환 키
+Stop Inputs While Spectating|관전 모드 중에는 입력을 비활성화
+Pointing Key|포인트 키
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|아래 버튼을 클릭하여 클라이언트 측에서 허용되는 모드를 조정해 주세요. <LINE> 절차는 파일 내에서 확인해 주세요.
+Edit High-Impact Mods|동기화 필수 모드를 편집
+Edit Banned Mods|거부 모드를 편집
+Chat Log Toggle|로그 전환
+Chat Talk Button|채팅 키
+Chat Background Opacity|채팅의 불투명도 설정
+Show Ping|네트워크 지연 표시
+Playtesting Gift|테스터 기프트
+Chat Log On/Off|로그 활성화
+Introroll|타이틀 화면
+Vanilla|바닐라
+Downpour|다운푸어
+Downpour DLC is not activated, vanilla intro will be used instead|「더 많은 슬러그캣 확장」이 비활성화 되어있습니다. 바닐라의 타이틀 화면으로 교체합니다.
+Watcher DLC is not activated, vanilla intro will be used instead|「관찰자」가 비활성화 되어있습니다. 바닐라의 타이틀 화면으로 교체합니다.
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|관전 모드, 스토리, 아레나 메뉴의 크롤 속도. 기본값: 5
+Disable Pause Menu Animation|일시정지 중 애니메이션을 비활성화
+If selected, disables the sway animation in the pause menu|활성화하면 일시정지 중 파도 애니메이션이 사라집니다.
+Input “cheats” to access cheats|치트에 접근하려면 “cheats”를 입력하세요.
+Just make sure not to ruin the fun for yourself...|즐거움을 스스로 망치지 않도록 조심하세요…
+Emote and skin unlocks will affect the currently selected character|이모트와 스킨을 모두 해제하면 현재 선택한 캐릭터에 영향을 줍니다
+Unlock Emote|이모트 잠금 해제
+Unlock Skin|스킨 잠금 해제
+Unlock Character|캐릭터 잠금 해제
+Reset all progression|진행 상황을 초기화한다
+Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|매치 설정이 아레나 메뉴로 이동했습니다.<LINE>남은 설정은 이스터 에그뿐입니다.
+The following option may contain spoilers for Saint's campaign.|이 설정에는 성자 캠페인의 스포일러가 포함되어 있습니다.
+OKIE DOKIE|오키 도키
+Slugpup: Rubicon background in select menu|아기 슬러그캣: 선택 화면에 루비콘 배경 허용
+Ready to shelter/gate|게이트·우비 피난처 아이콘
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|참이라면 게이트와 피난처에 있는 슬러그캣의 사용자명과<LINE>아이콘이 항상 표시됩니다.
+[Experimental Features]|[시험적 기능] 
+WARNING: Experimental features may cause data corruption, back up your saves|!경고! 시험 기능은 데이터가 손상될 가능성이 있습니다. 백업을 잊지 마세요!
+Custom Story Slugcat:|커스텀 스토리:
+If selected, hosts can choose slugcat campaigns that are unstable.|활성화하면 호스트가 검증되지 않은 슬러그캣의 커스텀 캠페인을 <LINE>선택할 수 있게 됩니다.
+Steal items from other players in Story mode|스토리 모드에서 플레이어에게서 창을 스틸
+LAN|LAN
+Username|유저 이름
+UDP timeout (ms)|UDP 연결 타임아웃 (ms)
+UDP heartbeat (ms)|UDP 연결 하트 비트 (ms)
+
+// Credits
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|는 독특한 게임을 위한 독특한 멀티플레이어 엔진입니다. 다른 제품은 전혀 맞지 않았습니다. - Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|『Meadow』는 Might & Delight의 동명 게임에 영감을 받은 게임 모드입니다. 버그가 많아 거의 플레이할 수 없는 게임이지만, <LINE> 빠져들게 하는 매력이 있습니다. 어디선가 들어본 적 있나요?
+This mod and all its features were brought to you by really awesome people from the community.|이 모드와 모든 기능은 커뮤니티의 정말 훌륭한 사람들에 의해 제공되었습니다.
+Lead Developer|메인 개발자
+Lead Artist|메인 아티스트
+Lead Audio Designer|메인 사운드 디자이너
+Programming, engine|프로그래밍 - 엔진
+Programming, sound|프로그래밍 - 사운드
+UI Design|UI 구축
+Programming, menus|프로그래밍 - 메뉴
+Programming, arena|프로그래밍 - 아레나
+Programming, story|프로그래밍 - 스토리
+Programming, modsync|프로그래밍 - Modsync
+Programming, story, arena|프로그래밍 - 스토리, 아레나
+Programming, UI, chat|프로그래밍 - UI、채팅
+Illustration|일러스트
+Programming, UI, menus|프로그래밍 - UI、메뉴
+Programming, UI, story|프로그래밍 - UI、스토리
+Programming, UI, LAN|프로그래밍 - UI、LAN
+Thank you playtesters from the Rain Meadow discord as well.|레인메도우 디스코드 플레이 테스터 여러분께도 정말 감사드립니다.
+
+// misc
+Players|플레이어
+CONFIRM|적용
+Leaving Lobby|로비에서 퇴장
+You were removed from the previous online game|지난번 온라인 플레이에서 제외되었습니다.
+This player does not have a profile.|이 플레이어는 프로필을 가지고 있지 않습니다.
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam은 현재 비활성화되어 있습니다. 레인메도우의 몇몇 기능이 비활성화되었습니다.
+Rain Meadow failed to start|레인메도우 시작에 실패했습니다.
+Rain Meadow: Please use an external mod to access Inv's campaign.|레인메도우: Inv 캠페인에 접근하려면 외부 MOD를 사용해 주세요.
+
+
+/// VERSION 0.1.8.0 UPDATE ///
+
+/// options-> story
+Gain achievements online|실적 획득을 온라인 플레이에서 유효하게 만듭니다
+
+/// arena-> ability
+Select Settings|DLC 설정
+MSC Settings|더 많은 슬러그캣 확장 설정
+Watcher Settings|관찰자 설정
+Return to Select Settings Page|DLC 설정으로 돌아간다
+
+/// arena-> ability-> watcher Tab
+Watcher Ripple Level:|관찰자의 잔물결 레벨:
+Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|관찰자의 잔물결 레벨을 1~9 범위 내에서 설정 (기본값: 1)
+
+
+/// no translation in the list?
+
+/// arena slugcat select
+Press grab to toggle active slugcats|잡기 버튼을 눌러 활성화할 슬러그캣을 선택
+
+/// arena back button description
+Exit to Lobby Select|로비 선택 화면으로 돌아간다
+View post-Game Stats|게임 통계 표시
+/// arena invite buton description (this is already exist at Meadow tab but not it not worked)
+The Steam invite feature is currently unstable, and may not work properly. <LINE> Consider using a public lobby with a password instead.|스팀의 초대 기능이 현재 불안정하여 제대로 작동하지 않을 수 있습니다.<LINE>대신 비밀번호가 있는 공개 로비를 사용하는 것을 고려해 보세요.
+Invite friends|친구 초대

@@ -73,6 +73,7 @@ namespace RainMeadow
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
         public bool WinByScore => killScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode || externalArenaGameMode is DrownMode;
+        public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;

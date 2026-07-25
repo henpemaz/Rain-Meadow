@@ -157,6 +157,8 @@ namespace RainMeadow
         private Vector2? pointingDir;
         [OnlineFieldHalf]
         public float rippleDeathIntensity;
+        [OnlineFieldHalf]
+        public float aerobicLevel;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -174,6 +176,7 @@ namespace RainMeadow
             glowing = p.glowing;
             lungsExhausted = p.lungsExhausted;
             rippleDeathIntensity = p.rippleDeathIntensity;
+            aerobicLevel = p.aerobicLevel;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             afkSleep = extras.afkSleep;
@@ -293,6 +296,7 @@ namespace RainMeadow
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
             p.lungsExhausted = lungsExhausted;
+            p.aerobicLevel = aerobicLevel;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             extras.afkSleep = afkSleep;

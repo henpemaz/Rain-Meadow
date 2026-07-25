@@ -157,6 +157,7 @@ namespace RainMeadow
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.type == Watcher.WatcherEnums.AbstractObjectType.Prince) return false;
             return true;
         }
 

@@ -1366,8 +1366,12 @@ namespace RainMeadow
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
 
-                if (MatchmakingManager.currentInstance.canSendChatMessages)
-                    self.AddPart(new ChatHud(self, cam));
+                if (MatchmakingManager.currentInstance.canSendChatMessages 
+                    && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
+                {
+                    if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(cam);
+                    else overlayHUD.SetNewChatHUDCamera(cam);
+                }
             }
         }
         private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self)

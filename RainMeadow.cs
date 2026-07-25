@@ -249,7 +249,8 @@ namespace RainMeadow
                 ObjectHooks();
                 JollyHooks();
 
-                CapeManager.FetchCapes();
+                CosmeticManager.FetchCosmetics();
+                CosmeticManager.ParseAvailableCosmetics();
 
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
