@@ -298,7 +298,10 @@ namespace RainMeadow
 
         public virtual WorldSession LinkWorld(World world)
         {
-            OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession);
+            if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession))
+            {
+                RainMeadow.Error($"No WorldSession established for region {world.region.name}, it will not be synced");
+            }
             return worldSession;
         }
 
