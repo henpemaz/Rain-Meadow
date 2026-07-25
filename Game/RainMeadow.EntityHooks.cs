@@ -40,12 +40,67 @@ namespace RainMeadow
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
-            On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update;
-            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update;
-
-            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+            On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update; // clients will not change behavior on their own
+            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update; // clients will not bite on their own         
+            IL.MoreSlugcats.StowawayBug.bodySetup += StowawayBug_bodySetup; // calling homepos instead of bodyChunk.pos because bodyChunk.pos will be different for clients due to sync
+            
+            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);            
         }
 
+        private void StowawayBug_bodySetup(ILContext il)
+        {            
+            var c = new ILCursor(il);
+
+            Func<Instruction, bool>[] predicates = {
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchCallvirt(typeof(AbstractWorldEntity).GetMethod("get_Room")),
+                x => x.MatchLdfld<AbstractRoom>(nameof(AbstractRoom.realizedRoom)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.x)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.y)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.x)),
+
+                x => x.MatchLdcI4(0),
+                x => x.MatchLdloca(0),
+                x => x.MatchCallvirt(typeof(Room).GetMethod("RayTraceTilesList")),
+                x => x.MatchPop()
+            };
+            
+            var skip = c.DefineLabel();
+            c.GotoNext(MoveType.After, predicates);
+            skip = c.MarkLabel();
+
+            c = new ILCursor(il);
+
+            c.GotoNext(MoveType.Before, predicates);
+            
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloca, 0);
+
+            c.EmitDelegate((MoreSlugcats.StowawayBug self, ref List<global::RWCustom.IntVector2> list) => {
+                if (OnlineManager.lobby == null) return false;
+
+                UnityEngine.Vector2 homePos = (self.State as MoreSlugcats.StowawayBugState).HomePos;
+                RWCustom.IntVector2 intHomePos = Room.StaticGetTilePosition(homePos);
+                self.abstractCreature.Room.realizedRoom.RayTraceTilesList(intHomePos.x, intHomePos.y, intHomePos.x, 0, ref list);
+
+                return true;
+            });
+            c.Emit(OpCodes.Brtrue, skip);
+        }
+        
         private void StowawayBug_Update(ILContext il)
         {
             var c = new ILCursor(il);
@@ -72,11 +127,11 @@ namespace RainMeadow
 
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((MoreSlugcats.StowawayBug stowaway) => {
-                if (OnlineManager.lobby is null) return false;
+                if(OnlineManager.lobby is null) return false;
                 if(stowaway.IsLocal()) return false;
                 return true;
             });
-            c.Emit(OpCodes.Brtrue, skip);           
+            c.Emit(OpCodes.Brtrue, skip);
         }
         
         private void StowawayBugAI_Update(On.MoreSlugcats.StowawayBugAI.orig_Update orig, MoreSlugcats.StowawayBugAI self)

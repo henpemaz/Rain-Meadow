@@ -6,35 +6,36 @@ using UnityEngine;
 namespace RainMeadow
 {
     public class RealizedStowawayState : RealizedCreatureState
-    {
-        // Todo figure out whats needed and what isn't
-        // TODO sync tentacle firing correctly so it fires at the same time for everyone
+    {        
         [OnlineField]
         Generics.DynamicOrderedStates<StowawayTentacleState> heads;
-        [OnlineField]
-        bool[] headsfired;// = new bool[3];
 
         [OnlineField]
         bool mawOpen;
-       
-        [OnlineFieldHalf]
-        Vector2 currentDirection;
-        [OnlineFieldHalf]
-        float sleepScale;
-        [OnlineFieldHalf]
-        float[] headCooldown;
+        [OnlineField]
+        bool activeThisCycle; // check if its needed
+        [OnlineField]
+        bool[] headsfired;
+               
+        [OnlineField]
+        byte behavior; // heads can be buggy if not synced
+
         [OnlineField(group = "counters")]
         int spitCooldown;
         [OnlineField(group = "counters")]
         int huntDelay;
-        [OnlineField]
-        byte behavior;
 
-        [OnlineField]
-        float digestPrey;
-
-        [OnlineField]
-        float biting;
+        [OnlineFieldHalf]
+        float digestPrey; // to sync killer bite
+        [OnlineFieldHalf]
+        float biting; // biting
+        [OnlineFieldHalf]
+        float headLength; // needed cause can somethimes be dife=rent, and when diferent this makes heads to be buggy
+        [OnlineFieldHalf(group = "counters")]
+        float[] headCooldown;
+        
+        [OnlineFieldHalf]
+        Vector2 currentDirection;
 
         public RealizedStowawayState() { }
 
@@ -45,13 +46,12 @@ namespace RainMeadow
             behavior = (byte)stowaway.AI.behavior.index;
             headsfired = stowaway.headFired;
             mawOpen = stowaway.mawOpen;
-            //originalPos = stowaway.originalPos;
-            //placedDirection = stowaway.placedDirection;
             currentDirection = stowaway.currentDirection;
             headCooldown = stowaway.headCooldown;
-            sleepScale = stowaway.sleepScale;
             spitCooldown = stowaway.spitCooldown;
             huntDelay = stowaway.huntDelay;
+            headLength = stowaway.headLength;
+            activeThisCycle = stowaway.AI.activeThisCycle;
 
             if (stowaway.graphicsModule is not null)
             {
@@ -66,7 +66,9 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
+
             if ((onlineEntity as OnlineCreature).apo.realizedObject is not StowawayBug stowaway) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
+
             stowaway.AI.behavior = behavior switch
             {
                 0 => StowawayBugAI.Behavior.Idle,
@@ -78,19 +80,21 @@ namespace RainMeadow
             };
 
             stowaway.headFired = headsfired;
-            stowaway.mawOpen = mawOpen;            
+            stowaway.mawOpen = mawOpen;
             stowaway.currentDirection = currentDirection;
             stowaway.headCooldown = headCooldown;
-            stowaway.sleepScale = sleepScale;
             stowaway.spitCooldown = spitCooldown;
             stowaway.huntDelay = huntDelay;
+            stowaway.headLength = headLength;
+            stowaway.AI.activeThisCycle = activeThisCycle;
+
 
             if (stowaway.graphicsModule is not null)
             {
                 StowawayBugGraphics stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
 
                 if (stowawayGraphics.biting < .01f && stowawayGraphics.biting < biting)
-                {                 
+                {
                     for (int n = UnityEngine.Random.Range(1, 5); n > 0; n--)
                     {
                         stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, RWCustom.Custom.DirVec(stowaway.firstChunk.pos, stowaway.bodyChunks[1].pos) * 10f + RWCustom.Custom.RNV(), true));
@@ -100,12 +104,12 @@ namespace RainMeadow
                 stowawayGraphics.biting = biting;
 
                 if (stowawayGraphics.digestPrey < 0.01f && stowawayGraphics.digestPrey < digestPrey)
-                {            
+                {
                     for (int i = UnityEngine.Random.Range(4, 8); i > 0; i--)
                     {
                         stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, default(UnityEngine.Vector2) + RWCustom.Custom.RNV(), true));
-                    }                    
-                    stowaway.LoseAllGrasps();                    
+                    }
+                    stowaway.LoseAllGrasps();
                     stowaway.room.PlaySound(SoundID.Bro_Digestion_Init, stowaway.firstChunk);
                     stowaway.room.PlaySound(SoundID.Lizard_Jaws_Grab_Player, stowaway.firstChunk);
                 }
@@ -117,33 +121,31 @@ namespace RainMeadow
                 heads.list[i].ReadTo(stowaway.heads[i], i);
             }
         }
-        protected override ArtificialIntelligenceState? GetCreatureAIState(OnlineCreature onlineCreature)
-        {
-            return new ArtificialIntelligenceState(onlineCreature.abstractCreature.abstractAI.RealAI);
-        }
     }
 
     public class StowawayTentacleState : OnlineState
     {
-        [OnlineFieldHalf]
-        float retractFac;
+        const int chunksToSync = 3;
+
         [OnlineField]
         bool fired;
-        [OnlineFieldHalf(group = "counters")]
-        float hcooldown;
+
         [OnlineField(group = "counters")]
         int scooldown;
+        
         [OnlineFieldHalf]
-        Vector2[] vel;
+        float retractFac;
+        [OnlineFieldHalf(group = "counters")]
+        float hcooldown;
         [OnlineFieldHalf]
-        Vector2[] pos;
+        float idealLength;
 
         [OnlineField(nullable = true)]
         Vector2? grabdest;
         [OnlineFieldHalf]
-        float idealLength;
-
-        int chunksToSync = 3;
+        Vector2[] vel;
+        [OnlineFieldHalf]
+        Vector2[] pos;
 
         public StowawayTentacleState() { }
 
@@ -158,6 +160,7 @@ namespace RainMeadow
 
             pos = new Vector2[chunksToSync];
             vel = new Vector2[chunksToSync];
+
             for (int i = 0; i < chunksToSync; i++)
             {
                 pos[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos;
