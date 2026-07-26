@@ -18,6 +18,7 @@ namespace RainMeadow
 
         public string[] requiredmods;
         public string[] bannedmods;
+        public string[] banneddllshash;
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
@@ -47,6 +48,7 @@ namespace RainMeadow
 
             requiredmods = RainMeadowModManager.GetRequiredMods();
             bannedmods = RainMeadowModManager.GetBannedMods();
+            banneddllshash = RainMeadowModManager.GetBannedDllHashes();
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
@@ -228,6 +230,8 @@ namespace RainMeadow
             public string[] requiredmods;
             [OnlineField]
             public string[] bannedmods;
+            [OnlineField]
+            public string[] banneddllshash;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -259,6 +263,7 @@ namespace RainMeadow
                 timeline = lobby.meadowTimeline;
                 eventGags = lobby.eventGags;
                 cheats = lobby.cheats;
+                banneddllshash = lobby.banneddllshash;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -305,10 +310,11 @@ namespace RainMeadow
                 if (!lobby.modsChecked)
                 {
                     //Made asyncronous so that the game doesn't get totally frozen
-                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true));
+                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, banneddllshash, null, true));
 
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
+                    lobby.banneddllshash = banneddllshash;
                     if (ModManager.MMF && lobby.gameMode.nonGameplayRemixSettings != null)
                     {
                         OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);

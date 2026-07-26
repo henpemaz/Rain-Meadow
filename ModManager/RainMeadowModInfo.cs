@@ -29,6 +29,12 @@ public sealed class RainMeadowModInfo
     [JsonProperty("banned_online_mods_override")]
     public List<string> BannedOnlineModsOverride { get; set; } = [];
 
+    /// <summary>
+    /// Hashes of DLLs that are banned, even if their mod ID is not in the banned list.
+    /// </summary>
+    [JsonProperty("banned_dll_hashes")]
+    public List<string> BannedDllHashes { get; set; } = new List<string>();
+
 
     /// <summary>
     /// Merges the contents of the provided mod info into this mod info, ignoring duplicate values.
@@ -41,5 +47,7 @@ public sealed class RainMeadowModInfo
 
         BannedOnlineMods.AddDistinctRange(modInfo.BannedOnlineMods);
         BannedOnlineModsOverride.AddDistinctRange(modInfo.BannedOnlineModsOverride);
+
+        BannedDllHashes.AddDistinctRange(modInfo.BannedDllHashes);
     }
 }

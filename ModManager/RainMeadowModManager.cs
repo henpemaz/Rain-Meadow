@@ -1,11 +1,13 @@
-﻿using RWCustom;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using RWCustom;
 
 namespace RainMeadow
 {
@@ -15,6 +17,7 @@ namespace RainMeadow
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
+        public static string BannedDllHashesFileName = "meadow-banneddllhashes.txt";
         public static string SyncRequiredModsExplanationComment =>
             """
             // The following is a list of mods that must be synced between client and host:
@@ -32,6 +35,8 @@ namespace RainMeadow
             //mod-id-to-exclude
 
             """;
+
+        public static string BannedDllHashesExplanationComment = "# DLL hashes banned by server (auto-generated + manual).";
 
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
@@ -105,21 +110,228 @@ namespace RainMeadow
                 .ToArray();
         }
 
+        private static readonly HashSet<string> HighPriorityModIds = new() // A copy version from RainMeadow.json
+        {
+            "maxi-mol.mousedrag",
+            "fyre.BeastMaster",
+            "slime-cubed.devconsole",
+            "zrydnoob.UnityExplorer",
+            "warp",
+            "presstopup",
+            "CandleSign.debugvisualizer",
+            "maxi-mol.freecam",
+            "henpemaz_spawnmenu",
+            "autodestruct",
+            "DieButton",
+            "emeralds_features",
+            "flirpy.rivuletunscammedlungcapacity",
+            "Aureuix.Kaboom",
+            "TM.PupMagnet",
+            "iwantbread.slugpupstuff",
+            "blujai.rocketficer",
+            "slugcatstatsconfig",
+            "explorite.slugpups_cap_configuration",
+            "slime-cubed.slugbase"
+        };
+        public static string[] GetBannedDllHashes()
+        {
+            var all = ComputeAllBannedHashesWithModId();
+            var allHashes = all.Select(x => x.hash).Distinct().ToList();
+
+            string filePath = Path.Combine(Custom.RootFolderDirectory(), BannedDllHashesFileName);
+            allHashes = ReadOrWriteHashFile(filePath, all, BannedDllHashesExplanationComment);
+
+            RainMeadow.Debug($"allHashes: {string.Join(", ", allHashes)}");
+
+            return allHashes.ToArray();
+        }
+
+        private const int HASH_TRUNCATE_LENGTH = 16;
+        private const int MAX_HASH_COUNT = 20;
+        public static string[] GetBannedDllHashesForLobby()
+        {
+            var all = ComputeAllBannedHashesWithModId();
+            // Remove duplicates, retain the first occurrence and record the corresponding module ID (priority given to those with higher impact)
+            var hashToModId = new Dictionary<string, string>();
+            foreach (var (hash, modId) in all)
+            {
+                if (!hashToModId.ContainsKey(hash))
+                    hashToModId[hash] = modId;
+            }
+
+            // Grouping: High Impact Hash and Other Hashes
+            var highPriorityHashes = new List<string>();
+            var otherHashes = new List<string>();
+            foreach (var kvp in hashToModId)
+            {
+                var modId = kvp.Value;
+                if (!string.IsNullOrEmpty(modId) && HighPriorityModIds.Contains(modId))
+                    highPriorityHashes.Add(kvp.Key);
+                else
+                    otherHashes.Add(kvp.Key);
+            }
+
+            // Final list: Start with the high-impact items, then add the others.
+            var selectedHashes = new List<string>();
+            int takeHigh = Math.Min(highPriorityHashes.Count, MAX_HASH_COUNT);
+            selectedHashes.AddRange(highPriorityHashes.Take(takeHigh));
+            // If there are still vacancies, add more hash functions.
+            int remaining = MAX_HASH_COUNT - selectedHashes.Count;
+            if (remaining > 0)
+                selectedHashes.AddRange(otherHashes.Take(remaining));
+
+            var truncated = selectedHashes.Select(h => h.Length > HASH_TRUNCATE_LENGTH ? h.Substring(0, HASH_TRUNCATE_LENGTH) : h).ToList();
+
+            return truncated.ToArray();
+        }
+        private static List<(string hash, string modId)> ComputeAllBannedHashesWithModId()
+        {
+            var manualHashes = RainMeadowModInfoManager.MergedModInfo.BannedDllHashes ?? new List<string>();
+            var bannedIds = GetBannedMods();
+            var result = new List<(string, string)>();
+
+            foreach (var h in manualHashes)
+                result.Add((h, null));
+
+            foreach (var id in bannedIds)
+            {
+                var mod = GetModById(id);
+                if (mod?.hasDLL == true)
+                {
+                    var dllPaths = GetModDllPaths(mod);
+                    foreach (var path in dllPaths)
+                    {
+                        if (File.Exists(path))
+                        {
+                            try
+                            {
+                                var hash = ComputeFileSHA256(path);
+                                result.Add((hash, id));
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        private static string ComputeFileSHA256(string filePath)
+        {
+            var sha256 = SHA256.Create();
+            var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var hashBytes = sha256.ComputeHash(stream);
+            return Convert.ToBase64String(hashBytes);
+        }
+        private static List<string> GetModDllPaths(ModManager.Mod mod)
+        {
+            var dllPaths = new List<string>();
+
+            // Priority: Version directory > newest > root directory
+            string searchRoot = mod.path;
+            if (mod.hasTargetedVersionFolder)
+            {
+                string versionFolder = Path.Combine(mod.path, RainWorld.GAME_VERSION_STRING);
+                if (Directory.Exists(versionFolder))
+                    searchRoot = versionFolder;
+            }
+            else if (mod.hasNewestFolder)
+            {
+                string newestFolder = Path.Combine(mod.path, "newest");
+                if (Directory.Exists(newestFolder))
+                    searchRoot = newestFolder;
+            }
+
+            var allDlls = Directory.GetFiles(searchRoot, "*.dll", SearchOption.AllDirectories);
+            foreach (var dll in allDlls)
+            {
+                dllPaths.Add(dll);
+            }
+
+            return dllPaths;
+        }
+        private static ModManager.Mod GetModById(string id)
+        {
+            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id);
+        }
+
+        private static List<string> ReadOrWriteHashFile(string filePath, List<(string hash, string comment)> newEntries, string fileComment = "")
+        {
+            // newEntries: Each element is either (hash, modId) or (hash, null)
+            if (!File.Exists(filePath))
+            {
+                var lines = new List<string>();
+                if (!string.IsNullOrEmpty(fileComment)) lines.Add(fileComment);
+                foreach (var (hash, comment) in newEntries)
+                {
+                    if (!string.IsNullOrEmpty(comment))
+                        lines.Add($"{hash} # {comment}");
+                    else
+                        lines.Add(hash);
+                }
+                File.WriteAllLines(filePath, lines);
+                return newEntries.Select(e => e.hash).ToList();
+            }
+            else
+            {
+                var existingLines = File.ReadAllLines(filePath);
+                var existingHashesWithComment = new List<(string hash, string comment)>();
+                foreach (var line in existingLines)
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+                        continue;
+                    int hashEnd = line.IndexOf('#');
+                    string hashPart, commentPart = null;
+                    if (hashEnd >= 0)
+                    {
+                        hashPart = line.Substring(0, hashEnd).Trim();
+                        commentPart = line.Substring(hashEnd + 1).Trim();
+                    }
+                    else
+                        hashPart = line.Trim();
+                    if (!string.IsNullOrEmpty(hashPart))
+                        existingHashesWithComment.Add((hashPart, commentPart));
+                }
+
+                // merged: Keep existing items and add new items (skip if the hash already exists)
+                var merged = new List<(string hash, string comment)>(existingHashesWithComment);
+                foreach (var (hash, comment) in newEntries)
+                {
+                    if (!merged.Any(e => e.hash == hash))
+                        merged.Add((hash, comment));
+                }
+
+                var linesToWrite = new List<string>();
+                if (!string.IsNullOrEmpty(fileComment))
+                    linesToWrite.Add(fileComment);
+                foreach (var (hash, comment) in merged)
+                {
+                    if (!string.IsNullOrEmpty(comment))
+                        linesToWrite.Add($"{hash} # {comment}");
+                    else
+                        linesToWrite.Add(hash);
+                }
+                File.WriteAllLines(filePath, linesToWrite);
+                return merged.Select(e => e.hash).ToList();
+            }
+        }
+
         /// <summary>
         /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary.
         /// </summary>
         /// <param name="requiredMods">Mods that the user MUST have in order to join the lobby</param>
         /// <param name="bannedMods">Mods that the user must NOT have, unless the mods are in <paramref name="requiredMods"/></param>
+        /// <param name="bannedHashes">DLLs that the user must NOT have, unless mapping table from DLLs to mods are in <paramref name="requiredMods"/></param>
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "")
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, string[] bannedHashes, Action? onFinish, bool ignoreReorder = false, string restartCode = "")
         {
             try
             {
                 RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
+                RainMeadow.Debug($"banned dll hash:   [ {string.Join(", ", bannedHashes)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
                 var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
@@ -159,6 +371,62 @@ namespace RainMeadow
                             }
                         }
                         catch (Exception ex) { RainMeadow.Error(ex); }
+                    }
+                }
+
+                // dll hash check
+                List<string> unknownHashes = new List<string>();
+                if (bannedHashes != null && bannedHashes.Length > 0)
+                {
+                    // Build a mapping from DLL hash to mod ID for currently enabled mods
+                    var hashToModId = new Dictionary<string, string>();
+                    foreach (var mod in ModManager.ActiveMods)
+                    {
+                        var dllPaths = GetModDllPaths(mod);
+                        foreach (var path in dllPaths)
+                        {
+                            if (File.Exists(path))
+                            {
+                                try
+                                {
+                                    string localTruncated = ComputeFileSHA256(path);
+                                    if (localTruncated.Length > HASH_TRUNCATE_LENGTH)
+                                        localTruncated = localTruncated.Substring(0, HASH_TRUNCATE_LENGTH);
+                                    if (!hashToModId.ContainsKey(localTruncated))
+                                        hashToModId[localTruncated] = mod.id;
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+
+                    // check banned dll hash
+                    foreach (var bannedHash in bannedHashes)
+                    {
+                        string truncatedBanned = bannedHash.Length > HASH_TRUNCATE_LENGTH
+                            ? bannedHash.Substring(0, HASH_TRUNCATE_LENGTH)
+                            : bannedHash;
+
+                        if (hashToModId.TryGetValue(truncatedBanned, out string modId))
+                        {
+                            // If this mod is present in the "required" list, then it will be ignored (since "required" takes precedence over blocking).
+                            if (requiredMods.Contains(modId))
+                                continue;
+
+                            // Otherwise, the mod will be forcibly disabled.
+                            if (!disable.Contains(modId) && !enable.Contains(modId))
+                                disable.Add(modId);
+                            else if (enable.Contains(modId))
+                            {
+                                enable.Remove(modId);
+                                if (!disable.Contains(modId))
+                                    disable.Add(modId);
+                            }
+                        }
+                        else
+                        {
+                            unknownHashes.Add(truncatedBanned);
+                        }
                     }
                 }
 

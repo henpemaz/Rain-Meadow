@@ -13,8 +13,8 @@ namespace RainMeadow
         public string requiredMods;
         public string bannedMods;        
         public bool pinned;
-
-        public LobbyInfo(string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "")
+        public string bannedHashes;
+        public LobbyInfo(string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "", string bannedHashes = "")
         {
             this.name = name;
             this.mode = mode;
@@ -23,6 +23,7 @@ namespace RainMeadow
             this.maxPlayerCount = (int)maxPlayerCount;
             this.requiredMods = highImpactMods;
             this.bannedMods = bannedMods;
+            this.bannedHashes = bannedHashes;
         }
 
         public abstract string GetLobbyJoinCode(string? password = null);
