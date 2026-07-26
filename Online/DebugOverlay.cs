@@ -13,6 +13,7 @@ namespace RainMeadow
 
         public abstract class DebugNode
         {
+            public abstract bool Relevant { get; }
             protected FSprite lineSprite;
             protected FSprite lineSprite2;
             protected FLabel label;
@@ -67,8 +68,9 @@ namespace RainMeadow
             }
         }
 
-        public  class ResourceDebugNode : DebugNode
+        public class ResourceDebugNode : DebugNode
         {
+            public override bool Relevant => (Resource.isActive && !ownershipView) || (this == debugNodes[0]);
             public OnlineResource Resource { get; set; }
             public ResourceDebugNode(FContainer container, OnlineResource resource) : base(container)
             {
@@ -91,6 +93,7 @@ namespace RainMeadow
 
         private class PlayerDebugNode : DebugNode
         {
+            public override bool Relevant => !Player.hasLeft && ownershipView;
             public OnlinePlayer Player { get; set; }
             public PlayerDebugNode(FContainer container, OnlinePlayer player) : base(container)
             {
@@ -233,6 +236,7 @@ namespace RainMeadow
                 node.lines = 0;
                 foreach (OnlineResource resource in node.Resource.subresources)
                 {
+                    if (!resource.isActive) continue;
                     node.lines += 1;
                     ResourceDebugNode childNode = debugNodes.OfType<ResourceDebugNode>().FirstOrDefault(regionNode => regionNode.Resource == resource);
                     if (childNode == null)
@@ -355,12 +359,8 @@ namespace RainMeadow
 
             debugNodes.RemoveAll(node =>
             {
-                if (node is ResourceDebugNode rdn && (ownershipView || !rdn.Resource.isActive) && rdn.Resource is not Lobby)
-                {
-                    node.RemoveSprites();
-                    return true;
-                }
-                if (node is PlayerDebugNode pdn && (!ownershipView || pdn.Player.hasLeft))
+
+                if (node != debugNodes[0] && !node.Relevant)
                 {
                     node.RemoveSprites();
                     return true;
