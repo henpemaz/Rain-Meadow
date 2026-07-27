@@ -115,8 +115,8 @@ namespace RainMeadow
         {
             try
             {
-                var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
-                var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
+                var cape_hash_file = Path.Combine(ModManager.GetModById(RainMeadow.GuidRainWorld).path, "capes_hash.txt");
+                var capes_txt = Path.Combine(ModManager.GetModById(RainMeadow.GuidRainWorld).path, "capes.txt");
 
                 using (WebClient client = new WebClient())
                 {
@@ -155,7 +155,7 @@ namespace RainMeadow
         static public void ParseAvailableCosmetics()
         {
             entries.Clear();
-            var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
+            var capes_txt = Path.Combine(ModManager.GetModById(RainMeadow.GuidRainWorld).path, "capes.txt");
             RainMeadow.DebugMe();
 
             // process capes from file.

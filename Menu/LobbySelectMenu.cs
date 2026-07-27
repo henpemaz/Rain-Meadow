@@ -95,7 +95,7 @@ namespace RainMeadow
             mainPage.subObjects.Add(statisticsLabel);
 
             // // display version
-            MenuLabel versionLabel = new(this, pages[0], $"{Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            MenuLabel versionLabel = new(this, pages[0], $"{Translate("Rain Meadow Version:")} {RainMeadow.Version}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
             versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             mainPage.subObjects.Add(versionLabel);
 
@@ -147,7 +147,7 @@ namespace RainMeadow
             string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
             foreach (string id in requiredModIDs)
             { //adding Rain Meadow is quite redundant, so I'll leave it out.
-                if (id != "henpemaz_rainmeadow") requiredModsList.Add(new(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count));
+                if (id != RainMeadow.GuidRainWorld) requiredModsList.Add(new(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count));
             }
             filterModsDropDown = new OpComboBox2(new Configurable<string>("Any"), where, 160f, requiredModsList) { colorEdge = MenuColorEffect.rgbWhite };
             filterModsDropDown.OnChange += UpdateLobbyFilter;

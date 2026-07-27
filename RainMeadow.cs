@@ -10,16 +10,21 @@ using System.Security.Permissions;
 using UnityEngine;
 using UnityEngine.Networking;
 
-[assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
+[assembly: AssemblyVersion(RainMeadow.RainMeadow.Version)]
 #pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 namespace RainMeadow
 {
-    [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
+    [BepInPlugin(GuidBepInEx, Name, Version)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.14.1";
-        public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
+        public const string
+            GuidRainWorld = "henpemaz_rainmeadow",
+            GuidBepInEx = "henpemaz.rainmeadow",
+            Name = "Rain Meadow",
+            Version = "0.1.14.1",
+            ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
+
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
         private bool init;
@@ -176,7 +181,7 @@ namespace RainMeadow
             {
                 EssentialMenuHooks(); //  sets the error message fallback
 
-                MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
+                MachineConnector.SetRegisteredOI(GuidRainWorld, rainMeadowOptions);
                 rainMeadowOptions._LoadConfigFile(); // We need the logging settings
 
                 if (AdvancedProfilingEnabled())
@@ -304,8 +309,8 @@ namespace RainMeadow
                 {
                     latestVersion = "0." + latestVersion;
                 }
-                RainMeadow.Debug($"Current Version - {MeadowVersionStr}, Latest Version - {latestVersion}");
-                if (IsNewerVersion(latestVersion, MeadowVersionStr))
+                RainMeadow.Debug($"Current Version - {Version}, Latest Version - {latestVersion}");
+                if (IsNewerVersion(latestVersion, Version))
                 {
                     RainMeadow.Debug($"NEW RAIN MEADOW VERSION FOUND.");
                     // One day grace window before users are prompted to update.

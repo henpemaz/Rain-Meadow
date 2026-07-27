@@ -19,6 +19,7 @@
 - Added Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 ### Modders
+- Added constants for Rain Meadow's guids, name, and version.
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
 ## Arena
