@@ -66,7 +66,7 @@ namespace RainMeadow
                 this.color = a.externalArenaGameMode.IconColor(a, this, owner, customization, player);
             }
             else if (RainMeadow.isStoryMode(out _)
-                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs)
                 && cs.chatUsernameColor is Color chatUsernameColor)
             {
                 this.color = chatUsernameColor;
@@ -171,7 +171,11 @@ namespace RainMeadow
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = lighter_color;
 
-            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.WinByScore)
+            this.customization = customization;
+
+            this.fadeSpeed = 20f;
+
+            if (RainMeadow.isArenaMode(out _))
             {
                 this.scoreLabel = new FLabel(Custom.GetFont(), "0");
                 owner.hud.fContainers[0].AddChild(this.scoreLabel);
@@ -180,9 +184,6 @@ namespace RainMeadow
                 this.scoreLabel.color = Color.white;
             }
 
-            this.customization = customization;
-
-            this.fadeSpeed = 20f;
         }
 
         public override void Update()
@@ -382,23 +383,26 @@ namespace RainMeadow
 
             if (RainMeadow.isArenaMode(out var arena) && this.scoreLabel != null)
             {
-                this.scoreLabel.x = pos.x + 20f;
-                this.scoreLabel.y = pos.y;
-                this.scoreLabel.alpha = num;
-                int lobbyId = player.inLobbyId;
-                int playerNumber = -1;
-                if (arena.session != null && owner != null && owner.RealizedPlayer != null)
+                if (arena.ShowScore)
                 {
-                    playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
-                    int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
-                    if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
-                        playerNumber != -1)
+                    this.scoreLabel.alpha = num;
+                    this.scoreLabel.SetPosition(pos.x + 20f, pos.y);
+
+                    if (arena.session != null && owner?.RealizedPlayer != null
+                        && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
+                        && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
                     {
-                        bool sessionEnded = arena.session.sessionEnded;
-                        this.scoreLabel.text = arena.externalArenaGameMode != null && arena.externalArenaGameMode.ShowAddedScoreBetweenRoundsInOnlinePlayerUI
-                            ? (sessionEnded ? totScore.ToString() : (totScore + score).ToString())
+                        int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                        bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;
+                        this.scoreLabel.text = showAdded
+                            ? (arena.session.sessionEnded ? totScore : totScore + score).ToString()
                             : score.ToString();
                     }
+                }
+                else
+                {
+                    this.scoreLabel.alpha = 0f;
+                    this.scoreLabel.SetPosition(-1000f, -1000f);
                 }
             }
 
