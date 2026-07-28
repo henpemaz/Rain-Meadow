@@ -3395,13 +3395,6 @@ namespace RainMeadow
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
                     return;
                 }
-                else
-                {
-                    for (int i = 0; i < self.result.Count; i++)
-                    {
-                        self.result[i].readyForNextRound = true;
-                    }
-                }
             }
 
             orig(self);
