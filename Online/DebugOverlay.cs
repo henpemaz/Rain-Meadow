@@ -343,7 +343,7 @@ namespace RainMeadow
                 }
                 inWorldSession = inRoomSession.worldSession;
 
-                var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
+                var worlds = OnlineManager.lobby.overworld.worldSessions.Values.Where(x => x.isActive).ToList();
                 worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
 
                 int lastWorldLines = 0;
@@ -363,7 +363,7 @@ namespace RainMeadow
                     regionNode.pos = root.pos + new Vector2(20, root.lines * -35);
 
                     // Rooms
-                    var rooms = worldSession.roomSessions.Values.ToList();
+                    var rooms = worldSession.roomSessions.Values.Where(x => x.isActive).ToList();
                     rooms.Sort((x, y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
                     foreach (var roomSession in rooms)
                     {
@@ -485,7 +485,7 @@ namespace RainMeadow
                 // Players
                 var players = OnlineManager.players.OrderBy(x => x.inLobbyId);
 
-                foreach(var player in players)
+                foreach (var player in players)
                 {
                     ResourceNode playerNode = resourceNodes.Find(playerNode => playerNode.player == player);
                     if (playerNode == null)
@@ -719,9 +719,9 @@ namespace RainMeadow
                     }
                     else
                     {
-                        clientFlags += currentClientSettings.readyForWin        ? "S" : "";
+                        clientFlags += currentClientSettings.readyForWin ? "S" : "";
                         clientFlags += currentClientSettings.readyForTransition ? "G" : "";
-                        clientFlags += currentClientSettings.isDead             ? "D" : "";
+                        clientFlags += currentClientSettings.isDead ? "D" : "";
                     }
                 }
             }

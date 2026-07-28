@@ -5,6 +5,18 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        public void InitializeExtEnums()
+        {
+            // Run static initializers for each class
+            _ = Ext_HUD_OwnerType.RainMeadowOverlay;
+            _ = Ext_ProcessID.OnlineManager;
+            _ = Ext_SlugcatStatsName.OnlineSessionPlayer;
+            _ = Ext_SceneID.Slugcat_MeadowSquidcicada;
+            _ = Ext_PhysicalObjectType.MeadowPlant;
+            _ = Ext_SoundID.RM_Slugcat_Call;
+            _ = Ext_OverseerHologram_Message.OverseerEmote;
+        }
+
         public class Ext_HUD_OwnerType
         {
             public static HUD.HUD.OwnerType RainMeadowOverlay = new("RainMeadowOverlay", true);
