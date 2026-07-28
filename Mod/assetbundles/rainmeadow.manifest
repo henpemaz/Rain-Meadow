@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1370403073
+CRC: 4172137432
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: f4ed57889e5498763dd9d8e5fa5f448a
+    Hash: 06b8344ee47f9168d6282eadba3c03f3
   TypeTreeHash:
     serializedVersion: 2
     Hash: 68c985bf88fecc38b460cdb825182138
@@ -13,7 +13,10 @@ ClassTypes:
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
-- Assets/rainmeadow/RM_SceneHidden.shader
-- Assets/rainmeadow/RM_LeveIltem.shader
-- Assets/rainmeadow/RM_NightSkySkin.shader
+- Assets/Shaders/RM_GoldenSkin.shader
+- Assets/Shaders/RM_SceneHidden.shader
+- Assets/Shaders/RippleSpawnBodyColored.shader
+- Assets/Shaders/RM_NightSkySkin.shader
+- Assets/Shaders/RM_LeveIltem.shader
+- Assets/Shaders/RippleGlowColored.shader
 Dependencies: []

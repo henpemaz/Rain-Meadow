@@ -181,6 +181,8 @@ namespace RainMeadow
             {
                 EssentialMenuHooks(); //  sets the error message fallback
 
+                InitializeExtEnums();
+
                 MachineConnector.SetRegisteredOI(GuidRainWorld, rainMeadowOptions);
                 rainMeadowOptions._LoadConfigFile(); // We need the logging settings
 
@@ -235,8 +237,15 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
+                        if (shader.name == "RippleGlowColored"
+                            || shader.name == "RippleSpawnBodyColored")
+                        {
+                            RainMeadow.Debug("also registering ripple side variant");
+                            self.Shaders[shader.name + "RippleSide"] = FShader.CreateShader(shader.name + "RippleSide", shader, ["ripple_other_side"]);
+                        }
                     }
                 }
+                self.Shaders.Add("FlatWaterLightRippleSide", FShader.CreateShader("FlatWaterLight", Shader.Find("Futile/FlatWaterLight"), ["ripple_other_side"]));
 
                 MenuHooks();
                 GameHooks();

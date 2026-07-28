@@ -1,4 +1,5 @@
 ﻿using Ionic.Zlib;
+using System;
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -34,10 +35,21 @@ namespace RainMeadow
         private static byte[] Compress(Stream input, int len)
         {
             using (var compressStream = new MemoryStream())
-            using (var compressor = new DeflateStream(compressStream, CompressionMode.Compress))
             {
-                input.CopyTo(compressor, len);
-                compressor.Close();
+                using (var compressor = new DeflateStream(compressStream, CompressionMode.Compress))
+                {
+
+
+                    var chunk = new byte[8192];
+                    int remaining = len;
+                    while (remaining > 0)
+                    {
+                        int read = input.Read(chunk, 0, Math.Min(chunk.Length, remaining));
+                        if (read <= 0) break;
+                        compressor.Write(chunk, 0, read);
+                        remaining -= read;
+                    }
+                }
                 return compressStream.ToArray();
             }
         }
