@@ -1187,6 +1187,8 @@ namespace RainMeadow
             int index
         )
         {
+            MenuMicrophone menuMic = owner.menu.manager.menuMic;
+
             if (isArenaMode(out var arena))
             {
 
@@ -1204,8 +1206,11 @@ namespace RainMeadow
                     arena.ReadFromStats(player, pl);
                 }
 
+                // prevents UI_Multiplayer_Player_Result_Box_Bump playing for every single player in the lobby at once
+                owner.menu.manager.menuMic = null;
             }
             orig(self, resultPage, owner, player, index);
+            owner.menu.manager.menuMic = menuMic;
         }
 
         public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
@@ -3065,6 +3070,9 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                // play once per menu instead of per every FinalResultbox
+                manager.menuMic.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Bump);
+
                 self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
 
                 var exitButton = new Menu.SimpleButton(
