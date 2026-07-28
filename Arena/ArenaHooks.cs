@@ -3075,6 +3075,12 @@ namespace RainMeadow
 
                 self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
 
+                foreach (FSprite sprite in self.continueButton.roundedRect.sprites)
+                    sprite.MoveToFront();
+                foreach (FSprite sprite in self.continueButton.selectRect.sprites)
+                    sprite.MoveToFront();
+                self.continueButton.menuLabel.label.MoveToFront();
+
                 var exitButton = new Menu.SimpleButton(
                     self,
                     self.pages[0],
