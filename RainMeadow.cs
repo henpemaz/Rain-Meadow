@@ -176,6 +176,8 @@ namespace RainMeadow
             {
                 EssentialMenuHooks(); //  sets the error message fallback
 
+                InitializeExtEnums();
+
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
                 rainMeadowOptions._LoadConfigFile(); // We need the logging settings
 
