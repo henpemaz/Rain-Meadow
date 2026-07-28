@@ -482,5 +482,19 @@ namespace RainMeadow
 
             return trophies;
         }
+        
+        // Adding that function to hook for other mods
+        public static Color GetAmoebaColor(OnlinePlayer owner, bool inOtherRipple = false)
+        {
+            Color rawColor = (RainMeadow.isArenaMode(out var arena)
+                ? (TeamBattleMode.isTeamBattleMode(arena, out var tb) 
+                        && OnlineManager.lobby.clientSettings[owner]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
+                            ? tb.teamColors[tcs.team]
+                            : GetArenaClientSettings(owner)?.slugcatColor)
+                : null) ?? RainWorld.RippleColor;
+            HSLColor hSLColor = rawColor.ToHSL();
+            hSLColor.lightness = inOtherRipple ? RainWorld.RippleGold.ToHSL().lightness / 2 : RainWorld.RippleColor.ToHSL().lightness;
+            return hSLColor.rgb;
+        }
     }
 }
