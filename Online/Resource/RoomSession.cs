@@ -119,10 +119,6 @@ namespace RainMeadow
             [OnlineFieldHalf]
             float FlameJetTime;
 
-            // ThunderStorm
-            [OnlineField (nullable = true)]
-            LethalThunderStormData? stormData;
-
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
@@ -134,11 +130,6 @@ namespace RainMeadow
                         if (firstJet != null)
                         {
                             FlameJetTime = firstJet.time;
-                        }
-                        LethalThunderStorm storm = resource.absroom.realizedRoom.lethalThunderStorm;
-                        if (storm != null)
-                        {
-                            stormData = new(storm);
                         }
                     }
                 }
@@ -160,11 +151,6 @@ namespace RainMeadow
                             foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
                             {
                                 flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
-                            }
-                            LethalThunderStorm storm = rs.absroom.realizedRoom.lethalThunderStorm;
-                            if (storm != null)
-                            {
-                                stormData?.ReadTo(storm);
                             }
                         }
                     }
