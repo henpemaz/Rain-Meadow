@@ -1,4 +1,3 @@
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -13,7 +12,7 @@ namespace RainMeadow.UI.Components
         public EventfulScrollButton? prevButton, nextButton;
         private int currentOffset;
 
-        public ArenaMode arenaMode;
+        public ArenaOnlineGameMode arenaMode;
         public DrownMode DROWN;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true);
 
@@ -34,7 +33,7 @@ namespace RainMeadow.UI.Components
 
 
 
-        public DrownInterface(ArenaMode arena, DrownMode drown, Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+        public DrownInterface(ArenaOnlineGameMode arena, DrownMode drown, Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             tabWrapper = new(menu, this);
             DROWN = drown;

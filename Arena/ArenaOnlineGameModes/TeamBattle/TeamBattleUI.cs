@@ -1,14 +1,8 @@
 ﻿using Menu;
-using Menu.Remix;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
-using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
-using HarmonyLib;
 using RainMeadow.UI;
-using RainMeadow.UI.Pages;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
@@ -70,7 +64,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaSettingsInit();
             //myTab = menu.arenaMainLobbyPage.tabContainer.AddTab(menu.Translate("Team Settings"));
             myTab = new(menu, menu.arenaMainLobbyPage.tabContainer);
-            myTab.AddObjects(myTeamBattleSettingInterface = new OnlineTeamBattleSettingsInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
+            myTab.AddObjects(myTeamBattleSettingInterface = new OnlineTeamBattleSettingsInterface((ArenaOnlineGameMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
             menu.arenaMainLobbyPage.tabContainer.AddTab(myTab, menu.Translate("Team Settings"));
         }
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
@@ -120,7 +114,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             base.OnUIShutDown(menu);
             myTeamBattleSettingInterface?.OnShutdown();
         }
-        public override Color GetPortraitColor(ArenaMode arena, OnlinePlayer? player, Color origColor)
+        public override Color GetPortraitColor(ArenaOnlineGameMode arena, OnlinePlayer? player, Color origColor)
         {
             Color col = base.GetPortraitColor(arena, player, origColor);
             ArenaTeamClientSettings? teamClientSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
@@ -128,13 +122,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 col = Color.Lerp(col, teamColors[teamClientSettings.team], lerp);
             return col;
         }
-        public override bool DidPlayerWinRainbow(ArenaMode arena, OnlinePlayer player)
+        public override bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player)
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
             return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1;
         }
 
-        public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
