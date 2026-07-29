@@ -1222,9 +1222,9 @@ namespace RainMeadow
 
             // after the constructor this list is only used for detecting ready input from the player
             // and whether all players are readied, limiting this list to just the local player after the ctor
-            // and not calling PlayerPressedContinue for non-host makes it so that
-            // a. the input is only registered for the current player, preventing the sfx from playing multiple times
-            // b. non-host readying doing nothing while host readying continuing the game, which is exactly what we want
+            // makes it so that the input is only registered for the current player,
+            // making PlayerPressedContinue only get called once,
+            // allowing us to write our own logic on readyForNextRound
             list.RemoveAll(x => ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, x.playerNumber)?.isMe != true);
         }
 
