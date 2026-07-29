@@ -12,27 +12,14 @@ namespace RainMeadow
 
         [OnlineField]
         bool mawOpen;
-        [OnlineField]
+        [OnlineField(group = "setup")]
         bool activeThisCycle;
-        [OnlineField]
-        bool[] headsfired;
                
         [OnlineField]
         byte behavior; // heads can be buggy if not synced
 
-        [OnlineField(group = "counters")]
-        int spitCooldown;
-        [OnlineField(group = "counters")]
-        int huntDelay;
-
-        [OnlineFieldHalf]
-        float digestPrey; // to sync killer bite
-        [OnlineFieldHalf]
-        float biting; // biting
-        [OnlineFieldHalf]
-        float headLength; // needed cause can somethimes be diferent, and when diferent this makes heads to be buggy
-        [OnlineFieldHalf(group = "counters")]
-        float[] headCooldown;
+        [OnlineFieldHalf(group = "setup")]
+        float headLength; // needed cause can somethimes be diferent, and when diferent this makes heads to be buggy        
         
         [OnlineFieldHalf]
         Vector2 currentDirection;
@@ -43,22 +30,11 @@ namespace RainMeadow
         {
             StowawayBug stowaway = (StowawayBug)onlineEntity.realizedCreature;
 
-            behavior = (byte)stowaway.AI.behavior.index;
-            headsfired = stowaway.headFired;
+            behavior = (byte)stowaway.AI.behavior.index;            
             mawOpen = stowaway.mawOpen;
-            currentDirection = stowaway.currentDirection;
-            headCooldown = stowaway.headCooldown;
-            spitCooldown = stowaway.spitCooldown;
-            huntDelay = stowaway.huntDelay;
+            currentDirection = stowaway.currentDirection;                        
             headLength = stowaway.headLength;
             activeThisCycle = stowaway.AI.activeThisCycle;
-
-            if (stowaway.graphicsModule is not null)
-            {
-                StowawayBugGraphics stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
-                biting = stowawayGraphics.biting;
-                digestPrey = stowawayGraphics.digestPrey;
-            }
 
             heads = new(stowaway.heads.Select((t, i) => new StowawayTentacleState(t, i)).ToList());
         }
@@ -79,42 +55,11 @@ namespace RainMeadow
                 5 => StowawayBugAI.Behavior.Sleeping
             };
 
-            stowaway.headFired = headsfired;
             stowaway.mawOpen = mawOpen;
-            stowaway.currentDirection = currentDirection;
-            stowaway.headCooldown = headCooldown;
-            stowaway.spitCooldown = spitCooldown;
-            stowaway.huntDelay = huntDelay;
+            stowaway.currentDirection = currentDirection;            
             stowaway.headLength = headLength;
             stowaway.AI.activeThisCycle = activeThisCycle;
 
-
-            if (stowaway.graphicsModule is not null)
-            {
-                StowawayBugGraphics stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
-
-                if (stowawayGraphics.biting < .01f && stowawayGraphics.biting < biting)
-                {
-                    for (int n = UnityEngine.Random.Range(1, 5); n > 0; n--)
-                    {
-                        stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, RWCustom.Custom.DirVec(stowaway.firstChunk.pos, stowaway.bodyChunks[1].pos) * 10f + RWCustom.Custom.RNV(), true));
-                    }
-                    stowaway.room.PlaySound(SoundID.Lizard_Jaws_Shut_Miss_Creature, stowaway.firstChunk);
-                }
-                stowawayGraphics.biting = biting;
-
-                if (stowawayGraphics.digestPrey < 0.01f && stowawayGraphics.digestPrey < digestPrey)
-                {
-                    for (int i = UnityEngine.Random.Range(4, 8); i > 0; i--)
-                    {
-                        stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, default(UnityEngine.Vector2) + RWCustom.Custom.RNV(), true));
-                    }
-                    stowaway.LoseAllGrasps();
-                    stowaway.room.PlaySound(SoundID.Bro_Digestion_Init, stowaway.firstChunk);
-                    stowaway.room.PlaySound(SoundID.Lizard_Jaws_Grab_Player, stowaway.firstChunk);
-                }
-                stowawayGraphics.digestPrey = digestPrey;
-            }
 
             for (int i = 0; i < stowaway.heads.Length; i++)
             {
@@ -126,21 +71,13 @@ namespace RainMeadow
     public class StowawayTentacleState : OnlineState
     {
         const int chunksToSync = 3;
-
-        [OnlineField]
-        bool fired;
-
-        [OnlineField(group = "counters")]
-        int scooldown;
         
         [OnlineFieldHalf]
-        float retractFac;
-        [OnlineFieldHalf(group = "counters")]
-        float hcooldown;
+        float retractFac;        
         [OnlineFieldHalf]
         float idealLength;
 
-        [OnlineField(nullable = true)]
+        [OnlineFieldHalf(nullable = true)]
         Vector2? grabdest;
         [OnlineFieldHalf]
         Vector2[] vel;
@@ -151,13 +88,8 @@ namespace RainMeadow
 
         public StowawayTentacleState(Tentacle tentacle, int index)
         {
-            StowawayBug owner = (StowawayBug)tentacle.owner;
-
             retractFac = tentacle.retractFac;
-            fired = owner.headFired[index];
-            hcooldown = owner.headCooldown[index];
-            scooldown = owner.spitCooldown;
-
+            
             pos = new Vector2[chunksToSync];
             vel = new Vector2[chunksToSync];
 
@@ -173,13 +105,7 @@ namespace RainMeadow
 
         public void ReadTo(Tentacle tentacle, int index)
         {
-            StowawayBug owner = (StowawayBug)tentacle.owner;
-
             tentacle.retractFac = retractFac;
-
-            owner.headFired[index] = fired;
-            owner.headCooldown[index] = hcooldown;
-            owner.spitCooldown = scooldown;
 
             for (int i = 0; i < chunksToSync; i++)
             {
