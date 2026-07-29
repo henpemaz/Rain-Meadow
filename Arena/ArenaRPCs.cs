@@ -328,24 +328,29 @@ namespace RainMeadow
 
 
         [RPCMethod]
-        public static void Arena_ReadyForNextLevel()
+        public static void Arena_ReadyForNextRound(RPCEvent rpcEvent)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+                return;
+            if (Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
+                return;
+            if (game.manager.upcomingProcess is not null)
+                return;
+            List<ArenaSitting.ArenaPlayer> players = game.GetArenaGameSession.arenaSitting.players;
+            if (rpcEvent.from == OnlineManager.lobby.owner)
             {
-                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-                for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
-                {
-                    game.arenaOverlay.result[i].readyForNextRound = true;
-                }
-                game.arenaOverlay.nextLevelCall = true;
-
+                foreach (ArenaSitting.ArenaPlayer player in game.GetArenaGameSession.arenaSitting.players)
+                    player.readyForNextRound = true;
+                game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
             }
-
+            else
+            {
+                int index = ArenaHelpers.FindOnlinePlayerNumber(arena, rpcEvent.from);
+                if (index < 0 || index >= players.Count)
+                    return;
+                players[index].readyForNextRound = true;
+                game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+            }
         }
 
 

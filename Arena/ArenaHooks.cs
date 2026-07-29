@@ -3394,16 +3394,25 @@ namespace RainMeadow
             Menu.ArenaOverlay self
         )
         {
-            if (isArenaMode(out var arena))
+            if (!isArenaMode(out _))
             {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-                    return;
-                }
+                orig(self);
+                return;
             }
 
-            orig(self);
+            foreach (OnlinePlayer player in OnlineManager.players.Where(x => x != OnlineManager.mePlayer))
+                player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
+            if (OnlineManager.lobby.isOwner)
+            {
+                foreach (ArenaSitting.ArenaPlayer player in self.ArenaSitting.players)
+                    player.readyForNextRound = true;
+                self.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
+                self.countdownToNextRound = self.countdownToNextRound == -1 ? 10 : Math.Min(self.countdownToNextRound, 10);
+            }
+            else
+            {
+                self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+            }
         }
 
         public void ArenaGameSession_Update(
