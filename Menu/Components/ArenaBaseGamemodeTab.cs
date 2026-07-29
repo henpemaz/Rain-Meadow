@@ -2,13 +2,13 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
+
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -39,7 +39,7 @@ namespace RainMeadow.UI.Components
 
 
             nextButton;
-        public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
+        public ArenaOnlineGameMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
         public MenuLabel arenaImportExportLabel;
         public MenuLabel arenaSettingsImportExportLabel;
 
