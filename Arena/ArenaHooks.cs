@@ -72,7 +72,6 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
-            On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
@@ -598,6 +597,19 @@ namespace RainMeadow
                     c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
                     c.MarkLabel(continueAsNormal);
                 }
+
+                c.Index = 0;
+                ILLabel skipIfNotArenaMode = c.DefineLabel();
+                c.GotoNext(
+                    MoveType.After,
+                    i => i.MatchLdfld<PlayerResultMenu>(nameof(PlayerResultMenu.result)),
+                    i => i.MatchCallvirt(typeof(List<ArenaSitting.ArenaPlayer>).GetProperty(nameof(List<>.Count))!.GetGetMethod())
+                );
+                c.EmitDelegate(() => isArenaMode(out _));
+                c.Emit(OpCodes.Brfalse, skipIfNotArenaMode);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Ldc_I4, 0);
+                c.MarkLabel(skipIfNotArenaMode);
             }
             catch (Exception e)
             {
@@ -1316,6 +1328,21 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                if (self.allResultBoxesInPlaceCounter > 10)
+                {
+                    int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+                    if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
+                    {
+                        Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
+                        if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
+                        {
+                            ArenaRPCs.Arena_ReadyForNextRound();
+                            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
+                                player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
+                        }
+                    }
+                }
+
                 if (arena.leaveForNextLevel)
                 {
                     string loadingString;
@@ -3387,22 +3414,6 @@ namespace RainMeadow
             {
                 return orig(self, shortcutVessel);
             }
-        }
-
-        public void ArenaOverlay_PlayerPressedContinue(
-            On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig,
-            Menu.ArenaOverlay self
-        )
-        {
-            if (!isArenaMode(out _))
-            {
-                orig(self);
-                return;
-            }
-
-            ArenaRPCs.Arena_ReadyForNextRound();
-            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
-                player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
         }
 
         public void ArenaGameSession_Update(

@@ -338,10 +338,9 @@ namespace RainMeadow
             if (game.manager.upcomingProcess is not null)
                 return;
             OnlinePlayer readyPlayer = RPCEvent.currentRPCEvent?.from ?? OnlineManager.mePlayer;
-            List<ArenaSitting.ArenaPlayer> arenaPlayers = game.GetArenaGameSession.arenaSitting.players;
             if (readyPlayer == OnlineManager.lobby.owner)
             {
-                foreach (ArenaSitting.ArenaPlayer arenaPlayer in game.GetArenaGameSession.arenaSitting.players)
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in game.arenaOverlay.result)
                     arenaPlayer.readyForNextRound = true;
                 game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
                 if (readyPlayer.isMe)
@@ -353,9 +352,9 @@ namespace RainMeadow
             else
             {
                 int index = ArenaHelpers.FindOnlinePlayerNumber(arena, readyPlayer);
-                if (index < 0 || index >= arenaPlayers.Count)
+                if (index < 0 || index >= game.arenaOverlay.result.Count)
                     return;
-                arenaPlayers[index].readyForNextRound = true;
+                game.arenaOverlay.result[index].readyForNextRound = true;
                 game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
             }
         }

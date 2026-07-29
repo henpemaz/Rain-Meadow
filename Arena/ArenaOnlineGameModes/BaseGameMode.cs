@@ -1219,13 +1219,6 @@ namespace RainMeadow
 
             session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
-
-            // after the constructor this list is only used for detecting ready input from the player
-            // and whether all players are readied, limiting this list to just the local player after the ctor
-            // makes it so that the input is only registered for the current player,
-            // making PlayerPressedContinue only get called once,
-            // allowing us to write our own logic on readyForNextRound
-            list.RemoveAll(x => ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, x.playerNumber)?.isMe != true);
         }
 
         public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaMode arena,
