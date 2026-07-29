@@ -3400,19 +3400,9 @@ namespace RainMeadow
                 return;
             }
 
-            foreach (OnlinePlayer player in OnlineManager.players.Where(x => x != OnlineManager.mePlayer))
+            ArenaRPCs.Arena_ReadyForNextRound();
+            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
                 player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
-            if (OnlineManager.lobby.isOwner)
-            {
-                foreach (ArenaSitting.ArenaPlayer player in self.ArenaSitting.players)
-                    player.readyForNextRound = true;
-                self.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
-                self.countdownToNextRound = self.countdownToNextRound == -1 ? 10 : Math.Min(self.countdownToNextRound, 10);
-            }
-            else
-            {
-                self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-            }
         }
 
         public void ArenaGameSession_Update(

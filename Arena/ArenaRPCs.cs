@@ -1,3 +1,4 @@
+using System;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
@@ -328,7 +329,7 @@ namespace RainMeadow
 
 
         [RPCMethod]
-        public static void Arena_ReadyForNextRound(RPCEvent rpcEvent)
+        public static void Arena_ReadyForNextRound()
         {
             if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                 return;
@@ -336,19 +337,25 @@ namespace RainMeadow
                 return;
             if (game.manager.upcomingProcess is not null)
                 return;
-            List<ArenaSitting.ArenaPlayer> players = game.GetArenaGameSession.arenaSitting.players;
-            if (rpcEvent.from == OnlineManager.lobby.owner)
+            OnlinePlayer readyPlayer = RPCEvent.currentRPCEvent?.from ?? OnlineManager.mePlayer;
+            List<ArenaSitting.ArenaPlayer> arenaPlayers = game.GetArenaGameSession.arenaSitting.players;
+            if (readyPlayer == OnlineManager.lobby.owner)
             {
-                foreach (ArenaSitting.ArenaPlayer player in game.GetArenaGameSession.arenaSitting.players)
-                    player.readyForNextRound = true;
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in game.GetArenaGameSession.arenaSitting.players)
+                    arenaPlayer.readyForNextRound = true;
                 game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
+                if (readyPlayer.isMe)
+                {
+                    game.arenaOverlay.countdownToNextRound = game.arenaOverlay.countdownToNextRound == -1 ? 10 :
+                        Math.Min(game.arenaOverlay.countdownToNextRound, 10);
+                }
             }
             else
             {
-                int index = ArenaHelpers.FindOnlinePlayerNumber(arena, rpcEvent.from);
-                if (index < 0 || index >= players.Count)
+                int index = ArenaHelpers.FindOnlinePlayerNumber(arena, readyPlayer);
+                if (index < 0 || index >= arenaPlayers.Count)
                     return;
-                players[index].readyForNextRound = true;
+                arenaPlayers[index].readyForNextRound = true;
                 game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
             }
         }
