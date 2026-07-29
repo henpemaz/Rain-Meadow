@@ -691,15 +691,15 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(il);
-                int maxCount = 0;
-                if (!cursor.TryGotoNext(code => code.MatchStloc(1)) ||
-                    !cursor.TryGotoPrev(MoveType.After, code => code.MatchLdcI4(out maxCount)))
-                {
-                    Warn("failed to increase main menu button limit");
-                    return;
-                }
-                cursor.Emit(OpCodes.Pop);
-                cursor.Emit(OpCodes.Ldc_I4, maxCount + 1);
+                const int maxCountLoc = 1; // int, max amount of buttons in a column
+
+                // int maxCount = _;
+                cursor.GotoNext(code => code.MatchStloc(maxCountLoc));
+                cursor.GotoPrev(MoveType.After, code => code.MatchLdcI4(out _));
+
+                // int maxCount = _ + 1;
+                cursor.Emit(OpCodes.Ldc_I4, 1);
+                cursor.Emit(OpCodes.Add);
             }
             catch (Exception ex)
             {
