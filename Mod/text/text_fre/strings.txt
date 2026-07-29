@@ -522,17 +522,17 @@ Introroll|Scène d'introduction
 Vanilla|Vanilla
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|Le DLC Downpour n'est pas activé, l'intro vanilla sera utilisé à la place.
-Watcher DLC is not activated, vanilla intro will be used instead|Le DLC Guetteur n'est pas activé, l'intro vanilla sera utilisé à la place.
-Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
-Disable Pause Menu Animation|Desactivar animación del menú de pausa
-If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
-Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos.
-Just make sure not to ruin the fun for yourself...|Sólo asegúrate de no arruinarte la diversión...
-Emote and skin unlocks will affect the currently selected character|Los desbloqueables de abajo afectarán al personaje seleccionado actualmente.
-Unlock Emote|Desbl. emote
-Unlock Skin|Desbl. aspecto
-Unlock Character|Desbl. personaje
-Reset all progression|Reiniciar todo el progreso
+Watcher DLC is not activated, vanilla intro will be used instead|Le DLC Watcher n'est pas activé, l'intro vanilla sera utilisé à la place.
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Vitesse de défilement du menu spectateur, du mode histoire, et des résultats d'arène. Défaut: 5
+Disable Pause Menu Animation|Déactiver l'animation de pause
+If selected, disables the sway animation in the pause menu|Déactive l'animation du menu de pause
+Input “cheats” to access cheats|Inscriver «cheats» pour accéder au options de triche.
+Just make sure not to ruin the fun for yourself...|Juste, soyez sûr de ne pas vous ruiner le fun...
+Emote and skin unlocks will affect the currently selected character|Les déblocages d'emotes et de skins affecteront uniquement le personnage sélectionné.
+Unlock Emote|Débloquer emotes
+Unlock Skin|Débloquer skins
+Unlock Character|Débloquer personnage
+Reset all progression|
 Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|Los ajustes de las partidas han sido reubicados al menú de la sala de arena.<LINE>Las opciones restantes solo activan easter eggs.
 The following option may contain spoilers for Saint's campaign.|La opción a continuación puede contener spoilers de la campaña del Santo.
 OKIE DOKIE|VAMOS AL LÍO
