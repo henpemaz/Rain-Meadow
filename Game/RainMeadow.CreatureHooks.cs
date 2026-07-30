@@ -103,8 +103,8 @@ namespace RainMeadow
             c.EmitDelegate((MoreSlugcats.StowawayBug self, int index) => {
                 if (OnlineManager.lobby is null) return;
 
-                var opo = self.abstractPhysicalObject.GetOnlineObject();                                        
-                opo.BroadcastRPCInRoomExceptOwners(StowawayHeadAttackRPC, opo, (byte)index);
+                if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayHeadAttackRPC, opo, (byte)index);
             });
 
         }
@@ -156,7 +156,7 @@ namespace RainMeadow
             c.EmitDelegate((MoreSlugcats.StowawayBug self, ref List<RWCustom.IntVector2> list) => {
                 if (OnlineManager.lobby is null) return false;
 
-                UnityEngine.Vector2 homePos = (self.State as MoreSlugcats.StowawayBugState).HomePos;
+                UnityEngine.Vector2 homePos = ((MoreSlugcats.StowawayBugState)self.State).HomePos;
                 RWCustom.IntVector2 intHomePos = Room.StaticGetTilePosition(homePos);
                 // RayTraceTilesList(base.abstractCreature.pos.x, base.abstractCreature.pos.y, base.abstractCreature.pos.x, 0, ref list) will become
                 self.abstractCreature.Room.realizedRoom.RayTraceTilesList(intHomePos.x, intHomePos.y, intHomePos.x, 0, ref list);
@@ -214,9 +214,9 @@ namespace RainMeadow
             c.EmitDelegate((MoreSlugcats.StowawayBug self) => {
                 if (OnlineManager.lobby is null) return;
                 
-                var opo = self.abstractPhysicalObject.GetOnlineObject();
                 byte stowawayNormalByte = 0;
-                opo.BroadcastRPCInRoomExceptOwners(StowawayBiteRPC, opo, stowawayNormalByte);
+                if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayBiteRPC, opo, stowawayNormalByte);
             });
 
             // if ((base.grasps[num4].grabbed as global::Creature).dead)
@@ -237,9 +237,10 @@ namespace RainMeadow
 
                 byte stowawayKillerByteNotDead = 1;
                 byte stowawayKillerByteDead = 2;
-                var opo = self.abstractPhysicalObject.GetOnlineObject();
+                
+            if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayBiteRPC, opo, isDead ? stowawayKillerByteDead : stowawayKillerByteNotDead);
 
-                opo.BroadcastRPCInRoomExceptOwners(StowawayBiteRPC, opo, isDead ? stowawayKillerByteDead : stowawayKillerByteNotDead);
                 return isDead;
             });
         }

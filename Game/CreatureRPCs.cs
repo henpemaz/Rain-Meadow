@@ -23,7 +23,7 @@ namespace RainMeadow
         // Stowaway
 
         [RPCMethod]
-        void StowawayHeadAttackRPC(OnlinePhysicalObject? crit, byte headIndex)
+        void StowawayHeadAttackRPC(OnlinePhysicalObject crit, byte headIndex)
         {
             if (crit.apo.realizedObject is not MoreSlugcats.StowawayBug stowaway) return;
 
@@ -34,14 +34,12 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        void StowawayBiteRPC(OnlinePhysicalObject? crit, byte killerBiteAndDead)
+        void StowawayBiteRPC(OnlinePhysicalObject crit, byte killerBiteAndDead)
         {
             bool killerBite = killerBiteAndDead != 0;
             bool isCreatureDead = killerBiteAndDead == 2;
 
             if (crit.apo.realizedObject is not MoreSlugcats.StowawayBug stowaway) return;
-
-            var stowawayGraphics = (stowaway.graphicsModule as MoreSlugcats.StowawayBugGraphics);
 
             stowaway.room.PlaySound(SoundID.Lizard_Jaws_Shut_Miss_Creature, stowaway.firstChunk);
 
@@ -49,6 +47,8 @@ namespace RainMeadow
             {
                 stowaway.room.AddObject(new WaterDrip(stowaway.bodyChunks[1].pos, RWCustom.Custom.DirVec(stowaway.firstChunk.pos, stowaway.bodyChunks[1].pos) * 10f + RWCustom.Custom.RNV(), true));
             }
+
+            var stowawayGraphics = (MoreSlugcats.StowawayBugGraphics)stowaway.graphicsModule;
 
             if (killerBite)
             {
