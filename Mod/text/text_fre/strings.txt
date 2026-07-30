@@ -509,9 +509,9 @@ Replace holding with toggling|Basculer de mode au lieu de maintenir
 Key used for toggling spectator mode|Touche pour activer le mode spectateur
 Stop Inputs While Spectating|Bloquer les touches pendant le mode spectateur
 Pointing Key|Touche pour pointer
-Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Ces fichiers controlent les mods permis pour les autres clients.<LINE>Instruction ci-dedans.
-Edit High-Impact Mods|Éditer les mods à haute importance
-Edit Banned Mods|Éditer les mods bannis
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Ces fichiers controlent les mods permis pour les autres clients.<LINE>Instruction dans le ficher.
+Edit High-Impact Mods|Éditer mods essentiels
+Edit Banned Mods|Éditer mods bannis
 Chat Log Toggle|Activer/Déactiver le Journal de Chat
 Chat Talk Button|Bouton pour ouvrir le chat
 Chat Background Opacity|Opacité du fond du chat
@@ -532,51 +532,51 @@ Emote and skin unlocks will affect the currently selected character|Les débloca
 Unlock Emote|Débloquer emotes
 Unlock Skin|Débloquer skins
 Unlock Character|Débloquer personnage
-Reset all progression|
-Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|Los ajustes de las partidas han sido reubicados al menú de la sala de arena.<LINE>Las opciones restantes solo activan easter eggs.
-The following option may contain spoilers for Saint's campaign.|La opción a continuación puede contener spoilers de la campaña del Santo.
-OKIE DOKIE|VAMOS AL LÍO
-Slugpup: Rubicon background in select menu|Cría de Gato-babosa: Fondo de Rubicón en el menú de selección
-Ready to shelter/gate|Preparado para hibernar o pasar de región
-If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los íconos siempre aparecerán en pantalla en una puerta o refugio.
-[Experimental Features]|[Características experimentales]
-WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden causar corrupciones de datos, realiza una copia de seguridad de tus partidas.
-Custom Story Slugcat:|Campañas personalizadas:
-If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gato-babosa que sean inestables.
-Steal items from other players in Story mode|Robar objetos de otros jugadores en el modo historia
+Reset all progression|Réinitialiser la progression
+Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|Les paramètres de match ont été déplacés vers le menu d’arène. <LINE>Les options restantes sont dédiées aux easter eggs.
+The following option may contain spoilers for Saint's campaign.|Cette option contient des spoilers pour la campaigne du Saint.
+OKIE DOKIE|OKAY
+Slugpup: Rubicon background in select menu|Chatton-limace: Fond de Rubicon dans le menu de selection
+Ready to shelter/gate|Prêt pour hiberner/Portes
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Quand sélectionnée, les npseudos et icônes seront toujours afficher pour les slugcats dans une porte ou un abri.
+[Experimental Features]|[Options expérimentales]
+WARNING: Experimental features may cause data corruption, back up your saves|AVERTISSEMENT: Les options expérimentales peuvent corrompre des données, faite un back-up de votre sauvegarde.
+Custom Story Slugcat:|Campagne moddées:
+If selected, hosts can choose slugcat campaigns that are unstable.|Quand sélectionnée, l'hôte peut chosir des campagnes potentiellement intable.
+Steal items from other players in Story mode|Vol d'object des autres joueurs dans le mode histoire
 LAN|LAN
-Username|Nombre de usuario
-UDP timeout (ms)|Tiempo de espera de UDP (ms)
-UDP heartbeat (ms)|Chequeo de vida UDP (ms)
+Username|Pseudo
+UDP timeout (ms)|Délai d'attente UDP (ms)
+UDP heartbeat (ms)|Pulsation d'UDP (ms)
 
 // Credits
-Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
-Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow es un modo de juego inspirado en el videojuego del mismo nombre de Might & Delight. Es un juego apenas jugable y con errores, que a uno le puede encantar. ¿Suena familiar?
-This mod and all its features were brought to you by really awesome people from the community.|Este mod y todas sus características fueron traídas a ti por personas muy estupendas de la comunidad.
-Lead Developer|Desarrollador principal
-Lead Artist|Artista principal
-Lead Audio Designer|Diseñador de audio principal
-Programming, engine|Programación, motor
-Programming, sound|Programación, sonido
-UI Design|Diseño de IU
-Programming, menus|Programación, menús
-Programming, arena|Programación, arena
-Programming, story|Programación, historia
-Programming, modsync|Programación, sincronización de mods
-Programming, story, arena|Programación, historia, arena
-Programming, UI, chat|Programación, IU, chat
-Illustration|Ilustración
-Programming, UI, menus|Programación, IU, menús
-Programming, UI, story|Programación, IU, historia
-Programming, UI, LAN|Programación, IU, LAN
-Thank you playtesters from the Rain Meadow discord as well.|Gracias también a los playtesters del discord de Rain Meadow.
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow est une engine multijoueur unique pour un jeu unique. Rien d’autre n'y conviendrait. - Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow est un mode de jeu inspiré par le jeu du même nom de Might&Delight. C’est un jeu plein de bug, à peine jouable, dont on peut y trouver son bonheur. Cela vous semble familier ?
+This mod and all its features were brought to you by really awesome people from the community.|Ce mod et toutes ses fonctionnalités vous ont amené par des personnes absolument fantastiques de la communauté.
+Lead Developer|Développeur principal
+Lead Artist|Artiste principal
+Lead Audio Designer|Concepteur Audio principal
+Programming, engine|Programmation, engine
+Programming, sound|Programmation, sons
+UI Design|Concepteur d'IU
+Programming, menus|Programmation, menu
+Programming, arena|Programmation, arène
+Programming, story|Programmation, histoire
+Programming, modsync|Programmation, synchronisation de mods
+Programming, story, arena|Programmation, histoire, arène
+Programming, UI, chat|Programmation, IU, chat
+Illustration|Illustration
+Programming, UI, menus|Programmation, IU, menu
+Programming, UI, story|Programmation, IU, histoire
+Programming, UI, LAN|Programmation, IU, LAN
+Thank you playtesters from the Rain Meadow discord as well.|Merci aussi aux testeurs du discord de Rain Meadow.
 
 // misc
-Players|Jugadores
-CONFIRM|CONFIRMAR
-Leaving Lobby|Saliendo de la sala
-You were removed from the previous online game|Has sido echado de la partida en línea anterior.
-This player does not have a profile.|Este jugador no tiene un perfil.
-Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente.<LINE>Algunas características de Rain Meadow han sido desactivadas.
-Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
-Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Por favor, usa un mod externo para acceder a la campaña de Inv.
+Players|Joueur
+CONFIRM|CONFIRMER
+Leaving Lobby|Quitter le lobby
+You were removed from the previous online game|Vous avez été retiré du dernier lobby
+This player does not have a profile.|Ce joueur n'a pas de profil.
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam n'est pas disponible actuellement.<LINE>Certaines optionalitées de Rain Meadow ont été désactivé.
+Rain Meadow failed to start|Rain Meadow a planté.
+Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Utilisez un mod externe pour accéder à la campaigne de Inv, s'il vous plaît.
