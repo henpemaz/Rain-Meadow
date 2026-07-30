@@ -62,7 +62,7 @@ Meadow features an extensive API which can be used by other mods to add network 
 
 ## Credits
 ```
-Henpemaz.......Lead Developer   Persondotexe.......Modsync
+Henpemaz.......Lead Developer   Persondotexe.......Modsync        EdEnStonne.........Arena
 Wolfycatt......Lead Artist      invalidunits.......UI, LAN
 Intikus........Audio Designer   forthfora..........Modsync
 Noircatto......Engine           WillowWisp.........Story
