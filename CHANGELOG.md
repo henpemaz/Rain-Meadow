@@ -52,6 +52,8 @@
 ### Watcher
 - Gave summoned Ameobas the Watcher's body color
 ### Modders
+- ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
+  - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow
 - Fixed creatures being able to get injured.
