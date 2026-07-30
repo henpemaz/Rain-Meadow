@@ -103,13 +103,8 @@ namespace RainMeadow
             c.EmitDelegate((MoreSlugcats.StowawayBug self, int index) => {
                 if (OnlineManager.lobby is null) return;
 
-                RoomSession rs = self.room.abstractRoom.GetResource();
-                foreach (var p in rs.participants)
-                {
-                    if (p.isMe) continue;
-                    var oc = self.abstractPhysicalObject.GetOnlineObject();                                        
-                        p.InvokeRPC(RPCs.StowawayHeadAttack, oc, (byte)index);                    
-                }
+                var opo = self.abstractPhysicalObject.GetOnlineObject();                                        
+                opo.BroadcastRPCInRoomExceptOwners(StowawayHeadAttackRPC, opo, (byte)index);
             });
 
         }
@@ -214,18 +209,14 @@ namespace RainMeadow
                 x => x.MatchCallvirt(typeof(MoreSlugcats.StowawayBugGraphics).GetMethod(nameof(MoreSlugcats.StowawayBugGraphics.Bite))),
                 x => x.MatchStloc(15)
                 );
+
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((MoreSlugcats.StowawayBug self) => {
                 if (OnlineManager.lobby is null) return;
-
-                RoomSession rs = self.room.abstractRoom.GetResource();
-                foreach (var p in rs.participants)
-                {
-                    if (p.isMe) continue;
-                    var apo = self.abstractPhysicalObject.GetOnlineObject();
-                    byte stowawayNormalByte = 0;
-                    p.InvokeRPC(RPCs.StowawayBite, apo, stowawayNormalByte);
-                }
+                
+                var opo = self.abstractPhysicalObject.GetOnlineObject();
+                byte stowawayNormalByte = 0;
+                opo.BroadcastRPCInRoomExceptOwners(StowawayBiteRPC, opo, stowawayNormalByte);
             });
 
             // if ((base.grasps[num4].grabbed as global::Creature).dead)
@@ -239,20 +230,16 @@ namespace RainMeadow
                 x => x.MatchIsinst<Creature>(),
                 x => x.MatchCallvirt(typeof(Creature).GetMethod("get_dead"))
                 );
+
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((bool isDead, MoreSlugcats.StowawayBug self)=> {
-                if(OnlineManager.lobby is null) return isDead;
+            c.EmitDelegate((bool isDead, MoreSlugcats.StowawayBug self) => {
+                if (OnlineManager.lobby is null) return isDead;
 
-                RoomSession rs = self.room.abstractRoom.GetResource();
-                foreach (var p in rs.participants)
-                {
-                    if (p.isMe) continue;
-                    var apo = self.abstractPhysicalObject.GetOnlineObject();
-                    byte stowawayKillerByteNotDead = 1;
-                    byte stowawayKillerByteDead = 2;
+                byte stowawayKillerByteNotDead = 1;
+                byte stowawayKillerByteDead = 2;
+                var opo = self.abstractPhysicalObject.GetOnlineObject();
 
-                    p.InvokeRPC(RPCs.StowawayBite, apo, isDead ? stowawayKillerByteDead : stowawayKillerByteNotDead);
-                }
+                opo.BroadcastRPCInRoomExceptOwners(StowawayBiteRPC, opo, isDead ? stowawayKillerByteDead : stowawayKillerByteNotDead);
                 return isDead;
             });
         }
