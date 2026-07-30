@@ -263,17 +263,19 @@ namespace RainMeadow
             
             if (OnlineManager.lobby != null && oe is not null)
             {
-                self.destroyOnAbstraction = wasdestroyonabstraction;
-                if (oe.realized && oe.isTransferable && !oe.isPending) oe.Release();
                 oe.realized = false;
-
-                if (self.destroyOnAbstraction && !self.slatedForDeletion)
+                self.destroyOnAbstraction = wasdestroyonabstraction;
+                if (!oe.isPending && oe.isMine)
                 {
-                    if (!oe.isPending && oe.isMine)
+                    if (oe.isTransferable) oe.Release();
+                    if (self.destroyOnAbstraction && !self.slatedForDeletion)
                     {
-                        self.Destroy();
-                    }
-                } 
+                        if (!oe.isPending && oe.isMine)
+                        {
+                            self.Destroy();
+                        }
+                    } 
+                }
             }
         }
 
