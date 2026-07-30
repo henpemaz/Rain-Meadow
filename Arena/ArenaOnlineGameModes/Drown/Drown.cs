@@ -2,12 +2,12 @@ using Menu;
 using RainMeadow.UI.Components;
 using System.Linq;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using RainMeadow.UI;
 using Drown;
 using System;
 using System.Text;
 using System.Collections.Generic;
+
 namespace RainMeadow
 {
     public partial class DrownMode : ExternalArenaGameMode
@@ -35,19 +35,35 @@ namespace RainMeadow
 
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
-        public static bool isDrownMode(ArenaMode arena, out DrownMode mode)
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="DrownMode"/> is not registered.
+        /// </exception>
+        public static bool IsDrownMode(out DrownMode drown)
         {
-            mode = null;
-            if (arena.currentGameMode == Drown.value)
+            drown = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(Drown.value, out ExternalArenaGameMode externalArena))
             {
-                mode = (arena.registeredGameModes.FirstOrDefault(x => x.Key == Drown.value).Value as DrownMode);
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
+                );
+            }
+
+            if (arenaOnline.currentGameMode == Drown.value)
+            {
+                drown = (DrownMode)externalArena;
                 return true;
             }
+
             return false;
         }
 
@@ -78,7 +94,7 @@ namespace RainMeadow
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public override bool IsExitsOpen(ArenaMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arena.setupTime > 10)
             {
@@ -95,7 +111,7 @@ namespace RainMeadow
             return false;
         }
 
-        public override void ArenaSessionCtor(ArenaMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
             openedDen = false;
@@ -119,7 +135,7 @@ namespace RainMeadow
 
         }
 
-        public override void InitAsCustomGameType(ArenaMode arena, ArenaSetup.GameTypeSetup self)
+        public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
             self.survivalScore = arena.aliveScore;
@@ -171,7 +187,7 @@ namespace RainMeadow
             return $": {text}: {timerPoints}. {waveText}";
         }
 
-        public override int SetTimer(ArenaMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = 1;
         }
@@ -188,7 +204,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaMode arena, int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
             if (!openedDen)
             {
@@ -209,18 +225,18 @@ namespace RainMeadow
         }
 
 
-        public override void HUD_InitMultiplayerHud(ArenaMode arena, HUD.HUD self, ArenaGameSession session)
+        public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             base.HUD_InitMultiplayerHud(arena, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public override string AddIcon(ArenaMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override string AddIcon(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (player != null)
             {
@@ -245,7 +261,7 @@ namespace RainMeadow
             return base.AddIcon(arena, display, owner, customization, player);
         }
 
-        public override Color IconColor(ArenaMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
@@ -261,7 +277,7 @@ namespace RainMeadow
         {
             base.OnUIEnabled(menu);
             myTab = menu.arenaMainLobbyPage.tabContainer.AddTab(menu.Translate("Drown Settings"));
-            myTab.AddObjects(drownInterface = new DrownInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
+            myTab.AddObjects(drownInterface = new DrownInterface((ArenaOnlineGameMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
         }
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {
@@ -270,9 +286,9 @@ namespace RainMeadow
             if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
             myTab = null;
         }
-        public override void ArenaSessionEnded(ArenaMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
+        public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
-            if (isDrownMode(arena, out var drown))
+            if (IsDrownMode(out _))
             {
                 foreach (var player in self.players)
                 {
@@ -301,10 +317,9 @@ namespace RainMeadow
             base.ArenaSessionEnded(arena, orig, self, session);
         }
 
-        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaMode arena)
+        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
         {
-
-            if (isDrownMode(arena, out var drown))
+            if (IsDrownMode(out DrownMode drown))
             {
                 if (!self.sessionEnded)
                 {
@@ -383,7 +398,7 @@ namespace RainMeadow
 
 
 
-        private void CreatureCleanup(ArenaMode arena, ArenaGameSession session)
+        private void CreatureCleanup(ArenaOnlineGameMode arena, ArenaGameSession session)
         {
             if (RoomSession.map.TryGetValue(session.room.abstractRoom, out var roomSession))
             {
@@ -406,7 +421,7 @@ namespace RainMeadow
             }
         }
 
-        public override string ExportLocalSettings(ArenaMode arena)
+        public override string ExportLocalSettings(ArenaOnlineGameMode arena)
         {
             string baseExport = base.ExportLocalSettings(arena);
             string decodedBase = string.IsNullOrEmpty(baseExport) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(baseExport));
@@ -435,7 +450,7 @@ namespace RainMeadow
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
         }
 
-        public override bool ImportLocalSettings(ArenaMode arena, string base64Data)
+        public override bool ImportLocalSettings(ArenaOnlineGameMode arena, string base64Data)
         {
             if (string.IsNullOrEmpty(base64Data)) return false;
             bool success = base.ImportLocalSettings(arena, base64Data);

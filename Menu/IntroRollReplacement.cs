@@ -48,6 +48,7 @@ namespace RainMeadow
             {
                 self.illustrations[i].alpha = RWCustom.Custom.SCurve(Mathf.InverseLerp(appearAt, appearAt+1f, time), 0.65f);
                 self.illustrations[i].pos.y = (1 - RWCustom.Custom.SCurve(Mathf.InverseLerp(appearAt, appearAt+1f, time+0.4f), 0.65f)) * - 40f;
+                if (i < 3) self.illustrations[i].pos.y += 40;
                 if (noiseAmp != 0f)
                 {
                     float noisetime = time * frequency;
@@ -106,9 +107,15 @@ namespace RainMeadow
             {
                 self.pages[0].subObjects.DoIf(c => c is MenuIllustration, c => { c.RemoveSprites(); });
                 self.pages[0].subObjects.RemoveAll(c => c is MenuIllustration);
-                string[] illustrationsnames = new string[7] { "adultswim", "akupara", "videocult", "titleandground", "nootmama", "nootbaby", "squidcada" };
+
+                string[] meadowFriends = ["titleandground", "nootmama", "nootbaby", "squidcada"];
                 self.illustrations = new MenuIllustration[7];
-                for (int i = 0; i < illustrationsnames.Length; i++) { self.illustrations[i] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", illustrationsnames[i], new Vector2(0f, 0f), true, false); }
+
+                self.illustrations[0] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", "adultswim", new Vector2((1366 - manager.rainWorld.screenSize.x) / 2 + 60, 0f), true, false);
+                self.illustrations[1] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", "akupara", new Vector2((1366 - manager.rainWorld.screenSize.x) / 2 + manager.rainWorld.screenSize.x - 247 - 186, 0f), true, false);
+                self.illustrations[2] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", "videocult", new Vector2((1366 - manager.rainWorld.screenSize.x) / 2 + manager.rainWorld.screenSize.x - 26 - 240, 0f), true, false);
+
+                for (int i = 0; i < meadowFriends.Length; i++) { self.illustrations[i + 3] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", meadowFriends[i], new Vector2(0f, 0f), true, false); }
                 for (int i = 0; i < self.illustrations.Length; i++)
                 {
                     self.pages[0].subObjects.Add(self.illustrations[i]);

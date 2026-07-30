@@ -1,11 +1,8 @@
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -66,7 +63,7 @@ namespace RainMeadow
                 this.color = a.externalArenaGameMode.IconColor(a, this, owner, customization, player);
             }
             else if (RainMeadow.isStoryMode(out _)
-                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs)
                 && cs.chatUsernameColor is Color chatUsernameColor)
             {
                 this.color = chatUsernameColor;
@@ -171,7 +168,11 @@ namespace RainMeadow
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = lighter_color;
 
-            if (RainMeadow.isArenaMode(out var arenaForScore) && arenaForScore.WinByScore)
+            this.customization = customization;
+
+            this.fadeSpeed = 20f;
+
+            if (RainMeadow.isArenaMode(out _))
             {
                 this.scoreLabel = new FLabel(Custom.GetFont(), "0");
                 owner.hud.fContainers[0].AddChild(this.scoreLabel);
@@ -180,9 +181,6 @@ namespace RainMeadow
                 this.scoreLabel.color = Color.white;
             }
 
-            this.customization = customization;
-
-            this.fadeSpeed = 20f;
         }
 
         public override void Update()
@@ -197,14 +195,16 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var a) && owner.RealizedPlayer?.isCamo == true)
             {
                 // Check if we are teammates (Only true if it's Team Battle AND we are on the same team)
-                bool isTeammate = TeamBattleMode.isTeamBattleMode(a, out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
+                bool isTeammate = TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
 
                 // Hide if it's NOT me AND it's NOT a teammate
                 if (!player.isMe && !isTeammate)
                 {
                     show = false;
-                    pos.x = -1000;
-                    this.alpha = 0f;
+                    pos.x = -1000f;
+                    lastPos.x = -1000f;
+                    alpha = 0f;
+                    lastAlpha = 0f;
                 }
             }
 
@@ -224,7 +224,7 @@ namespace RainMeadow
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
-                    if (this.lastAlpha == 0) this.lastPos = pos;
+                    if (this.lastAlpha == 0 || owner.shouldSkipDrawposLerp || lastPos.x <= -999f) this.lastPos = pos;
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
@@ -262,7 +262,8 @@ namespace RainMeadow
                 }
                 else
                 {
-                    pos.x = -1000;
+                    pos.x = -1000f;
+                    lastPos.x = -1000f;
                 }
 
                 this.counter++;
@@ -382,23 +383,26 @@ namespace RainMeadow
 
             if (RainMeadow.isArenaMode(out var arena) && this.scoreLabel != null)
             {
-                this.scoreLabel.x = pos.x + 20f;
-                this.scoreLabel.y = pos.y;
-                this.scoreLabel.alpha = num;
-                int lobbyId = player.inLobbyId;
-                int playerNumber = -1;
-                if (arena.session != null && owner != null && owner.RealizedPlayer != null)
+                if (arena.ShowScore)
                 {
-                    playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, player);
-                    int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
-                    if (arena.playerTotScore.TryGetValue(lobbyId, out int totScore) &&
-                        playerNumber != -1)
+                    this.scoreLabel.alpha = num;
+                    this.scoreLabel.SetPosition(pos.x + 20f, pos.y);
+
+                    if (arena.session != null && owner?.RealizedPlayer != null
+                        && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
+                        && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
                     {
-                        bool sessionEnded = arena.session.sessionEnded;
-                        this.scoreLabel.text = arena.externalArenaGameMode != null && arena.externalArenaGameMode.ShowAddedScoreBetweenRoundsInOnlinePlayerUI
-                            ? (sessionEnded ? totScore.ToString() : (totScore + score).ToString())
+                        int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                        bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;
+                        this.scoreLabel.text = showAdded
+                            ? (arena.session.sessionEnded ? totScore : totScore + score).ToString()
                             : score.ToString();
                     }
+                }
+                else
+                {
+                    this.scoreLabel.alpha = 0f;
+                    this.scoreLabel.SetPosition(-1000f, -1000f);
                 }
             }
 

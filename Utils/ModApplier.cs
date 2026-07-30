@@ -108,18 +108,19 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             }
 
-            var modMismatchString = menu.Translate("Mod Mismatch!") + Environment.NewLine;
-
-            if (modsToEnable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable);
-            if (modsToDisable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable);
+            var lines = new List<ScrollableConfirmDialog.Line>();
+            AddModSection(lines, menu.Translate("Mods that have to be enabled: "), modsToEnable);
+            AddModSection(lines, menu.Translate("Mods that have to be disabled: "), modsToDisable);
             if (unknownMods.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be installed: ") + string.Join(", ", unknownMods);
+            {
+                AddModSection(lines, menu.Translate("Mods that have to be installed: "), unknownMods);
+            }
             else
-                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?") + Environment.NewLine + menu.Translate("A restart may take place to sync game objects");
-
-            //modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
+            {
+                lines.Add(new(""));
+                lines.Add(new(menu.Translate("Apply these changes now?"), true));
+                lines.Add(new(menu.Translate("A restart may take place to sync game objects")));
+            }
 
             Action confirmProceed = () =>
             {
@@ -131,15 +132,25 @@ namespace RainMeadow
 
             if (unknownMods.Count > 0)
             {
-                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
+                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), Cancel, null, false);
             }
             else
             {
-                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
+                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), confirmProceed, Cancel, true);
             }
-            //checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
 
             manager.ShowDialog(checkUserConfirmation);
+        }
+
+        private static void AddModSection(List<ScrollableConfirmDialog.Line> lines, string header, List<string> mods)
+        {
+            if (mods.Count == 0)
+                return;
+            if (lines.Count > 0)
+                lines.Add(new(""));
+            lines.Add(new(header, true));
+            foreach (string mod in mods)
+                lines.Add(new(mod));
         }
 
         public void ConfirmReorder()

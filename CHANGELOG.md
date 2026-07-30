@@ -19,6 +19,7 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
+- Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 ### ⚠️ Developers
 - The Debug Overlay has been changed to be able to track non physical object entities.
 - The Debug Overlay now has an Ownership view to Dev Tools.
@@ -47,14 +48,27 @@
 - Fixed explosive spears still damaging the player when parried.
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
+- Added score tracker to in-game UI; can be toggled on & off. Check Meadow Arena Remix page
+- Slightly improved timer accuracy
+- Fixed the result box bump sound effect on the final results screen playing per player instead of just once
+- Synced the players' ready state on the overlay results screen
+- Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
+### Watcher
+- Gave summoned Ameobas the Watcher's body color
+### Modders
+- ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
+  - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow
 - Fixed creatures being able to get injured.
 ## Story
 - Allow players to spectate their own corpses as long as they still exist
+- Fixed players readied on the sleep screen hearing the continue sound many times in a row after the host continues
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication
 - Synced prince's position and look point
+- Synced lightning storms
 ## Chat
 - Put Chat in its own overlay so it is available at all times
 - Chat now keeps history of what was typed in/out of the lobby menu

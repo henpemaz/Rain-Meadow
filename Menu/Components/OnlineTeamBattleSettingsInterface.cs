@@ -9,7 +9,6 @@ using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
@@ -35,7 +34,7 @@ namespace RainMeadow.UI.Components
             dividerY = 160;
         private int currentOffset;
 
-        public ArenaMode arenaMode;
+        public ArenaOnlineGameMode arenaMode;
         public TeamBattleMode teamBattleMode;
 
         public bool AllSettingsDisabled =>
@@ -67,7 +66,7 @@ namespace RainMeadow.UI.Components
         public bool IsPagesOn => teamBattleMode.teamNames.Count > 4;
 
         public OnlineTeamBattleSettingsInterface(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             TeamBattleMode team,
             Menu.Menu menu,
             MenuObject owner,

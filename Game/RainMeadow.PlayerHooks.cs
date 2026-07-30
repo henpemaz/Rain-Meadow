@@ -8,9 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization.Formatters;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace RainMeadow;
 
@@ -1249,6 +1247,19 @@ public partial class RainMeadow
             c.Index += 6;
             c.MarkLabel(skip);
 
+            // infinite tinnitus fix
+            c.Index = 0;
+            ILLabel skipTinnitus = il.DefineLabel();
+            c.GotoNext(MoveType.After,
+                i => i.MatchStfld<Player>(nameof(Player.mushroomEffect)),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Player>("get_AI"),
+                i => i.MatchBrtrue(out skipTinnitus)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skipTinnitus);
+
             // don't try teleporting remote players when using dev tools
             c.Index = 0;
             ILLabel skipDevTools = il.DefineLabel();
@@ -1352,11 +1363,11 @@ public partial class RainMeadow
             }
         }
 
-        if (isArenaMode(out var arena) && !self.inShortcut)
+        if (isArenaMode(out ArenaOnlineGameMode arena) && !self.inShortcut)
         {
             int[] disabledCollisionChallenges = [60, 68]; //27, 44, 45, 55, and 58 all also have problems with player spawns bumping each other into death pits, but they also include creatures, which we still want to collide with.
                                                           //60 also has danglefruit that we don't collide with but that matters less. Ideally we'd set up a "just don't collide with players" collision layer, but this works for now.
-            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
+            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.IsChallengeMode(out ArenaChallengeMode challenge) && disabledCollisionChallenges.Contains(challenge.challengeID)))
             {
                 if (self.collisionLayer != 0)
                 {

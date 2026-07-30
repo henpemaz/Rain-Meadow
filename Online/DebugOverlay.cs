@@ -625,9 +625,9 @@ namespace RainMeadow
                     }
                     else
                     {
-                        clientFlags += currentClientSettings.readyForWin        ? "S" : "";
+                        clientFlags += currentClientSettings.readyForWin ? "S" : "";
                         clientFlags += currentClientSettings.readyForTransition ? "G" : "";
-                        clientFlags += currentClientSettings.isDead             ? "D" : "";
+                        clientFlags += currentClientSettings.isDead ? "D" : "";
                     }
                 }
             }

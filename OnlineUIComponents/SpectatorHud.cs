@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using HUD;
 using UnityEngine;
 
@@ -216,5 +216,27 @@ namespace RainMeadow
                 }
             }
         }
+        // Todo: still not safe
+        // Unloads a room left behind by the spectator camera if no local players remain in it.
+        // private void AbstractizeIfSafe(AbstractRoom oldRoom)
+        // {
+        //     if (oldRoom == null || oldRoom.realizedRoom == null) return;
+
+        //     bool keepLoaded = false;
+        //     for (int i = 0; i < game.Players.Count; i++)
+        //     {
+        //         if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal())
+        //         {
+        //             keepLoaded = true;
+        //             break;
+        //         }
+        //     }
+
+        //     if (!keepLoaded)
+        //     {
+        //         RainMeadow.Debug($"Spectator leaving room {oldRoom.name}, abstractizing it to prevent leaks.");
+        //         oldRoom.Abstractize();
+        //     }
+        // }
     }
 }

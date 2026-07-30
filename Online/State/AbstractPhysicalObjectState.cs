@@ -118,12 +118,17 @@ namespace RainMeadow
                 }
                 bool wasbeingmoved = onlineObject.beingMoved;
                 onlineObject.beingMoved = true;
-                if (wasPos.room != apo.pos.room) {
-                    if (apo.realizedObject != null && apo.realizedObject.room != null) {
+                if (wasPos.room != apo.pos.room)
+                {
+                    if (apo.realizedObject != null && apo.realizedObject.room != null)
+                    {
                         apo.realizedObject.room.RemoveObject(apo.realizedObject);
                     }
                 }
-                if (apo.world.IsRoomInRegion(apo.pos.room)) apo.MoveOnly(pos);
+                // check THE DESTINATION. The room we're told to move to isn't in this
+                // world when the sender has moved to another region and we haven' followed them
+                // This significantly helps Watcher warping which used to cause Null keys on MoveOnly
+                if (apo.world.IsRoomInRegion(pos.room)) apo.MoveOnly(pos);
                 onlineObject.beingMoved = false;
                 onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             }

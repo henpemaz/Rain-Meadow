@@ -9,7 +9,6 @@ using RainMeadow.UI.Components;
 using UnityEngine;
 using System;
 using System.Text;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Reflection;
 using System.Collections;
 
@@ -27,7 +26,7 @@ namespace RainMeadow
         public virtual void ResetOnSessionEnd() { }
 
         public abstract bool IsExitsOpen(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
         );
@@ -38,7 +37,7 @@ namespace RainMeadow
         public virtual bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get; set; } = true;
 
         public virtual void ArenaSessionCtor(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
             RainWorldGame game
@@ -49,7 +48,7 @@ namespace RainMeadow
         }
 
         public virtual void ArenaSessionNextLevel(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_NextLevel orig,
             ArenaSitting self,
             ProcessManager process
@@ -61,7 +60,7 @@ namespace RainMeadow
         /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
 
 
-        public virtual void InitAsCustomGameType(ArenaMode arena, ArenaSetup.GameTypeSetup self)
+        public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = arena.foodScore;
             self.survivalScore = arena.aliveScore;
@@ -109,7 +108,7 @@ namespace RainMeadow
             return "";
         }
 
-        public virtual int SetTimer(ArenaMode arena)
+        public virtual int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
@@ -119,14 +118,14 @@ namespace RainMeadow
             _timerDuration = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
-        public virtual int TimerDirection(ArenaMode arena, int timer)
+        public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
             return --timer;
         }
 
         /// <summary> This is ran on the victim's end, not the killer's! </summary>
         public virtual void Killing(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaGameSession.orig_Killing orig,
             ArenaGameSession self,
             Player player,
@@ -174,7 +173,7 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
+            if (TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
             {
                 // time for punishment
                 int badTeammateNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, absPlayerCreature.owner);
@@ -297,7 +296,7 @@ namespace RainMeadow
 
 
         public virtual void LandSpear(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             ArenaGameSession self,
             Player player,
             Creature target,
@@ -322,7 +321,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
+            if (TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
             {
                 RainMeadow.Warn("Player_LandSpear: Players on same team, returning...");
                 return;
@@ -352,14 +351,14 @@ namespace RainMeadow
         }
 
         public virtual void HUD_InitMultiplayerHud(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             HUD.HUD self,
             ArenaGameSession session
         )
         {
             self.AddPart(new HUD.TextPrompt(self));
 
-            if (MatchmakingManager.currentInstance.canSendChatMessages 
+            if (MatchmakingManager.currentInstance.canSendChatMessages
                 && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
             {
                 if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
@@ -415,7 +414,7 @@ namespace RainMeadow
         }
 
         public virtual void ArenaCreatureSpawner_SpawnCreatures(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig,
             RainWorldGame game,
             ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
@@ -424,13 +423,13 @@ namespace RainMeadow
         )
         { }
 
-        public virtual bool HoldFireWhileTimerIsActive(ArenaMode arena)
+        public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             return arena.countdownInitiatedHoldFire = false;
         }
 
         public virtual string AddIcon(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -464,7 +463,7 @@ namespace RainMeadow
         }
 
         public virtual Color IconColor(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -485,7 +484,7 @@ namespace RainMeadow
             return customization.SlugcatColor();
         }
 
-        public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
+        public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
         {
             return null;
         }
@@ -499,7 +498,7 @@ namespace RainMeadow
         /// <param name="randomExitIndex"></param>
         /// <param name="templateType"></param>
         public void SpawnTransferableCreature(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             ArenaGameSession self,
             Room room,
             int randomExitIndex,
@@ -531,7 +530,7 @@ namespace RainMeadow
         /// <param name="randomExitIndex"></param>
         /// <param name="templateType"></param>
         public void SpawnNonTransferableCreature(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             ArenaGameSession self,
             Room room,
             int randomExitIndex,
@@ -778,7 +777,7 @@ namespace RainMeadow
         }
 
         public virtual void SpawnPlayer(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             ArenaGameSession self,
             Room room,
             List<int> suggestedDens
@@ -944,7 +943,7 @@ namespace RainMeadow
         public virtual void ArenaSessionUpdate(
             On.ArenaGameSession.orig_Update orig,
             ArenaGameSession self,
-            ArenaMode arena
+            ArenaOnlineGameMode arena
         )
         {
             bool isOwnerOverseer =
@@ -1051,7 +1050,7 @@ namespace RainMeadow
             }
         }
         public virtual void ArenaSessionEnded(
-    ArenaMode arena,
+    ArenaOnlineGameMode arena,
     On.ArenaSitting.orig_SessionEnded orig,
     ArenaSitting self,
     ArenaGameSession session)
@@ -1059,7 +1058,7 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
-            bool isTeamMode = TeamBattleMode.isTeamBattleMode(arena, out var tb);
+            bool isTeamMode = TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle);
 
             // 1. TALLY SCORES & SURVIVAL STATUS
             for (int i = 0; i < self.players.Count; i++)
@@ -1130,7 +1129,7 @@ namespace RainMeadow
 
             if (isTeamMode)
             {
-                tb.winningTeam = tb.CalculateTeamScoresAndWinner(self.players, arena, arena.WinByScore, true, false);
+                teamBattle.winningTeam = teamBattle.CalculateTeamScoresAndWinner(self.players, arena, arena.WinByScore, true, false);
             }
 
             // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)
@@ -1157,7 +1156,7 @@ namespace RainMeadow
             if (isTeamMode)
             {
                 // Everyone on the winning team wins, everyone else loses
-                if (tb.winningTeam != -1)
+                if (teamBattle.winningTeam != -1)
                 {
                     for (int x = 0; x < list.Count; x++)
                     {
@@ -1166,7 +1165,7 @@ namespace RainMeadow
 
                         if (OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var teamInfo))
                         {
-                            list[x].winner = teamInfo.team == tb.winningTeam;
+                            list[x].winner = teamInfo.team == teamBattle.winningTeam;
                         }
                     }
                 }
@@ -1221,7 +1220,7 @@ namespace RainMeadow
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
         }
 
-        public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaMode arena,
+        public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_FinalSittingResult orig,
             ArenaSitting self)
         {
@@ -1268,7 +1267,7 @@ namespace RainMeadow
             return resultList;
         }
         public virtual bool PlayerSessionResultSort(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -1288,7 +1287,7 @@ namespace RainMeadow
         }
 
         public virtual bool PlayerSittingResultSort(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -1305,7 +1304,7 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        public virtual bool DidPlayerWinRainbow(ArenaMode arena, OnlinePlayer player) =>
+        public virtual bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player) =>
             arena.reigningChamps.list.Contains(player.id);
 
         public virtual void OnUIEnabled(ArenaOnlineLobbyMenu menu)
@@ -1343,12 +1342,12 @@ namespace RainMeadow
         }
 
         public virtual Color GetPortraitColor(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             OnlinePlayer? player,
             Color origPortraitColor
         ) => origPortraitColor;
 
-        public virtual Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
+        public virtual Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(
                 menu.LongTranslate("This game mode doesnt have any info to give"),
@@ -1361,56 +1360,56 @@ namespace RainMeadow
             );
         }
 
-        public virtual Dialog AddPostGameStatsFeed(ArenaMode arena, Menu.Menu menu)
+        public virtual Dialog AddPostGameStatsFeed(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new ArenaPostGameStatsDialog(menu.manager, arena);
         }
 
         public List<ExternalArenaGameModeSetting> savedSettings =
         [
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.aliveScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.allowJoiningMidRound)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaControl)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.amoebaDuration)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.arenaSaintAscendanceTimer)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiExplosionCount)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiStunDistanceMult)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiParryDistanceMult)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.artiParryLeniency)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.challengeDenEjection)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.denScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.disableMaul)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.emptyKillTagScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableMeadowCosmetics)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableBees)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableBombs)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableCorpseGrab)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.enableOverseer)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.foodScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.friendlyFire)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.itemSteal)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.killScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatEgg)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatLizard)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.painCatThrows)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.piggyBack)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.sainot)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.setupTime)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.spearHitScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.voidMasterEnabled)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.voidSpawnLethalityFactor)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.watcherCamoTimer)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.watcherRippleLevel)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.weaponCollisionFix)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.aliveScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.allowJoiningMidRound)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.amoebaControl)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.amoebaDuration)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.arenaSaintAscendanceTimer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiExplosionCount)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiStunDistanceMult)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiParryDistanceMult)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiParryLeniency)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.challengeDenEjection)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.disableMaul)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.emptyKillTagScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableMeadowCosmetics)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableBees)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableBombs)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableCorpseGrab)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableOverseer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.foodScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.friendlyFire)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.itemSteal)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.killScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatEgg)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatLizard)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatThrows)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.piggyBack)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.sainot)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.setupTime)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.spearHitScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidMasterEnabled)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.watcherCamoTimer)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.watcherRippleLevel)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.weaponCollisionFix)),
 
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaMode.bannedSlugs)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.bannedSlugs)),
 
             new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.ROOMREPEAT),
             new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.SESSIONLENGTH),
             new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.WILDLIFE),
         ];
 
-        public virtual string ExportLocalSettings(ArenaMode arena)
+        public virtual string ExportLocalSettings(ArenaOnlineGameMode arena)
         {
             List<string> pairs = new();
             for (int i = 0; i < savedSettings.Count; i++)
@@ -1424,7 +1423,7 @@ namespace RainMeadow
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
         }
 
-        public virtual bool ImportLocalSettings(ArenaMode arena, string base64Data)
+        public virtual bool ImportLocalSettings(ArenaOnlineGameMode arena, string base64Data)
         {
             if (string.IsNullOrEmpty(base64Data)) return false;
 
@@ -1464,9 +1463,9 @@ namespace RainMeadow
     public abstract class ExternalArenaGameModeSetting(string settingID, string settingNickname = "")
     {
         public abstract object GetValueFromString(string value);
-        public abstract void SetValueFromString(string value, ArenaMode arenaMode);
-        public abstract object GetValueFromArenaMode(ArenaMode arenaMode);
-        public abstract string GetSaveString(ArenaMode arenaMode);
+        public abstract void SetValueFromString(string value, ArenaOnlineGameMode arenaMode);
+        public abstract object GetValueFromArenaMode(ArenaOnlineGameMode arenaMode);
+        public abstract string GetSaveString(ArenaOnlineGameMode arenaMode);
         public string settingID { get; } = settingID;
         public string settingNickname { get; } = settingNickname == "" ? settingID : settingNickname;
     }
@@ -1524,7 +1523,7 @@ namespace RainMeadow
             }
             throw new ArgumentException($"Couldn't find a solution for type {settingType}");
         }
-        public override void SetValueFromString(string value, ArenaMode arenaMode)
+        public override void SetValueFromString(string value, ArenaOnlineGameMode arenaMode)
         {
             try
             {
@@ -1535,11 +1534,11 @@ namespace RainMeadow
                 RainMeadow.Error(e);
             }
         }
-        public override object GetValueFromArenaMode(ArenaMode arenaMode)
+        public override object GetValueFromArenaMode(ArenaOnlineGameMode arenaMode)
         {
             return settingField.GetValue(arenaMode);
         }
-        public override string GetSaveString(ArenaMode arenaMode)
+        public override string GetSaveString(ArenaOnlineGameMode arenaMode)
         {
             var value = GetValueFromArenaMode(arenaMode);
 
@@ -1549,13 +1548,13 @@ namespace RainMeadow
             }
             return settingField.GetValue(arenaMode).ToString();
         }
-        public FieldInfo settingField {get;} = typeof(ArenaMode).GetField(settingID);
-        public Type settingType {get;} = typeof(ArenaMode).GetField(settingID).FieldType;
+        public FieldInfo settingField {get;} = typeof(ArenaOnlineGameMode).GetField(settingID);
+        public Type settingType {get;} = typeof(ArenaOnlineGameMode).GetField(settingID).FieldType;
     }
     public class ExternalArenaGameModeInterfaceMultiChoiceSetting(string settingID, string settingNickname = "") 
         : ExternalArenaGameModeSetting(settingID, settingNickname)
     {
-        public override object GetValueFromArenaMode(ArenaMode arenaMode)
+        public override object GetValueFromArenaMode(ArenaOnlineGameMode arenaMode)
         {
             return arenaMode.onlineArenaSettingsInterfaceMultiChoice[settingID];
         }
@@ -1564,7 +1563,7 @@ namespace RainMeadow
         {
             return int.TryParse(value, out var result) ? result : 0;
         }
-        public override void SetValueFromString(string value, ArenaMode arenaMode)
+        public override void SetValueFromString(string value, ArenaOnlineGameMode arenaMode)
         {
             try
             {
@@ -1575,7 +1574,7 @@ namespace RainMeadow
                 RainMeadow.Error(e);
             }
         }
-        public override string GetSaveString(ArenaMode arenaMode)
+        public override string GetSaveString(ArenaOnlineGameMode arenaMode)
         {
             return arenaMode.onlineArenaSettingsInterfaceMultiChoice[settingID].ToString();
         }

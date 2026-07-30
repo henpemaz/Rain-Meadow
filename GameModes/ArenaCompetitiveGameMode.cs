@@ -73,6 +73,7 @@ namespace RainMeadow
         public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
         public bool WinByScore => killScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode || externalArenaGameMode is DrownMode;
+        public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
         public string paincatName;
@@ -135,6 +136,8 @@ namespace RainMeadow
 
         // host needs time to do scoring for everyone else before they load the overlay
         public bool hostLoadedOverlay;
+
+        public uint timerTicks;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -1161,6 +1164,7 @@ namespace RainMeadow
         {
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
             trackSetupTime = setupTime;
+            timerTicks = 0;
         }
 
         public void ResetPlayersEntered()
@@ -1289,8 +1293,6 @@ namespace RainMeadow
             return true;
         }
 
-        private int previousSecond = -1;
-
         public override void LobbyTick(uint tick)
         {
             if (leaveToRestart)
@@ -1302,9 +1304,8 @@ namespace RainMeadow
             base.LobbyTick(tick);
             if (OnlineManager.lobby.isOwner)
             {
-                DateTime currentTime = DateTime.UtcNow;
-                int currentSecond = currentTime.Second;
-                if (currentSecond != previousSecond)
+                timerTicks++;
+                if (timerTicks >= OnlineManager.instance.framesPerSecond)
                 {
                     if (forceReadyCountdownTimer > 0)
                     {
@@ -1322,7 +1323,7 @@ namespace RainMeadow
                             setupTime = externalArenaGameMode.TimerDirection(this, setupTime);
                         }
                     }
-                    previousSecond = currentSecond;
+                    timerTicks = 0;
                 }
             }
         }
