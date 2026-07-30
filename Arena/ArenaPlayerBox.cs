@@ -175,7 +175,7 @@ namespace RainMeadow.UI.Components
             }
             if (hostIdentifierButton != null)
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
                 }
@@ -218,7 +218,7 @@ namespace RainMeadow.UI.Components
                 {
                     return;
                 }
-                hostIdentifierButton = new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
+                hostIdentifierButton = new(menu, this, TeamBattleMode.IsTeamBattleMode(out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
                 UiLineConnector connector = new(menu, infoKickButton, hostIdentifierButton, false);
                 connector.MoveLineSpriteBeforeNode(hostIdentifierButton.roundedRect.sprites[0]);
                 lines.Add(connector);

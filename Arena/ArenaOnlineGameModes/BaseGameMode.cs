@@ -173,7 +173,7 @@ namespace RainMeadow
 
             if (!playerFound || !RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs)) return;
             if (!killedCrit.abstractCreature.IsLocal()) return;
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
+            if (TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(absPlayerCreature.owner, onlineKilledCreature.owner) && arena.killScore > 0)
             {
                 // time for punishment
                 int badTeammateNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, absPlayerCreature.owner);
@@ -321,7 +321,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (TeamBattleMode.isTeamBattleMode(arena, out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
+            if (TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(player.abstractCreature.GetOnlineCreature()?.owner, target.abstractCreature.GetOnlineCreature()?.owner))
             {
                 RainMeadow.Warn("Player_LandSpear: Players on same team, returning...");
                 return;
@@ -358,7 +358,7 @@ namespace RainMeadow
         {
             self.AddPart(new HUD.TextPrompt(self));
 
-            if (MatchmakingManager.currentInstance.canSendChatMessages 
+            if (MatchmakingManager.currentInstance.canSendChatMessages
                 && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
             {
                 if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
@@ -1058,7 +1058,7 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
-            bool isTeamMode = TeamBattleMode.isTeamBattleMode(arena, out var tb);
+            bool isTeamMode = TeamBattleMode.IsTeamBattleMode(out var tb);
 
             // 1. TALLY SCORES & SURVIVAL STATUS
             for (int i = 0; i < self.players.Count; i++)

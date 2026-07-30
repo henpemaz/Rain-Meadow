@@ -1,7 +1,5 @@
 ﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -56,7 +54,7 @@ namespace RainMeadow
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 if (arena != null)
                 {
-                    bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
+                    bool isTb = TeamBattleMode.IsTeamBattleMode(out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
                     {
                         martyrColors = teamBattleMode.teamColors[0];
@@ -87,7 +85,7 @@ namespace RainMeadow
                 {
 
 
-                    bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
+                    bool cachedTb = TeamBattleMode.IsTeamBattleMode(out var teamBattleMode);
                     if (cachedTb && teamBattleMode != null)
                     {
                         teamBattleMode.teamColors[0] = martyrColors;

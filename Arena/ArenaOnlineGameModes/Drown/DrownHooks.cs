@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Drown;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace RainMeadow
 {
@@ -25,7 +23,7 @@ namespace RainMeadow
         public int ArenaGameSession_ScoreOfPlayerDrown(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
         {
             int score = orig(self, player, inHands);
-            if (isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var d))
+            if (DrownMode.IsDrownMode(out var d))
             {
                 d.timerPoints = score;
             }
@@ -35,7 +33,7 @@ namespace RainMeadow
         private void Player_checkInputDrown(On.Player.orig_checkInput orig, Player self)
         {
             orig(self);
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var _) && self.IsLocal())
+            if (DrownMode.IsDrownMode(out var _) && self.IsLocal())
             {
                 if (ArenaHelpers.GetDataSettings<ArenaDrownClientSettings>(self.abstractCreature.GetOnlineCreature()?.owner)?.isInStore == true)
                 {
@@ -50,7 +48,7 @@ namespace RainMeadow
             // 1. ALWAYS run orig first. 
             int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
 
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            if (DrownMode.IsDrownMode(out var drown))
             {
                 int canRespawnCount = 0;
                 bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
@@ -121,7 +119,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+                    if (self.IsLocal() && isArenaMode(out ArenaOnlineGameMode arena) && DrownMode.IsDrownMode(out var drown))
                     {
                         try
                         {
@@ -164,7 +162,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            if (RainMeadow.isArenaMode(out var arena) && DrownMode.IsDrownMode(out var drown))
             {
                 ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
                 sitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= drown.spearCost;

@@ -797,7 +797,7 @@ namespace RainMeadow
                 )
                     continue;
 
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     ArenaTeamClientSettings? playerTeam =
                         ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
@@ -1254,7 +1254,7 @@ namespace RainMeadow
                 {
                     arena.hostLoadedOverlay = true;
                 }
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     if (tb.winningTeam != -1)
                     {
@@ -2946,7 +2946,7 @@ namespace RainMeadow
                     {
                         userNameBackup = currentName.id.DisplayName;
                         self.playerNameLabel.text = userNameBackup;
-                        if (TeamBattleMode.isTeamBattleMode(arena, out var team))
+                        if (TeamBattleMode.IsTeamBattleMode(out var team))
                         {
                             if (
                                 OnlineManager
@@ -3119,7 +3119,7 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(exitButton);
 
                 string winnerName = "";
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     if (tb.winningTeam != -1)
                     {
@@ -3537,4 +3537,3 @@ namespace RainMeadow
         }
     }
 }
-

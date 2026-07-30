@@ -1,6 +1,4 @@
-using Drown;
 using System;
-using System.Linq;
 
 namespace RainMeadow
 {
@@ -52,8 +50,7 @@ namespace RainMeadow
             public State(DrownData drownLobbyData, OnlineResource onlineResource)
             {
 
-                ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                var cachedDrown = DrownMode.isDrownMode(arena, out var drownData);
+                var cachedDrown = DrownMode.IsDrownMode(out var drownData);
 
                 if (cachedDrown)
                 {
@@ -77,8 +74,7 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (resource as Lobby);
-                var cachedDrown = DrownMode.isDrownMode((lobby.gameMode as ArenaOnlineGameMode), out var drownData);
+                var cachedDrown = DrownMode.IsDrownMode(out var drownData);
 
                 if (cachedDrown && drownData != null && (drownData as DrownMode != null))
                 {

@@ -15,17 +15,30 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override ArenaSetup.GameTypeID GetGameModeId => TeamBattle;
 
-        public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="TeamBattleMode"/> is not registered.
+        /// </exception>
+        public static bool IsTeamBattleMode(out TeamBattleMode teamBattle)
         {
-            tb = null;
-            if (arena.currentGameMode == TeamBattle.value)
+            teamBattle = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(TeamBattle.value, out ExternalArenaGameMode externalArena))
             {
-                tb = (
-                    arena.registeredGameModes.FirstOrDefault(x => x.Key == TeamBattle.value).Value
-                    as TeamBattleMode
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
                 );
+            }
+
+            if (arenaOnline.currentGameMode == TeamBattle.value)
+            {
+                teamBattle = (TeamBattleMode)externalArena;
                 return true;
             }
+
             return false;
         }
 
@@ -186,7 +199,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out var tb))
             {
                 if (
                     OnlineManager
@@ -304,7 +317,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out var tb))
             {
                 OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     arena,
@@ -358,7 +371,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             var resultList = orig(self);
 
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out var tb))
             {
                 tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.WinByScore, false, true);
 
@@ -411,7 +424,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out var tb))
             {
                 OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
                 OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
@@ -466,7 +479,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             base.ArenaSessionEnded(arena, orig, self, session);
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
+            if (TeamBattleMode.IsTeamBattleMode(out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
             }
@@ -480,7 +493,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             // Shameful copy-paste
-            if (isTeamBattleMode(arena, out var teamBattleMode))
+            if (IsTeamBattleMode(out var teamBattleMode))
             {
                 List<OnlinePlayer> list = new List<OnlinePlayer>();
 

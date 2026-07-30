@@ -133,7 +133,7 @@ namespace Menu
             if (arena != null)
             {
 
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
                     {

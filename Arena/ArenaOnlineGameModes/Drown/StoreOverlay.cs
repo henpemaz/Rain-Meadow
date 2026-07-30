@@ -1,9 +1,7 @@
 using Menu;
 using System.Collections.Generic;
 using UnityEngine;
-using MoreSlugcats;
 using Drown;
-using System.CodeDom;
 
 namespace RainMeadow
 {
@@ -60,7 +58,7 @@ namespace RainMeadow
 
             foreach (var itemData in storeItemsData)
             {
-                if (DrownMode.isDrownMode(arena, out var _))
+                if (DrownMode.IsDrownMode(out var _))
                 {
                     storeItemList.Add(new ArenaItemButton(this, pages[0], pos, itemData.name, itemData.cost, itemData.hotkey));
                     pos.y -= 40;
@@ -133,7 +131,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.isDrownMode(arena, out var drownMode) || storeItemList.Count == 0)
+            if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.IsDrownMode(out var drownMode) || storeItemList.Count == 0)
                 return;
 
             bool isAlive = me != null && (me.state.alive || me.realizedCreature?.State?.alive == true);

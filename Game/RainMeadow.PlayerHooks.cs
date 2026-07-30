@@ -8,9 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization.Formatters;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace RainMeadow;
 
@@ -1369,7 +1367,7 @@ public partial class RainMeadow
         {
             int[] disabledCollisionChallenges = [60, 68]; //27, 44, 45, 55, and 58 all also have problems with player spawns bumping each other into death pits, but they also include creatures, which we still want to collide with.
                                                           //60 also has danglefruit that we don't collide with but that matters less. Ideally we'd set up a "just don't collide with players" collision layer, but this works for now.
-            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.isChallengeMode(arena, out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
+            if (arena.countdownInitiatedHoldFire || (ArenaChallengeMode.IsChallengeMode(out var chMode) && disabledCollisionChallenges.Contains(chMode.challengeID)))
             {
                 if (self.collisionLayer != 0)
                 {
