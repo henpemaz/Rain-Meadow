@@ -797,7 +797,7 @@ namespace RainMeadow
                 )
                     continue;
 
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out _))
                 {
                     ArenaTeamClientSettings? playerTeam =
                         ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
@@ -1254,15 +1254,15 @@ namespace RainMeadow
                 {
                     arena.hostLoadedOverlay = true;
                 }
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    if (tb.winningTeam != -1)
+                    if (teamBattle.winningTeam != -1)
                     {
                         self.headingLabel.text = self.Translate("<TEAMNAME> WIN!")
                             .Replace(
                                 "<TEAMNAME>",
                                 MatchmakingManager.currentInstance.FilterTeamName(
-                                    tb.teamNames[tb.winningTeam].ToUpper()
+                                    teamBattle.teamNames[teamBattle.winningTeam].ToUpper()
                                 )
                             );
                     }
@@ -1272,13 +1272,11 @@ namespace RainMeadow
                         {
                             OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
                             if (pl == null || box == null)
-                            {
                                 continue;
-                            }
+
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.score = tb.teamScores[teamSettings.team];
-
+                                box.player.score = teamBattle.teamScores[teamSettings.team];
                             }
                         }
                     }
@@ -2946,7 +2944,7 @@ namespace RainMeadow
                     {
                         userNameBackup = currentName.id.DisplayName;
                         self.playerNameLabel.text = userNameBackup;
-                        if (TeamBattleMode.isTeamBattleMode(arena, out var team))
+                        if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                         {
                             if (
                                 OnlineManager
@@ -2955,7 +2953,7 @@ namespace RainMeadow
                             )
                             {
                                 self.playerNameLabel.text +=
-                                    $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
+                                    $" -- {MatchmakingManager.currentInstance.FilterTeamName(teamBattle.teamNames[td.team].ToUpper())}";
                             }
 
                         }
@@ -3119,12 +3117,12 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(exitButton);
 
                 string winnerName = "";
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    if (tb.winningTeam != -1)
+                    if (teamBattle.winningTeam != -1)
                     {
                         winnerName = MatchmakingManager.currentInstance.FilterTeamName(
-                            tb.teamNames[tb.winningTeam].ToUpper()
+                            teamBattle.teamNames[teamBattle.winningTeam].ToUpper()
                         );
                         self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
                             .Replace("<TEAMNAME>",winnerName);
@@ -3141,7 +3139,7 @@ namespace RainMeadow
                             }
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.totScore = tb.teamScores[teamSettings.team];
+                                box.player.totScore = teamBattle.teamScores[teamSettings.team];
                             }
                         }
                     }
@@ -3537,4 +3535,3 @@ namespace RainMeadow
         }
     }
 }
-

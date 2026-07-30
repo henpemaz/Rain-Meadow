@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using Menu;
-using RainMeadow;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
@@ -17,17 +16,30 @@ namespace RainMeadow
         private int _timerDuration;
         public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
 
-        public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="FFA"/> is not registered.
+        /// </exception>
+        public static bool IsFfaMode(out FFA ffa)
         {
-            ffa = null;
-            if (arena.currentGameMode == FFAMode.value)
+            ffa = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(FFAMode.value, out ExternalArenaGameMode externalArena))
             {
-                ffa = (
-                    arena.registeredGameModes.FirstOrDefault(x => x.Key == FFAMode.value).Value
-                    as FFA
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
                 );
+            }
+
+            if (arenaOnline.currentGameMode == FFAMode.value)
+            {
+                ffa = (FFA)externalArena;
                 return true;
             }
+
             return false;
         }
 

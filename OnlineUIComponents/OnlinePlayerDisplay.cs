@@ -1,11 +1,8 @@
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -198,7 +195,7 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var a) && owner.RealizedPlayer?.isCamo == true)
             {
                 // Check if we are teammates (Only true if it's Team Battle AND we are on the same team)
-                bool isTeammate = TeamBattleMode.isTeamBattleMode(a, out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
+                bool isTeammate = TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
 
                 // Hide if it's NOT me AND it's NOT a teammate
                 if (!player.isMe && !isTeammate)

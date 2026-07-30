@@ -1,9 +1,7 @@
 using Menu;
 using System.Collections.Generic;
 using UnityEngine;
-using MoreSlugcats;
 using Drown;
-using System.CodeDom;
 
 namespace RainMeadow
 {
@@ -58,9 +56,9 @@ namespace RainMeadow
                 (OpenDens, drown.denCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
             };
 
-            foreach (var itemData in storeItemsData)
+            if (DrownMode.IsDrownMode(out _))
             {
-                if (DrownMode.isDrownMode(arena, out var _))
+                foreach (var itemData in storeItemsData)
                 {
                     storeItemList.Add(new ArenaItemButton(this, pages[0], pos, itemData.name, itemData.cost, itemData.hotkey));
                     pos.y -= 40;
@@ -133,7 +131,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.isDrownMode(arena, out var drownMode) || storeItemList.Count == 0)
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena) || !DrownMode.IsDrownMode(out _) || storeItemList.Count == 0)
                 return;
 
             bool isAlive = me != null && (me.state.alive || me.realizedCreature?.State?.alive == true);
@@ -149,7 +147,7 @@ namespace RainMeadow
                     bool greyedOut = item.itemName switch
                     {
                         Respawn => isAlive || !canAfford || drown.openedDen,
-                        OpenDens => drownMode.openedDen || !canAfford,
+                        OpenDens => drown.openedDen || !canAfford,
                         ElectricSpear => !ModManager.MSC || !canAfford || !isAlive,
                         Boomerang => !ModManager.Watcher || !canAfford || !isAlive,
                         _ => !canAfford || !isAlive

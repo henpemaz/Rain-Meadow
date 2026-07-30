@@ -2,9 +2,9 @@ using System;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
-using RWCustom;
 using System.Linq;
-using System.Collections.Generic;
+using RWCustom;
+
 namespace RainMeadow
 {
     public static class ArenaRPCs
@@ -142,16 +142,12 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
-                {
-
-                    tb.martyrsSpawn = martyrs;
-                    tb.outlawsSpawn = outlaws;
-                    tb.dragonslayersSpawn = dragonslayers;
-                    tb.chieftainsSpawn = chieftains;
-                }
+                teamBattle.martyrsSpawn = martyrs;
+                teamBattle.outlawsSpawn = outlaws;
+                teamBattle.dragonslayersSpawn = dragonslayers;
+                teamBattle.chieftainsSpawn = chieftains;
             }
         }
         [RPCMethod]
