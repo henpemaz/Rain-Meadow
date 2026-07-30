@@ -72,7 +72,6 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
-            On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
@@ -598,6 +597,19 @@ namespace RainMeadow
                     c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
                     c.MarkLabel(continueAsNormal);
                 }
+
+                c.Index = 0;
+                ILLabel skipIfNotArenaMode = c.DefineLabel();
+                c.GotoNext(
+                    MoveType.After,
+                    i => i.MatchLdfld<PlayerResultMenu>(nameof(PlayerResultMenu.result)),
+                    i => i.MatchCallvirt(typeof(List<ArenaSitting.ArenaPlayer>).GetProperty(nameof(List<ArenaSitting.ArenaPlayer>.Count))!.GetGetMethod())
+                );
+                c.EmitDelegate(() => isArenaMode(out _));
+                c.Emit(OpCodes.Brfalse, skipIfNotArenaMode);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Ldc_I4, 0);
+                c.MarkLabel(skipIfNotArenaMode);
             }
             catch (Exception e)
             {
@@ -1187,6 +1199,8 @@ namespace RainMeadow
             int index
         )
         {
+            MenuMicrophone menuMic = owner.menu.manager.menuMic;
+
             if (isArenaMode(out var arena))
             {
 
@@ -1204,8 +1218,11 @@ namespace RainMeadow
                     arena.ReadFromStats(player, pl);
                 }
 
+                // prevents UI_Multiplayer_Player_Result_Box_Bump playing for every single player in the lobby at once
+                owner.menu.manager.menuMic = null;
             }
             orig(self, resultPage, owner, player, index);
+            owner.menu.manager.menuMic = menuMic;
         }
 
         public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
@@ -1311,6 +1328,21 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                if (self.allResultBoxesInPlaceCounter > 10)
+                {
+                    int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+                    if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
+                    {
+                        Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
+                        if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
+                        {
+                            ArenaRPCs.Arena_ReadyForNextRound();
+                            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
+                                player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
+                        }
+                    }
+                }
+
                 if (arena.leaveForNextLevel)
                 {
                     string loadingString;
@@ -3065,7 +3097,16 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                // play once per menu instead of per every FinalResultbox
+                manager.menuMic.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Bump);
+
                 self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
+
+                foreach (FSprite sprite in self.continueButton.roundedRect.sprites)
+                    sprite.MoveToFront();
+                foreach (FSprite sprite in self.continueButton.selectRect.sprites)
+                    sprite.MoveToFront();
+                self.continueButton.menuLabel.label.MoveToFront();
 
                 var exitButton = new Menu.SimpleButton(
                     self,
@@ -3373,30 +3414,6 @@ namespace RainMeadow
             {
                 return orig(self, shortcutVessel);
             }
-        }
-
-        public void ArenaOverlay_PlayerPressedContinue(
-            On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig,
-            Menu.ArenaOverlay self
-        )
-        {
-            if (isArenaMode(out var arena))
-            {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-                    return;
-                }
-                else
-                {
-                    for (int i = 0; i < self.result.Count; i++)
-                    {
-                        self.result[i].readyForNextRound = true;
-                    }
-                }
-            }
-
-            orig(self);
         }
 
         public void ArenaGameSession_Update(

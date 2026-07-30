@@ -2045,7 +2045,11 @@ namespace RainMeadow
                 {
                     self.continueButton.signalText = "CONTINUE";
                     self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled) self.Singal(self.continueButton, "CONTINUE");
+                    if (self.continueButton.toggled)
+                    {
+                        self.Singal(self.continueButton, "CONTINUE");
+                        self.continueButton.toggled = false;
+                    }
                 }
                 else
                 {
