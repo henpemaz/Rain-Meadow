@@ -1,4 +1,5 @@
-﻿using MoreSlugcats;
+﻿using MonoMod;
+using MoreSlugcats;
 using RainMeadow.Generics;
 using RWCustom;
 using System;
@@ -123,10 +124,13 @@ namespace RainMeadow
             {
                 if (resource.absroom.realizedRoom != null)
                 {
-                    FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
-                    if (firstJet != null)
+                    if (ModManager.Watcher)
                     {
-                        FlameJetTime = firstJet.time;
+                        FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
+                        if (firstJet != null)
+                        {
+                            FlameJetTime = firstJet.time;
+                        }
                     }
                 }
             }
@@ -141,10 +145,13 @@ namespace RainMeadow
 
                     if (rs.absroom.realizedRoom != null)
                     {
-                        var room = rs.absroom.realizedRoom;
-                        foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
+                        if (ModManager.Watcher)
                         {
-                            flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            var room = rs.absroom.realizedRoom;
+                            foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
+                            {
+                                flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            }
                         }
                     }
                 }

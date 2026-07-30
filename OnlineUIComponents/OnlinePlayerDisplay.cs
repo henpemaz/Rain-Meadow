@@ -204,8 +204,10 @@ namespace RainMeadow
                 if (!player.isMe && !isTeammate)
                 {
                     show = false;
-                    pos.x = -1000;
-                    this.alpha = 0f;
+                    pos.x = -1000f;
+                    lastPos.x = -1000f;
+                    alpha = 0f;
+                    lastAlpha = 0f;
                 }
             }
 
@@ -225,7 +227,7 @@ namespace RainMeadow
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
-                    if (this.lastAlpha == 0) this.lastPos = pos;
+                    if (this.lastAlpha == 0 || owner.shouldSkipDrawposLerp || lastPos.x <= -999f) this.lastPos = pos;
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
@@ -263,7 +265,8 @@ namespace RainMeadow
                 }
                 else
                 {
-                    pos.x = -1000;
+                    pos.x = -1000f;
+                    lastPos.x = -1000f;
                 }
 
                 this.counter++;
