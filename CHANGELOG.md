@@ -44,6 +44,7 @@
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
 - Added score tracker to in-game UI; can be toggled on & off. Check Meadow Arena Remix page
+- Slightly improved timer accuracy
 ### Watcher
 - Gave summoned Ameobas the Watcher's body color
 ### Modders
