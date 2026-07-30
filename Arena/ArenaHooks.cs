@@ -603,7 +603,7 @@ namespace RainMeadow
                 c.GotoNext(
                     MoveType.After,
                     i => i.MatchLdfld<PlayerResultMenu>(nameof(PlayerResultMenu.result)),
-                    i => i.MatchCallvirt(typeof(List<ArenaSitting.ArenaPlayer>).GetProperty(nameof(List<>.Count))!.GetGetMethod())
+                    i => i.MatchCallvirt(typeof(List<ArenaSitting.ArenaPlayer>).GetProperty(nameof(List<ArenaSitting.ArenaPlayer>.Count))!.GetGetMethod())
                 );
                 c.EmitDelegate(() => isArenaMode(out _));
                 c.Emit(OpCodes.Brfalse, skipIfNotArenaMode);
