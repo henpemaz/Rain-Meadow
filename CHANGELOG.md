@@ -18,6 +18,7 @@
 - Added scarfs(?)
 - Added Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
