@@ -2,6 +2,7 @@
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -287,6 +288,37 @@ namespace RainMeadow
                 myKiller = opo2;
             }
             DeathMessage.CreatureKillPlayer(myKiller, myTarget);
+        }
+
+        [RPCMethod]
+        public static void LightingMakerStrike(RPCEvent rpc, RoomSession roomSession, Vector2 pos, float branchingChance, float size, float effectRadius, float killRadius, int delayFrames)
+        {
+            var lm = roomSession.absroom.realizedRoom?.lightningMaker;
+            if (roomSession.owner != rpc.from || lm == null) return; // only allow RPC from room owner in a room with a lightning maker
+
+            // validate variables
+            branchingChance = Mathf.Clamp01(branchingChance);
+            size = Mathf.Clamp01(size);
+            effectRadius = Mathf.Clamp(effectRadius, 0f, 1000f);
+            killRadius = Mathf.Clamp(killRadius, 0f, 1000f);
+            delayFrames = Mathf.Clamp(delayFrames, 0, 400);
+            // spawn strikedata
+            if (lm.IsPosProtected(pos) && killRadius != 0) return;
+            var strikeData = new LightningMaker.StrikeData
+            {
+                pos = pos,
+                branchingChance = branchingChance,
+                effectRadius = effectRadius,
+                killRadius = killRadius,
+                buildupTime = delayFrames,
+                staticBuildup = new LightningMaker.StaticBuildup(pos, delayFrames, effectRadius, killRadius, lm.room, lm.mainColor)
+                {
+                    snapToWater = lm.room.PointSubmerged(pos)
+                }
+            };
+            strikeData.pos = strikeData.staticBuildup.pos;
+            lm.strikeQueue.Add(strikeData);
+            lm.room.AddObject(strikeData.staticBuildup);
         }
     }
 }
