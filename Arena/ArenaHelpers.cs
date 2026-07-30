@@ -182,7 +182,6 @@ namespace RainMeadow
 
 
             OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, excludedPlayerNumber);
-            bool isTeamBattle = TeamBattleMode.IsTeamBattleMode(out _);
             int[] allAlivePlayers = [];
 
             for (int i = 0; i < session.arenaSitting.players.Count; i++)
@@ -208,7 +207,7 @@ namespace RainMeadow
                 }
 
                 // EXCLUSION 3: Not on the same team
-                if (isTeamBattle && deadPlayer != null)
+                if (TeamBattleMode.IsTeamBattleMode(out _) && deadPlayer != null)
                 {
                     if (ArenaHelpers.CheckSameTeam(alivePlayer, deadPlayer)) continue;
                 }
@@ -484,10 +483,10 @@ namespace RainMeadow
         // Adding that function to hook for other mods
         public static Color GetAmoebaColor(OnlinePlayer owner, bool inOtherRipple = false)
         {
-            Color rawColor = (RainMeadow.isArenaMode(out var arena)
-                ? (TeamBattleMode.IsTeamBattleMode(out var tb)
+            Color rawColor = (RainMeadow.isArenaMode(out _)
+                ? (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
                         && OnlineManager.lobby.clientSettings[owner]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
-                            ? tb.teamColors[tcs.team]
+                            ? teamBattle.teamColors[tcs.team]
                             : GetArenaClientSettings(owner)?.slugcatColor)
                 : null) ?? RainWorld.RippleColor;
             HSLColor hSLColor = rawColor.ToHSL();

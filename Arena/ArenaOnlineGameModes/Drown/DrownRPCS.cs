@@ -8,7 +8,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_OpenDen(bool denOpen)
         {
-            if (DrownMode.IsDrownMode(out var drown))
+            if (DrownMode.IsDrownMode(out DrownMode drown))
             {
                 drown.openedDen = denOpen;
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
@@ -37,7 +37,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_RemoveAbstractCreatureFromList(RPCEvent e)
         {
-            if (DrownMode.IsDrownMode(out var drown))
+            if (DrownMode.IsDrownMode(out _))
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)

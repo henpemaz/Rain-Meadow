@@ -288,7 +288,7 @@ namespace RainMeadow
         }
         public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
-            if (IsDrownMode(out var drown))
+            if (IsDrownMode(out _))
             {
                 foreach (var player in self.players)
                 {
@@ -319,8 +319,7 @@ namespace RainMeadow
 
         public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
         {
-
-            if (IsDrownMode(out var drown))
+            if (IsDrownMode(out DrownMode drown))
             {
                 if (!self.sessionEnded)
                 {

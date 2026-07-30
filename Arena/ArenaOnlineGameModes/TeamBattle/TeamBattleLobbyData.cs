@@ -49,63 +49,46 @@ namespace RainMeadow
             [OnlineField]
             public int roundSpawnPointCycler;
             public State() { }
-            public State(TeamBattleLobbyData arenaLobbyData, OnlineResource onlineResource)
+            public State(TeamBattleLobbyData lobbyData, OnlineResource onlineResource)
             {
-                ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                if (arena != null)
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    bool isTb = TeamBattleMode.IsTeamBattleMode(out var teamBattleMode);
-                    if (isTb && teamBattleMode != null)
-                    {
-                        martyrColors = teamBattleMode.teamColors[0];
-                        outlawColors = teamBattleMode.teamColors[1];
-                        dragonslayerColors = teamBattleMode.teamColors[2];
-                        chieftainColors = teamBattleMode.teamColors[3];
-                        martyrsName = teamBattleMode.teamNames[0];
-                        outlawsName = teamBattleMode.teamNames[1];
-                        dragonslayersName = teamBattleMode.teamNames[2];
-                        chieftainsName = teamBattleMode.teamNames[3];
-                        winningTeam = teamBattleMode.winningTeam;
-                        martyrs = teamBattleMode.martyrsSpawn;
-                        outlaws = teamBattleMode.outlawsSpawn;
-                        dragonslayers = teamBattleMode.dragonslayersSpawn;
-                        chieftains = teamBattleMode.chieftainsSpawn;
-                        roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
-                        lerp = teamBattleMode.lerp;
-
-                    }
+                    martyrColors = teamBattle.teamColors[0];
+                    outlawColors = teamBattle.teamColors[1];
+                    dragonslayerColors = teamBattle.teamColors[2];
+                    chieftainColors = teamBattle.teamColors[3];
+                    martyrsName = teamBattle.teamNames[0];
+                    outlawsName = teamBattle.teamNames[1];
+                    dragonslayersName = teamBattle.teamNames[2];
+                    chieftainsName = teamBattle.teamNames[3];
+                    winningTeam = teamBattle.winningTeam;
+                    martyrs = teamBattle.martyrsSpawn;
+                    outlaws = teamBattle.outlawsSpawn;
+                    dragonslayers = teamBattle.dragonslayersSpawn;
+                    chieftains = teamBattle.chieftainsSpawn;
+                    roundSpawnPointCycler = teamBattle.roundSpawnPointCycler;
+                    lerp = teamBattle.lerp;
                 }
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (resource as Lobby);
-                var arena = (lobby.gameMode as ArenaOnlineGameMode);
-                if (arena != null)
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-
-
-                    bool cachedTb = TeamBattleMode.IsTeamBattleMode(out var teamBattleMode);
-                    if (cachedTb && teamBattleMode != null)
-                    {
-                        teamBattleMode.teamColors[0] = martyrColors;
-                        teamBattleMode.teamColors[1] = outlawColors;
-                        teamBattleMode.teamColors[2] = dragonslayerColors;
-                        teamBattleMode.teamColors[3] = chieftainColors;
-                        teamBattleMode.teamNames[0] = martyrsName;
-                        teamBattleMode.teamNames[1] = outlawsName;
-                        teamBattleMode.teamNames[2] = dragonslayersName;
-                        teamBattleMode.teamNames[3] = chieftainsName;
-                        teamBattleMode.winningTeam = winningTeam;
-                        teamBattleMode.martyrsSpawn = martyrs;
-                        teamBattleMode.outlawsSpawn = outlaws;
-                        teamBattleMode.dragonslayersSpawn = dragonslayers;
-
-                        teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
-                        teamBattleMode.lerp = lerp;
-
-
-                    }
+                    teamBattle.teamColors[0] = martyrColors;
+                    teamBattle.teamColors[1] = outlawColors;
+                    teamBattle.teamColors[2] = dragonslayerColors;
+                    teamBattle.teamColors[3] = chieftainColors;
+                    teamBattle.teamNames[0] = martyrsName;
+                    teamBattle.teamNames[1] = outlawsName;
+                    teamBattle.teamNames[2] = dragonslayersName;
+                    teamBattle.teamNames[3] = chieftainsName;
+                    teamBattle.winningTeam = winningTeam;
+                    teamBattle.martyrsSpawn = martyrs;
+                    teamBattle.outlawsSpawn = outlaws;
+                    teamBattle.dragonslayersSpawn = dragonslayers;
+                    teamBattle.roundSpawnPointCycler = roundSpawnPointCycler;
+                    teamBattle.lerp = lerp;
                 }
             }
 

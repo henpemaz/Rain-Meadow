@@ -1058,7 +1058,7 @@ namespace RainMeadow
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
             int foodScore = self.gameTypeSetup.foodScore;
             bool countFood = foodScore != 0 && System.Math.Abs(foodScore) < 100;
-            bool isTeamMode = TeamBattleMode.IsTeamBattleMode(out var tb);
+            bool isTeamMode = TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle);
 
             // 1. TALLY SCORES & SURVIVAL STATUS
             for (int i = 0; i < self.players.Count; i++)
@@ -1129,7 +1129,7 @@ namespace RainMeadow
 
             if (isTeamMode)
             {
-                tb.winningTeam = tb.CalculateTeamScoresAndWinner(self.players, arena, arena.WinByScore, true, false);
+                teamBattle.winningTeam = teamBattle.CalculateTeamScoresAndWinner(self.players, arena, arena.WinByScore, true, false);
             }
 
             // 3. SORT PLAYERS (Using the newly cleaned, pure sort method)
@@ -1156,7 +1156,7 @@ namespace RainMeadow
             if (isTeamMode)
             {
                 // Everyone on the winning team wins, everyone else loses
-                if (tb.winningTeam != -1)
+                if (teamBattle.winningTeam != -1)
                 {
                     for (int x = 0; x < list.Count; x++)
                     {
@@ -1165,7 +1165,7 @@ namespace RainMeadow
 
                         if (OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var teamInfo))
                         {
-                            list[x].winner = teamInfo.team == tb.winningTeam;
+                            list[x].winner = teamInfo.team == teamBattle.winningTeam;
                         }
                     }
                 }

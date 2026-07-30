@@ -142,13 +142,12 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
         {
-            if (TeamBattleMode.IsTeamBattleMode(out var tb))
+            if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
-
-                tb.martyrsSpawn = martyrs;
-                tb.outlawsSpawn = outlaws;
-                tb.dragonslayersSpawn = dragonslayers;
-                tb.chieftainsSpawn = chieftains;
+                teamBattle.martyrsSpawn = martyrs;
+                teamBattle.outlawsSpawn = outlaws;
+                teamBattle.dragonslayersSpawn = dragonslayers;
+                teamBattle.chieftainsSpawn = chieftains;
             }
         }
         [RPCMethod]

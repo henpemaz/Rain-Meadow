@@ -19,22 +19,16 @@ namespace RainMeadow
 
             public State() { }
 
-            public State(ChallengeLobbyData arenaLobbyData, OnlineResource onlineResource)
+            public State(ChallengeLobbyData lobbyData, OnlineResource onlineResource)
             {
-                bool isCh = ArenaChallengeMode.IsChallengeMode(out var chMode);
-                if (isCh && chMode != null)
-                {
-                    challengeID = chMode.challengeID;
-                }
+                if (ArenaChallengeMode.IsChallengeMode(out ArenaChallengeMode challenge))
+                    challengeID = challenge.challengeID;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                bool isCh = ArenaChallengeMode.IsChallengeMode(out var chMode);
-                if (isCh && chMode != null)
-                {
-                    chMode.challengeID = challengeID;
-                }
+                if (ArenaChallengeMode.IsChallengeMode(out ArenaChallengeMode challenge))
+                    challenge.challengeID = challengeID;
             }
 
             public override Type GetDataType() => typeof(TeamBattleLobbyData);

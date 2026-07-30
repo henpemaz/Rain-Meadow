@@ -23,23 +23,20 @@ namespace RainMeadow
         public int ArenaGameSession_ScoreOfPlayerDrown(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
         {
             int score = orig(self, player, inHands);
-            if (DrownMode.IsDrownMode(out var d))
-            {
-                d.timerPoints = score;
-            }
+
+            if (DrownMode.IsDrownMode(out DrownMode drown))
+                drown.timerPoints = score;
+
             return score;
         }
 
         private void Player_checkInputDrown(On.Player.orig_checkInput orig, Player self)
         {
             orig(self);
-            if (DrownMode.IsDrownMode(out var _) && self.IsLocal())
+            if (DrownMode.IsDrownMode(out _) && self.IsLocal())
             {
                 if (ArenaHelpers.GetDataSettings<ArenaDrownClientSettings>(self.abstractCreature.GetOnlineCreature()?.owner)?.isInStore == true)
-                {
                     GameplayOverrides.StopPlayerMovement(self);
-                }
-
             }
         }
 
@@ -48,7 +45,7 @@ namespace RainMeadow
             // 1. ALWAYS run orig first. 
             int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
 
-            if (DrownMode.IsDrownMode(out var drown))
+            if (DrownMode.IsDrownMode(out DrownMode drown))
             {
                 int canRespawnCount = 0;
                 bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
@@ -119,7 +116,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && isArenaMode(out ArenaOnlineGameMode arena) && DrownMode.IsDrownMode(out var drown))
+                    if (self.IsLocal() && isArenaMode(out ArenaOnlineGameMode arena) && DrownMode.IsDrownMode(out _))
                     {
                         try
                         {
@@ -159,13 +156,12 @@ namespace RainMeadow
         {
             orig(self, type, active);
             if (!self.IsLocal())
-            {
                 return;
-            }
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.IsDrownMode(out var drown))
+
+            if (isArenaMode(out ArenaOnlineGameMode arena) && DrownMode.IsDrownMode(out DrownMode drown))
             {
-                ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
-                sitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= drown.spearCost;
+                ArenaSitting arenaSitting = self.room.game.GetArenaGameSession.arenaSitting;
+                arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= drown.spearCost;
             }
 
         }

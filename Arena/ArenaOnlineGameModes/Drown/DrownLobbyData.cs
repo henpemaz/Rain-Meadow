@@ -47,49 +47,41 @@ namespace RainMeadow
             [OnlineField]
             bool densOpened;
             public State() { }
-            public State(DrownData drownLobbyData, OnlineResource onlineResource)
+            public State(DrownData lobbyData, OnlineResource onlineResource)
             {
-
-                var cachedDrown = DrownMode.IsDrownMode(out var drownData);
-
-                if (cachedDrown)
+                if (DrownMode.IsDrownMode(out DrownMode drown))
                 {
-                    currentWaveTimer = (drownData).currentWaveTimer;
-                    currentWave = drownData.currentWave;
-                    densOpened = drownData.openedDen;
-                    rockCost = drownData.rockCost;
-                    spearCost = drownData.spearCost;
-                    spearExplCost = drownData.spearExplCost;
-                    bombCost = drownData.bombCost;
-                    respCost = drownData.respCost;
-                    denCost = drownData.denCost;
-                    maxCreatures = drownData.maxCreatures;
-                    creatureCleanupWaves = drownData.creatureCleanupWaves;
-
+                    currentWaveTimer = drown.currentWaveTimer;
+                    currentWave = drown.currentWave;
+                    densOpened = drown.openedDen;
+                    rockCost = drown.rockCost;
+                    spearCost = drown.spearCost;
+                    spearExplCost = drown.spearExplCost;
+                    bombCost = drown.bombCost;
+                    respCost = drown.respCost;
+                    denCost = drown.denCost;
+                    maxCreatures = drown.maxCreatures;
+                    creatureCleanupWaves = drown.creatureCleanupWaves;
                 }
-
             }
 
             public override Type GetDataType() => typeof(DrownData);
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var cachedDrown = DrownMode.IsDrownMode(out var drownData);
-
-                if (cachedDrown && drownData != null && (drownData as DrownMode != null))
+                if (DrownMode.IsDrownMode(out DrownMode drown))
                 {
-                    (drownData).currentWaveTimer = currentWaveTimer;
-                    drownData.currentWave = currentWave;
-                    drownData.openedDen = densOpened;
-                    drownData.rockCost = rockCost;
-                    drownData.spearCost = spearCost;
-                    drownData.spearExplCost = spearExplCost;
-                    drownData.bombCost = bombCost;
-                    drownData.respCost = respCost;
-                    drownData.denCost = denCost;
-                    drownData.maxCreatures = maxCreatures;
-                    drownData.creatureCleanupWaves = creatureCleanupWaves;
-
+                    drown.currentWaveTimer = currentWaveTimer;
+                    drown.currentWave = currentWave;
+                    drown.openedDen = densOpened;
+                    drown.rockCost = rockCost;
+                    drown.spearCost = spearCost;
+                    drown.spearExplCost = spearExplCost;
+                    drown.bombCost = bombCost;
+                    drown.respCost = respCost;
+                    drown.denCost = denCost;
+                    drown.maxCreatures = maxCreatures;
+                    drown.creatureCleanupWaves = creatureCleanupWaves;
                 }
             }
         }
