@@ -83,7 +83,7 @@ namespace RainMeadow
                     showMode = TimerMode.Countdown;
                 }
 
-                if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
+                if (safetyCatchTimer > arena.countdownSafetyCatchTimer) // Something went wrong with the timer. Let's move on
                 {
                     showMode = TimerMode.Countdown;
                 }

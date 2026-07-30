@@ -23,7 +23,8 @@ public class ArenaSpawnLocationIndicator : HudPart
 
         if (clientSettings.avatars.Count == 0
             || clientSettings.avatars[0]?.FindEntity(true) is not OnlineCreature oc
-            || oc.realizedCreature is not Player player)
+            || oc.realizedCreature is not Player player
+            || player.inShortcutVessel is not null)
         {
             counter = 0;
             return;

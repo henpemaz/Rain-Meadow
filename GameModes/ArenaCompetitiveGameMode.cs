@@ -64,6 +64,7 @@ namespace RainMeadow
         public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
 
         public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
+        public int countdownSafetyCatchTimer = RainMeadow.rainMeadowOptions.CountdownSafetyCatchTimer.Value;
 
         public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
         public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
