@@ -1,6 +1,5 @@
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 {
@@ -15,7 +14,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             myTab = new(menu, menu.arenaMainLobbyPage.tabContainer);
             myTab.AddObjects(
                 arenaChallengeSettingsInterface = new OnlineArenaChallengeSettingsInterface(
-                    (ArenaMode)OnlineManager.lobby.gameMode,
+                    (ArenaOnlineGameMode)OnlineManager.lobby.gameMode,
                     this,
                     myTab.menu,
                     myTab,

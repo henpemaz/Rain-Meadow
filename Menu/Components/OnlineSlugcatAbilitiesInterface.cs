@@ -3,14 +3,11 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.UI.Components.Patched;
-using RainMeadow.UI.Interfaces;
 using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
@@ -140,7 +137,7 @@ namespace RainMeadow.UI.Components
                 };
                 artiExplosionTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiExplosionCount = artiExplosionTextBox.valueInt;
                 };
                 artiExplosionLabel = new(menu, this, Translate("Artificer Explosion Capacity"), artiExplosionTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
@@ -155,7 +152,7 @@ namespace RainMeadow.UI.Components
                 };
                 artiStunDistanceTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiStunDistanceMult = artiStunDistanceTextBox.valueFloat;
                 };
                 artiStunDistanceLabel = new(menu, this, Translate("Artificer Stun Range Multiplier"), artiStunDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
@@ -171,7 +168,7 @@ namespace RainMeadow.UI.Components
                 };
                 artiParryDistanceTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiParryDistanceMult = artiParryDistanceTextBox.valueFloat;
                 };
                 artiParryDistanceLabel = new(menu, this, Translate("Artificer Parry Range Multiplier"), artiParryDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
@@ -188,7 +185,7 @@ namespace RainMeadow.UI.Components
                 };
                 saintAscendDurationTimerTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
                 };
                 saintAscendanceTimerLabel = new(menu, this, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
@@ -222,7 +219,7 @@ namespace RainMeadow.UI.Components
             {
                 foreach (MenuObject menuObj in subObjects)
                     SyncMenuObjectStatus(menuObj);
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                 arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
                 arena.artiExplosionCount = artiExplosionTextBox.valueInt;
                 arena.artiParryDistanceMult = artiParryDistanceTextBox.valueFloat;
@@ -250,7 +247,7 @@ namespace RainMeadow.UI.Components
                     if (obj != backButton && obj is ButtonTemplate btn)
                         btn.buttonBehav.greyedOut = greyoutAll;
                 }
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
+                if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                 {
                     ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
                     ShowSyncInTextbox(artiExplosionTextBox, greyoutAll, arena.artiExplosionCount);
@@ -272,7 +269,7 @@ namespace RainMeadow.UI.Components
             public bool GetChecked(CheckBox box)
             {
                 string id = box.IDString;
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
+                if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                 {
                     if (id == DISABLEMAUL) return arena.disableMaul;
                     if (id == ARTIPARRYLENIENCY) return arena.artiParryLeniency;
@@ -285,7 +282,7 @@ namespace RainMeadow.UI.Components
             }
             public void SetChecked(CheckBox box, bool c)
             {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                 string id = box.IDString;
                 if (id == DISABLEMAUL) arena.disableMaul = c; //owner can only edit it, its fine
                 if (id == ARTIPARRYLENIENCY) arena.artiParryLeniency = c;
@@ -316,7 +313,7 @@ namespace RainMeadow.UI.Components
                 };
                 watcherCamoLimitTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 };
                 new PatchedUIelementWrapper(tabWrapper, watcherCamoLimitTextBox);
@@ -332,7 +329,7 @@ namespace RainMeadow.UI.Components
                 };
                 watcherRippleLevelTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.watcherRippleLevel = Mathf.Clamp(watcherRippleLevelTextBox.valueInt, 1, 9);
                 };
                 new PatchedUIelementWrapper(tabWrapper, watcherRippleLevelTextBox);
@@ -374,7 +371,7 @@ namespace RainMeadow.UI.Components
                 };
                 voidMasterCheckbox.OnChange += () =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
                     voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at the cost of your camo timer") : menu.Translate("Amoeba summoning is disabled lobby-wide");
 
@@ -394,7 +391,7 @@ namespace RainMeadow.UI.Components
                 };
                 amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
                 };
                 new PatchedUIelementWrapper(tabWrapper, amoebaLifespanTextBox);
@@ -412,7 +409,7 @@ namespace RainMeadow.UI.Components
                 };
                 amoebaLethalityFactorTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.voidSpawnLethalityFactor = amoebaLethalityFactorTextBox.valueFloat;
                 };
                 new PatchedUIelementWrapper(tabWrapper, amoebaLethalityFactorTextBox);
@@ -425,7 +422,7 @@ namespace RainMeadow.UI.Components
                 amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 7);
                 amoebaControlCheckbox.OnChange += () =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
                     amoebaControlCheckbox.description = amoebaControlCheckbox.GetValueBool() ? menu.Translate("Amoeba's direction is influenced by pointing") : menu.Translate("Amoebas chase targets at-will");
                 };
@@ -470,7 +467,7 @@ namespace RainMeadow.UI.Components
             }
             public override void CallForSync()
             {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                 arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
@@ -486,7 +483,7 @@ namespace RainMeadow.UI.Components
                 if (IsActuallyHidden) return;
 
                 bool greyoutall = SettingsDisabled;
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
 
                 ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
                 ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
@@ -669,5 +666,3 @@ namespace RainMeadow.UI.Components
 
     }
 }
-
-

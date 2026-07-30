@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System;
 using System.Text;
 
@@ -150,7 +149,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return Utils.Translate("Prepare for war,") + " " + Utils.Translate(PlayingAsText());
         }
 
-        public override int SetTimer(ArenaMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
@@ -161,12 +160,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaMode arena, int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
             return --arena.setupTime;
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             if (arena.setupTime > 0)
             {
@@ -207,7 +206,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public int CalculateTeamScoresAndWinner(
     IEnumerable<ArenaSitting.ArenaPlayer> players,
-    ArenaMode arena,
+    ArenaOnlineGameMode arena,
     bool WinByScore, bool winByRoundScore, bool finalOverlay)
         {
             HashSet<int> teamsRemaining = new HashSet<int>();
@@ -298,7 +297,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
 
         public override bool PlayerSittingResultSort(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -355,7 +354,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaMode arena, On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
+        public override List<ArenaSitting.ArenaPlayer> FinalSittingResult(ArenaOnlineGameMode arena, On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
         {
             var resultList = orig(self);
 
@@ -405,7 +404,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
 
         public override bool PlayerSessionResultSort(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
@@ -453,7 +452,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
+        public override void ArenaSessionNextLevel(ArenaOnlineGameMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
         {
             base.ArenaSessionNextLevel(arena, orig, self, process);
             ClearSortingDictionaries();
@@ -690,7 +689,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return customization.bodyColor;
         }
 
-        public override string ExportLocalSettings(ArenaMode arena)
+        public override string ExportLocalSettings(ArenaOnlineGameMode arena)
         {
             string baseExport = base.ExportLocalSettings(arena);
             string decodedBase = string.IsNullOrEmpty(baseExport) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(baseExport));
@@ -714,7 +713,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
         }
 
-        public override bool ImportLocalSettings(ArenaMode arena, string base64Data)
+        public override bool ImportLocalSettings(ArenaOnlineGameMode arena, string base64Data)
         {
             bool success = base.ImportLocalSettings(arena, base64Data);
             if (string.IsNullOrEmpty(base64Data)) return false;
