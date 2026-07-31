@@ -107,7 +107,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 if (!voidSpawn.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers)
                     continue;
                 
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     ArenaTeamClientSettings? playerTeam =
                         ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
