@@ -584,10 +584,8 @@ namespace RainMeadow
 
                     c.EmitDelegate<Func<bool>>(() =>
                     {
-                        return OnlineManager.lobby != null
-                            && OnlineManager.lobby.isOwner
-                            && OnlineManager.lobby.clientSettings.TryGetValue(
-                                OnlineManager.lobby.owner,
+                        return OnlineManager.lobby.clientSettings.TryGetValue(
+                                OnlineManager.mePlayer,
                                 out var cs
                             )
                             && cs.isInteracting;
@@ -1332,7 +1330,7 @@ namespace RainMeadow
                     if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
                     {
                         Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
-                        if (RMOverlayHUDMenu.GetOverlay()?.chatHud?.chatInputActive is not true 
+                        if (!(OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out ClientSettings cs) && cs.isInteracting)
                             && (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp))
                         {
                             ArenaRPCs.Arena_ReadyForNextRound();
