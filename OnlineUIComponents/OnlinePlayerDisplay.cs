@@ -393,7 +393,7 @@ namespace RainMeadow
 
                     if (arena.ArenaSession != null && owner?.RealizedPlayer != null
                         && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
-                        && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
+                        && arena.TotalScoreByInLobbyId.TryGetValue(player.inLobbyId, out int totScore))
                     {
                         int score = arena.ArenaSession.ScoreOfPlayer(owner.RealizedPlayer, true);
                         bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;

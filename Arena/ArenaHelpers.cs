@@ -374,16 +374,16 @@ namespace RainMeadow
                 return trophies;
             }
 
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
+            if (!arena.AllKillsByInLobbyId.ContainsKey(onlinePlayer.inLobbyId))
             {
                 RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
                 return trophies;
             }
-            for (int i = 0; i < arena.playerNumberWithTrophies[onlinePlayer.inLobbyId].Count; i++)
+            for (int i = 0; i < arena.AllKillsByInLobbyId[onlinePlayer.inLobbyId].Count; i++)
             {
                 IconSymbol.IconSymbolData iconSymbolData =
                     IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]
+                        arena.AllKillsByInLobbyId[onlinePlayer.inLobbyId][i]
                     );
                 trophies.Add(iconSymbolData);
             }
@@ -405,7 +405,7 @@ namespace RainMeadow
                 return trophies;
             }
 
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
+            if (!arena.AllKillsByInLobbyId.ContainsKey(onlinePlayer.inLobbyId))
             {
                 RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
                 return trophies;
@@ -431,16 +431,16 @@ namespace RainMeadow
                 return trophies;
             }
 
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
+            if (!arena.RoundKillsByInLobbyId.ContainsKey(onlinePlayer.inLobbyId))
             {
                 RainMeadow.Warn("GetPlayerTrophies: Could not find player number in dictionary");
                 return trophies;
             }
-            for (int i = 0; i < arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId].Count; i++)
+            for (int i = 0; i < arena.RoundKillsByInLobbyId[onlinePlayer.inLobbyId].Count; i++)
             {
                 IconSymbol.IconSymbolData iconSymbolData =
                     IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId][i]
+                        arena.RoundKillsByInLobbyId[onlinePlayer.inLobbyId][i]
                     );
                 trophies.Add(iconSymbolData);
             }
@@ -462,7 +462,7 @@ namespace RainMeadow
                 return trophies;
             }
 
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
+            if (!arena.RoundKillsByInLobbyId.ContainsKey(onlinePlayer.inLobbyId))
             {
                 RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
                 return trophies;
