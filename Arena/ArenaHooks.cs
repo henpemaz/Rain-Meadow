@@ -1332,7 +1332,8 @@ namespace RainMeadow
                     if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
                     {
                         Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
-                        if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
+                        if (RMOverlayHUDMenu.GetOverlay()?.chatHud?.chatInputActive is not true 
+                            && (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp))
                         {
                             ArenaRPCs.Arena_ReadyForNextRound();
                             foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
