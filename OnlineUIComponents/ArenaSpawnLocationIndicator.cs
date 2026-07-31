@@ -19,7 +19,7 @@ public class ArenaSpawnLocationIndicator : HudPart
     public override void Update()
     {
         counter++;
-        if (counter != 30) return;
+        if (counter != 10) return;
 
         if (clientSettings.avatars.Count == 0
             || clientSettings.avatars[0]?.FindEntity(true) is not OnlineCreature oc

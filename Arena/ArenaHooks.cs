@@ -218,15 +218,15 @@ namespace RainMeadow
                     cursor.Emit(OpCodes.Ldarg_0);
                     cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) => 
                         {
-                            bool isOnlineArenaNotReady = isArenaMode(out var arena) 
-                                && arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)
-                                && (arena.arenaPrepTimer is null 
-                                    || arena.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
-                            if (isOnlineArenaNotReady)
+                            bool isArenaOnlineNOTReady = isArenaMode(out var arenaOnline) 
+                                && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
+                                && (arenaOnline.arenaPrepTimer is null 
+                                    || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+                            if (isArenaOnlineNOTReady)
                             {
                                 startBump.startGameCounter = 10;
                             }
-                            return isOnlineArenaNotReady;
+                            return isArenaOnlineNOTReady;
                         }
                     );
                     cursor.Emit(OpCodes.Brtrue, label);

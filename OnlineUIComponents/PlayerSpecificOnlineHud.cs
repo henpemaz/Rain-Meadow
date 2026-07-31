@@ -1,5 +1,6 @@
 ﻿using HUD;
 using RainMeadow.Arena.Nightcat;
+using RWCustom;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,6 +42,7 @@ namespace RainMeadow
         private WorldCoordinate lastWorldPos;
         private int lastCameraPos;
         private int lastAbstractRoom;
+        private static readonly IntVector2 outsideArenaDenPos = new IntVector2(-1, -1);
 
         public float DeadFade
         {
@@ -167,7 +169,7 @@ namespace RainMeadow
                 // in room or in shortcut
                 if (abstractPlayer.realizedCreature is Player player)
                 {
-                    if (player.inShortcutVessel is not null)
+                    if (player.inShortcutVessel is not null && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 
                     {
                         found = true;
                         rawPos = camera.room.MiddleOfTile(player.inShortcutVessel.pos) - camera.pos;
