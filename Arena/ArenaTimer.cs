@@ -32,6 +32,7 @@ namespace RainMeadow
             arena.arenaPrepTimer = this;
             session = arenaGameSession;
             arena.trackSetupTime = arena.externalArenaGameMode.SetTimer(arena);
+            arena.timerTicks = 0;
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel(Custom.GetFont(), FormatTime(0))

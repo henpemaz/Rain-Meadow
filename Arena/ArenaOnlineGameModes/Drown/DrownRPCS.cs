@@ -1,7 +1,4 @@
 using Drown;
-using RainMeadow;
-using System;
-using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -11,7 +8,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_OpenDen(bool denOpen)
         {
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            if (DrownMode.IsDrownMode(out DrownMode drown))
             {
                 drown.openedDen = denOpen;
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
@@ -40,7 +37,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_RemoveAbstractCreatureFromList(RPCEvent e)
         {
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            if (DrownMode.IsDrownMode(out _))
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)

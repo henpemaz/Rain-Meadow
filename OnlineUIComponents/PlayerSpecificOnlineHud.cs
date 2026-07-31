@@ -34,6 +34,7 @@ namespace RainMeadow
         public RoomCamera camera;
         private Rect camrect;
         public Vector2 drawpos;
+        public bool shouldSkipDrawposLerp;
         public bool found;
         public Vector2 pointDir;
         internal bool needed;
@@ -153,6 +154,11 @@ namespace RainMeadow
                 this.playerDisplay = new OnlinePlayerDisplay(this, customization, clientSettings.owner);
                 this.parts.Add(this.playerDisplay);
             }
+
+            shouldSkipDrawposLerp =
+                abstractPlayer.pos.room != lastWorldPos.room ||
+                camera.currentCameraPosition != lastCameraPos ||
+                camera.room.abstractRoom.index != lastAbstractRoom;
 
             Vector2 rawPos = new();
             // in this room

@@ -138,6 +138,8 @@ namespace RainMeadow
         // host needs time to do scoring for everyone else before they load the overlay
         public bool hostLoadedOverlay;
 
+        public uint timerTicks;
+
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int lobbyCountDown;
@@ -1163,6 +1165,7 @@ namespace RainMeadow
         {
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
             trackSetupTime = setupTime;
+            timerTicks = 0;
         }
 
         public void ResetPlayersEntered()
@@ -1291,8 +1294,6 @@ namespace RainMeadow
             return true;
         }
 
-        private int previousSecond = -1;
-
         public override void LobbyTick(uint tick)
         {
             if (leaveToRestart)
@@ -1304,9 +1305,8 @@ namespace RainMeadow
             base.LobbyTick(tick);
             if (OnlineManager.lobby.isOwner)
             {
-                DateTime currentTime = DateTime.UtcNow;
-                int currentSecond = currentTime.Second;
-                if (currentSecond != previousSecond)
+                timerTicks++;
+                if (timerTicks >= OnlineManager.instance.framesPerSecond)
                 {
                     if (forceReadyCountdownTimer > 0)
                     {
@@ -1324,7 +1324,7 @@ namespace RainMeadow
                             setupTime = externalArenaGameMode.TimerDirection(this, setupTime);
                         }
                     }
-                    previousSecond = currentSecond;
+                    timerTicks = 0;
                 }
             }
         }
