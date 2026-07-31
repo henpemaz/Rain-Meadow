@@ -40,18 +40,18 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
-            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;           
             On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
-
+            
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
         private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
-        {         
+        {
             orig(self);
             if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
             {
-                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
             }
         }
 
