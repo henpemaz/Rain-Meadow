@@ -132,17 +132,13 @@ namespace Menu
             }
             if (arena != null)
             {
-
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
                     if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
                     {
-                        if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
-                        {
-                            roundedRect.borderColor = tb.teamColors[team.team].ToHSL();
-                        }
+                        if (clientSettings.TryGetData(out ArenaTeamClientSettings team))
+                            roundedRect.borderColor = teamBattle.teamColors[team.team].ToHSL();
                     }
-
                 } else
                 {
                     roundedRect.borderColor = ogColor.ToHSL();

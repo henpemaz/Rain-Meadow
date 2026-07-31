@@ -72,7 +72,6 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
-            On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
@@ -287,7 +286,7 @@ namespace RainMeadow
 
                     VoidSpawn spawn = self.room.voidSpawns[i];
                     if (!self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers
-                            || (TeamBattleMode.isTeamBattleMode(arena, out _) 
+                            || (TeamBattleMode.IsTeamBattleMode(out _) 
                                 && ArenaHelpers.CheckSameTeam(self.abstractCreature.GetOnlineCreature()?.owner, spawn.abstractPhysicalObject.GetOnlineObject()?.owner)
                                 && !arena.friendlyFire))
                         return false; // don't attack friendlies !
@@ -892,6 +891,19 @@ namespace RainMeadow
                     c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
                     c.MarkLabel(continueAsNormal);
                 }
+
+                c.Index = 0;
+                ILLabel skipIfNotArenaMode = c.DefineLabel();
+                c.GotoNext(
+                    MoveType.After,
+                    i => i.MatchLdfld<PlayerResultMenu>(nameof(PlayerResultMenu.result)),
+                    i => i.MatchCallvirt(typeof(List<ArenaSitting.ArenaPlayer>).GetProperty(nameof(List<ArenaSitting.ArenaPlayer>.Count))!.GetGetMethod())
+                );
+                c.EmitDelegate(() => isArenaMode(out _));
+                c.Emit(OpCodes.Brfalse, skipIfNotArenaMode);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Ldc_I4, 0);
+                c.MarkLabel(skipIfNotArenaMode);
             }
             catch (Exception e)
             {
@@ -1362,6 +1374,8 @@ namespace RainMeadow
             int index
         )
         {
+            MenuMicrophone menuMic = owner.menu.manager.menuMic;
+
             if (isArenaMode(out var arena))
             {
 
@@ -1379,8 +1393,11 @@ namespace RainMeadow
                     arena.ReadFromStats(player, pl);
                 }
 
+                // prevents UI_Multiplayer_Player_Result_Box_Bump playing for every single player in the lobby at once
+                owner.menu.manager.menuMic = null;
             }
             orig(self, resultPage, owner, player, index);
+            owner.menu.manager.menuMic = menuMic;
         }
 
         public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
@@ -1412,15 +1429,15 @@ namespace RainMeadow
                 {
                     arena.hostLoadedOverlay = true;
                 }
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    if (tb.winningTeam != -1)
+                    if (teamBattle.winningTeam != -1)
                     {
                         self.headingLabel.text = self.Translate("<TEAMNAME> WIN!")
                             .Replace(
                                 "<TEAMNAME>",
                                 MatchmakingManager.currentInstance.FilterTeamName(
-                                    tb.teamNames[tb.winningTeam].ToUpper()
+                                    teamBattle.teamNames[teamBattle.winningTeam].ToUpper()
                                 )
                             );
                     }
@@ -1430,13 +1447,11 @@ namespace RainMeadow
                         {
                             OnlinePlayer pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, box.player.playerNumber);
                             if (pl == null || box == null)
-                            {
                                 continue;
-                            }
+
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.score = tb.teamScores[teamSettings.team];
-
+                                box.player.score = teamBattle.teamScores[teamSettings.team];
                             }
                         }
                     }
@@ -1486,6 +1501,21 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                if (self.allResultBoxesInPlaceCounter > 10)
+                {
+                    int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+                    if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
+                    {
+                        Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
+                        if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
+                        {
+                            ArenaRPCs.Arena_ReadyForNextRound();
+                            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !x.isMe))
+                                player.InvokeRPC(ArenaRPCs.Arena_ReadyForNextRound);
+                        }
+                    }
+                }
+
                 if (arena.leaveForNextLevel)
                 {
                     string loadingString;
@@ -3089,7 +3119,7 @@ namespace RainMeadow
                     {
                         userNameBackup = currentName.id.DisplayName;
                         self.playerNameLabel.text = userNameBackup;
-                        if (TeamBattleMode.isTeamBattleMode(arena, out var team))
+                        if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                         {
                             if (
                                 OnlineManager
@@ -3098,7 +3128,7 @@ namespace RainMeadow
                             )
                             {
                                 self.playerNameLabel.text +=
-                                    $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
+                                    $" -- {MatchmakingManager.currentInstance.FilterTeamName(teamBattle.teamNames[td.team].ToUpper())}";
                             }
 
                         }
@@ -3240,7 +3270,16 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                // play once per menu instead of per every FinalResultbox
+                manager.menuMic.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Bump);
+
                 self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
+
+                foreach (FSprite sprite in self.continueButton.roundedRect.sprites)
+                    sprite.MoveToFront();
+                foreach (FSprite sprite in self.continueButton.selectRect.sprites)
+                    sprite.MoveToFront();
+                self.continueButton.menuLabel.label.MoveToFront();
 
                 var exitButton = new Menu.SimpleButton(
                     self,
@@ -3253,12 +3292,12 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(exitButton);
 
                 string winnerName = "";
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    if (tb.winningTeam != -1)
+                    if (teamBattle.winningTeam != -1)
                     {
                         winnerName = MatchmakingManager.currentInstance.FilterTeamName(
-                            tb.teamNames[tb.winningTeam].ToUpper()
+                            teamBattle.teamNames[teamBattle.winningTeam].ToUpper()
                         );
                         self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
                             .Replace("<TEAMNAME>",winnerName);
@@ -3275,7 +3314,7 @@ namespace RainMeadow
                             }
                             if (OnlineManager.lobby.clientSettings.TryGetValue(pl, out var clientSettings) && clientSettings.TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                             {
-                                box.player.totScore = tb.teamScores[teamSettings.team];
+                                box.player.totScore = teamBattle.teamScores[teamSettings.team];
                             }
                         }
                     }
@@ -3550,30 +3589,6 @@ namespace RainMeadow
             }
         }
 
-        public void ArenaOverlay_PlayerPressedContinue(
-            On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig,
-            Menu.ArenaOverlay self
-        )
-        {
-            if (isArenaMode(out var arena))
-            {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-                    return;
-                }
-                else
-                {
-                    for (int i = 0; i < self.result.Count; i++)
-                    {
-                        self.result[i].readyForNextRound = true;
-                    }
-                }
-            }
-
-            orig(self);
-        }
-
         public void ArenaGameSession_Update(
             On.ArenaGameSession.orig_Update orig,
             ArenaGameSession self
@@ -3695,4 +3710,3 @@ namespace RainMeadow
         }
     }
 }
-

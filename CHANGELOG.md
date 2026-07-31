@@ -18,6 +18,7 @@
 - Added scarfs(?)
 - Added Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
@@ -44,6 +45,10 @@
 - Fixed sound/visual cue of parrying being inconsistant.
 - Fixed gourmand not being shown as exhausted when throwing a spear
 - Added score tracker to in-game UI; can be toggled on & off. Check Meadow Arena Remix page
+- Slightly improved timer accuracy
+- Fixed the result box bump sound effect on the final results screen playing per player instead of just once
+- Synced the players' ready state on the overlay results screen
+- Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 ### Watcher
 - Disabling Ripple Trail in online arena
 - Gave summoned Ameobas the Watcher's body color
@@ -65,6 +70,8 @@
 - Player Tag now interacts well with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
+- ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
+  - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow
 - Fixed creatures being able to get injured.
@@ -72,6 +79,7 @@
 - Fixed creatures being able to get injured.
 ## Story
 - Allow players to spectate their own corpses as long as they still exist
+- Fixed players readied on the sleep screen hearing the continue sound many times in a row after the host continues
 ### Watcher
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication

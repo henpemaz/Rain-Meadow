@@ -40,14 +40,30 @@ namespace RainMeadow
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
-        public static bool isDrownMode(ArenaOnlineGameMode arena, out DrownMode mode)
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="DrownMode"/> is not registered.
+        /// </exception>
+        public static bool IsDrownMode(out DrownMode drown)
         {
-            mode = null;
-            if (arena.currentGameMode == Drown.value)
+            drown = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(Drown.value, out ExternalArenaGameMode externalArena))
             {
-                mode = (arena.registeredGameModes.FirstOrDefault(x => x.Key == Drown.value).Value as DrownMode);
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
+                );
+            }
+
+            if (arenaOnline.currentGameMode == Drown.value)
+            {
+                drown = (DrownMode)externalArena;
                 return true;
             }
+
             return false;
         }
 
@@ -272,7 +288,7 @@ namespace RainMeadow
         }
         public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
-            if (isDrownMode(arena, out var drown))
+            if (IsDrownMode(out _))
             {
                 foreach (var player in self.players)
                 {
@@ -303,8 +319,7 @@ namespace RainMeadow
 
         public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
         {
-
-            if (isDrownMode(arena, out var drown))
+            if (IsDrownMode(out DrownMode drown))
             {
                 if (!self.sessionEnded)
                 {

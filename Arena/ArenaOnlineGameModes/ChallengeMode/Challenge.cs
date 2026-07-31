@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
@@ -27,21 +29,30 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
-        public static bool isChallengeMode(
-            ArenaOnlineGameMode arena,
-            out ArenaChallengeMode challenge
-        )
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="ArenaChallengeMode"/> is not registered.
+        /// </exception>
+        public static bool IsChallengeMode(out ArenaChallengeMode challenge)
         {
-            challenge = null;
-            if (arena.currentGameMode == ChallengeMode.value)
+            challenge = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(ChallengeMode.value, out ExternalArenaGameMode externalArena))
             {
-                challenge = (
-                    arena
-                        .registeredGameModes.FirstOrDefault(x => x.Key == ChallengeMode.value)
-                        .Value as ArenaChallengeMode
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
                 );
+            }
+
+            if (arenaOnline.currentGameMode == ChallengeMode.value)
+            {
+                challenge = (ArenaChallengeMode)externalArena;
                 return true;
             }
+
             return false;
         }
 
