@@ -49,6 +49,7 @@
 - Fixed the result box bump sound effect on the final results screen playing per player instead of just once
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
+- Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
 ### Watcher
 - Gave summoned Ameobas the Watcher's body color
 ### Modders
