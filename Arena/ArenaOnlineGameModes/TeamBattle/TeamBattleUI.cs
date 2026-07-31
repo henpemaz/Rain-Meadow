@@ -12,7 +12,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public TabContainer.Tab? myTab;
         public OnlineTeamBattleSettingsInterface? myTeamBattleSettingInterface;
         public ConditionalWeakTable<ArenaPlayerBox, TeamBattlePlayerBox> playerBoxes = new();
-        public int winningTeam = -1, martyrsSpawn, outlawsSpawn, dragonslayersSpawn, chieftainsSpawn, roundSpawnPointCycler;
+
+        public int winningTeam = -1;
+        public int martyrsSpawn;
+        public int outlawsSpawn;
+        public int dragonslayersSpawn;
+        public int chieftainsSpawn;
+        public int roundSpawnPointCycler;
 
         public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
         public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
@@ -20,13 +26,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
-        public Dictionary<int, string> teamNames = new Dictionary<int, string>
-        {
-            { 0, RainMeadow.rainMeadowOptions.MartyrTeamName.Value },
-            { 1, RainMeadow.rainMeadowOptions.OutlawsTeamName.Value },
-            { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value },
-            { 3, RainMeadow.rainMeadowOptions.ChieftainTeamName.Value }
-        };
+
         public enum TeamSpawnPoints
         {
             martyrsTeamName,
@@ -35,21 +35,28 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsTeamName
         }
 
-        public Dictionary<int, string> teamIcons = new Dictionary<int, string>
+        public Dictionary<int, string> teamNames = new()
+        {
+            { 0, RainMeadow.rainMeadowOptions.MartyrTeamName.Value },
+            { 1, RainMeadow.rainMeadowOptions.OutlawsTeamName.Value },
+            { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value },
+            { 3, RainMeadow.rainMeadowOptions.ChieftainTeamName.Value }
+        };
+        public Dictionary<int, string> teamIcons = new()
         {
             { 0, "SaintA" },
             { 1, "OutlawA" },
             { 2, "DragonSlayerA" },
             { 3, "ChieftainA" }
-    };
-
-        public Dictionary<int, Color> teamColors = new Dictionary<int, Color>
+        };
+        public Dictionary<int, Color> teamColors = new()
         {
-    { 0,  RainMeadow.rainMeadowOptions.MartyrTeamColor.Value },
-    { 1, RainMeadow.rainMeadowOptions.OutlawsTeamColor.Value },
-    { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value },
-    { 3,  RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value }
-    };
+            { 0, RainMeadow.rainMeadowOptions.MartyrTeamColor.Value },
+            { 1, RainMeadow.rainMeadowOptions.OutlawsTeamColor.Value },
+            { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value },
+            { 3, RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value }
+        };
+
         public void ArenaSettingsInit()
         {
             martyrsSpawn = 0;
@@ -58,6 +65,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
         }
+
         public override void OnUIEnabled(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIEnabled(menu);
@@ -67,6 +75,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             myTab.AddObjects(myTeamBattleSettingInterface = new OnlineTeamBattleSettingsInterface((ArenaOnlineGameMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
             menu.arenaMainLobbyPage.tabContainer.AddTab(myTab, menu.Translate("Team Settings"));
         }
+
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIDisabled(menu);
@@ -80,6 +89,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 playerBoxes.Remove(playerBox);
             }
         }
+
         public override void OnUIUpdate(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIUpdate(menu);
@@ -109,12 +119,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
             }
         }
+
         public override void OnUIShutDown(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIShutDown(menu);
             myTeamBattleSettingInterface?.OnShutdown();
         }
-        public override Color GetPortraitColor(ArenaOnlineGameMode arenaOnline, OnlinePlayer? player, Color origColor)
+
+        public override Color GetPortraitColor(
+            ArenaOnlineGameMode arenaOnline,
+            OnlinePlayer? player,
+            Color origColor)
         {
             Color col = base.GetPortraitColor(arenaOnline, player, origColor);
             ArenaTeamClientSettings? teamClientSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
@@ -122,6 +137,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 col = Color.Lerp(col, teamColors[teamClientSettings.team], lerp);
             return col;
         }
+
         public override bool DidPlayerWinRainbow(ArenaOnlineGameMode arenaOnline, OnlinePlayer player)
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
@@ -132,6 +148,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
+
         public static Color GetColorFromHex(string hexCode)
         {
             Color color;

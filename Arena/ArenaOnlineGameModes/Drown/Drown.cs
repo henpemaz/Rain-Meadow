@@ -12,6 +12,7 @@ namespace RainMeadow
 {
     public class DrownMode : ExternalArenaGameMode
     {
+        public static ArenaSetup.GameTypeID Drown = new("Drown");
 
         public static string Rock = "Rock";
         public static string Spear = "Spear";
@@ -22,23 +23,40 @@ namespace RainMeadow
         public static string Respawn = "Respawn";
         public static string OpenDens = "Open Dens";
 
-
-        public static ArenaSetup.GameTypeID Drown = new ArenaSetup.GameTypeID("Drown", register: false);
-        public override ArenaSetup.GameTypeID GetGameModeId
+        public override ArenaSetup.GameTypeID GetGameModeId => Drown;
+        private int _timerDuration;
+        public override int TimerDuration
         {
-            get
-            {
-                return Drown;
-            }
-
+            get { return _timerDuration; }
+            set { _timerDuration = value; }
         }
-
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
-        {
-            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
-        }
+        private bool spearHits;
+        public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
+        public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
+        public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
+        public int electricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
+        public int boomerangeCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
+        public int respCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
+        public int rockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
+
+        public int denCost = RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value;
+        public int maxCreatures = RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value;
+        public int creatureCleanupWaves = RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value;
+
+        public bool openedDen = false;
+        public int waveStart = 20;
+        public int currentWaveTimer = 20;
+        public int currentWave = 0;
+        public int lastCleanupWave = 0;
+        public bool waveNeedsUpdate = true;
+
+        public int timerPoints = 0; // no way to get this from ArenaGameSession without breaking API
+
+        public int teamPoints;
+        public DrownInterface? drownInterface;
+        public TabContainer.Tab? myTab;
 
         public static bool IsDrownMode(out DrownMode drown)
         {
@@ -57,34 +75,15 @@ namespace RainMeadow
             return false;
         }
 
-        private bool spearHits;
-        public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
-        public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
-        public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
-        public int electricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
-        public int boomerangeCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
-        public int respCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
-        public int rockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
+        {
+            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+        }
 
-        public int denCost = RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value;
-        public int maxCreatures = RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value;
-        public int creatureCleanupWaves = RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value;
-
-        private int _timerDuration;
-        public bool openedDen = false;
-        public int waveStart = 20;
-        public int currentWaveTimer = 20;
-        public int currentWave = 0;
-        public int lastCleanupWave = 0;
-        public bool waveNeedsUpdate = true;
-
-        public int timerPoints = 0; // no way to get this from ArenaGameSession without breaking API
-
-        public int teamPoints;
-        public DrownInterface? drownInterface;
-        public TabContainer.Tab? myTab;
-
-        public override bool IsExitsOpen(ArenaOnlineGameMode arenaOnline, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitsOpen(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
+            ArenaBehaviors.ExitManager self)
         {
             if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arenaOnline.setupTime > 10)
             {
@@ -95,13 +94,16 @@ namespace RainMeadow
 
         }
 
-
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
         {
             return false;
         }
 
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arenaOnline, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionCtor(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaGameSession.orig_ctor orig,
+            ArenaGameSession self,
+            RainWorldGame game)
         {
             base.ArenaSessionCtor(arenaOnline, orig, self, game);
             openedDen = false;
@@ -125,7 +127,9 @@ namespace RainMeadow
 
         }
 
-        public override void InitAsCustomGameType(ArenaOnlineGameMode arenaOnline, ArenaSetup.GameTypeSetup self)
+        public override void InitAsCustomGameType(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
             self.survivalScore = arenaOnline.aliveScore;
@@ -188,12 +192,6 @@ namespace RainMeadow
 
         }
 
-        public override int TimerDuration
-        {
-            get { return _timerDuration; }
-            set { _timerDuration = value; }
-        }
-
         public override int TimerDirection(ArenaOnlineGameMode arenaOnline, int timer)
         {
             if (!openedDen)
@@ -214,8 +212,10 @@ namespace RainMeadow
             }
         }
 
-
-        public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arenaOnline, HUD.HUD self, ArenaGameSession session)
+        public override void HUD_InitMultiplayerHud(
+            ArenaOnlineGameMode arenaOnline,
+            HUD.HUD self,
+            ArenaGameSession session)
         {
             base.HUD_InitMultiplayerHud(arenaOnline, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
@@ -226,7 +226,12 @@ namespace RainMeadow
             return arenaOnline.countdownInitiatedHoldFire = false;
         }
 
-        public override string AddIcon(ArenaOnlineGameMode arenaOnline, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override string AddIcon(
+            ArenaOnlineGameMode arenaOnline,
+            OnlinePlayerDisplay display,
+            PlayerSpecificOnlineHud owner,
+            SlugcatCustomization customization,
+            OnlinePlayer player)
         {
             if (player != null)
             {
@@ -251,7 +256,12 @@ namespace RainMeadow
             return base.AddIcon(arenaOnline, display, owner, customization, player);
         }
 
-        public override Color IconColor(ArenaOnlineGameMode arenaOnline, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(
+            ArenaOnlineGameMode arenaOnline,
+            OnlinePlayerDisplay display,
+            PlayerSpecificOnlineHud owner,
+            SlugcatCustomization customization,
+            OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
@@ -261,14 +271,13 @@ namespace RainMeadow
             return base.IconColor(arenaOnline, display, owner, customization, player);
         }
 
-
-
         public override void OnUIEnabled(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIEnabled(menu);
             myTab = menu.arenaMainLobbyPage.tabContainer.AddTab(menu.Translate("Drown Settings"));
             myTab.AddObjects(drownInterface = new DrownInterface((ArenaOnlineGameMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
         }
+
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIDisabled(menu);
@@ -276,7 +285,12 @@ namespace RainMeadow
             if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
             myTab = null;
         }
-        public override void ArenaSessionEnded(ArenaOnlineGameMode arenaOnline, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
+
+        public override void ArenaSessionEnded(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaSitting.orig_SessionEnded orig,
+            ArenaSitting self,
+            ArenaGameSession session)
         {
             if (IsDrownMode(out _))
             {
@@ -307,7 +321,10 @@ namespace RainMeadow
             base.ArenaSessionEnded(arenaOnline, orig, self, session);
         }
 
-        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arenaOnline)
+        public override void ArenaSessionUpdate(
+            On.ArenaGameSession.orig_Update orig,
+            ArenaGameSession self,
+            ArenaOnlineGameMode arenaOnline)
         {
             if (IsDrownMode(out DrownMode drown))
             {
@@ -385,8 +402,6 @@ namespace RainMeadow
             base.ArenaSessionUpdate(orig, self, arenaOnline);
 
         }
-
-
 
         private void CreatureCleanup(ArenaOnlineGameMode arenaOnline, ArenaGameSession session)
         {
@@ -502,6 +517,5 @@ namespace RainMeadow
                 return false;
             }
         }
-
     }
 }

@@ -9,19 +9,19 @@ namespace RainMeadow
 {
     public static class ArenaHelpers
     {
-        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> otherSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name?>();
+        public static List<SlugcatStats.Name> allSlugcats = [];
+        public static List<SlugcatStats.Name> baseGameSlugcats = [];
+        public static List<SlugcatStats.Name> vanillaSlugcats = [];
+        public static List<SlugcatStats.Name> mscSlugcats = [];
+        public static List<SlugcatStats.Name> otherSlugcats = [];
+        public static List<SlugcatStats.Name> selectableSlugcats = [];
 
-        public static readonly List<string> nonArenaSlugs = new List<string>
-        {
+        public static readonly List<string> nonArenaSlugs =
+        [
             "MeadowOnline",
             "MeadowRandom",
-            RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value,
-        };
+            RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value
+        ];
 
         public static void RecreateSlugcatCache()
         {
@@ -147,8 +147,7 @@ namespace RainMeadow
 
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
             ArenaOnlineGameMode arena,
-            int playerNumber
-        )
+            int playerNumber)
         {
             try
             {
@@ -217,6 +216,7 @@ namespace RainMeadow
             RainMeadow.Debug("Finished GetAllAlivePlayers");
             return allAlivePlayers;
         }
+
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
             manager.arenaSitting.players = [];
@@ -238,7 +238,7 @@ namespace RainMeadow
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
 
-        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
+        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistent)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
             {
@@ -257,7 +257,7 @@ namespace RainMeadow
                     return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
                 }
             }
-            return defaultIfNonExistant;
+            return defaultIfNonExistent;
         }
 
         public static void SaveOptionToArena(string ID, object obj)
@@ -279,8 +279,7 @@ namespace RainMeadow
         public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) =>
             GetDataSettings<ArenaClientSettings>(player);
 
-        public static T? GetDataSettings<T>(OnlinePlayer? player)
-            where T : OnlineEntity.EntityData
+        public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)
             {
@@ -328,12 +327,11 @@ namespace RainMeadow
         }
 
         public static bool CheckSameTeam(
-    ArenaOnlineGameMode arena,
-    OnlinePlayer? A,
-    OnlinePlayer? B,
-    Creature creature,
-    Creature friend
-)
+            ArenaOnlineGameMode arena,
+            OnlinePlayer? A,
+            OnlinePlayer? B,
+            Creature creature,
+            Creature friend)
         {
             if (A is not null && B is not null)
             {
@@ -359,13 +357,14 @@ namespace RainMeadow
             return false;
         }
 
-        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) =>
-            players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
+        public static int GetReadiedPlayerCount(List<OnlinePlayer> players)
+        {
+            return players.Count(player => GetArenaClientSettings(player)?.ready ?? false);
+        }
 
         public static List<IconSymbol.IconSymbolData> GetAllOnlinePlayerTrophies(
             ArenaOnlineGameMode arena,
-            int playerNumber
-        )
+            int playerNumber)
         {
             List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
@@ -393,8 +392,7 @@ namespace RainMeadow
 
         public static List<string> GetAllPlayerTrophies(
             ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
+            ArenaSitting.ArenaPlayer sittingPlayer)
         {
             List<string> trophies = new List<string>();
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
@@ -422,9 +420,8 @@ namespace RainMeadow
         }
 
         public static List<IconSymbol.IconSymbolData> GetRoundOnlinePlayerTrophies(
-        ArenaOnlineGameMode arena,
-        int playerNumber
-    )
+            ArenaOnlineGameMode arena,
+            int playerNumber)
         {
             List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
@@ -452,8 +449,7 @@ namespace RainMeadow
 
         public static List<string> GetRoundPlayerTrophies(
             ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
+            ArenaSitting.ArenaPlayer sittingPlayer)
         {
             List<string> trophies = new List<string>();
             OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
