@@ -3,7 +3,7 @@ using RainMeadow.UI.Components;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 {
-    public partial class ArenaChallengeMode : ExternalArenaGameMode
+    public partial class ArenaChallengeMode
     {
         public TabContainer.Tab? myTab;
         public OnlineArenaChallengeSettingsInterface? arenaChallengeSettingsInterface;

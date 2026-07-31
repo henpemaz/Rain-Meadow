@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Menu;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow
@@ -34,7 +33,7 @@ namespace RainMeadow
         }
 
         public override bool IsExitsOpen(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
         )
@@ -47,7 +46,7 @@ namespace RainMeadow
 
             if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
             {
-                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arenaOnline.denScore) ?? false);
             }
 
             int playersStillStanding =
@@ -55,7 +54,7 @@ namespace RainMeadow
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
                 ) ?? 0;
 
-            if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1 && !arena.countdownInitiatedHoldFire)
+            if (playersStillStanding == 1 && arenaOnline.arenaSittingOnlineOrder.Count > 1 && !arenaOnline.countdownInitiatedHoldFire)
             {
                 return true;
             }
@@ -78,9 +77,9 @@ namespace RainMeadow
             return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arenaOnline)
         {
-            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            return arenaOnline.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
         public override int TimerDuration
@@ -89,25 +88,25 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arenaOnline, int timer)
         {
-            return --arena.setupTime;
+            return --arenaOnline.setupTime;
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
-            if (arena.setupTime > 0)
+            if (arenaOnline.setupTime > 0)
             {
-                return arena.countdownInitiatedHoldFire = true;
+                return arenaOnline.countdownInitiatedHoldFire = true;
             }
             else
             {
-                return arena.countdownInitiatedHoldFire = false;
+                return arenaOnline.countdownInitiatedHoldFire = false;
             }
         }
 
         public override string AddIcon(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -115,9 +114,9 @@ namespace RainMeadow
         )
         {
 
-            if (base.AddIcon(arena, display, owner, customization, player) != "")
+            if (base.AddIcon(arenaOnline, display, owner, customization, player) != "")
             {
-                return base.AddIcon(arena, display, owner, customization, player);
+                return base.AddIcon(arenaOnline, display, owner, customization, player);
             }
 
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
@@ -132,7 +131,7 @@ namespace RainMeadow
         }
 
         public override Color IconColor(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -144,18 +143,18 @@ namespace RainMeadow
                 return Color.grey;
             }
             if (
-                arena.reigningChamps != null
-                && arena.reigningChamps.list != null
-                && arena.reigningChamps.list.Contains(player.id)
+                arenaOnline.reigningChamps != null
+                && arenaOnline.reigningChamps.list != null
+                && arenaOnline.reigningChamps.list.Contains(player.id)
             )
             {
                 return Color.yellow;
             }
 
-            return base.IconColor(arena, display, owner, customization, player);
+            return base.IconColor(arenaOnline, display, owner, customization, player);
         }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(
                 menu.LongTranslate("Trust no one. Last scug standing wins"),
