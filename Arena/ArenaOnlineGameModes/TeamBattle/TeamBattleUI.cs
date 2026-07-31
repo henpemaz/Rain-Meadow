@@ -1,13 +1,13 @@
-﻿using Menu;
-using System.Collections.Generic;
-using UnityEngine;
-using RainMeadow.UI.Components;
-using RainMeadow.UI;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Components;
+using UnityEngine;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
-    public partial class TeamBattleMode : ExternalArenaGameMode
+    public partial class TeamBattleMode
     {
         public TabContainer.Tab? myTab;
         public OnlineTeamBattleSettingsInterface? myTeamBattleSettingInterface;
@@ -114,21 +114,21 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             base.OnUIShutDown(menu);
             myTeamBattleSettingInterface?.OnShutdown();
         }
-        public override Color GetPortraitColor(ArenaOnlineGameMode arena, OnlinePlayer? player, Color origColor)
+        public override Color GetPortraitColor(ArenaOnlineGameMode arenaOnline, OnlinePlayer? player, Color origColor)
         {
-            Color col = base.GetPortraitColor(arena, player, origColor);
+            Color col = base.GetPortraitColor(arenaOnline, player, origColor);
             ArenaTeamClientSettings? teamClientSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
             if (teamClientSettings != null && teamColors.ContainsKey(teamClientSettings.team))
                 col = Color.Lerp(col, teamColors[teamClientSettings.team], lerp);
             return col;
         }
-        public override bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player)
+        public override bool DidPlayerWinRainbow(ArenaOnlineGameMode arenaOnline, OnlinePlayer player)
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
-            return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1;
+            return base.DidPlayerWinRainbow(arenaOnline, player) || teamSettings?.team == winningTeam && winningTeam != -1;
         }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }

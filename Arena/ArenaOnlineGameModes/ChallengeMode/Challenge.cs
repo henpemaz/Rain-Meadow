@@ -20,11 +20,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
 
-        public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
+        public override void InitAsCustomGameType(ArenaOnlineGameMode arenaOnline, ArenaSetup.GameTypeSetup self)
         {
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
-            self.spearsHitPlayers = arena.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
+            self.spearsHitPlayers = arenaOnline.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
             SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
@@ -49,7 +49,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         }
 
         public override bool IsExitsOpen(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self
         )
@@ -71,11 +71,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return Utils.Translate("Survive,") + " " + Utils.Translate(PlayingAsText());
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arenaOnline)
         {
-            if (arena.ArenaSession?.arenaSitting?.players?.Count > 0 && (arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
+            if (arenaOnline.ArenaSession?.arenaSitting?.players?.Count > 0 && (arenaOnline.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arenaOnline.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
             {
-                return arena.ArenaSession.arenaSitting.players.Max(pl => pl.timeAlive);
+                return arenaOnline.ArenaSession.arenaSitting.players.Max(pl => pl.timeAlive);
             }
             return 0;
         }
@@ -86,22 +86,22 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arenaOnline, int timer)
         {
-            if (arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
+            if (arenaOnline.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arenaOnline.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
             {
-                return ++arena.setupTime;
+                return ++arenaOnline.setupTime;
             }
-            return --arena.setupTime;
+            return --arenaOnline.setupTime;
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
-            return arena.countdownInitiatedHoldFire = false;
+            return arenaOnline.countdownInitiatedHoldFire = false;
         }
 
         public override void LandSpear(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             ArenaGameSession self,
             Player player,
             Creature target,
@@ -112,7 +112,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         }
 
         public override string AddIcon(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -123,11 +123,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             {
                 return "ChieftainA";
             }
-            return base.AddIcon(arena, display, owner, customization, player);
+            return base.AddIcon(arenaOnline, display, owner, customization, player);
         }
 
         public override Color IconColor(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
@@ -139,20 +139,20 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
                 return Color.grey;
             }
             if (
-                arena.reigningChamps != null
-                && arena.reigningChamps.list != null
-                && arena.reigningChamps.list.Contains(player.id)
+                arenaOnline.reigningChamps != null
+                && arenaOnline.reigningChamps.list != null
+                && arenaOnline.reigningChamps.list.Contains(player.id)
             )
             {
                 return Color.yellow;
             }
 
-            return base.IconColor(arena, display, owner, customization, player);
+            return base.IconColor(arenaOnline, display, owner, customization, player);
         }
 
 
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(
                 menu.LongTranslate("Pit yourself against a series of challenges"),

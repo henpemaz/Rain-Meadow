@@ -1,16 +1,16 @@
-using Menu;
-using RainMeadow.UI.Components;
-using System.Linq;
-using UnityEngine;
-using RainMeadow.UI;
-using Drown;
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Drown;
+using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Components;
+using UnityEngine;
 
 namespace RainMeadow
 {
-    public partial class DrownMode : ExternalArenaGameMode
+    public class DrownMode : ExternalArenaGameMode
     {
 
         public static string Rock = "Rock";
@@ -35,7 +35,7 @@ namespace RainMeadow
 
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
@@ -84,9 +84,9 @@ namespace RainMeadow
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
-        public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitsOpen(ArenaOnlineGameMode arenaOnline, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
-            if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arena.setupTime > 10)
+            if (self.gameSession != null && self.gameSession.GameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off && self.gameSession.thisFrameActivePlayers == 1 && arenaOnline.setupTime > 10)
             {
                 return true;
             }
@@ -101,9 +101,9 @@ namespace RainMeadow
             return false;
         }
 
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionCtor(ArenaOnlineGameMode arenaOnline, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
-            base.ArenaSessionCtor(arena, orig, self, game);
+            base.ArenaSessionCtor(arenaOnline, orig, self, game);
             openedDen = false;
             currentWave = 1;
             lastCleanupWave = 0;
@@ -125,20 +125,20 @@ namespace RainMeadow
 
         }
 
-        public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
+        public override void InitAsCustomGameType(ArenaOnlineGameMode arenaOnline, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
-            self.survivalScore = arena.aliveScore;
-            self.spearHitScore = arena.spearHitScore;
+            self.survivalScore = arenaOnline.aliveScore;
+            self.spearHitScore = arenaOnline.spearHitScore;
             self.repeatSingleLevelForever = false;
-            self.denEntryRule = arena.denEntryRule;
+            self.denEntryRule = arenaOnline.denEntryRule;
             self.rainWhenOnePlayerLeft = false;
             self.levelItems = true;
             self.fliesSpawn = true;
             self.saveCreatures = false;
             self.spearsHitPlayers = ArenaHelpers.GetOptionFromArena("SPEARSHIT", self.spearsHitPlayers);
             spearHits = self.spearsHitPlayers;
-            if (arena.killScore == 0)
+            if (arenaOnline.killScore == 0)
             {
                 SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
             }
@@ -147,8 +147,8 @@ namespace RainMeadow
 
         public override string TimerText()
         {
+            ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
 
-            RainMeadow.isArenaMode(out var arena);
             var text = !spearHits ? "Team points" : "Current points";
             var waveText = "";
 
@@ -166,20 +166,20 @@ namespace RainMeadow
                     }
                     else
                     {
-                        timerPoints = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
+                        timerPoints = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arenaOnline, OnlineManager.mePlayer)].score;
                     }
                 }
             }
-            if (arena.ArenaSession != null && arena.ArenaSession.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+            if (arenaOnline.ArenaSession != null && arenaOnline.ArenaSession.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
             {
                 waveText = $"Current Wave: {currentWave}. Next wave: {waveTimer}";
             }
             return $": {text}: {timerPoints}. {waveText}";
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arenaOnline)
         {
-            return arena.setupTime = 1;
+            return arenaOnline.setupTime = 1;
         }
 
         public override void ResetGameTimer()
@@ -194,7 +194,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arenaOnline, int timer)
         {
             if (!openedDen)
             {
@@ -206,27 +206,27 @@ namespace RainMeadow
                     waveNeedsUpdate = true;
                 }
 
-                return ++arena.setupTime;
+                return ++arenaOnline.setupTime;
             }
             else
             {
-                return arena.setupTime;
+                return arenaOnline.setupTime;
             }
         }
 
 
-        public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
+        public override void HUD_InitMultiplayerHud(ArenaOnlineGameMode arenaOnline, HUD.HUD self, ArenaGameSession session)
         {
-            base.HUD_InitMultiplayerHud(arena, self, session);
+            base.HUD_InitMultiplayerHud(arenaOnline, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
         }
 
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
-            return arena.countdownInitiatedHoldFire = false;
+            return arenaOnline.countdownInitiatedHoldFire = false;
         }
 
-        public override string AddIcon(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override string AddIcon(ArenaOnlineGameMode arenaOnline, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (player != null)
             {
@@ -248,17 +248,17 @@ namespace RainMeadow
             }
 
 
-            return base.AddIcon(arena, display, owner, customization, player);
+            return base.AddIcon(arenaOnline, display, owner, customization, player);
         }
 
-        public override Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(ArenaOnlineGameMode arenaOnline, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
                 return Color.grey;
             }
 
-            return base.IconColor(arena, display, owner, customization, player);
+            return base.IconColor(arenaOnline, display, owner, customization, player);
         }
 
 
@@ -276,13 +276,13 @@ namespace RainMeadow
             if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
             myTab = null;
         }
-        public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
+        public override void ArenaSessionEnded(ArenaOnlineGameMode arenaOnline, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
             if (IsDrownMode(out _))
             {
                 foreach (var player in self.players)
                 {
-                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, player.playerNumber);
                     if (onlinePlayer != null)
                     {
                         OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs);
@@ -304,10 +304,10 @@ namespace RainMeadow
                     }
                 }
             }
-            base.ArenaSessionEnded(arena, orig, self, session);
+            base.ArenaSessionEnded(arenaOnline, orig, self, session);
         }
 
-        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
+        public override void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arenaOnline)
         {
             if (IsDrownMode(out DrownMode drown))
             {
@@ -377,18 +377,18 @@ namespace RainMeadow
                     {
                         lastCleanupWave = currentWave;
 
-                        CreatureCleanup(arena, self);
+                        CreatureCleanup(arenaOnline, self);
                     }
                     waveNeedsUpdate = false;
                 }
             }
-            base.ArenaSessionUpdate(orig, self, arena);
+            base.ArenaSessionUpdate(orig, self, arenaOnline);
 
         }
 
 
 
-        private void CreatureCleanup(ArenaOnlineGameMode arena, ArenaGameSession session)
+        private void CreatureCleanup(ArenaOnlineGameMode arenaOnline, ArenaGameSession session)
         {
             if (RoomSession.map.TryGetValue(session.room.abstractRoom, out var roomSession))
             {
@@ -411,9 +411,9 @@ namespace RainMeadow
             }
         }
 
-        public override string ExportLocalSettings(ArenaOnlineGameMode arena)
+        public override string ExportLocalSettings(ArenaOnlineGameMode arenaOnline)
         {
-            string baseExport = base.ExportLocalSettings(arena);
+            string baseExport = base.ExportLocalSettings(arenaOnline);
             string decodedBase = string.IsNullOrEmpty(baseExport) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(baseExport));
 
             var pairs = new List<string>
@@ -440,10 +440,10 @@ namespace RainMeadow
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(combined));
         }
 
-        public override bool ImportLocalSettings(ArenaOnlineGameMode arena, string base64Data)
+        public override bool ImportLocalSettings(ArenaOnlineGameMode arenaOnline, string base64Data)
         {
             if (string.IsNullOrEmpty(base64Data)) return false;
-            bool success = base.ImportLocalSettings(arena, base64Data);
+            bool success = base.ImportLocalSettings(arenaOnline, base64Data);
             if (!success) return false;
 
             try
