@@ -85,50 +85,45 @@ namespace RainMeadow
 
         public override bool PlayersCanStack => piggyBack;
 
-        public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
-        public Dictionary<string, string> slugcatSelectDescriptions,
-            slugcatSelectDisplayNames;
-        public List<string> slugcatSelectWatcherDescriptions;
+        public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes = [];
+        public Dictionary<string, string> slugcatSelectDescriptions = [];
+        public Dictionary<string, string> slugcatSelectDisplayNames = [];
+        public List<string> slugcatSelectWatcherDescriptions = [];
         public List<string> slugcatSelectPainCatNames = [];
 
         // have fun fixing this UO ;)
-        public List<string> slugcatSelectPainCatNormalDescriptions,
-            slugcatSelectPainCatJokeDescriptions,
-            slugcatSelectPainCatQuoteDescriptions,
-            slugcatSelectPainCatDevJokeDescriptions,
-            slugcatSelectPainCatSmileyDescriptions,
-            slugcatSelectPainCatUwUDescriptions,
-            slugcatSelectPainCatWaveDescriptions,
-            slugcatSelectPainCatDeadDescriptions;
+        public List<string>
+            slugcatSelectPainCatNormalDescriptions = [],
+            slugcatSelectPainCatJokeDescriptions = [],
+            slugcatSelectPainCatQuoteDescriptions = [],
+            slugcatSelectPainCatDevJokeDescriptions = [],
+            slugcatSelectPainCatSmileyDescriptions = [],
+            slugcatSelectPainCatUwUDescriptions = [],
+            slugcatSelectPainCatWaveDescriptions = [],
+            slugcatSelectPainCatDeadDescriptions = [];
 
-        public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice =
-            new Dictionary<string, int>();
-        public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool =
-            new Dictionary<string, bool>();
-        public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
-        public Generics.DynamicOrderedPlayerIDs playersReadiedUp =
-            new Generics.DynamicOrderedPlayerIDs();
-        public Generics.DynamicOrderedPlayerIDs reigningChamps =
-            new Generics.DynamicOrderedPlayerIDs();
+        public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new();
+        public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = [];
+        public Dictionary<string, int> playerResultColors = [];
+        public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new();
+        public Generics.DynamicOrderedPlayerIDs reigningChamps = new();
 
-        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+        public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
 
         // BEGIN POST-GAME PERSISTENT SCORING
-        public Dictionary<int, int> postGamePlayerNumberWithDeaths = new Dictionary<int, int>();
-        public Dictionary<int, int> postGamePlayerNumberWithWins = new Dictionary<int, int>();
-        public Dictionary<int, int> postGamePlayerTotScore = new Dictionary<int, int>();
-        public Dictionary<int, List<string>> postGamePlayerNumberWithTrophies = new Dictionary<int, List<string>>();
+        public Dictionary<int, int> postGamePlayerNumberWithDeaths = [];
+        public Dictionary<int, int> postGamePlayerNumberWithWins = [];
+        public Dictionary<int, int> postGamePlayerTotScore = [];
+        public Dictionary<int, List<string>> postGamePlayerNumberWithTrophies = [];
         // END POST-GAME PERSISTENT SCORING
 
-        public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
-        public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
-        public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
-        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithDeaths = [];
+        public Dictionary<int, int> playerNumberWithWins = [];
+        public Dictionary<int, int> playerTotScore = [];
+        public Dictionary<int, int> playerNumberWithScore = [];
 
-        public Dictionary<int, List<string>> playerNumberWithTrophies =
-            new Dictionary<int, List<string>>();
-        public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound =
-            new Dictionary<int, List<string>>();
+        public Dictionary<int, List<string>> playerNumberWithTrophies = [];
+        public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound = [];
         public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
@@ -168,16 +163,16 @@ namespace RainMeadow
 
 
         public bool shufflePlayList;
-        public List<string> playList = new List<string>();
-        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
-        public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
-        public List<int> bannedSlugs = new List<int>();
+        public List<string> playList = [];
+        public List<ushort> arenaSittingOnlineOrder = [];
+        public List<ushort> playersLateWaitingInLobbyForNextRound = [];
+        public List<int> bannedSlugs = [];
 
 
-        public ArenaOnlineGameMode(Lobby lobby)
-            : base(lobby)
+        public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             ArenaHelpers.RecreateSlugcatCache();
+            playerNumberWithTrophies = new Dictionary<int, List<string>>();
             avatarSettings = new SlugcatCustomization()
             {
                 nickname = OnlineManager.mePlayer.id.name,
@@ -517,8 +512,7 @@ namespace RainMeadow
 
         public void AddExternalGameModes(
             ArenaSetup.GameTypeID gametypeID,
-            ExternalArenaGameMode externMode
-        ) // external mods will hook and insert
+            ExternalArenaGameMode externMode) // external mods will hook and insert
         {
             if (!this.registeredGameModes.ContainsKey(gametypeID.value))
             {
@@ -950,11 +944,11 @@ namespace RainMeadow
 
             }
         }
+
         public void AddOrInsertPlayerStats(
             ArenaOnlineGameMode arenaOnline,
             ArenaSitting.ArenaPlayer newArenaPlayer,
-            OnlinePlayer pl
-        )
+            OnlinePlayer pl)
         {
             if (arenaOnline.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
             {

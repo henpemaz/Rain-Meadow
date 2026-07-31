@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RainMeadow.Generics;
 using RWCustom;
 
 namespace RainMeadow
 {
     internal class ArenaLobbyData : OnlineResource.ResourceData
     {
-        public ArenaLobbyData() { }
-
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
@@ -16,7 +15,6 @@ namespace RainMeadow
 
         internal class State : ResourceDataState
         {
-            // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
 
@@ -42,12 +40,12 @@ namespace RainMeadow
             public Dictionary<string, int> playerResultColors;
 
             [OnlineField(nullable = true, group = "arenaLobby")]
-            public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
+            public DynamicOrderedPlayerIDs playersReadiedUp;
 
             [OnlineField(group = "arenaLobby")]
             public List<int> bannedSlugs;
 
-            // Group: arenaSetup
+
             [OnlineField(group = "arenaSetup")]
             public List<string> playList;
 
@@ -151,16 +149,15 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaSetup")]
             public int aliveScore;
+
             [OnlineField(group = "arenaSetup")]
             public int denScore;
 
             [OnlineField(group = "arenaSetup", nullable = true)]
             public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
 
-
             [OnlineField(group = "arenaSetup")]
             public int emptyKillScore;
-
 
             [OnlineField(group = "arenaSetup")]
             public bool challengeDenEjection;
@@ -171,14 +168,13 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int artiExplosionCapacity;
 
-            
             [OnlineFieldHalf(group = "arenaSetup")]
             public float artiParryDistance;
             
             [OnlineField(group = "arenaSetup")]
             public bool artiParryLeniency;
 
-            // Group: arenaGameplay
+
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
 
@@ -191,6 +187,13 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public int currentLevel;
 
+            [OnlineField(group = "arenaGameplay")]
+            public bool countdownInitiatedHoldFire;
+
+            [OnlineField(group = "arenaGameplay")]
+            public bool leaveForNextLevel;
+
+
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithDeaths;
 
@@ -202,18 +205,13 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophies;
+
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> playerNumberWithScore;
-
 
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound;
 
-            [OnlineField(group = "arenaGameplay")]
-            public bool countdownInitiatedHoldFire;
-
-            [OnlineField(group = "arenaGameplay")]
-            public bool leaveForNextLevel;
 
             [OnlineField]
             public int playerEnteredGame;
@@ -221,38 +219,37 @@ namespace RainMeadow
             [OnlineField]
             public bool playersEqualToOnlineSitting;
 
-
             [OnlineField]
             public bool hostLoadedOverlay;
+
+
             public State() { }
 
-            public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
+            public State(ArenaLobbyData lobbyData, OnlineResource onlineResource)
             {
                 Lobby lobby = (Lobby)onlineResource;
                 ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)lobby.gameMode;
 
                 isInGame = Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
-                playList = new(arenaOnline.playList);
+                playList = new List<string>(arenaOnline.playList);
                 shufflePlayList = arenaOnline.shufflePlayList;
-                arenaSittingOnlineOrder = new(arenaOnline.arenaSittingOnlineOrder);
+                arenaSittingOnlineOrder = new List<ushort>(arenaOnline.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arenaOnline.allPlayersReadyLockLobby;
                 returnToLobby = arenaOnline.returnToLobby;
-                onlineArenaSettingsInterfaceMultiChoice = new(arenaOnline.onlineArenaSettingsInterfaceMultiChoice);
-                onlineArenaSettingsInterfaceBool = new(arenaOnline.onlineArenaSettingsInterfaceeBool);
-                playersReadiedUp = new(arenaOnline.playersReadiedUp.list.ToList());
-                reigningChamps = new(arenaOnline.reigningChamps.list.ToList());
-                playerNumberWithDeaths = new(arenaOnline.playerNumberWithDeaths);
-                playerTotScore = new(arenaOnline.playerTotScore);
-                playerNumberWithWins = new(arenaOnline.playerNumberWithWins);
-                playerNumberWithTrophies = new(arenaOnline.playerNumberWithTrophies);
-                playerNumberWithTrophiesPerRound = new(arenaOnline.playerNumberWithTrophiesPerRound);
-                playerNumberWithScore = new(arenaOnline.playerNumberWithScore);
+                onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>(arenaOnline.onlineArenaSettingsInterfaceMultiChoice);
+                onlineArenaSettingsInterfaceBool = new Dictionary<string, bool>(arenaOnline.onlineArenaSettingsInterfaceeBool);
+                playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
+                reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
+                playerNumberWithDeaths = new Dictionary<int, int>(arenaOnline.playerNumberWithDeaths);
+                playerTotScore = new Dictionary<int, int>(arenaOnline.playerTotScore);
+                playerNumberWithWins = new Dictionary<int, int>(arenaOnline.playerNumberWithWins);
+                playerNumberWithTrophies = new Dictionary<int, List<string>>(arenaOnline.playerNumberWithTrophies);
+                playerNumberWithTrophiesPerRound = new Dictionary<int, List<string>>(arenaOnline.playerNumberWithTrophiesPerRound);
+                playerNumberWithScore = new Dictionary<int, int>(arenaOnline.playerNumberWithScore);
 
-                playersLateWaitingInLobby = new(arenaOnline.playersLateWaitingInLobbyForNextRound);
+                playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
-                playersChoosingSlugs = new(
-                    arenaOnline.playersInLobbyChoosingSlugs.ToDictionary<string, int>()
-                );
+                playersChoosingSlugs = new Dictionary<string, int>(arenaOnline.playersInLobbyChoosingSlugs);
                 countdownSafetyCatchTimer = arenaOnline.countdownSafetyCatchTimer;
                 countdownInitiatedHoldFire = arenaOnline.countdownInitiatedHoldFire;
                 playerResultColors = arenaOnline.playerResultColors;
@@ -282,7 +279,7 @@ namespace RainMeadow
                 playersEqualToOnlineSitting = arenaOnline.playersEqualToOnlineSitting;
                 piggyBack = arenaOnline.piggyBack;
 
-                bannedSlugs = new(arenaOnline.bannedSlugs);
+                bannedSlugs = new List<int>(arenaOnline.bannedSlugs);
                 voidMasterEnabled = arenaOnline.voidMasterEnabled;
                 voidSpawnLethalityFactor = arenaOnline.voidSpawnLethalityFactor;
                 amoebaDuration = arenaOnline.amoebaDuration;

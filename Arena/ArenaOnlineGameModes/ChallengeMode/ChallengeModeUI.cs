@@ -37,11 +37,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             myTab = null;
         }
 
-        public override void OnUIUpdate(ArenaOnlineLobbyMenu menu)
-        {
-            base.OnUIUpdate(menu);
-        }
-
         public override void OnUIShutDown(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIShutDown(menu);
