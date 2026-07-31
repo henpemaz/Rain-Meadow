@@ -195,22 +195,22 @@ namespace RainMeadow
 
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerNumberWithDeaths;
+            public Dictionary<int, int> winsByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerNumberWithWins;
+            public Dictionary<int, int> deathsByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerTotScore;
+            public Dictionary<int, int> totalScoreByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> playerNumberWithTrophies;
+            public Dictionary<int, int> scoreByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> playerNumberWithScore;
+            public Dictionary<int, List<string>> allKillsByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> playerNumberWithTrophiesPerRound;
+            public Dictionary<int, List<string>> roundKillsByInLobbyId;
 
 
             [OnlineField]
@@ -240,12 +240,13 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = new Dictionary<string, bool>(arenaOnline.onlineArenaSettingsInterfaceeBool);
                 playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
-                playerNumberWithDeaths = new Dictionary<int, int>(arenaOnline.playerNumberWithDeaths);
-                playerTotScore = new Dictionary<int, int>(arenaOnline.playerTotScore);
-                playerNumberWithWins = new Dictionary<int, int>(arenaOnline.playerNumberWithWins);
-                playerNumberWithTrophies = new Dictionary<int, List<string>>(arenaOnline.playerNumberWithTrophies);
-                playerNumberWithTrophiesPerRound = new Dictionary<int, List<string>>(arenaOnline.playerNumberWithTrophiesPerRound);
-                playerNumberWithScore = new Dictionary<int, int>(arenaOnline.playerNumberWithScore);
+
+                winsByInLobbyId       = new Dictionary<int, int>(arenaOnline.WinsByInLobbyId);
+                deathsByInLobbyId     = new Dictionary<int, int>(arenaOnline.DeathsByInLobbyId);
+                totalScoreByInLobbyId = new Dictionary<int, int>(arenaOnline.TotalScoreByInLobbyId);
+                scoreByInLobbyId      = new Dictionary<int, int>(arenaOnline.ScoreByInLobbyId);
+                allKillsByInLobbyId   = new Dictionary<int, List<string>>(arenaOnline.AllKillsByInLobbyId);
+                roundKillsByInLobbyId = new Dictionary<int, List<string>>(arenaOnline.RoundKillsByInLobbyId);
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
@@ -323,14 +324,13 @@ namespace RainMeadow
                 arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
-                arenaOnline.playerNumberWithDeaths = playerNumberWithDeaths;
-                arenaOnline.playerNumberWithWins = playerNumberWithWins;
+                arenaOnline.WinsByInLobbyId       = winsByInLobbyId;
+                arenaOnline.DeathsByInLobbyId     = deathsByInLobbyId;
+                arenaOnline.TotalScoreByInLobbyId = totalScoreByInLobbyId;
+                arenaOnline.ScoreByInLobbyId      = scoreByInLobbyId;
+                arenaOnline.AllKillsByInLobbyId   = allKillsByInLobbyId;
+                arenaOnline.RoundKillsByInLobbyId = roundKillsByInLobbyId;
 
-                arenaOnline.playerNumberWithTrophies = playerNumberWithTrophies;
-                arenaOnline.playerNumberWithTrophiesPerRound = playerNumberWithTrophiesPerRound;
-
-                arenaOnline.playerTotScore = playerTotScore;
-                arenaOnline.playerNumberWithScore = playerNumberWithScore;
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
                 arenaOnline.countdownSafetyCatchTimer = countdownSafetyCatchTimer;
