@@ -604,20 +604,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arenaOnline.playersLateWaitingInLobbyForNextRound.Clear();
                     arenaOnline.hasPermissionToRejoin = false;
                 }
-                for (int x = 0; x < arenaOnline.arenaSittingOnlineOrder.Count; x++)
-                {
-                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arenaOnline.arenaSittingOnlineOrder[x]);
-                    if (getPlayer != null)
-                    {
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            arenaOnline.CheckToAddPlayerStatsToDicts(getPlayer);
-                        }
-                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;${ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
-                        RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};TEAM;{teamNames[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(getPlayer).team]}");
-
-                    }
-                }
             }
         }
 

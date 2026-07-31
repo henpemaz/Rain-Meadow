@@ -915,10 +915,6 @@ namespace RainMeadow
             {
                 player.roundKills = roundKills.ToList();
             }
-
-            // For the Arena tournament
-            RainMeadow.Info($"RMEL;{pl.id.DisplayName};{player.wins};{player.allKills.Count};{player.deaths};{player.totScore}");
-
         }
 
         public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl, bool calculateTotal)

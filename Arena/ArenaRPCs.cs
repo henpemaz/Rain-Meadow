@@ -64,9 +64,6 @@ namespace RainMeadow
                     {
                         arena.ScoreByOPlayer[onlinePlayer] = a.arenaSitting.players[playerNumber].score;
                     }
-
-                    RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
-
                 }
             }
 
@@ -103,8 +100,6 @@ namespace RainMeadow
                 {
                     arena.ScoreByOPlayer[onlinePlayer] = a.arenaSitting.players[playerNumber].score;
                 }
-                RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
-
             }
 
         }
