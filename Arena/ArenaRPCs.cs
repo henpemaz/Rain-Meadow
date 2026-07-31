@@ -62,7 +62,7 @@ namespace RainMeadow
                     a.arenaSitting.players[playerNumber].score = newScore;
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.ScoreByInLobbyId[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                        arena.ScoreByOPlayer[onlinePlayer] = a.arenaSitting.players[playerNumber].score;
                     }
 
                     RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
@@ -101,7 +101,7 @@ namespace RainMeadow
                 a.arenaSitting.players[playerNumber].score = newScore;
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.ScoreByInLobbyId[onlinePlayer.inLobbyId] = a.arenaSitting.players[playerNumber].score;
+                    arena.ScoreByOPlayer[onlinePlayer] = a.arenaSitting.players[playerNumber].score;
                 }
                 RainMeadow.Debug($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{a.arenaSitting.players[playerNumber].score}");
 
@@ -402,8 +402,8 @@ namespace RainMeadow
                         game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                         if (pl != null)
                         {
-                            arena.AllKillsByInLobbyId[pl.inLobbyId].Add(iconSymbolData.ToString());
-                            arena.RoundKillsByInLobbyId[pl.inLobbyId].Add(iconSymbolData.ToString());
+                            arena.AllKillsByOPlayer[pl].Add(iconSymbolData);
+                            arena.RoundKillsByOPlayer[pl].Add(iconSymbolData);
                             // 7
                         }
 
