@@ -296,7 +296,6 @@ namespace RainMeadow
             // 7.
             if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
             {
-                RainMeadow.Info($"RMEL;{absPlayerCreature.owner.id.DisplayName};KILLED;{onlineKilledCreature.owner.id.DisplayName};SCORE;{self.arenaSitting.players[targetPlayerNumber].score}");
                 // Cash Money Slugs
                 ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(absPlayerCreature.owner);
                 if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
@@ -887,18 +886,6 @@ namespace RainMeadow
                 arenaOnline.leaveForNextLevel = false;
                 arenaOnline.playersLateWaitingInLobbyForNextRound.Clear();
                 arenaOnline.hasPermissionToRejoin = false;
-            }
-            for (int x = 0; x < arenaOnline.arenaSittingOnlineOrder.Count; x++)
-            {
-                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arenaOnline.arenaSittingOnlineOrder[x]);
-                if (getPlayer != null)
-                {
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arenaOnline.CheckToAddPlayerStatsToDicts(getPlayer);
-                    }
-                    RainMeadow.Info($"RMEL;{getPlayer.id.DisplayName};CLASS;{ArenaHelpers.GetArenaClientSettings(getPlayer)?.playingAs}");
-                }
             }
 
             if (
