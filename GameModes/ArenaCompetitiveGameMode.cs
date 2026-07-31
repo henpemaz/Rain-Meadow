@@ -1275,6 +1275,27 @@ namespace RainMeadow
             return true;
         }
 
+        public override void PlayerLeftLobby(OnlinePlayer onlinePlayer)
+        {
+            // Clients should change the lobby data here so the dictionaries behave as excepted.
+            // (Looping over the dictionary keys should NOT give you players that aren't contained in OnlineManager.players)
+
+            PersistentDeathsByOPlayer.Remove(onlinePlayer);
+            PersistentWinsByOPlayer.Remove(onlinePlayer);
+            PersistentTotalScoreByOPlayer.Remove(onlinePlayer);
+            PersistentAllKillsByOPlayer.Remove(onlinePlayer);
+
+            WinsByOPlayer.Remove(onlinePlayer);
+            DeathsByOPlayer.Remove(onlinePlayer);
+            TotalScoreByOPlayer.Remove(onlinePlayer);
+            ScoreByOPlayer.Remove(onlinePlayer);
+            AllKillsByOPlayer.Remove(onlinePlayer);
+            RoundKillsByOPlayer.Remove(onlinePlayer);
+
+            base.PlayerLeftLobby(onlinePlayer);
+        }
+
+
         public override void LobbyTick(uint tick)
         {
             if (leaveToRestart)
