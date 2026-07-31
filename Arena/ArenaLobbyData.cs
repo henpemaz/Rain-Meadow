@@ -241,12 +241,34 @@ namespace RainMeadow
                 playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
-                winsByInLobbyId       = new Dictionary<int, int>(arenaOnline.WinsByInLobbyId);
-                deathsByInLobbyId     = new Dictionary<int, int>(arenaOnline.DeathsByInLobbyId);
-                totalScoreByInLobbyId = new Dictionary<int, int>(arenaOnline.TotalScoreByInLobbyId);
-                scoreByInLobbyId      = new Dictionary<int, int>(arenaOnline.ScoreByInLobbyId);
-                allKillsByInLobbyId   = new Dictionary<int, List<string>>(arenaOnline.AllKillsByInLobbyId);
-                roundKillsByInLobbyId = new Dictionary<int, List<string>>(arenaOnline.RoundKillsByInLobbyId);
+                winsByInLobbyId = arenaOnline.WinsByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                );
+                deathsByInLobbyId = arenaOnline.DeathsByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                );
+                totalScoreByInLobbyId = arenaOnline.TotalScoreByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                );
+                scoreByInLobbyId = arenaOnline.ScoreByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                );
+                allKillsByInLobbyId = arenaOnline.AllKillsByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                        .Select(trophy => trophy.ToString())
+                        .ToList()
+                );
+                roundKillsByInLobbyId = arenaOnline.RoundKillsByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                        .Select(trophy => trophy.ToString())
+                        .ToList()
+                );
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
@@ -324,12 +346,42 @@ namespace RainMeadow
                 arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
-                arenaOnline.WinsByInLobbyId       = winsByInLobbyId;
-                arenaOnline.DeathsByInLobbyId     = deathsByInLobbyId;
-                arenaOnline.TotalScoreByInLobbyId = totalScoreByInLobbyId;
-                arenaOnline.ScoreByInLobbyId      = scoreByInLobbyId;
-                arenaOnline.AllKillsByInLobbyId   = allKillsByInLobbyId;
-                arenaOnline.RoundKillsByInLobbyId = roundKillsByInLobbyId;
+                arenaOnline.WinsByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => winsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
+                        ? value
+                        : 0
+                );
+                arenaOnline.DeathsByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => deathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
+                        ? value
+                        : 0
+                );
+                arenaOnline.TotalScoreByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => totalScoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
+                        ? value
+                        : 0
+                );
+                arenaOnline.ScoreByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => scoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
+                        ? value
+                        : 0
+                );
+                arenaOnline.AllKillsByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => allKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
+                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
+                        : []
+                );
+                arenaOnline.RoundKillsByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => roundKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
+                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
+                        : []
+                );
 
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
