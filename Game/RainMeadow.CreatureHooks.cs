@@ -264,7 +264,7 @@ namespace RainMeadow
             if (!parentBodyChunk.owner.IsLocal() && hasLarva)
             {
                 if(parentBodyChunk.owner.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
-                    opo.owner.InvokeRPC(AskForOnlineLarva, opo, (byte)index);
+                    opo.owner.InvokeRPC(AskForOnlineLarvaRPC, opo, (byte)index);
                 self.hasLarva = false;
             }
         }
@@ -293,32 +293,8 @@ namespace RainMeadow
         private void LarvaHolder_Update(ILContext il)
         {
             var c = new ILCursor(il);
-            var skip = c.DefineLabel();
-            // only owner spawns larva
-            c.GotoNext(MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall(typeof(BoxWorm.LarvaHolder).GetMethod("get_hasLarva"))//,
-                //i => i.MatchBrtrue(out skip)
-                );
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((bool hasLarva, Watcher.BoxWorm.LarvaHolder self) =>
-            { // if hasLarva is false, return
-                if (OnlineManager.lobby is null) return hasLarva;                
-                if (self.bodyChunk.owner.IsLocal()) return hasLarva;
-                if (hasLarva && self.abstractLarva is null) return false; // self.abstractLarva = new Watcher.BoxWorm.Larva.AbstractLarva(self.room.world, null, self.room.GetWorldCoordinate(self.position), self.room.game.GetNewID());
-                return hasLarva;               
-            });
 
-
-            c = new ILCursor(il);
-            //c.GotoNext(MoveType.After,
-            //    i => i.MatchLdarg(0),
-            //    i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
-            //    i => i.MatchBrtrue(out _));
-
-            //c.GotoNext(i => i.MatchRet());
-
-            //var ret = c.MarkLabel();
+            // this.ManageLarvaDetachment();
 
             c.GotoNext(MoveType.Before,
                 i => i.MatchLdarg(0),
