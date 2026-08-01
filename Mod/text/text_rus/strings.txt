@@ -111,6 +111,8 @@ Username Toggle|Режим переключения имён
 Custom Chat Username Color|Пользовательский цвет имени игрока в чате
 Enable Meadow Cosmetics|Включить косметику Meadow
 Toggle Show Score|Переключение показа счёта
+Countdown Safety Time (ticks)|Время безопасности отсчёта (в тиках)
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|На протяжении какого времени отсчёт будет ждать остальных. По умолчанию: 300 тиков (7,5сек)
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
 Stop Inputs While Spectating|Отключить управление во время наблюдения
