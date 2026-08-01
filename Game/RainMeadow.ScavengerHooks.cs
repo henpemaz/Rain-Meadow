@@ -84,13 +84,13 @@ namespace RainMeadow
 
         private void ScavengerAbstractAI_InitGearUp(On.ScavengerAbstractAI.orig_InitGearUp orig, ScavengerAbstractAI self)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.creatingRemoteObject) return;
+            if (OnlineManager.lobby != null && (OnlinePhysicalObject.creatingRemoteObject || !self.parent.IsLocal())) return;
             orig(self);
         }
 
         private void ScavengerAbstractAI_ReGearInDen(On.ScavengerAbstractAI.orig_ReGearInDen orig, ScavengerAbstractAI self)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.creatingRemoteObject) return;
+            if (OnlineManager.lobby != null && (OnlinePhysicalObject.creatingRemoteObject || !self.parent.IsLocal())) return;
             orig(self);
         }
     }
