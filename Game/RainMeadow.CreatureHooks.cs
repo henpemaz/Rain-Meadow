@@ -44,6 +44,7 @@ namespace RainMeadow
 
             On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
             IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
+            On.Watcher.BoxWorm.LarvaHolder.ctor += LarvaHolder_ctor; 
 
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
@@ -255,6 +256,19 @@ namespace RainMeadow
             }
         }
 
+        private void LarvaHolder_ctor(On.Watcher.BoxWorm.LarvaHolder.orig_ctor orig, BoxWorm.LarvaHolder self, int index, BodyChunk parentBodyChunk, float horizontalOffset, float verticalOffset, bool hasLarva)
+        {
+            orig(self, index, parentBodyChunk, horizontalOffset, verticalOffset, hasLarva);
+            if (OnlineManager.lobby is null) return;
+
+            if (!parentBodyChunk.owner.IsLocal() && hasLarva)
+            {
+                if(parentBodyChunk.owner.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.owner.InvokeRPC(AskForOnlineLarva, opo, (byte)index);
+                self.hasLarva = false;
+            }
+        }
+
         private bool Rattler_ValidSpawnPos(On.Watcher.Rattler.orig_ValidSpawnPos orig, Room room, RWCustom.IntVector2 pos, List<Vector2> rattlerSpawnLocsSoFar)
         {
             // Only allow room owner to spawn rattlers
@@ -279,16 +293,34 @@ namespace RainMeadow
         private void LarvaHolder_Update(ILContext il)
         {
             var c = new ILCursor(il);
+            var skip = c.DefineLabel();
+            // only owner spawns larva
             c.GotoNext(MoveType.After,
                 i => i.MatchLdarg(0),
-                i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
-                i => i.MatchBrtrue(out _));
+                i => i.MatchCall(typeof(BoxWorm.LarvaHolder).GetMethod("get_hasLarva"))//,
+                //i => i.MatchBrtrue(out skip)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((bool hasLarva, Watcher.BoxWorm.LarvaHolder self) =>
+            { // if hasLarva is false, return
+                if (OnlineManager.lobby is null) return hasLarva;                
+                if (self.bodyChunk.owner.IsLocal()) return hasLarva;
+                if (hasLarva && self.abstractLarva is null) return false; // self.abstractLarva = new Watcher.BoxWorm.Larva.AbstractLarva(self.room.world, null, self.room.GetWorldCoordinate(self.position), self.room.game.GetNewID());
+                return hasLarva;               
+            });
 
-            c.GotoNext(i => i.MatchRet());
 
-            var ret = c.MarkLabel();
+            c = new ILCursor(il);
+            //c.GotoNext(MoveType.After,
+            //    i => i.MatchLdarg(0),
+            //    i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
+            //    i => i.MatchBrtrue(out _));
 
-            c.GotoPrev(MoveType.Before,
+            //c.GotoNext(i => i.MatchRet());
+
+            //var ret = c.MarkLabel();
+
+            c.GotoNext(MoveType.Before,
                 i => i.MatchLdarg(0),
                 i => i.MatchCallOrCallvirt<BoxWorm.LarvaHolder>(nameof(BoxWorm.LarvaHolder.ManageLarvaDetachment)));
             c.Emit(OpCodes.Ldarg_0);
