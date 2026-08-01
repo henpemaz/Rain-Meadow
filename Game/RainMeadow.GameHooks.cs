@@ -467,7 +467,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 string cl = OnlineManager.CheatsAllowed ? "" : "\n" + Utils.Translate("Cheats are disabled in this lobby.");
-                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value}){cl}";
+                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {Version} ({MatchmakingManager.currentDomain.value}){cl}";
             }
         }
 

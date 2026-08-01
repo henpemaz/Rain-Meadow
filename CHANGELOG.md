@@ -21,6 +21,7 @@
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 ### Modders
+- Added constants for Rain Meadow's guids, name, and version.
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
 ## Arena
