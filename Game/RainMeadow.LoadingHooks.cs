@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using MonoMod.RuntimeDetour;
+
 namespace RainMeadow
 {
 
@@ -113,7 +113,7 @@ namespace RainMeadow
                     );
                     if (currentName != null)
                     {
-                        arena.ReadFromStats(player, currentName);
+                        arena.CopyStatsFromLobbyData(player, currentName);
                     }
                 }
 
@@ -199,7 +199,6 @@ namespace RainMeadow
                         {
                             ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
                             {
-                                playerNumber = i,
                                 playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
                                 hasEnteredGameArea = true,
                             };
@@ -207,7 +206,8 @@ namespace RainMeadow
                             Debug(
                                 $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                             );
-                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+
+                            arena.CopyStatsFromLobbyData(newArenaPlayer, pl);
 
                             self.players.Add(newArenaPlayer);
                         }
@@ -231,7 +231,6 @@ namespace RainMeadow
                                     arena.arenaSittingOnlineOrder.Count - 1
                                 )
                                 {
-                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
                                     playerClass = ArenaHelpers
                                         .GetArenaClientSettings(player)!
                                         .playingAs,
@@ -240,7 +239,9 @@ namespace RainMeadow
                                 Debug(
                                     $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                                 );
-                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+
+                                arena.CopyStatsFromLobbyData(newArenaPlayer, player);
+
                                 self.players.Add(newArenaPlayer);
                             }
                         }

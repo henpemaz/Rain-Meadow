@@ -451,6 +451,99 @@ namespace RainMeadow
             this.AddExternalGameModes(DrownMode.Drown, new DrownMode());
         }
 
+        public void ClearAllLobbyDataStats()
+        {
+            WinsByOPlayer.Clear();
+            DeathsByOPlayer.Clear();
+            TotalScoreByOPlayer.Clear();
+            ScoreByOPlayer.Clear();
+            AllKillsByOPlayer.Clear();
+            RoundKillsByOPlayer.Clear();
+        }
+
+        public void ResetArenaPlayerStats(ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            arenaPlayer.wins = 0;
+            arenaPlayer.deaths = 0;
+            arenaPlayer.totScore = 0;
+            arenaPlayer.score = 0;
+            arenaPlayer.allKills = [];
+            arenaPlayer.roundKills = [];
+            arenaPlayer.winner = false;
+            arenaPlayer.alive = false;
+        }
+
+        public void ResetArenaPlayerPerSessionStats(ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            arenaPlayer.score = 0;
+            arenaPlayer.roundKills = [];
+            arenaPlayer.winner = false;
+            arenaPlayer.alive = false;
+        }
+
+        /// <summary>
+        /// Ensures all <see cref="ArenaOnlineGameMode"/> stat dictionaries have an
+        /// entry for an <see cref="OnlinePlayer"/> by adding default entries as needed.
+        /// </summary>
+        public void AddMissingStatEntries(OnlinePlayer player)
+        {
+            if (!WinsByOPlayer.ContainsKey(player))
+                WinsByOPlayer.Add(player, 0);
+
+            if (!DeathsByOPlayer.ContainsKey(player))
+                DeathsByOPlayer.Add(player, 0);
+
+            if (!TotalScoreByOPlayer.ContainsKey(player))
+                TotalScoreByOPlayer.Add(player, 0);
+
+            if (!ScoreByOPlayer.ContainsKey(player))
+                ScoreByOPlayer.Add(player, 0);
+
+            if (!AllKillsByOPlayer.ContainsKey(player))
+                AllKillsByOPlayer.Add(player, []);
+
+            if (!RoundKillsByOPlayer.ContainsKey(player))
+                RoundKillsByOPlayer.Add(player, []);
+        }
+
+        /// <summary>
+        /// Copies all stats from an <see cref="ArenaSitting.ArenaPlayer"/>'s
+        /// fields to <see cref="ArenaOnlineGameMode"/>'s stat dictionaries.
+        /// </summary>
+        public void CopyStatsToLobbyData(
+            ArenaSitting.ArenaPlayer arenaPlayer,
+            OnlinePlayer onlinePlayer)
+        {
+            WinsByOPlayer[onlinePlayer]       = arenaPlayer.wins;
+            DeathsByOPlayer[onlinePlayer]     = arenaPlayer.deaths;
+            TotalScoreByOPlayer[onlinePlayer] = arenaPlayer.totScore;
+            ScoreByOPlayer[onlinePlayer]      = arenaPlayer.score;
+            AllKillsByOPlayer[onlinePlayer]   = arenaPlayer.allKills.ToList();
+            RoundKillsByOPlayer[onlinePlayer] = arenaPlayer.roundKills.ToList();
+        }
+
+        /// <summary>
+        /// Copies all stats from <see cref="ArenaOnlineGameMode"/>'s
+        /// dictionaries to an <see cref="ArenaSitting.ArenaPlayer"/>'s fields.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="AddMissingStatEntries"/> is called before
+        /// accessing dictionaries. No exceptions will be thrown.
+        /// </remarks>
+        public void CopyStatsFromLobbyData(
+            ArenaSitting.ArenaPlayer arenaPlayer,
+            OnlinePlayer onlinePlayer)
+        {
+            AddMissingStatEntries(onlinePlayer);
+
+            arenaPlayer.wins       = WinsByOPlayer[onlinePlayer];
+            arenaPlayer.deaths     = DeathsByOPlayer[onlinePlayer];
+            arenaPlayer.totScore   = TotalScoreByOPlayer[onlinePlayer];
+            arenaPlayer.score      = ScoreByOPlayer[onlinePlayer];
+            arenaPlayer.allKills   = AllKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.roundKills = RoundKillsByOPlayer[onlinePlayer].ToList();
+        }
+
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);
@@ -523,11 +616,6 @@ namespace RainMeadow
             this.addedChampstoList = false;
         }
 
-        public void ResetRoundKills()
-        {
-            this.RoundKillsByOPlayer.Clear();
-        }
-
         public void ResetForceReadyCountDown()
         {
             this.forceReadyCountdownTimer = 15;
@@ -546,13 +634,6 @@ namespace RainMeadow
             hostLoadedOverlay = false;
         }
 
-        public void ResetClientRoundScore()
-        {
-            foreach (var key in ScoreByOPlayer.Keys.ToList())
-            {
-                ScoreByOPlayer[key] = 0;
-            }
-        }
         public void ResetScrollTimer()
         {
             this.scrollInitiatedTimer = 0;
@@ -565,7 +646,6 @@ namespace RainMeadow
             ResetChampAddition();
             AllowJoinOrRejoin();
             ResetHostLoadedOverlayBool();
-            ResetClientRoundScore();
         }
 
         public void ResetAtNextLevel()
@@ -575,18 +655,6 @@ namespace RainMeadow
             ResetGameTimer();
             ResetPlayersEntered();
             ResetChampAddition();
-            ResetRoundKills();
-        }
-
-        public void ResetPlayerStats(ArenaSitting.ArenaPlayer player)
-        {
-            player.score = 0;
-            player.totScore = 0;
-            player.wins = 0;
-            player.deaths = 0;
-            player.wins = 0;
-            player.winner = false;
-            player.alive = false;
         }
 
         public void RestartGame()
@@ -674,7 +742,6 @@ namespace RainMeadow
                 {
                     ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
                     {
-                        playerNumber = i,
                         playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
                         hasEnteredGameArea = true,
                     };
@@ -682,7 +749,9 @@ namespace RainMeadow
                     RainMeadow.Debug(
                         $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                     );
-                    AddOrInsertPlayerStats(this, newArenaPlayer, pl);
+
+                    CopyStatsFromLobbyData(newArenaPlayer, pl);
+
                     restartingGamePlayers.Add(pl);
                     arenaSitting.players.Add(newArenaPlayer);
                 }
@@ -706,14 +775,15 @@ namespace RainMeadow
                             arenaSittingOnlineOrder.Count - 1
                         )
                         {
-                            playerNumber = arenaSittingOnlineOrder.Count - 1,
                             playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
                             hasEnteredGameArea = true,
                         };
                         RainMeadow.Debug(
                             $"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}"
                         );
-                        AddOrInsertPlayerStats(this, newArenaPlayer, player);
+
+                        CopyStatsFromLobbyData(newArenaPlayer, player);
+
                         arenaSitting.players.Add(newArenaPlayer);
                     }
                 }
@@ -844,222 +914,6 @@ namespace RainMeadow
 
         }
 
-        public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
-        {
-            if (!DeathsByOPlayer.ContainsKey(getPlayer))
-            {
-                DeathsByOPlayer.Add(getPlayer, 0);
-            }
-            if (!WinsByOPlayer.ContainsKey(getPlayer))
-            {
-                WinsByOPlayer.Add(getPlayer, 0);
-            }
-            if (!TotalScoreByOPlayer.ContainsKey(getPlayer))
-            {
-                TotalScoreByOPlayer.Add(getPlayer, 0);
-            }
-            if (!ScoreByOPlayer.ContainsKey(getPlayer))
-            {
-                ScoreByOPlayer.Add(getPlayer, 0);
-            }
-            if (!AllKillsByOPlayer.ContainsKey(getPlayer))
-            {
-                AllKillsByOPlayer.Add(getPlayer, []);
-            }
-            if (!RoundKillsByOPlayer.ContainsKey(getPlayer))
-            {
-                RoundKillsByOPlayer.Add(getPlayer, []);
-            }
-        }
-
-        public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
-        {
-            if (player == null || pl == null)
-            {
-                RainMeadow.Error("ReadFromStats failed: player or pl is null!");
-                return;
-            }
-            RainMeadow.Debug(this);
-            // Wins
-            if (WinsByOPlayer.TryGetValue(pl, out var wins))
-            {
-                player.wins = wins;
-            }
-
-            // Deaths
-            if (DeathsByOPlayer.TryGetValue(pl, out var deaths))
-            {
-                player.deaths = deaths;
-            }
-
-            // Total Score
-            if (TotalScoreByOPlayer.TryGetValue(pl, out var totScore))
-            {
-                player.totScore = totScore;
-            }
-
-            // Current Score
-            if (ScoreByOPlayer.TryGetValue(pl, out var score))
-            {
-                player.score = score;
-            }
-
-            // All Trophies/Kills
-            if (AllKillsByOPlayer.TryGetValue(pl, out List<IconSymbol.IconSymbolData>? allKills))
-            {
-                player.allKills = allKills.ToList();
-            }
-
-            // Round Trophies/Kills
-            if (RoundKillsByOPlayer.TryGetValue(pl, out List<IconSymbol.IconSymbolData>? roundKills))
-            {
-                player.roundKills = roundKills.ToList();
-            }
-        }
-
-        public void SetPlayerStatsFromLocalPlayer(ArenaSitting.ArenaPlayer player, OnlinePlayer pl, bool calculateTotal)
-        {
-            if (pl == null)
-            {
-                RainMeadow.Error("Setting stats failed: OnlinePlayer is null!");
-                return;
-            }
-
-            // Wins
-            if (WinsByOPlayer.TryGetValue(pl, out int currentWins) && currentWins < player.wins)
-                WinsByOPlayer[pl] = player.wins;
-
-            // Deaths
-            if (DeathsByOPlayer.TryGetValue(pl, out int currentDeaths) && currentDeaths < player.deaths)
-                DeathsByOPlayer[pl] = player.deaths;
-
-            // Score
-            if (ScoreByOPlayer.TryGetValue(pl, out _) && TotalScoreByOPlayer.ContainsKey(pl))
-            {
-
-                ScoreByOPlayer[pl] = player.score;
-                if (calculateTotal) // This function runs in a lot of spots, so I just set a bool to manage when we are done with calculations
-                {
-                    TotalScoreByOPlayer[pl] += player.score;
-                }
-
-            }
-        }
-
-        public void AddOrInsertPlayerStats(
-            ArenaOnlineGameMode arenaOnline,
-            ArenaSitting.ArenaPlayer newArenaPlayer,
-            OnlinePlayer pl)
-        {
-            if (arenaOnline.WinsByOPlayer.TryGetValue(pl, out var wins))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    if (WinsByOPlayer.TryGetValue(pl, out int currentWins) && currentWins < newArenaPlayer.wins)
-                        WinsByOPlayer[pl] = newArenaPlayer.wins;
-
-                    // Deaths
-                    if (DeathsByOPlayer.TryGetValue(pl, out int currentDeaths) && currentDeaths < newArenaPlayer.deaths)
-                        DeathsByOPlayer[pl] = newArenaPlayer.deaths;
-
-
-                    // Round Score
-                    if (ScoreByOPlayer.TryGetValue(pl, out _) && TotalScoreByOPlayer.ContainsKey(pl))
-                    {
-                        ScoreByOPlayer[pl] = newArenaPlayer.score;
-                    }
-
-                    if (arenaOnline.AllKillsByOPlayer[pl].Count < newArenaPlayer.allKills.Count)
-                    {
-                        arenaOnline.AllKillsByOPlayer[pl] = newArenaPlayer.allKills.ToList();
-                    }
-                    if (arenaOnline.RoundKillsByOPlayer.TryGetValue(pl, out _)
-                        && arenaOnline.RoundKillsByOPlayer[pl].Count < newArenaPlayer.roundKills.Count)
-                    {
-                        arenaOnline.RoundKillsByOPlayer[pl] = newArenaPlayer.roundKills.ToList();
-                    }
-
-
-                    RainMeadow.Debug(
-                        $"Player found witih stats: {newArenaPlayer} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Player found witih stats: {newArenaPlayer.wins} from online player: {pl} => NOW {arenaOnline.WinsByOPlayer[pl]} "
-                    );
-                    RainMeadow.Debug(
-                        $"Player found witih score stats: {newArenaPlayer.score} from online player: {pl} {arenaOnline.WinsByOPlayer[pl]} "
-                    );
-                    RainMeadow.Debug(
-                        $"Player found witih death stats: {newArenaPlayer.deaths} from online player: {pl} {arenaOnline.WinsByOPlayer[pl]} "
-                    );
-                    RainMeadow.Debug(
-                        $"Player found witih totScore stats: {newArenaPlayer.totScore} from online player: {pl} {arenaOnline.WinsByOPlayer[pl]}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats with allKills stats: {newArenaPlayer.allKills} from online player: {pl} {arenaOnline.AllKillsByOPlayer[pl]}"
-                    );
-                }
-                else
-                {
-                    newArenaPlayer.wins = wins;
-                    newArenaPlayer.deaths = arenaOnline.DeathsByOPlayer[pl];
-                    newArenaPlayer.totScore = arenaOnline.TotalScoreByOPlayer[pl];
-                    newArenaPlayer.score = arenaOnline.ScoreByOPlayer[pl];
-                    newArenaPlayer.roundKills = arenaOnline.RoundKillsByOPlayer[pl].ToList();
-                    newArenaPlayer.allKills = arenaOnline.AllKillsByOPlayer[pl].ToList();
-
-                    RainMeadow.Debug(
-                        $"Client read stats: {newArenaPlayer} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats witih stats: {newArenaPlayer.wins} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats witih score stats: {newArenaPlayer.score} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats witih death stats: {newArenaPlayer.deaths} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats witih totScore stats: {newArenaPlayer.totScore} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"Client read stats with allKills stats: {newArenaPlayer.allKills} from online player: {pl}"
-                    );
-                }
-            }
-            else
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arenaOnline.DeathsByOPlayer.Add(pl, newArenaPlayer.deaths);
-                    arenaOnline.WinsByOPlayer.Add(pl, newArenaPlayer.wins);
-                    arenaOnline.TotalScoreByOPlayer.Add(pl, newArenaPlayer.totScore);
-                    arenaOnline.ScoreByOPlayer.Add(pl, newArenaPlayer.score);
-                    arenaOnline.AllKillsByOPlayer.Add(pl, newArenaPlayer.allKills);
-                    arenaOnline.RoundKillsByOPlayer.Add(pl, newArenaPlayer.roundKills);
-                    RainMeadow.Debug(
-                        $"New Player assigned witih stats: {newArenaPlayer} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"New Player assigned witih stats: {newArenaPlayer.wins} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"New Player assigned witih score stats: {newArenaPlayer.score} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"New Player assigned witih death stats: {newArenaPlayer.deaths} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"New Player assigned witih totScore stats: {newArenaPlayer.totScore} from online player: {pl}"
-                    );
-                    RainMeadow.Debug(
-                        $"New Player assigned witih allKills stats: {newArenaPlayer.allKills} from online player: {pl}"
-                    );
-                }
-            }
-        }
-
         public void ResetOnReturnToMenu(ArenaLobbyMenu lobby)
         {
             ResetGameTimer();
@@ -1091,15 +945,12 @@ namespace RainMeadow
         {
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.SaveProgression(true, true);
-            if (!OnlineManager.lobby.isOwner)
-                return;
-            arenaSittingOnlineOrder.Clear();
-            WinsByOPlayer.Clear();
-            DeathsByOPlayer.Clear();
-            TotalScoreByOPlayer.Clear();
-            ScoreByOPlayer.Clear();
-            AllKillsByOPlayer.Clear();
-            RoundKillsByOPlayer.Clear();
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                arenaSittingOnlineOrder.Clear();
+                ClearAllLobbyDataStats();
+            }
         }
 
         public void ResetReadyUpLogic(ArenaOnlineGameMode arenaOnline, ArenaLobbyMenu lobby)

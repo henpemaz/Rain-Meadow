@@ -1439,9 +1439,9 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arena.SetPlayerStatsFromLocalPlayer(player, pl, false);
+                        arena.CopyStatsToLobbyData(player, pl);
                     }
-                    arena.ReadFromStats(player, pl);
+                    arena.CopyStatsFromLobbyData(player, pl);
                 }
 
                 // prevents UI_Multiplayer_Player_Result_Box_Bump playing for every single player in the lobby at once
@@ -2277,7 +2277,7 @@ namespace RainMeadow
                                 );
                             if (onlinePlayer != null)
                             {
-                                arena.ReadFromStats(player, onlinePlayer);
+                                arena.CopyStatsFromLobbyData(player, onlinePlayer);
                             }
                         }
                         self.manager.RequestMainProcessSwitch(
@@ -3109,7 +3109,7 @@ namespace RainMeadow
 
                 if (pl != null)
                 {
-                    aren.ReadFromStats(player, pl);
+                    aren.CopyStatsFromLobbyData(player, pl);
                 }
                 bool playingAsRandom = false;
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(

@@ -80,6 +80,26 @@ namespace RainMeadow
             RainWorldGame game)
         {
             arenaOnline.ResetAtSession_ctor();
+
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in self.arenaSitting.players)
+            {
+                arenaOnline.ResetArenaPlayerPerSessionStats(arenaPlayer);
+
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arenaOnline,
+                    arenaPlayer.playerNumber
+                );
+                if (onlinePlayer is null)
+                {
+                    RainMeadow.Error(
+                        $"Unable to find arena player's online player. Player number: {arenaPlayer.playerNumber}."
+                    );
+                    continue;
+                }
+
+                if (OnlineManager.lobby.isOwner)
+                    arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
+            }
         }
 
         public virtual void ArenaSessionNextLevel(
@@ -1060,13 +1080,12 @@ namespace RainMeadow
 
                 if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 {
-                    // overseer does not get any love
-                    arenaOnline.ResetPlayerStats(arenaPlayer);
+                    arenaOnline.ResetArenaPlayerStats(arenaPlayer);
                     if (OnlineManager.lobby.isOwner)
                     {
-                        arenaOnline.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
+                        arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
                     }
-                    arenaOnline.ReadFromStats(arenaPlayer, onlinePlayer);
+                    arenaOnline.CopyStatsFromLobbyData(arenaPlayer, onlinePlayer);
                     continue;
 
                 }
@@ -1111,9 +1130,9 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arenaOnline.SetPlayerStatsFromLocalPlayer(arenaPlayer, onlinePlayer, false);
+                    arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
                 }
-                arenaOnline.ReadFromStats(arenaPlayer, onlinePlayer);
+                arenaOnline.CopyStatsFromLobbyData(arenaPlayer, onlinePlayer);
             }
 
             // 2. DETERMINE WINNING TEAM (IF IN TEAM MODE) BEFORE SORTING
@@ -1203,7 +1222,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arenaOnline.SetPlayerStatsFromLocalPlayer(sortedPlayer, pl, true);
+                    arenaOnline.CopyStatsToLobbyData(sortedPlayer, pl);
                 }
             }
 
@@ -1227,7 +1246,7 @@ namespace RainMeadow
                     {
                         continue;
                     }
-                    arenaOnline.ReadFromStats(player, pl);
+                    arenaOnline.CopyStatsFromLobbyData(player, pl);
                     player.winner = false;
                 }
                 // Sort by score if spear score > 0
