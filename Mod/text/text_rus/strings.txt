@@ -343,6 +343,9 @@ Watcher Camo Duration:|Длительность камуфляжа Созерц�
 How long Watcher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
 Watcher Ripple Level:|Уровень ряби Созерцателя:
 Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Обновляет уровень ряби Созерцателя. Диапазон от 1 до 9. По умолчанию: 1
+Watcher will be fully invisible to everyone when in ripple space|Созерцатель будет полностью невидим для всех пока он в Пространстве Ряби 
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|Созерцатель будет оставлять за собой слабое свечение когда он в Пространстве Ряби. Другие Созерцатели также смогут видеть их глаза.
+Full Invisibility In Ripple Space:|Полная невидимость в Пространстве Ряби:
 Weaver Watcher:|Созерцатель-ткач
 Your watcher has synced weaver cosmetics|Твой Созерцатель будет выглядеть как после встречи Ткача
 Your watcher has synced normal cosmetics|Твой Соцерцатель будет выглядеть как обычно
