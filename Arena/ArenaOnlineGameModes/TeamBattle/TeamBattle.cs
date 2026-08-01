@@ -15,17 +15,30 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override ArenaSetup.GameTypeID GetGameModeId => TeamBattle;
 
-        public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+        /// and <see cref="TeamBattleMode"/> is not registered.
+        /// </exception>
+        public static bool IsTeamBattleMode(out TeamBattleMode teamBattle)
         {
-            tb = null;
-            if (arena.currentGameMode == TeamBattle.value)
+            teamBattle = null!;
+
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return false;
+            if (!arenaOnline.registeredGameModes.TryGetValue(TeamBattle.value, out ExternalArenaGameMode externalArena))
             {
-                tb = (
-                    arena.registeredGameModes.FirstOrDefault(x => x.Key == TeamBattle.value).Value
-                    as TeamBattleMode
+                throw new InvalidOperationException(
+                    $"Could not find game mode. Registered: " +
+                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
                 );
+            }
+
+            if (arenaOnline.currentGameMode == TeamBattle.value)
+            {
+                teamBattle = (TeamBattleMode)externalArena;
                 return true;
             }
+
             return false;
         }
 
@@ -186,7 +199,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
                 if (
                     OnlineManager
@@ -197,7 +210,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arena.avatarSettings.bodyColor = Color.Lerp(
                         arena.avatarSettings.bodyColor,
                         teamColors[t.team],
-                        tb.lerp
+                        teamBattle.lerp
                     );
                 }
             }
@@ -304,7 +317,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
                 OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     arena,
@@ -326,8 +339,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                     if (teamA != null && teamB != null)
                     {
-                        bool aIsWinningTeam = teamA.team == tb.winningTeam;
-                        bool bIsWinningTeam = teamB.team == tb.winningTeam;
+                        bool aIsWinningTeam = teamA.team == teamBattle.winningTeam;
+                        bool bIsWinningTeam = teamB.team == teamBattle.winningTeam;
 
                         // Prioritize winning team
                         if (aIsWinningTeam != bIsWinningTeam)
@@ -358,9 +371,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             var resultList = orig(self);
 
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
-                tb.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.WinByScore, false, true);
+                teamBattle.winningTeam = CalculateTeamScoresAndWinner(resultList, arena, arena.WinByScore, false, true);
 
                 resultList.Sort((a, b) =>
                 {
@@ -376,10 +389,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                         // --- Tier 1: Winner Status ---
                         // If there is a winning team, anyone on that team goes to the top.
-                        if (tb.winningTeam != -1)
+                        if (teamBattle.winningTeam != -1)
                         {
-                            bool aIsWinner = teamA.team == tb.winningTeam;
-                            bool bIsWinner = teamB.team == tb.winningTeam;
+                            bool aIsWinner = teamA.team == teamBattle.winningTeam;
+                            bool bIsWinner = teamB.team == teamBattle.winningTeam;
 
                             if (aIsWinner != bIsWinner)
                             {
@@ -411,7 +424,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (isTeamBattleMode(arena, out var tb))
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
                 OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
                 OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
@@ -424,8 +437,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     if (teamA != null && teamB != null)
                     {
                         // Only consider them on the winning team if a winning team was actually decided (!= -1)
-                        bool aIsWinningTeam = (tb.winningTeam != -1) && (teamA.team == tb.winningTeam);
-                        bool bIsWinningTeam = (tb.winningTeam != -1) && (teamB.team == tb.winningTeam);
+                        bool aIsWinningTeam = (teamBattle.winningTeam != -1) && (teamA.team == teamBattle.winningTeam);
+                        bool bIsWinningTeam = (teamBattle.winningTeam != -1) && (teamB.team == teamBattle.winningTeam);
 
                         // Prioritize winning team
                         if (aIsWinningTeam != bIsWinningTeam)
@@ -466,10 +479,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             base.ArenaSessionEnded(arena, orig, self, session);
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
-            {
-                tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
-            }
+
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle) && OnlineManager.lobby.isOwner)
+                teamBattle.roundSpawnPointCycler++;
         }
 
         public override void SpawnPlayer(
@@ -480,7 +492,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         )
         {
             // Shameful copy-paste
-            if (isTeamBattleMode(arena, out var teamBattleMode))
+            if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
                 List<OnlinePlayer> list = new List<OnlinePlayer>();
 
@@ -502,8 +514,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
                 int randomExitIndex = 0;
                 int totalExits = self.game.world.GetAbstractRoom(0).exits;
-                teamBattleMode.roundSpawnPointCycler = (
-                    teamBattleMode.roundSpawnPointCycler % totalExits
+                teamBattle.roundSpawnPointCycler = (
+                    teamBattle.roundSpawnPointCycler % totalExits
                 );
 
                 if (
@@ -512,38 +524,38 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         .TryGetData<ArenaTeamClientSettings>(out var teamSettings)
                 )
                 {
-                    teamBattleMode.martyrsSpawn =
+                    teamBattle.martyrsSpawn =
                         (
                             (int)TeamSpawnPoints.martyrsTeamName
-                            + teamBattleMode.roundSpawnPointCycler
+                            + teamBattle.roundSpawnPointCycler
                         ) % totalExits;
-                    teamBattleMode.outlawsSpawn =
-                        ((int)TeamSpawnPoints.outlawTeamName + teamBattleMode.roundSpawnPointCycler)
+                    teamBattle.outlawsSpawn =
+                        ((int)TeamSpawnPoints.outlawTeamName + teamBattle.roundSpawnPointCycler)
                         % totalExits;
-                    teamBattleMode.dragonslayersSpawn =
+                    teamBattle.dragonslayersSpawn =
                         (
                             (int)TeamSpawnPoints.dragonslayersTeamName
-                            + teamBattleMode.roundSpawnPointCycler
+                            + teamBattle.roundSpawnPointCycler
                         ) % totalExits;
-                    teamBattleMode.chieftainsSpawn =
+                    teamBattle.chieftainsSpawn =
                         (
                             (int)TeamSpawnPoints.chieftainsTeamName
-                            + teamBattleMode.roundSpawnPointCycler
+                            + teamBattle.roundSpawnPointCycler
                         ) % totalExits;
 
                     switch ((TeamSpawnPoints)teamSettings.team)
                     {
                         case TeamSpawnPoints.martyrsTeamName:
-                            randomExitIndex = teamBattleMode.martyrsSpawn;
+                            randomExitIndex = teamBattle.martyrsSpawn;
                             break;
                         case TeamSpawnPoints.outlawTeamName:
-                            randomExitIndex = teamBattleMode.outlawsSpawn;
+                            randomExitIndex = teamBattle.outlawsSpawn;
                             break;
                         case TeamSpawnPoints.dragonslayersTeamName:
-                            randomExitIndex = teamBattleMode.dragonslayersSpawn;
+                            randomExitIndex = teamBattle.dragonslayersSpawn;
                             break;
                         case TeamSpawnPoints.chieftainsTeamName:
-                            randomExitIndex = teamBattleMode.chieftainsSpawn;
+                            randomExitIndex = teamBattle.chieftainsSpawn;
                             break;
                         default:
                             Debug.LogWarning(
@@ -562,10 +574,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             }
                             player.InvokeOnceRPC(
                                 ArenaRPCs.Arena_NotifySpawnPoint,
-                                teamBattleMode.martyrsSpawn,
-                                teamBattleMode.outlawsSpawn,
-                                teamBattleMode.dragonslayersSpawn,
-                                teamBattleMode.chieftainsSpawn
+                                teamBattle.martyrsSpawn,
+                                teamBattle.outlawsSpawn,
+                                teamBattle.dragonslayersSpawn,
+                                teamBattle.chieftainsSpawn
                             );
                         }
                     }
@@ -677,7 +689,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     .TryGetData<ArenaTeamClientSettings>(out var tb2)
             )
             {
-                if (player.isMe
+                if (player.isMe // Custom color only for me in team battles
                     && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
                     && cs.chatUsernameColor is Color color)
                 {

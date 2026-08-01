@@ -48,19 +48,31 @@ public sealed class SuperArenaMode : ExternalArenaGameMode
 {
     public static ArenaSetup.GameTypeID Id { get; } = new(Plugin.Name); // Or whatever you want the game mode name to be.
     
-    /// <exception cref="InvalidOperationException">Thrown if game mode is not registered.</exception>
-    public static bool IsSuperArenaMode(ArenaOnlineGameMode arenaOnline, out SuperArenaMode superArena)
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
+    /// and <see cref="SuperArenaMode"/> is not registered.
+    /// </exception>
+    public static bool IsSuperArenaMode(out SuperArenaMode superArena)
     {
-        string name = Id.value;
-        if (!arenaOnline.registeredGameModes.TryGetValue(name, out ExternalArenaGameMode registeredMode))
-            throw new InvalidOperationException($"Could not find game mode. registered: [ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]");
-        
         superArena = null!;
-        if (arenaOnline.currentGameMode == name)
+
+        if (!RainMeadow.RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+            return false;
+        if (!arenaOnline.registeredGameModes.TryGetValue(Id.value, out ExternalArenaGameMode externalArena))
         {
-            superArena = (SuperArenaMode)registeredMode;
+            throw new InvalidOperationException(
+                $"Could not find game mode. Registered: " +
+                $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
+            );
+        }
+
+        if (arenaOnline.currentGameMode == Id.value)
+        {
+            superArena = (SuperArenaMode)externalArena;
             return true;
         }
+
+        return false;
     }
 }
 ```
