@@ -2101,7 +2101,7 @@ public partial class RainMeadow
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         // Inside player_die hook
 
-        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
+        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyDeathScore > 0 && !self.dead)
         {
             OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
 
@@ -2112,7 +2112,7 @@ public partial class RainMeadow
 
                 if (deadPlayerNumber != -1)
                 {
-                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
+                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyDeathScore; // re-assign here so that we don't double proc the UI update
                     ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
                     for (int i = 0; i < s.arenaSitting.players.Count; i++)
                     {

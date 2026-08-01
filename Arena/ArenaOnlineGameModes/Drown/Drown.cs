@@ -132,7 +132,7 @@ namespace RainMeadow
             ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
-            self.survivalScore = arenaOnline.aliveScore;
+            self.survivalScore = arenaOnline.survivalScore;
             self.spearHitScore = arenaOnline.spearHitScore;
             self.repeatSingleLevelForever = false;
             self.denEntryRule = arenaOnline.denEntryRule;
