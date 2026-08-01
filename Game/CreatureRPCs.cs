@@ -74,30 +74,65 @@ namespace RainMeadow
         // BoxWorm
 
         [RPCMethod]
-        void AskForOnlineLarva(RPCEvent rpc, OnlinePhysicalObject opo, byte index)
+        void AskForOnlineLarvaRPC(RPCEvent rpc, OnlinePhysicalObject opo, byte index)
         {
-            if (!opo.isMine) return;
-            if (opo.apo.realizedObject is not Watcher.BoxWorm boxWorm) return;
-
-            var larvaHolder = boxWorm.larvaHolders[index];
-
-            if (!larvaHolder.hasLarva) return;
+            if (!opo.isMine)
+            {
+                RainMeadow.Error($"boxWorm opo is not mine");                
+                return;
+            }
+            if (opo.apo.realizedObject is not Watcher.BoxWorm boxWorm)
+            {
+                RainMeadow.Error($"realizedObject is not boxWorm or null");
+                return;
+            }
             
-            if(boxWorm.larvaHolders[index].larva.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineLarva)
-                rpc.from.InvokeRPC(SendOnlineLarva, opo, onlineLarva, index);
+            var larvaHolder = boxWorm.larvaHolders[index];
+            
+            if (!larvaHolder.hasLarva)
+            {
+                RainMeadow.Error($"theres no larva");                
+                return;
+            }            
+            StartCoroutine(WaitForLarva());
+            
+            System.Collections.IEnumerator WaitForLarva()
+            {
+                while (larvaHolder.abstractLarva?.realizedObject is null) { yield return null; }
+
+                if(larvaHolder.larva.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlineLarva)
+                    rpc.from.InvokeRPC(SendOnlineLarvaRPC, opo, onlineLarva, index);
+            }            
         }
 
         [RPCMethod]
-        void SendOnlineLarva(OnlinePhysicalObject onlineBoxWorm, OnlinePhysicalObject onlineLarva, byte index)
-        {
-            if (onlineBoxWorm.apo.realizedObject is not Watcher.BoxWorm boxWorm) return;
-            if (onlineLarva.apo.realizedObject is not Watcher.BoxWorm.Larva larva) return;
+        void SendOnlineLarvaRPC(OnlinePhysicalObject onlineBoxWorm, OnlinePhysicalObject onlineLarva, byte index)
+        {            
+            if (onlineBoxWorm.apo.realizedObject is not Watcher.BoxWorm boxWorm)
+            {
+                RainMeadow.Error($"realizedObject is not boxWorm or null");
+                return;
+            }
 
-            var larvaHolder = boxWorm.larvaHolders[index];
+            StartCoroutine(WaitForLarva());
 
-            larvaHolder.hasLarva = true;
-            larvaHolder.abstractLarva = new Watcher.BoxWorm.Larva.AbstractLarva(larvaHolder.room.world, null, larvaHolder.room.GetWorldCoordinate(larvaHolder.position), larvaHolder.room.game.GetNewID());
-            larvaHolder.abstractLarva.realizedObject = larva;
+            System.Collections.IEnumerator WaitForLarva()
+            {
+                while (!onlineLarva.realized) { yield return null; }                
+
+                if (onlineLarva.apo.realizedObject is Watcher.BoxWorm.Larva larva)
+                {
+                    var larvaHolder = boxWorm.larvaHolders[index];
+                    
+                    larvaHolder.hasLarva = true;
+                    larvaHolder.abstractLarva = new Watcher.BoxWorm.Larva.AbstractLarva(larvaHolder.room.world, null, larvaHolder.room.GetWorldCoordinate(larvaHolder.position), larvaHolder.room.game.GetNewID());
+                    larvaHolder.abstractLarva.realizedObject = larva;
+                }
+                else
+                {
+                    RainMeadow.Error($"realizedObject is not larva or null");
+                }
+            }
         }
     }
 }
