@@ -218,7 +218,7 @@ namespace RainMeadow
                     cursor.Emit(OpCodes.Ldarg_0);
                     cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) => 
                         {
-                            bool isArenaOnlineNOTReady = isArenaMode(out var arenaOnline) 
+                            bool isArenaOnlineWaitingForPlayers = isArenaMode(out var arenaOnline) 
                                 && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
                                 && (arenaOnline.arenaPrepTimer is null 
                                     || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
