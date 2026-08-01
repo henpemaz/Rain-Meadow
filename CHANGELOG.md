@@ -56,11 +56,31 @@
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 ### Watcher
+- Disabling Ripple Trail in online arena
 - Gave summoned Ameobas the Watcher's body color
+- Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
+- Amoeba is now going in the right layer when summoned
+- Summoned amoebas have idle behaviors now
+- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned amoebas can stun non-player creatures now
+- Amoeba won't slow down for dead players or friendlies
+- Distortion effect fades away on player's death
+- Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
+- Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
+- Watcher will always have while eyes in camo
+- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
+- Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
+- Dev skin doesn't show in ripple space anymore
+- Hands or mud doesn't show in ripple space anymore
+- Watcher camo effect has been reduced for all ripple level
+- Player Tag now interacts well with ripple layer change
+- Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+## Meadow
+- Fixed creatures being able to get injured.
 ## Meadow
 - Fixed creatures being able to get injured.
 ## Story
