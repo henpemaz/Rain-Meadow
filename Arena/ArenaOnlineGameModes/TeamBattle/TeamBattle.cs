@@ -57,7 +57,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
-        public override bool IsExitsOpen(
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self)
@@ -173,13 +173,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public override void ArenaSessionCtor(
+        public override void On_ArenaGameSession_ctor(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
             RainWorldGame game)
         {
-            base.ArenaSessionCtor(arenaOnline, orig, self, game);
+            base.On_ArenaGameSession_ctor(arenaOnline, orig, self, game);
             if (IsTeamBattleMode(out TeamBattleMode teamBattle))
             {
                 if (
@@ -292,7 +292,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return topTeam;
         }
 
-        public override bool PlayerSittingResultSort(
+        public override bool On_ArenaSitting_PlayerSittingResultSort(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,
@@ -349,7 +349,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override List<ArenaSitting.ArenaPlayer> FinalSittingResult(
+        public override List<ArenaSitting.ArenaPlayer> On_ArenaSitting_FinalSittingResult(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_FinalSittingResult orig,
             ArenaSitting self)
@@ -401,7 +401,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return resultList;
         }
 
-        public override bool PlayerSessionResultSort(
+        public override bool On_ArenaSitting_PlayerSessionResultSort(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
@@ -449,29 +449,29 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override void ArenaSessionNextLevel(
+        public override void On_ArenaSitting_NextLevel(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_NextLevel orig,
             ArenaSitting self,
             ProcessManager process)
         {
-            base.ArenaSessionNextLevel(arenaOnline, orig, self, process);
+            base.On_ArenaSitting_NextLevel(arenaOnline, orig, self, process);
             ClearSortingDictionaries();
         }
 
-        public override void ArenaSessionEnded(
+        public override void On_ArenaSitting_SessionEnded(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
             ArenaGameSession session)
         {
-            base.ArenaSessionEnded(arenaOnline, orig, self, session);
+            base.On_ArenaSitting_SessionEnded(arenaOnline, orig, self, session);
 
             if (IsTeamBattleMode(out TeamBattleMode teamBattle) && OnlineManager.lobby.isOwner)
                 teamBattle.roundSpawnPointCycler++;
         }
 
-        public override void SpawnPlayer(
+        public override void On_ArenaGameSession_SpawnPlayers(
             ArenaOnlineGameMode arenaOnline,
             ArenaGameSession self,
             Room room,

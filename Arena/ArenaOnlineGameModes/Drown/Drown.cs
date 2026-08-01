@@ -80,7 +80,7 @@ namespace RainMeadow
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
-        public override bool IsExitsOpen(
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self)
@@ -99,13 +99,13 @@ namespace RainMeadow
             return false;
         }
 
-        public override void ArenaSessionCtor(
+        public override void On_ArenaGameSession_ctor(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
             RainWorldGame game)
         {
-            base.ArenaSessionCtor(arenaOnline, orig, self, game);
+            base.On_ArenaGameSession_ctor(arenaOnline, orig, self, game);
             openedDen = false;
             currentWave = 1;
             lastCleanupWave = 0;
@@ -212,12 +212,12 @@ namespace RainMeadow
             }
         }
 
-        public override void HUD_InitMultiplayerHud(
+        public override void On_HUD_HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arenaOnline,
             HUD.HUD self,
             ArenaGameSession session)
         {
-            base.HUD_InitMultiplayerHud(arenaOnline, self, session);
+            base.On_HUD_HUD_InitMultiplayerHud(arenaOnline, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
         }
 
@@ -286,7 +286,7 @@ namespace RainMeadow
             myTab = null;
         }
 
-        public override void ArenaSessionEnded(
+        public override void On_ArenaSitting_SessionEnded(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
@@ -318,10 +318,10 @@ namespace RainMeadow
                     }
                 }
             }
-            base.ArenaSessionEnded(arenaOnline, orig, self, session);
+            base.On_ArenaSitting_SessionEnded(arenaOnline, orig, self, session);
         }
 
-        public override void ArenaSessionUpdate(
+        public override void On_ArenaGameSession_Update(
             On.ArenaGameSession.orig_Update orig,
             ArenaGameSession self,
             ArenaOnlineGameMode arenaOnline)
@@ -399,7 +399,7 @@ namespace RainMeadow
                     waveNeedsUpdate = false;
                 }
             }
-            base.ArenaSessionUpdate(orig, self, arenaOnline);
+            base.On_ArenaGameSession_Update(orig, self, arenaOnline);
 
         }
 
