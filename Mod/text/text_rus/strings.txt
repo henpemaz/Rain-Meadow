@@ -383,7 +383,7 @@ You cant color without Remix on!|Нельзя менять цвет без вк�
 Waiting|Ожидание
 Prepare for combat,|Приготовься к бою,
 Prepare for war,|Приготовься к войне,
-Starting match in|Начинаем матч через
+Starting match in|Матч начнётся через
 <TEAMNAME> WIN!|«<TEAMNAME>» ПОБЕДИЛИ!
 SESSION RESULTS|РЕЗУЛЬТАТЫ СЕССИИ
 SESSION ENDED!|СЕССИЯ ОКОНЧЕНА!
