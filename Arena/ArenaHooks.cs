@@ -1453,7 +1453,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                return arena.externalArenaGameMode.FinalSittingResult(arena, orig, self);
+                return arena.externalArenaGameMode.On_ArenaSitting_FinalSittingResult(arena, orig, self);
             }
             return orig(self);
         }
@@ -1515,7 +1515,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                return arena.externalArenaGameMode.PlayerSittingResultSort(arena, orig, self, A, B);
+                return arena.externalArenaGameMode.On_ArenaSitting_PlayerSittingResultSort(arena, orig, self, A, B);
             }
             else
             {
@@ -1532,7 +1532,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                return arena.externalArenaGameMode.PlayerSessionResultSort(arena, orig, self, A, B);
+                return arena.externalArenaGameMode.On_ArenaSitting_PlayerSessionResultSort(arena, orig, self, A, B);
             }
             else
             {
@@ -2418,7 +2418,7 @@ namespace RainMeadow
                         continue;
                     }
                     RainMeadow.Debug("ArenaGameSession_PlayerLandSpear: Executing");
-                    arena.externalArenaGameMode.LandSpear(
+                    arena.externalArenaGameMode.On_ArenaGameSession_PlayerLandSpear(
                         arena,
                         self,
                         player,
@@ -2831,7 +2831,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session);
+                arena.externalArenaGameMode.On_ArenaSitting_SessionEnded(arena, orig, self, session);
             }
             else
             {
@@ -2890,7 +2890,7 @@ namespace RainMeadow
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
-                arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
+                arena.externalArenaGameMode.On_ArenaGameSession_ctor(arena, orig, self, game);
                 ChatLogManager.LogSystemMessage(Utils.Translate("Starting match in") + " " + MultiplayerUnlocks.LevelDisplayName(self.arenaSitting.GetCurrentLevel), ChatLogManager.SystemMessageType.StartOfRound);
             }
         }
@@ -3004,7 +3004,7 @@ namespace RainMeadow
                 return;
             }
 
-            arena.externalArenaGameMode.Killing(arena, orig, self, player, killedCrit);
+            arena.externalArenaGameMode.On_ArenaGameSession_Killing(arena, orig, self, player, killedCrit);
         }
 
         // TODO: Unused for Comp?
@@ -3426,35 +3426,15 @@ namespace RainMeadow
             RainWorldGame game,
             ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
             ref List<AbstractCreature> availableCreatures,
-            ref MultiplayerUnlocks unlocks
-        )
+            ref MultiplayerUnlocks unlocks)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out _) && !OnlineManager.lobby.isOwner)
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    RainMeadow.Debug("Spawning creature");
-
-                    arena.externalArenaGameMode.ArenaCreatureSpawner_SpawnCreatures(
-                        arena,
-                        orig,
-                        game,
-                        wildLifeSetting,
-                        ref availableCreatures,
-                        ref unlocks
-                    );
-
-                    orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
-                }
-                else
-                {
-                    RainMeadow.Debug("Prevented client from spawning excess creatures");
-                }
+                Debug("Prevented client (me) from spawning excess creatures");
+                return;
             }
-            else
-            {
-                orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
-            }
+
+            orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
         }
 
         public void ArenaGameSession_SpawnCreatures(
@@ -3489,7 +3469,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.externalArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
+                arena.externalArenaGameMode.On_HUD_HUD_InitMultiplayerHud(arena, self, session);
             }
             else
             {
@@ -3643,7 +3623,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.externalArenaGameMode.ArenaSessionUpdate(orig, self, arena);
+                arena.externalArenaGameMode.On_ArenaGameSession_Update(orig, self, arena);
             }
             else
             {
@@ -3733,7 +3713,7 @@ namespace RainMeadow
                 {
                     return false;
                 }
-                return arena.externalArenaGameMode.IsExitsOpen(arena, orig, self);
+                return arena.externalArenaGameMode.On_ArenaBehaviors_ExitManager_ExitsOpen(arena, orig, self);
             }
 
             return orig(self);
@@ -3748,7 +3728,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.externalArenaGameMode.SpawnPlayer(arena, self, room, suggestedDens);
+                arena.externalArenaGameMode.On_ArenaGameSession_SpawnPlayers(arena, self, room, suggestedDens);
             }
             else
             {

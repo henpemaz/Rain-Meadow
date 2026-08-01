@@ -66,14 +66,14 @@ namespace RainMeadow
 
         public virtual void ResetOnSessionEnd() { }
 
-        public abstract bool IsExitsOpen(
+        public abstract bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self);
 
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
 
-        public virtual void ArenaSessionCtor(
+        public virtual void On_ArenaGameSession_ctor(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaGameSession.orig_ctor orig,
             ArenaGameSession self,
@@ -102,7 +102,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void ArenaSessionNextLevel(
+        public virtual void On_ArenaSitting_NextLevel(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_NextLevel orig,
             ArenaSitting self,
@@ -174,8 +174,8 @@ namespace RainMeadow
             return --timer;
         }
 
-        /// <summary>This is ran on the victim's end, not the killer's!</summary>
-        public virtual void Killing(
+        // This is run on the victim's end, not the killer's!
+        public virtual void On_ArenaGameSession_Killing(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaGameSession.orig_Killing orig,
             ArenaGameSession self,
@@ -341,7 +341,7 @@ namespace RainMeadow
 
         }
 
-        public virtual void LandSpear(
+        public virtual void On_ArenaGameSession_PlayerLandSpear(
             ArenaOnlineGameMode arenaOnline,
             ArenaGameSession self,
             Player player,
@@ -395,7 +395,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void HUD_InitMultiplayerHud(
+        public virtual void On_HUD_HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arenaOnline,
             HUD.HUD self,
             ArenaGameSession session)
@@ -456,15 +456,6 @@ namespace RainMeadow
                 
             }   
         }
-
-        public virtual void ArenaCreatureSpawner_SpawnCreatures(
-            ArenaOnlineGameMode arenaOnline,
-            On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig,
-            RainWorldGame game,
-            ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting,
-            ref List<AbstractCreature> availableCreatures,
-            ref MultiplayerUnlocks unlocks)
-        { }
 
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
@@ -799,7 +790,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void SpawnPlayer(
+        public virtual void On_ArenaGameSession_SpawnPlayers(
             ArenaOnlineGameMode arenaOnline,
             ArenaGameSession self,
             Room room,
@@ -951,7 +942,7 @@ namespace RainMeadow
             RainMeadow.sSpawningAvatar = spawningAvatars;
         }
 
-        public virtual void ArenaSessionUpdate(
+        public virtual void On_ArenaGameSession_Update(
             On.ArenaGameSession.orig_Update orig,
             ArenaGameSession self,
             ArenaOnlineGameMode arenaOnline)
@@ -1060,7 +1051,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void ArenaSessionEnded(
+        public virtual void On_ArenaSitting_SessionEnded(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
@@ -1230,7 +1221,7 @@ namespace RainMeadow
             session.game.manager.sideProcesses.Add(session.game.arenaOverlay);
         }
 
-        public virtual List<ArenaSitting.ArenaPlayer> FinalSittingResult(
+        public virtual List<ArenaSitting.ArenaPlayer> On_ArenaSitting_FinalSittingResult(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_FinalSittingResult orig,
             ArenaSitting self)
@@ -1278,7 +1269,7 @@ namespace RainMeadow
             return resultList;
         }
 
-        public virtual bool PlayerSessionResultSort(
+        public virtual bool On_ArenaSitting_PlayerSessionResultSort(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
@@ -1297,7 +1288,7 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        public virtual bool PlayerSittingResultSort(
+        public virtual bool On_ArenaSitting_PlayerSittingResultSort(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaSitting.orig_PlayerSittingResultSort orig,
             ArenaSitting self,

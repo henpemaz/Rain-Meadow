@@ -77,7 +77,7 @@ namespace RainMeadow
                     arena.leaveForNextLevel = true;
                 }
 
-                arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+                arena.externalArenaGameMode.On_ArenaSitting_NextLevel(arena, orig, self, manager);
 
                 ArenaGameSession getArenaGameSession = (
                     manager.currentMainLoop as RainWorldGame
