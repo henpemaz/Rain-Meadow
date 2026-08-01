@@ -223,7 +223,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         teamsRemaining.Add(team);
                     }
 
-                    arenaOnline.ReadFromStats(player, pl);
+                    arenaOnline.CopyStatsFromLobbyData(player, pl);
                     playerToTeam[player.playerNumber] = team; // Cache team assignment
 
                     if (WinByScore)
