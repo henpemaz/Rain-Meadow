@@ -108,6 +108,9 @@ Gameplay|Игровой процесс
 Note: These inputs are not used in Meadow mode|ВАЖНО: настройки ниже не влияют на режим Meadow.
 Show usernames|Показать имена игроков
 Username Toggle|Режим переключения имён
+Custom Chat Username Color|Пользовательский цвет имени игрока в чате
+Enable Meadow Cosmetics|Включить косметику Meadow
+Toggle Show Score|Переключение показа счёта
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
 Stop Inputs While Spectating|Отключить управление во время наблюдения
@@ -152,7 +155,11 @@ None|Нет
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
-Sound on Mention|Звук при упоминании
+Sound On New Message|Звук при новом сообщении
+Death Notification|Уведомление о смерти
+Session Notification|Уведомление сессии
+Enable Chat Logging Toggle|Переключение логирования в чате
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|Переключение логирования в чате (включается с помощью SHIFT + [CHAT KEY]) чтобы показывать входящие ошибки в чат."
 Chat Background Opacity|Прозрачность фона чата
 Chat Inactivity Opacity|Прозрачность неактивного чата
 Chat Inactivity Timer|Таймер неактивности чата
@@ -376,7 +383,11 @@ You cant color without Remix on!|Нельзя менять цвет без вк�
 Waiting|Ожидание
 Prepare for combat,|Приготовься к бою,
 Prepare for war,|Приготовься к войне,
+Starting match in|Начинаем матч через
 <TEAMNAME> WIN!|«<TEAMNAME>» ПОБЕДИЛИ!
+SESSION RESULTS|РЕЗУЛЬТАТЫ СЕССИИ
+SESSION ENDED!|СЕССИЯ ОКОНЧЕНА!
+IT'S A DRAW!|НИЧЬЯ!
 TO LOBBY|В ЛОББИ
 View Post-Game Stats|Посмотреть послематчевую статистику.
 View Current Mode Info|Посмотреть информацию о текущем режиме.
@@ -754,8 +765,9 @@ Mod Mismatch!|Несоответствие модов!
 Mods that have to be enabled: |Моды, которые надо включить: 
 Mods that have to be disabled: |Моды, которые надо отключить: 
 Mods that have to be installed: |Моды, которые надо загрузить: 
-Apply these changes now?<LINE>A restart may take place to sync game objects|Принять изменения прямо сейчас?<LINE>Потребуется перезапуск для синхронизации объектов в игре.
+Apply these changes now?<LINE>A restart may take place to sync game objects|Принять изменения прямо сейчас?<LINE>Может потребоваться перезапуск для синхронизации объектов в игре.
 Apply these changes now?|Принять изменения прямо сейчас?
+A restart may take place to sync game objects|Может потребоваться перезапуск для синхронизации объектов в игре.
 Warning: Differing Mod Load Orders!|Внимание: отличающийся порядок загрузки модов!
 This may cause unstable play.|Это может привести к нестабильной игре.
 Reorder your mods now?|Изменить порядок модов прямо сейчас?
