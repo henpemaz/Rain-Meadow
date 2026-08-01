@@ -226,7 +226,7 @@ namespace RainMeadow
                             {
                                 startBump.startGameCounter = 10;
                             }
-                            return isArenaOnlineNOTReady;
+                            return isArenaOnlineWaitingForPlayers;
                         }
                     );
                     cursor.Emit(OpCodes.Brtrue, label);
