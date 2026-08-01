@@ -222,7 +222,7 @@ namespace RainMeadow
                                 && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
                                 && (arenaOnline.arenaPrepTimer is null 
                                     || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
-                            if (isArenaOnlineNOTReady)
+                            if (isArenaOnlineWaitingForPlayers)
                             {
                                 startBump.startGameCounter = 10;
                             }
