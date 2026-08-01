@@ -70,5 +70,34 @@ namespace RainMeadow
                 stowawayGraphics.Bite();
             }
         }
+
+        // BoxWorm
+
+        [RPCMethod]
+        void AskForOnlineLarva(RPCEvent rpc, OnlinePhysicalObject opo, byte index)
+        {
+            if (!opo.isMine) return;
+            if (opo.apo.realizedObject is not Watcher.BoxWorm boxWorm) return;
+
+            var larvaHolder = boxWorm.larvaHolders[index];
+
+            if (!larvaHolder.hasLarva) return;
+            
+            if(boxWorm.larvaHolders[index].larva.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineLarva)
+                rpc.from.InvokeRPC(SendOnlineLarva, opo, onlineLarva, index);
+        }
+
+        [RPCMethod]
+        void SendOnlineLarva(OnlinePhysicalObject onlineBoxWorm, OnlinePhysicalObject onlineLarva, byte index)
+        {
+            if (onlineBoxWorm.apo.realizedObject is not Watcher.BoxWorm boxWorm) return;
+            if (onlineLarva.apo.realizedObject is not Watcher.BoxWorm.Larva larva) return;
+
+            var larvaHolder = boxWorm.larvaHolders[index];
+
+            larvaHolder.hasLarva = true;
+            larvaHolder.abstractLarva = new Watcher.BoxWorm.Larva.AbstractLarva(larvaHolder.room.world, null, larvaHolder.room.GetWorldCoordinate(larvaHolder.position), larvaHolder.room.game.GetNewID());
+            larvaHolder.abstractLarva.realizedObject = larva;
+        }
     }
 }
