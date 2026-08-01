@@ -23,7 +23,7 @@ namespace RainMeadow
         public TabContainer.Tab? myTab;
         public List<ExternalArenaGameModeSetting> savedSettings =
         [
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.aliveScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.survivalScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.allowJoiningMidRound)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.amoebaControl)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.amoebaDuration)),
@@ -35,7 +35,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.challengeDenEjection)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.disableMaul)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.emptyKillTagScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.emptyDeathScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableMeadowCosmetics)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableBees)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableBombs)),
@@ -114,7 +114,7 @@ namespace RainMeadow
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arenaOnline, ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = arenaOnline.foodScore;
-            self.survivalScore = arenaOnline.aliveScore;
+            self.survivalScore = arenaOnline.survivalScore;
             self.spearHitScore = arenaOnline.spearHitScore;
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;

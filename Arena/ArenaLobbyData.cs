@@ -148,7 +148,7 @@ namespace RainMeadow
             public int killScore;
 
             [OnlineField(group = "arenaSetup")]
-            public int aliveScore;
+            public int survivalScore;
 
             [OnlineField(group = "arenaSetup")]
             public int denScore;
@@ -157,7 +157,7 @@ namespace RainMeadow
             public ArenaSetup.GameTypeSetup.DenEntryRule denRule;
 
             [OnlineField(group = "arenaSetup")]
-            public int emptyKillScore;
+            public int emptyDeathScore;
 
             [OnlineField(group = "arenaSetup")]
             public bool challengeDenEjection;
@@ -315,11 +315,11 @@ namespace RainMeadow
 
                 spearHitScore = arenaOnline.spearHitScore;
                 killScore = arenaOnline.killScore;
-                aliveScore = arenaOnline.aliveScore;
+                survivalScore = arenaOnline.survivalScore;
                 denRule = arenaOnline.denEntryRule;
                 denScore = arenaOnline.denScore;
                 hostLoadedOverlay = arenaOnline.hostLoadedOverlay;
-                emptyKillScore = arenaOnline.emptyKillTagScore;
+                emptyDeathScore = arenaOnline.emptyDeathScore;
                 challengeDenEjection = arenaOnline.challengeDenEjection;
 
                 artiExplosionCapacity = arenaOnline.artiExplosionCount;
@@ -432,11 +432,11 @@ namespace RainMeadow
 
                 arenaOnline.spearHitScore = spearHitScore;
                 arenaOnline.killScore = killScore;
-                arenaOnline.aliveScore = aliveScore;
+                arenaOnline.survivalScore = survivalScore;
                 arenaOnline.denEntryRule = denRule;
                 arenaOnline.denScore = denScore;
                 arenaOnline.hostLoadedOverlay = hostLoadedOverlay;
-                arenaOnline.emptyKillTagScore = emptyKillScore;
+                arenaOnline.emptyDeathScore = emptyDeathScore;
                 arenaOnline.challengeDenEjection = challengeDenEjection;
 
 

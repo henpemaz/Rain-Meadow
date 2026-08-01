@@ -62,19 +62,20 @@ namespace RainMeadow
 
         public bool enableMeadowCosmetics = RainMeadow.rainMeadowOptions.EnableMeadowCosmetics.Value;
 
-        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
-
-        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
         public int countdownSafetyCatchTimer = RainMeadow.rainMeadowOptions.CountdownSafetyCatchTimer.Value;
 
+        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
+        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
         public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
-        public int aliveScore = RainMeadow.rainMeadowOptions.ArenaAliveScore.Value;
-        public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
+        public int emptyDeathScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
+        public int survivalScore = RainMeadow.rainMeadowOptions.ArenaSurvivalScore.Value;
+
         public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
-        public int emptyKillTagScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
+        public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
 
-        public bool WinByScore => killScore > 0 || aliveScore > 0 || emptyKillTagScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode || externalArenaGameMode is DrownMode;
+
+        public bool WinByScore => killScore > 0 || survivalScore > 0 || emptyDeathScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode || externalArenaGameMode is DrownMode;
         public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
@@ -210,7 +211,7 @@ namespace RainMeadow
             initiateLobbyCountdown = false;
             spearHitScore = 0;
             killScore = 0;
-            aliveScore = 0;
+            survivalScore = 0;
             hostLoadedOverlay = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
