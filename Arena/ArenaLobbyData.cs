@@ -112,6 +112,9 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
 
+            [OnlineField(group = "arenaSetup")]
+            public bool fullInvisInRippleSpace;
+
             [OnlineField(group = "aremaSetup")]
             public bool amoebaControl;
 
@@ -283,6 +286,7 @@ namespace RainMeadow
                 voidMasterEnabled = arena.voidMasterEnabled;
                 voidSpawnLethalityFactor = arena.voidSpawnLethalityFactor;
                 amoebaDuration = arena.amoebaDuration;
+                fullInvisInRippleSpace = arena.fullInvisInRippleSpace;
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
@@ -330,7 +334,6 @@ namespace RainMeadow
                 arena.playerNumberWithScore = playerNumberWithScore;
                 arena.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
                 
-                
                 arena.countdownSafetyCatchTimer = countdownSafetyCatchTimer;
                 arena.countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 arena.playerResultColors = playerResultColors;
@@ -369,9 +372,9 @@ namespace RainMeadow
 
                 arena.amoebaDuration = amoebaDuration;
                 arena.amoebaControl = amoebaControl;
+                arena.fullInvisInRippleSpace = fullInvisInRippleSpace;
                 arena.friendlyFire = friendlyFire;
                 arena.enableOverseer = enableOverseer;
-
 
                 arena.foodScore = foodScore;
 
@@ -383,13 +386,19 @@ namespace RainMeadow
                 arena.hostLoadedOverlay = hostLoadedOverlay;
                 arena.emptyKillTagScore = emptyKillScore;
                 arena.challengeDenEjection = challengeDenEjection;
-
+                arena.spearHitScore = spearHitScore;
+                arena.killScore = killScore;
+                arena.aliveScore = aliveScore;
+                arena.denEntryRule = denRule;
+                arena.denScore = denScore;
+                arena.hostLoadedOverlay = hostLoadedOverlay;
+                arena.emptyKillTagScore = emptyKillScore;
+                arena.challengeDenEjection = challengeDenEjection;
 
                 arena.artiExplosionCount = artiExplosionCapacity;
                 arena.artiParryDistanceMult = artiParryDistance;
                 arena.artiParryLeniency = artiParryLeniency;
                 arena.enableMeadowCosmetics = enableMeadowCosmetics;
-
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

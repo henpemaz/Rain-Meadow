@@ -6,6 +6,9 @@
 - Improved Stowaway sync
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
+- Fixed objects marked as destroyOnAbstraction not being detroyed.
 - Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
@@ -17,11 +20,13 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
-- Added Ownership view to Dev Tools.
-  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
-### Modders
+### ⚠️ Developers
+- The Debug Overlay has been changed to be able to track non physical object entities.
+- The Debug Overlay now has an Ownership view to Dev Tools.
+  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
 - Added `MatchmakingManager.OnLobbyLeaving` event.
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 - Added `ScrollableConfirmDialog` menu object
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
@@ -52,11 +57,31 @@
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 - Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
 ### Watcher
+- Disabling Ripple Trail in online arena
 - Gave summoned Ameobas the Watcher's body color
+- Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
+- Amoeba is now going in the right layer when summoned
+- Summoned amoebas have idle behaviors now
+- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned amoebas can stun non-player creatures now
+- Amoeba won't slow down for dead players or friendlies
+- Distortion effect fades away on player's death
+- Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
+- Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
+- Watcher will always have while eyes in camo
+- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
+- Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
+- Dev skin doesn't show in ripple space anymore
+- Hands or mud doesn't show in ripple space anymore
+- Watcher camo effect has been reduced for all ripple level
+- Player Tag now interacts well with ripple layer change
+- Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+## Meadow
+- Fixed creatures being able to get injured.
 ## Meadow
 - Fixed creatures being able to get injured.
 ## Story

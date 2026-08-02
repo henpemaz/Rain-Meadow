@@ -144,15 +144,6 @@ namespace RainMeadow
                 typeof(Player).GetProperty("activateDynamicWarpDuration").GetGetMethod(),
                 this.SetDynamicWarpDuration
             );
-            new Hook(
-                typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(),
-                this.ChasePlayer
-            );
-            new Hook(
-                typeof(VoidSpawnGraphics).GetProperty("rippleMode").GetGetMethod(),
-                this.GetRippleModeForLocalPlayer
-            );
-
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
@@ -166,6 +157,7 @@ namespace RainMeadow
                 VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
             On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
             On.VoidSpawn.Update += VoidSpawn_Update;
+            IL.Player.RippleSpawnInteractions += Player_RippleSpawnInteractions;
 
             On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
             IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
@@ -196,6 +188,15 @@ namespace RainMeadow
             );
             On.VoidSpawnGraphics.UpdateGlowSpriteColor += VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba;
             
+            IL.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode;
+            IL.RippleCreatureTracker.RippleCreatureSprite.DrawSprites += RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace;
+            On.Room.Loaded += Room_Loaded_AddRippleCreatureTracker;
+            IL.VoidSpawn.Update += VoidSpawn_Update_DontAutoDespawnIfArena;
+            IL.Player.WatcherUpdate += Player_WatcherUpdate_DampenCamoEffects;
+            IL.Player.SpawnRippleRing += Player_SpawnRippleRing_DampenCamoEffects;
+            IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate_DampenCamoEffects;
+            On.Creature.Update += Creature_Update_GetAttackedByAmoeba;
+
             On.RainWorldGame.Update += RainWorldGame_Update_ShortcutWaitForAllPlayers;
             IL.ShortcutHandler.Update += ShortcutHandler_Update_DontYouDareSkipTheWait;
             IL.ArenaBehaviors.StartBump.Update += StartBump_Update_StartTheBumpWhenEveryoneIsReady;
@@ -274,6 +275,299 @@ namespace RainMeadow
             orig(self);
         }
 
+        private void Creature_Update_GetAttackedByAmoeba(On.Creature.orig_Update orig, Creature self, bool eu)
+        {
+            orig(self, eu);
+            if (isArenaMode(out _) && self is not Player)
+            {
+                // stun creatures from the summoned Amoeba
+                for (int i = 0; i < self.room.voidSpawns.Count; i++)
+                {
+                    if (self.room.voidSpawns[i].variant == VoidSpawn.SpawnType.RippleAmoeba 
+                        && Vector2.Distance(self.mainBodyChunk.pos, self.room.voidSpawns[i].firstChunk.pos) <= AmoebaSummonBehavior.stunDistance
+                        && self.room.voidSpawns[i].abstractPhysicalObject.rippleLayer == self.abstractCreature.rippleLayer)
+                    {
+                        self.Stun(AmoebaSummonBehavior.stunTime);
+                    }
+                }
+            }
+        }
+
+        private void DampenCamoEffects(ILContext il, bool includeRippleMax = false)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                
+                while (cursor.TryGotoNext(MoveType.After, 
+                    x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod())))
+                {
+                    // Set the level artificially to 0.5 when in arena, no matter the real level... unless it's max ripple.
+                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && (includeRippleMax || orig < 5) ? 0.5f : orig);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+        private void Player_SpawnRippleRing_DampenCamoEffects(ILContext il) => DampenCamoEffects(il, true);
+        private void Player_TransitionRippleUpdate_DampenCamoEffects(ILContext il) => DampenCamoEffects(il, false);
+
+        private void Player_WatcherUpdate_DampenCamoEffects(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+
+                if (cursor.TryGotoNext(MoveType.After, 
+                    x => x.MatchLdarg(0),
+                    x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod()),
+                    x => x.MatchLdcR4(4),
+                    x => x.MatchBltUn(out label)
+                ))
+                {
+                    // If it's areana mode, don't spawn 4373 bajilion effects
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((Player player) => isArenaMode(out _)); // && player.rippleLevel < 5
+                    cursor.Emit(OpCodes.Brtrue, label);
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+
+        private void Player_RippleSpawnInteractions(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+
+                // --- 1. Proximity & slow down logic ---
+                cursor.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc, 4);
+                cursor.EmitDelegate(delegate (Player self, int i)
+                {
+                    if (!isArenaMode(out var arena)) return true;
+
+                    VoidSpawn spawn = self.room.voidSpawns[i];
+                    if (!self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers
+                            || (TeamBattleMode.IsTeamBattleMode(out _) 
+                                && ArenaHelpers.CheckSameTeam(self.abstractCreature.GetOnlineCreature()?.owner, spawn.abstractPhysicalObject.GetOnlineObject()?.owner)
+                                && !arena.friendlyFire))
+                        return false; // don't attack friendlies !
+                    if (!self.IsLocal())
+                    {
+                        if (AmoebaSummonBehavior.GetPriority(arena, spawn, self) > 1)
+                                spawn.playerProximityTime = 10; //slow down when near the player (if not dead or in ripple space)
+                        return false;
+                    }
+                    if (spawn.IsLocal() && spawn.behavior != null)
+                        return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
+                    return true;
+                });
+                cursor.Emit(OpCodes.Brfalse, label);
+
+                // --- 2. Distort Effect cleared when dead or spear hit off ---
+                ILLabel skipDeathEffect = cursor.DefineLabel();
+                if (cursor.TryGotoNext(MoveType.Before,
+                        x => x.MatchLdloc(0),
+                        x => x.MatchBrtrue(out _))
+                    && cursor.TryGotoNext(MoveType.Before, 
+                        x => x.MatchBr(out skipDeathEffect))
+                )
+                {
+                    cursor.GotoPrev(MoveType.Before,
+                        x => x.MatchLdloc(0),
+                        x => x.MatchBrtrue(out _));
+                    cursor.MoveAfterLabels();
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((Player self) =>
+                    {
+                        // If spear hit off or dead, force ripple effect to go down
+                        if (isArenaMode(out var arena) && self.dead)
+                        {
+                            self.rippleDeathIntensity -= 0.008f;
+                            return true;
+                        }
+                        return false;
+                    });
+                    cursor.Emit(OpCodes.Brtrue, skipDeathEffect);
+                }
+
+                // --- 3. Lethality ---
+                cursor.Index = 0;
+                if (cursor.TryGotoNext(MoveType.Before,
+                    x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                    x => x.MatchLdcR4(out _),
+                    x => x.MatchAdd(),
+                    x => x.MatchStfld<Player>("rippleDeathIntensity")))
+                {
+                    cursor.Index += 2;
+
+                    cursor.EmitDelegate((float originalIncrement) =>
+                    {
+                        if (isArenaMode(out var arena))
+                        {
+                            return originalIncrement * arena.voidSpawnLethalityFactor;
+                        }
+                        return originalIncrement;
+                    });
+                }
+
+                // --- 4. RippleDeathEffect kept local ---
+                cursor.Index = 0;
+                ILLabel skipDeathEffectLabel = null;
+                if (cursor.TryGotoNext(MoveType.After,
+                    x => x.MatchLdfld<Player>("rippleDeathIntensity"),
+                    x => x.MatchLdcR4(0f),
+                    x => x.MatchBleUn(out _),
+                    x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<Player>("deathEffect"),
+                    x => x.MatchBrtrue(out skipDeathEffectLabel)))
+                {
+
+                    cursor.Emit(OpCodes.Ldarg_0);
+
+                    cursor.EmitDelegate(delegate (Player self)
+                    {
+                        return self.IsLocal();
+                    });
+
+                    cursor.Emit(OpCodes.Brfalse, skipDeathEffectLabel);
+                }
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private void VoidSpawn_Update_DontAutoDespawnIfArena(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+
+                if (cursor.TryGotoNext(MoveType.After, 
+                    x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod()),
+                    x => x.MatchLdcI4(1),
+                    x => x.MatchBeq(out label)
+                ))
+                {
+                    // If it's areana mode, don't despawn ripple if they are in ripple space
+                    cursor.EmitDelegate(() => isArenaMode(out _));
+                    cursor.Emit(OpCodes.Brtrue, label);
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+
+        private void Room_Loaded_AddRippleCreatureTracker(On.Room.orig_Loaded orig, Room self)
+        {
+            orig(self);
+            if (ModManager.Watcher && isArenaMode(out _))
+            {
+                self.rippleCreatureTracker = new RippleCreatureTracker(self);
+                self.AddObject(self.rippleCreatureTracker);
+            }
+        }
+
+        private void RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                    
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchLdfld<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.rippleBothSides))))
+                {
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((bool orig, RippleCreatureTracker.RippleCreatureSprite self) =>
+                    {
+                        // Make Watcher fully invisible in ripple space from the arena options
+                        if (isArenaMode(out var arena)
+                            && arena.fullInvisInRippleSpace
+                            && self.room.game.ActiveRippleLayer == 0
+                            && self.creature?.realizedCreature is Player
+                            && self.creature.rippleLayer != 0)
+                        {
+                            return true; 
+                        }
+                        return orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook 1 :<");
+                }
+
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod())))
+                {
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((int orig, RippleCreatureTracker.RippleCreatureSprite self) =>
+                    {
+                        // If a player is in ripple space and not us, make them glow
+                        if (isArenaMode(out _)
+                            && orig == 0
+                            && self.creature?.realizedCreature is Player
+                            && self.creature.rippleLayer != 0)
+                        {
+                            return 1;
+                        }
+                        return orig;
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook 2 :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
+
+        private void PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                if (cursor.TryGotoNext(MoveType.After, x => x.MatchLdfld<RoomCamera>(nameof(RoomCamera.voidSeaMode))))
+                {
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((bool orig, PlayerGraphics self) =>
+                    {
+                        // If it's Meadow Arena mode, also disable trail
+                        return orig || RainMeadow.isArenaMode(out _); 
+                    });
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find IL hook :<");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error while hooking ! " + e);
+            }
+        }
         // Get our own shader into the mix, so we can color the Amoeba
         private void VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba(On.VoidSpawnGraphics.orig_UpdateGlowSpriteColor orig, VoidSpawnGraphics self, RoomCamera.SpriteLeaser sLeaser)
         {
@@ -710,20 +1004,17 @@ namespace RainMeadow
         public void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
-            if (!isArenaMode(out var arena))
+            if (!isArenaMode(out _))
                 return;
             bool slowDownCharge = false;
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
-                if (!voidSpawn.IsLocal())
+                if (!voidSpawn.IsLocal() || !self.IsLocal()) 
                     continue;
                 if (voidSpawn.behavior != null) //player actually created it
                     slowDownCharge = true;
-                if (
-                    voidSpawn.abstractPhysicalObject.rippleLayer
-                    != self.abstractPhysicalObject.rippleLayer
-                )
-                    voidSpawn.startFadeOut = true;
+                // if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                //     voidSpawn.startFadeOut = true;
             }
             if (slowDownCharge)
             {
@@ -752,20 +1043,24 @@ namespace RainMeadow
             }
             if (arena.countdownInitiatedHoldFire)
             {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
             if (!arena.voidMasterEnabled)
             {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
-            if (!self.IsLocal())
-                return;
+            if (!self.IsLocal()) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
 
             if (self.camoCharge >= requiredCharge)
+            {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
-
+            }
+                
             var room = self.room;
 
             RainMeadow.sSpawningNonTransferable = true;
@@ -785,7 +1080,7 @@ namespace RainMeadow
             {
                 timeUntilFadeout = arena.amoebaDuration * 40,
             };
-            voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
+            voidSpawn.behavior = new AmoebaSummonBehavior(voidSpawn);
             voidSpawn.swimSpeed = arena.voidSpawnLethalityFactor / 2;
             room.abstractRoom.AddEntity(apo);
             RainMeadow.sSpawningNonTransferable = false;
@@ -814,129 +1109,6 @@ namespace RainMeadow
             if (isArenaMode(out _))
                 return; //if not, will see hordes of amoebas. now that's too much love
             orig(self, spawnPos, source);
-        }
-
-        int GetPriority(ArenaOnlineGameMode arena, VoidSpawn voidSpawn, Player? player)
-        {
-            if (player == null || player.dead)
-                return 0;
-            if (player.abstractCreature.rippleLayer != voidSpawn.abstractPhysicalObject.rippleLayer)
-                return 1;
-            int additionalPoints = 0;
-            if (player.abstractCreature.GetOnlineObject(out var opo))
-            {
-                foreach (
-                    ArenaSitting.ArenaPlayer arenaPlayer in player
-                        .room
-                        .game
-                        .GetArenaGameSession
-                        .arenaSitting
-                        .players
-                )
-                {
-                    if (
-                        arenaPlayer.playerNumber
-                        == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner)
-                    )
-                    {
-                        additionalPoints = arenaPlayer.allKills.Count;
-                        break;
-                    }
-                }
-            }
-            return 2 + additionalPoints;
-        }
-
-        public Vector2 ChasePlayer(
-            Func<VoidSpawn.ChasePlayer, Vector2> orig,
-            VoidSpawn.ChasePlayer self
-        )
-        {
-
-            if (!isArenaMode(out var arena))
-                return orig(self);
-            //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
-            VoidSpawn voidSpawn = self.owner;
-            Player? foundPlayer = null;
-            float minDistance = 0f;
-            foreach (AbstractCreature player in voidSpawn.room.game.GetArenaGameSession.Players)
-            {
-                if (player.IsLocal(out var oe))
-                    continue;
-                if (player.realizedCreature is not Player realizedPlayer)
-                    continue;
-
-                if (
-                    realizedPlayer.room == null
-                    || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index
-                )
-                    continue;
-
-                if (TeamBattleMode.IsTeamBattleMode(out _))
-                {
-                    ArenaTeamClientSettings? playerTeam =
-                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
-                    if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
-                        continue;
-                }
-
-                if (player.realizedCreature != null && player.realizedCreature.State.dead)
-                    continue;
-
-                int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
-                int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
-                float distance = Vector2.Distance(
-                    voidSpawn.firstChunk.pos,
-                    realizedPlayer.mainBodyChunk.pos
-                );
-
-                if (
-                    foundPlayer == null
-                    || playerPriority > foundPlayerPriority
-                    || (playerPriority == foundPlayerPriority && distance < minDistance)
-                )
-                {
-                    foundPlayer = realizedPlayer;
-                    minDistance = distance;
-                }
-            }
-            if (arena.amoebaControl && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
-            {
-                Vector2 pointingVector = Pointing.GetOnlinePointingVector();
-                var controller = RWCustom
-                    .Custom.rainWorld.options.controls[0]
-                    .GetActiveController();
-                if (controller is Rewired.Joystick)
-                {
-                    Vector2 lastPosition = self.owner
-                        .abstractPhysicalObject
-                        .realizedObject
-                        .bodyChunks[0]
-                        .pos;
-                    Vector2 nextPosition = lastPosition + pointingVector * 400;
-                    return nextPosition;
-                }
-                else
-                {
-                    return pointingVector;
-                }
-            }
-            if (foundPlayer != null)
-            {
-                if (
-                    foundPlayer.standingInWarpPointProtectionTime > 0
-                    || foundPlayer.warpPointCooldown > 0
-                )
-                {
-                    return voidSpawn.mainBody[0].pos
-                        + RWCustom.Custom.DirVec(
-                            foundPlayer.mainBodyChunk.pos,
-                            voidSpawn.mainBody[0].pos
-                        ) * 400f;
-                }
-                return foundPlayer.mainBodyChunk.pos;
-            }
-            return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
         }
 
         public void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(
@@ -1111,27 +1283,6 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        public bool GetRippleModeForLocalPlayer(
-            Func<VoidSpawnGraphics, bool> orig,
-            VoidSpawnGraphics self
-        )
-        {
-            //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
-            if (isArenaMode(out _))
-            {
-                if (self.spawn.room != null && self.spawn.rippleSpawn)
-                {
-                    AbstractCreature? myPlayer = self.spawn.room.game.Players.Find(x =>
-                        x.IsLocal()
-                    );
-                    int actualActiveRippleLayer =
-                        myPlayer?.rippleLayer ?? self.spawn.room.game.ActiveRippleLayer;
-                    return self.spawn.abstractPhysicalObject.rippleLayer == actualActiveRippleLayer;
-                }
-            }
-            return orig(self);
-        }
-
         public void PlayerGraphics_ctor(
             On.PlayerGraphics.orig_ctor orig,
             PlayerGraphics self,
@@ -1162,13 +1313,37 @@ namespace RainMeadow
             UnityEngine.Vector2 camPos
         )
         {
-            if (
-                isArenaMode(out _)
+            if (isArenaMode(out _)
                 && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true
                 && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
             )
                 self.player.watcherMorph = 0.51f;
+            
             orig(self, sLeaser, rCam, timeStacker, camPos);
+
+            if (isArenaMode(out var arena)
+                && sLeaser.sprites is not null
+                && self.player?.abstractCreature?.GetOnlineCreature()?.isMine is false
+                && self.player.rippleLevel >= 5f)
+            {
+                // Makes the eyes invisible for other players when in Camo at max ripple
+                int meRippleLayer = self.player.room?.game?.ActiveRippleLayer ?? 0;
+                int otherRippleLayer = self.player.abstractCreature.rippleLayer;
+                bool isMeWatcher = ModManager.Watcher && arena.avatarSettings.playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
+                bool isSameRippleLevel = meRippleLayer == otherRippleLayer;
+                float rippleSpaceAlpha = meRippleLayer == 0 
+                    ? (isMeWatcher && !arena.fullInvisInRippleSpace
+                        ? 1f - self.player.camoProgress * 0.25f 
+                        : 1f - self.player.camoProgress)
+                    : (isMeWatcher && !arena.fullInvisInRippleSpace
+                        ? 1f
+                        : self.player.camoProgress); // Show other Watchers if you are yourself in camo
+                float handAlpha = isSameRippleLevel ? rippleSpaceAlpha : 0;
+                
+                sLeaser.sprites[7].alpha = handAlpha; // hand 1
+                sLeaser.sprites[8].alpha = handAlpha; // hand 2
+                sLeaser.sprites[9].alpha = rippleSpaceAlpha; // eyes
+            }
         }
 
         public void PlayerGraphics_WeaverParts_Update(
@@ -1522,6 +1697,7 @@ namespace RainMeadow
             }
         }
 
+        private const float voidSpawnTax = 0.5f; //change it when tax changes
         public void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
             if (isArenaMode(out var arena))
@@ -1562,7 +1738,6 @@ namespace RainMeadow
                             ? 1f
                             : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
-                    float voidSpawnTax = 0.5f; //change it when tax changes
                     if (arena.voidMasterEnabled && self.full > voidSpawnTax)
                     {
                         self.percentLimited = 1;

@@ -64,6 +64,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnablePiggyBack;
     public readonly Configurable<StreamMode> StreamerMode;
     public readonly Configurable<int> ArenaWatcherRippleLevel;
+    public readonly Configurable<bool> ArenaWatcherFullInvisibleInRippleSpace;
 
     public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
     public readonly Configurable<string> MartyrTeamName;
@@ -224,7 +225,7 @@ public class RainMeadowOptions : OptionInterface
         FriendlyFire = config.Bind("FriendlyFire", false);
 
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
-
+        ArenaWatcherFullInvisibleInRippleSpace = config.Bind("ArenaWatcherFullInvisibleInRippleSpace", false);
 
         MartyrTeamColor = config.Bind("MartyrTeamColor", new Color(1, 0.49f, 0.49f));
         OutlawsTeamColor = config.Bind("OutlawsTeamColor", new Color(1, 1, 0.49f));
