@@ -97,6 +97,14 @@
 - Added username color customization as a Remix options
 - Added text downscroll as a Remix options
 
+## New Contributors
+Thank you to all of our first-time contributors and welcome EdEdennStone to the Meadow Dev team!
+- Wonky
+- Ombekende
+- ConfiG
+- r3nsen
+- OneLetterShor
+
 # Release 1.14.1
 
 ## Engine 
