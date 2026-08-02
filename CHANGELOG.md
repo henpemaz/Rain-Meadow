@@ -83,8 +83,6 @@
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
 ## Meadow
 - Fixed creatures being able to get injured.
-## Meadow
-- Fixed creatures being able to get injured.
 ## Story
 - Allow players to spectate their own corpses as long as they still exist
 - Fixed players readied on the sleep screen hearing the continue sound many times in a row after the host continues
