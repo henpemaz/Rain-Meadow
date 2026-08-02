@@ -1394,6 +1394,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.piggyBack)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.sainot)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.setupTime)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.shufflePlayList)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.spearHitScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidMasterEnabled)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor)),

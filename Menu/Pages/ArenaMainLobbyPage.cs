@@ -39,6 +39,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
     public Dialog? dialog;
     public int painCatIndex,
         holdSlugcatBtnCounter;
+    private bool lastSyncedShufflePlayList;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
     public NullLobbyError nullLobbyError;
@@ -654,24 +655,18 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                 subObjects.Add(startButton);
                 ArenaMenu?.UpdateElementBindings();
             }
-            Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
+            if (Arena.shufflePlayList != lastSyncedShufflePlayList) //changed outside of the playlist ui, ie settings import
+                levelSelector.selectedLevelsPlaylist.ShuffleStatus = Arena.shufflePlayList;
+            else
+                Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
         }
         else
         {
             levelSelector.LoadNewPlaylist(Arena.playList, true);
             levelSelector.selectedLevelsPlaylist.ShuffleStatus = Arena.shufflePlayList;
-            levelSelector.selectedLevelsPlaylist.shuffleButton.label.text = menu.Translate(
-                levelSelector.selectedLevelsPlaylist.ShuffleStatus
-                    ? "Shuffling Levels"
-                    : "Playing in order"
-            );
-            levelSelector.selectedLevelsPlaylist.shuffleButton.UpdateSymbol(
-                levelSelector.selectedLevelsPlaylist.ShuffleStatus
-                    ? "Menu_Symbol_Shuffle"
-                    : "Menu_Symbol_Dont_Shuffle"
-            );
             this.ClearMenuObject(ref startButton);
         }
+        lastSyncedShufflePlayList = Arena.shufflePlayList;
         UpdateMatchButtons();
     }
 
