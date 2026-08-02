@@ -98,7 +98,7 @@
 - Added text downscroll as a Remix options
 
 ## New Contributors
-Thank you to all of our first-time contributors and welcome EdEdenStonne to the Meadow Dev team!
+Thank you to all of our first-time contributors and welcome EdEnStonne to the Meadow Dev team!
 - Wonky
 - Ombekende
 - ConfiG
