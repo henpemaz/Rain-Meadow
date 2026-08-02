@@ -20,6 +20,7 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
+- Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 ### ⚠️ Developers
 - The Debug Overlay has been changed to be able to track non physical object entities.
