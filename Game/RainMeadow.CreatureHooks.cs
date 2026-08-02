@@ -52,6 +52,207 @@ namespace RainMeadow
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
 
             On.Watcher.Rattler.ValidSpawnPos += Rattler_ValidSpawnPos;
+
+            On.MoreSlugcats.StowawayBugAI.Update += StowawayBugAI_Update; // non owners will not change behavior on their own
+            IL.MoreSlugcats.StowawayBug.Update += StowawayBug_Update; // non owners will not bite on their own
+            IL.MoreSlugcats.StowawayBug.bodySetup += StowawayBug_bodySetup; // calling homepos instead of bodyChunk.pos because bodyChunk.pos will be different for non owners due to sync
+            IL.MoreSlugcats.StowawayBug.Act += StowawayBug_Act; // non owners will not attack on their own 
+        }
+
+        private void StowawayBug_Act(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            // else if (this.AI.behavior == global::MoreSlugcats.StowawayBugAI.Behavior.Attacking || this.placedDirection.y > 0.3f)
+
+            c.GotoNext(MoveType.Before,
+                x => x.MatchLdarg(0),            
+            x => x.MatchLdfld<MoreSlugcats.StowawayBug>(nameof(MoreSlugcats.StowawayBug.AI)),            
+                x => x.MatchLdfld<MoreSlugcats.StowawayBugAI>(nameof(MoreSlugcats.StowawayBugAI.behavior)),            
+                x => x.MatchLdsfld<MoreSlugcats.StowawayBugAI.Behavior>(nameof(MoreSlugcats.StowawayBugAI.Behavior.Attacking)),            
+                x => x.MatchCall(typeof(ExtEnum<MoreSlugcats.StowawayBugAI.Behavior>).GetMethod("op_Equality")),            
+                x => x.MatchBrtrue(out _)
+                );
+
+            c.GotoNext(MoveType.Before, x => x.MatchBrtrue(out _));
+            c.Emit(OpCodes.Ldarg_0);
+
+            c.EmitDelegate((bool isAttacking, MoreSlugcats.StowawayBug self) => {
+                if (OnlineManager.lobby is null) return isAttacking;
+                return isAttacking && self.IsLocal();
+            });
+
+            // if (!this.headFired[k] && this.spitCooldown < 0 && base.grasps[k] == null)
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<MoreSlugcats.StowawayBug>(nameof(MoreSlugcats.StowawayBug.spitCooldown)),
+                x => x.MatchLdcI4(0),
+                x => x.MatchBge(out _),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall<Creature>("get_grasps"),
+                x => x.MatchLdloc(5),
+                x => x.MatchLdelemRef(),
+                x => x.MatchBrtrue(out _)
+                );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, 5);
+            
+            c.EmitDelegate((MoreSlugcats.StowawayBug self, int index) => {
+                if (OnlineManager.lobby is null) return;
+
+                if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayHeadAttackRPC, opo, (byte)index);
+            });
+
+        }
+
+        private void StowawayBug_bodySetup(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            // base.abstractCreature.Room.realizedRoom.RayTraceTilesList(base.abstractCreature.pos.x, base.abstractCreature.pos.y, base.abstractCreature.pos.x, 0, ref list);
+
+            Func<Instruction, bool>[] predicates = {
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchCallvirt(typeof(AbstractWorldEntity).GetMethod("get_Room")),
+                x => x.MatchLdfld<AbstractRoom>(nameof(AbstractRoom.realizedRoom)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.x)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.y)),
+
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(Creature).GetMethod("get_abstractCreature")),
+                x => x.MatchLdflda<AbstractWorldEntity>(nameof(AbstractWorldEntity.pos)),
+                x => x.MatchLdfld<WorldCoordinate>(nameof(WorldCoordinate.x)),
+
+                x => x.MatchLdcI4(0),
+                x => x.MatchLdloca(0),
+                x => x.MatchCallvirt(typeof(Room).GetMethod("RayTraceTilesList")),
+                x => x.MatchPop()
+            };
+
+            var skip = c.DefineLabel();
+            c.GotoNext(MoveType.After, predicates);
+            skip = c.MarkLabel();
+
+            c = new ILCursor(il);
+
+            c.GotoNext(MoveType.Before, predicates);
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloca, 0);
+
+            c.EmitDelegate((MoreSlugcats.StowawayBug self, ref List<RWCustom.IntVector2> list) => {
+                if (OnlineManager.lobby is null) return false;
+
+                UnityEngine.Vector2 homePos = ((MoreSlugcats.StowawayBugState)self.State).HomePos;
+                RWCustom.IntVector2 intHomePos = Room.StaticGetTilePosition(homePos);
+                // RayTraceTilesList(base.abstractCreature.pos.x, base.abstractCreature.pos.y, base.abstractCreature.pos.x, 0, ref list) will become
+                self.abstractCreature.Room.realizedRoom.RayTraceTilesList(intHomePos.x, intHomePos.y, intHomePos.x, 0, ref list);
+
+                return true;
+            });
+            c.Emit(OpCodes.Brtrue, skip);
+        }
+
+        private void StowawayBug_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            var skip = c.DefineLabel();
+
+            // if (base.graphicsModule != null && (global::UnityEngine.Random.value < 0.02f || flag2) && flag)
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(PhysicalObject).GetMethod("get_graphicsModule")),
+                x => x.MatchBrfalse(out _),
+
+                x => x.MatchCall(typeof(UnityEngine.Random).GetMethod("get_value")),
+                x => x.MatchLdcR4(.02f),
+                x => x.MatchClt(),
+                x => x.MatchLdloc(2),
+                x => x.MatchOr(),
+                x => x.MatchBr(out _),
+
+                x => x.MatchLdcI4(0),
+
+                x => x.MatchLdloc(1),
+                x => x.MatchAnd(),
+                x => x.MatchBrfalse(out skip)
+                );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((MoreSlugcats.StowawayBug stowaway) => {
+                if (OnlineManager.lobby is null) return false;
+                if (stowaway.IsLocal()) return false;
+                return true;
+            });
+            c.Emit(OpCodes.Brtrue, skip);
+
+            // flag3 = (base.graphicsModule as global::MoreSlugcats.StowawayBugGraphics).Bite();
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchCall(typeof(PhysicalObject).GetMethod("get_graphicsModule")),
+                x => x.MatchIsinst<MoreSlugcats.StowawayBugGraphics>(),
+                x => x.MatchCallvirt(typeof(MoreSlugcats.StowawayBugGraphics).GetMethod(nameof(MoreSlugcats.StowawayBugGraphics.Bite))),
+                x => x.MatchStloc(15)
+                );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((MoreSlugcats.StowawayBug self) => {
+                if (OnlineManager.lobby is null) return;
+                
+                byte stowawayNormalByte = 0;
+                if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayBiteRPC, opo, stowawayNormalByte);
+            });
+
+            // if ((base.grasps[num4].grabbed as global::Creature).dead)
+
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchCall<Creature>("get_grasps"),
+                x => x.MatchLdloc(17),
+                x => x.MatchLdelemRef(),
+                x => x.MatchLdfld<Creature.Grasp>(nameof(Creature.Grasp.grabbed)),
+                x => x.MatchIsinst<Creature>(),
+                x => x.MatchCallvirt(typeof(Creature).GetMethod("get_dead"))
+                );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((bool isDead, MoreSlugcats.StowawayBug self) => {
+                if (OnlineManager.lobby is null) return isDead;
+
+                byte stowawayKillerByteNotDead = 1;
+                byte stowawayKillerByteDead = 2;
+                
+            if (self.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
+                    opo.BroadcastRPCInRoom(StowawayBiteRPC, opo, isDead ? stowawayKillerByteDead : stowawayKillerByteNotDead);
+
+                return isDead;
+            });
+        }
+
+        private void StowawayBugAI_Update(On.MoreSlugcats.StowawayBugAI.orig_Update orig, MoreSlugcats.StowawayBugAI self)
+        {
+            var behavior = self.behavior;
+            orig(self);
+            if (OnlineManager.lobby != null && !self.creature.GetOnlineCreature().isMine)
+            {
+                self.behavior = behavior;
+            }
         }
 
         private bool Rattler_ValidSpawnPos(On.Watcher.Rattler.orig_ValidSpawnPos orig, Room room, RWCustom.IntVector2 pos, List<Vector2> rattlerSpawnLocsSoFar)
