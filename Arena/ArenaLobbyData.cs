@@ -109,6 +109,9 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
 
+            [OnlineField(group = "arenaSetup")]
+            public bool fullInvisInRippleSpace;
+
             [OnlineField(group = "aremaSetup")]
             public bool amoebaControl;
 
@@ -279,6 +282,7 @@ namespace RainMeadow
                 voidMasterEnabled = arena.voidMasterEnabled;
                 voidSpawnLethalityFactor = arena.voidSpawnLethalityFactor;
                 amoebaDuration = arena.amoebaDuration;
+                fullInvisInRippleSpace = arena.fullInvisInRippleSpace;
                 amoebaControl = arena.amoebaControl;
                 friendlyFire = arena.friendlyFire;
                 enableOverseer = arena.enableOverseer;
@@ -303,102 +307,103 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (resource as Lobby);
-                (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
-                (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
-                (lobby.gameMode as ArenaOnlineGameMode).shufflePlayList = shufflePlayList;
-                (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder =
+                if ((resource as Lobby)?.gameMode is not ArenaOnlineGameMode arena) return;
+                
+                arena.isInGame = isInGame;
+                arena.playList = playList;
+                arena.shufflePlayList = shufflePlayList;
+                arena.arenaSittingOnlineOrder =
                     arenaSittingOnlineOrder;
-                (lobby.gameMode as ArenaOnlineGameMode).allPlayersReadyLockLobby =
+                arena.allPlayersReadyLockLobby =
                     allPlayersReadyLockLobby;
-                (lobby.gameMode as ArenaOnlineGameMode).returnToLobby = returnToLobby;
-                (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceMultiChoice =
+                arena.returnToLobby = returnToLobby;
+                arena.onlineArenaSettingsInterfaceMultiChoice =
                     onlineArenaSettingsInterfaceMultiChoice;
-                (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool =
+                arena.onlineArenaSettingsInterfaceeBool =
                     onlineArenaSettingsInterfaceBool;
-                (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs =
+                arena.playersInLobbyChoosingSlugs =
                     playersChoosingSlugs;
-                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
-                (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
+                arena.playersReadiedUp = playersReadiedUp;
+                arena.reigningChamps = reigningChamps;
 
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths =
+                arena.playerNumberWithDeaths =
                     playerNumberWithDeaths;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
+                arena.playerNumberWithWins = playerNumberWithWins;
 
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithTrophies =
+                arena.playerNumberWithTrophies =
                     playerNumberWithTrophies;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithTrophiesPerRound =
+                arena.playerNumberWithTrophiesPerRound =
 playerNumberWithTrophiesPerRound;
 
-                (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore =
+                arena.playerTotScore = playerTotScore;
+                arena.playerNumberWithScore =
                     playerNumberWithScore;
-                (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound =
+                arena.playersLateWaitingInLobbyForNextRound =
                     playersLateWaitingInLobby;
 
-                (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire =
+                arena.countdownInitiatedHoldFire =
                     countdownInitiatedHoldFire;
-                (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
-                (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
-                (lobby.gameMode as ArenaOnlineGameMode).lobbyCountDown = lobbyCountDown;
-                (lobby.gameMode as ArenaOnlineGameMode).initiateLobbyCountdown =
+                arena.playerResultColors = playerResultColors;
+                arena.setupTime = arenaSetupTime;
+                arena.lobbyCountDown = lobbyCountDown;
+                arena.initiateLobbyCountdown =
                     initiatedLobbyCountDown;
 
-                (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
-                (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer =
+                arena.sainot = sainot;
+                arena.arenaSaintAscendanceTimer =
                     saintAscendanceTimer;
-                (lobby.gameMode as ArenaOnlineGameMode).watcherCamoTimer = watcherCamoLimit;
-                (lobby.gameMode as ArenaOnlineGameMode).watcherRippleLevel = watcherRippleLevel;
-                (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
-                (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
-                (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-                (lobby.gameMode as ArenaOnlineGameMode).artiStunDistanceMult = artiStunDistance;
-                (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
-                (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
-                (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
-                (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
+                arena.watcherCamoTimer = watcherCamoLimit;
+                arena.watcherRippleLevel = watcherRippleLevel;
+                arena.currentGameMode = currentGameMode;
+                arena.currentLevel = currentLevel;
+                arena.totalLevelCount = totalLevels;
+                arena.painCatEgg = painCatEgg;
+                arena.painCatThrows = painCatThrows;
+                arena.painCatLizard = painCatLizard;
+                arena.artiStunDistanceMult = artiStunDistance;
+                arena.disableMaul = disableMaul;
+                arena.itemSteal = arenaItemSteal;
+                arena.allowJoiningMidRound = allowJoiningMidRound;
+                arena.weaponCollisionFix = weaponCollisionFix;
 
-                (lobby.gameMode as ArenaOnlineGameMode).enableBees = enableBees;
-                (lobby.gameMode as ArenaOnlineGameMode).enableBombs = enableBombs;
-                (lobby.gameMode as ArenaOnlineGameMode).enableCorpseGrab = enableCorpseGrab;
+                arena.enableBees = enableBees;
+                arena.enableBombs = enableBombs;
+                arena.enableCorpseGrab = enableCorpseGrab;
 
-                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
-                (lobby.gameMode as ArenaOnlineGameMode).hasPermissionToRejoin =
+                arena.leaveForNextLevel = leaveForNextLevel;
+                arena.hasPermissionToRejoin =
                     hasPermissionToRejoin;
-                (lobby.gameMode as ArenaOnlineGameMode).playersEqualToOnlineSitting =
+                arena.playersEqualToOnlineSitting =
                     playersEqualToOnlineSitting;
 
-                (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
-                (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
-                (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled = voidMasterEnabled;
-                (lobby.gameMode as ArenaOnlineGameMode).voidSpawnLethalityFactor = voidSpawnLethalityFactor;
+                arena.bannedSlugs = bannedSlugs;
+                arena.piggyBack = piggyBack;
+                arena.voidMasterEnabled = voidMasterEnabled;
+                arena.voidSpawnLethalityFactor = voidSpawnLethalityFactor;
 
-                (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration = amoebaDuration;
-                (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
-                (lobby.gameMode as ArenaOnlineGameMode).friendlyFire = friendlyFire;
-                (lobby.gameMode as ArenaOnlineGameMode).enableOverseer = enableOverseer;
-
-
-                (lobby.gameMode as ArenaOnlineGameMode).foodScore = foodScore;
-
-                (lobby.gameMode as ArenaOnlineGameMode).spearHitScore = spearHitScore;
-                (lobby.gameMode as ArenaOnlineGameMode).killScore = killScore;
-                (lobby.gameMode as ArenaOnlineGameMode).aliveScore = aliveScore;
-                (lobby.gameMode as ArenaOnlineGameMode).denEntryRule = denRule;
-                (lobby.gameMode as ArenaOnlineGameMode).denScore = denScore;
-                (lobby.gameMode as ArenaOnlineGameMode).hostLoadedOverlay = hostLoadedOverlay;
-                (lobby.gameMode as ArenaOnlineGameMode).emptyKillTagScore = emptyKillScore;
-                (lobby.gameMode as ArenaOnlineGameMode).challengeDenEjection = challengeDenEjection;
+                arena.amoebaDuration = amoebaDuration;
+                arena.amoebaControl = amoebaControl;
+                arena.fullInvisInRippleSpace = fullInvisInRippleSpace;
+                arena.friendlyFire = friendlyFire;
+                arena.enableOverseer = enableOverseer;
 
 
-                (lobby.gameMode as ArenaOnlineGameMode).artiExplosionCount = artiExplosionCapacity;
-                (lobby.gameMode as ArenaOnlineGameMode).artiParryDistanceMult = artiParryDistance;
-                (lobby.gameMode as ArenaOnlineGameMode).artiParryLeniency = artiParryLeniency;
-                (lobby.gameMode as ArenaOnlineGameMode).enableMeadowCosmetics = enableMeadowCosmetics;
+                arena.foodScore = foodScore;
 
+                arena.spearHitScore = spearHitScore;
+                arena.killScore = killScore;
+                arena.aliveScore = aliveScore;
+                arena.denEntryRule = denRule;
+                arena.denScore = denScore;
+                arena.hostLoadedOverlay = hostLoadedOverlay;
+                arena.emptyKillTagScore = emptyKillScore;
+                arena.challengeDenEjection = challengeDenEjection;
+
+
+                arena.artiExplosionCount = artiExplosionCapacity;
+                arena.artiParryDistanceMult = artiParryDistance;
+                arena.artiParryLeniency = artiParryLeniency;
+                arena.enableMeadowCosmetics = enableMeadowCosmetics;
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

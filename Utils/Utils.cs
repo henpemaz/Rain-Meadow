@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using RWCustom;
 using UnityEngine;
+using Menu;
 
 namespace RainMeadow
 {
@@ -139,5 +140,8 @@ namespace RainMeadow
             catch (Exception) {}
             return new Color(0.01f, 0.01f, 0.01f, 1f);
         }
+
+        public static int RealPing(int ping) => Math.Max(1, ping - 16);
+        public static Color RealPingColor(int realping) => Color.Lerp((realping > 200 ? Color.red : realping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
     }
 }

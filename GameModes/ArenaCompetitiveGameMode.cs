@@ -56,6 +56,7 @@ namespace RainMeadow
 
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
         public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
+        public bool fullInvisInRippleSpace = RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace.Value;
 
         public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
 
