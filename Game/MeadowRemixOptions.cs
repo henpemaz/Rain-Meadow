@@ -97,6 +97,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> currentlyActiveCustomCosmeticColor;
     public readonly Configurable<int> ChallengeID;
 
+    public readonly Configurable<int> CountdownSafetyCatchTimer;
 
     public readonly Configurable<int> ArenaFoodScore;
 
@@ -255,6 +256,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
         EnablePiggyBack = config.Bind("EnablePiggyBack", true);
 
+        CountdownSafetyCatchTimer = config.Bind("CountdownSafetyCatchTimer", 300);
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LobbyMusic = config.Bind("MeadowLobbyMusic", "default"); // Happy One Year, Meadow
@@ -638,6 +640,13 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(210f, 340, Translate("Toggle Show Score")),
                 new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f)),
+
+                new OpLabel(10f, 280, Translate("Countdown Safety Time (ticks)")),
+                new OpTextBox(CountdownSafetyCatchTimer, new Vector2(10f, 250), 160f)
+                {
+                    accept = OpTextBox.Accept.Int,
+                    description = Translate("How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)")
+                },
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();

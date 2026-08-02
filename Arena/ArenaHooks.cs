@@ -197,7 +197,82 @@ namespace RainMeadow
             IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate_DampenCamoEffects;
             On.Creature.Update += Creature_Update_GetAttackedByAmoeba;
 
+            On.RainWorldGame.Update += RainWorldGame_Update_ShortcutWaitForAllPlayers;
+            IL.ShortcutHandler.Update += ShortcutHandler_Update_DontYouDareSkipTheWait;
+            IL.ArenaBehaviors.StartBump.Update += StartBump_Update_StartTheBumpWhenEveryoneIsReady;
+
             DrownHooks();
+        }
+
+        private void StartBump_Update_StartTheBumpWhenEveryoneIsReady(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                ILLabel label = cursor.DefineLabel();
+                if (cursor.TryGotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<ArenaBehaviors.StartBump>(nameof(ArenaBehaviors.StartBump.startGameCounter)),
+                    i => i.MatchBrtrue(out label)))
+                {
+                    // Don't trigger the bump till everyone is ready
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) => 
+                        {
+                            bool isArenaOnlineWaitingForPlayers = isArenaMode(out var arenaOnline) 
+                                && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
+                                && (arenaOnline.arenaPrepTimer is null 
+                                    || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+                            if (isArenaOnlineWaitingForPlayers)
+                            {
+                                startBump.startGameCounter = 10;
+                            }
+                            return isArenaOnlineWaitingForPlayers;
+                        }
+                    );
+                    cursor.Emit(OpCodes.Brtrue, label);
+                }
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error("Could not find IL hook : "+ ex);
+            }
+        }
+
+        private void ShortcutHandler_Update_DontYouDareSkipTheWait(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                if (cursor.TryGotoNext(MoveType.After, i => i.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable))))
+                {
+                    // No Jolly skip if it's arena !
+                    cursor.EmitDelegate((bool orig) => orig && !isArenaMode(out _));
+                }
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error("Could not find IL hook : "+ ex);
+            }
+        }
+        private void RainWorldGame_Update_ShortcutWaitForAllPlayers(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+        {
+            if (isArenaMode(out var arena) 
+                && arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)
+                && (arena.arenaPrepTimer is null || arena.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting))
+            {
+                // Debug($"Holding the players [{string.Join(", ", self.shortcuts.transportVessels.FindAll(x => x.creature is Player).Select(x => x.creature))}] in place ! <{arena.setupTime}><{arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)}><{arena.arenaPrepTimer?.showMode}>");
+                for (int i = 0; i < self.shortcuts.transportVessels.Count; i++)
+                {
+                    if (self.shortcuts.transportVessels[i].creature is Player player
+                        && player.IsLocal()) // only affect us
+                    {
+                        self.shortcuts.transportVessels[i].wait = 1; // wait in there till everyone is ready.
+                        // Debug($"Player {self.shortcuts.transportVessels[i].creature}<{self.shortcuts.transportVessels[i].creature.inShortcut}><{self.shortcuts.transportVessels[i].creature.inShortcutVessel}> is at [{self.shortcuts.transportVessels[i].creature.mainBodyChunk.pos}][{self.shortcuts.OnScreenPositionOfInShortCutCreature(self.cameras[0].room, self.shortcuts.transportVessels[i].creature)}]");
+                    }
+                }
+            }
+            orig(self);
         }
 
         private void Creature_Update_GetAttackedByAmoeba(On.Creature.orig_Update orig, Creature self, bool eu)
