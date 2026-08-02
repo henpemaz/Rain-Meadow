@@ -7,7 +7,7 @@
 - The Debug Overlay has been changed to be able to track non physical object entities.
 - The Debug Overlay now has an Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
-### 🛠️ Modders
+### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu objects
 ## General
@@ -75,7 +75,7 @@
 - Watcher camo effect has been reduced for all ripple level
 - Player Tag now interacts well with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
-### 🛠️ Modders
+### Modders
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
