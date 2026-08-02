@@ -571,9 +571,9 @@ namespace RainMeadow
         // Get our own shader into the mix, so we can color the Amoeba
         private void VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba(On.VoidSpawnGraphics.orig_UpdateGlowSpriteColor orig, VoidSpawnGraphics self, RoomCamera.SpriteLeaser sLeaser)
         {
-            if (isArenaMode(out var arena) 
+            if (isArenaMode(out var arena)
                 && self.spawn.rippleSpawn
-                && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer) 
+                && self.spawn.abstractPhysicalObject?.GetOnlineObject()?.owner is OnlinePlayer onlinePlayer)
             {
                 Color bodyColor = ArenaHelpers.GetAmoebaColor(onlinePlayer, self.spawn.abstractPhysicalObject.world?.game?.ActiveRippleLayer != self.spawn.abstractPhysicalObject.rippleLayer && !self.spawn.abstractPhysicalObject.rippleBothSides);
 
@@ -635,7 +635,7 @@ namespace RainMeadow
             && player.IsLocal()
             && arenaOnline.artiParryLeniency
             && arenaOnline.artiParryDistanceMult > 0
-            && player.pyroParryCooldown < ARTI_PARRY_MAX_COOLDOWN 
+            && player.pyroParryCooldown < ARTI_PARRY_MAX_COOLDOWN
             && player.pyroParryCooldown > (ARTI_PARRY_MAX_COOLDOWN - ARTI_PARRY_EXTRA_FRAMES);
         private void Player_ClassMechanicsArtificer_ArtificerConfiguration(ILContext il)
         {
@@ -651,8 +651,8 @@ namespace RainMeadow
                     x => x.MatchNewobj<List<Weapon>>(),
                     x => x.MatchStloc(11)
                 )) { throw new KeyNotFoundException("Couldn't find the key 1 of IL hook"); }
-                
-                
+
+
                 toParryLoop = cursor.MarkLabel();
                 cursor.GotoNext(moveType: MoveType.After, x => x.MatchStloc(11));
 
@@ -661,35 +661,35 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Brfalse, cursor.Next);
 
                 cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate((Player player) => player.firstChunk.pos); 
+                cursor.EmitDelegate((Player player) => player.firstChunk.pos);
                 cursor.Emit(OpCodes.Stloc, 10); // set this variable correctly if we skipped some instructions
-                
-                
+
+
                 // Adds extra parry frames and skip directly to the parry loop
                 if (!cursor.TryGotoPrev(moveType: MoveType.Before,
                     i => i.MatchLdfld<Player>(nameof(Player.pyroParryCooldown)),
                     i => i.MatchLdcR4(0),
                     i => i.MatchBgtUn(out toAfterParry)
                 )) { throw new KeyNotFoundException("Couldn't find the key 2 of IL hook"); }
-                
+
                 if (!cursor.TryGotoPrev(moveType: MoveType.Before,
                     x => x.MatchLdloc(0),
                     x => x.MatchBrfalse(out _)
                 )) { throw new KeyNotFoundException("Couldn't find the key 3 of IL hook"); }
-                
+
                 cursor.MoveAfterLabels();
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(IsArtiInExtraParryFrames);
                 cursor.Emit(OpCodes.Brtrue, toParryLoop);
 
                 // Change the light explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>()) 
-                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) ) 
-                { 
+                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<Explosion.ExplosionLight>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(160)))
+                {
                     cursor.EmitDelegate((float orig) =>
                     {
-                        return isArenaMode(out var arenaOnline) 
-                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
+                        return isArenaMode(out var arenaOnline)
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f)
                             : orig;
                     });
                 }
@@ -699,13 +699,13 @@ namespace RainMeadow
                 }
 
                 // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>()) 
-                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) ) 
-                { 
+                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<ShockWave>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(200)))
+                {
                     cursor.EmitDelegate((float orig) =>
                     {
-                        return isArenaMode(out var arenaOnline) 
-                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f) 
+                        return isArenaMode(out var arenaOnline)
+                            ? orig * Mathf.Clamp(Mathf.Sqrt(arenaOnline.artiParryDistanceMult), 0.5f, 2f)
                             : orig;
                     });
                 }
@@ -719,7 +719,7 @@ namespace RainMeadow
                     x => x.MatchCallvirt(typeof(Weapon).GetProperty(nameof(Weapon.mode)).GetGetMethod()),
                     x => x.MatchLdsfld<Weapon.Mode>(nameof(Weapon.Mode.Thrown))
                 )) { throw new KeyNotFoundException("Couldn't find the key 6 of IL hook"); }
-                
+
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchLdcR4(VANILLA_ARTI_PARRY_RANGE)
                 )) { throw new KeyNotFoundException("Couldn't find the key 7 of IL hook"); }
@@ -729,12 +729,12 @@ namespace RainMeadow
                     return isArenaMode(out var arenaOnline) ? arenaOnline.artiParryDistanceMult * VANILLA_ARTI_PARRY_RANGE : orig;
                 });
 
-                
+
                 // Stops Artificer from parrying their own weapon. Also stops Artficer to parry weapons if it isn't local.
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchBgeUn(out toAfterWeaponAddedToList)
                 )) { throw new KeyNotFoundException("Couldn't find the key 8 of IL hook"); }
-                
+
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloc, 20);
                 cursor.EmitDelegate((Player player, Weapon weapon) => weapon.thrownBy == player || !player.IsLocal());
@@ -744,11 +744,11 @@ namespace RainMeadow
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchStloc(21))
                 ) { throw new KeyNotFoundException("Couldn't find the key 9 of IL hook"); }
-                
+
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchLdcR4(VANILLA_ARTI_STUN_RANGE)
                 )) { throw new KeyNotFoundException("Couldn't find the key 10 of IL hook"); }
-                
+
                 cursor.EmitDelegate((float orig) =>
                 {
                     return isArenaMode(out var arenaOnline) ? arenaOnline.artiStunDistanceMult * VANILLA_ARTI_STUN_RANGE : orig;
@@ -757,7 +757,7 @@ namespace RainMeadow
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchLdcR4(VANILLA_ARTI_STUNTHROUGH_RANGE)
                 )) { throw new KeyNotFoundException("Couldn't find the key 11 of IL hook"); }
-                
+
                 cursor.EmitDelegate((float orig) =>
                 {
                     return isArenaMode(out var arenaOnline) ? orig * arenaOnline.artiStunDistanceMult : orig;
@@ -767,7 +767,7 @@ namespace RainMeadow
                 if (!cursor.TryGotoNext(moveType: MoveType.After,
                     x => x.MatchStloc(12) // it's not the optimal anchor but it's the safest
                 )) { throw new KeyNotFoundException("Couldn't find the key 12 of IL hook"); }
-                
+
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(IsArtiInExtraParryFrames);
                 cursor.Emit(OpCodes.Brtrue, toAfterParry);
@@ -940,34 +940,6 @@ namespace RainMeadow
             try
             {
                 ILCursor c = new ILCursor(il);
-
-                if (
-                    c.TryGotoNext(
-                        MoveType.Before,
-                        i => i.MatchLdarg(0),
-                        i => i.MatchLdfld<Menu.ArenaOverlay>("playersContinueButtons")
-                    )
-                )
-                {
-                    ILLabel continueAsNormal = c.DefineLabel();
-
-                    c.EmitDelegate<Func<bool>>(() =>
-                    {
-                        return OnlineManager.lobby != null
-                            && OnlineManager.lobby.isOwner
-                            && OnlineManager.lobby.clientSettings.TryGetValue(
-                                OnlineManager.lobby.owner,
-                                out var cs
-                            )
-                            && cs.isInteracting;
-                    });
-
-                    c.Emit(Mono.Cecil.Cil.OpCodes.Brfalse, continueAsNormal);
-                    c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
-                    c.MarkLabel(continueAsNormal);
-                }
-
-                c.Index = 0;
                 ILLabel skipIfNotArenaMode = c.DefineLabel();
                 c.GotoNext(
                     MoveType.After,
@@ -1576,7 +1548,7 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                if (self.allResultBoxesInPlaceCounter > 10)
+                if (self.allResultBoxesInPlaceCounter > 10 && !arena.clientSettings.isInteracting)
                 {
                     int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
                     if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
@@ -3375,7 +3347,7 @@ namespace RainMeadow
                             teamBattle.teamNames[teamBattle.winningTeam].ToUpper()
                         );
                         self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
-                            .Replace("<TEAMNAME>",winnerName);
+                            .Replace("<TEAMNAME>", winnerName);
                     }
 
                     if (arena.WinByScore)
