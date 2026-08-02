@@ -20,6 +20,7 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
+- Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 ### ⚠️ Developers
 - The Debug Overlay has been changed to be able to track non physical object entities.
@@ -55,6 +56,7 @@
 - Fixed the result box bump sound effect on the final results screen playing per player instead of just once
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
+- Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
 ### Watcher
 - Disabling Ripple Trail in online arena
 - Gave summoned Ameobas the Watcher's body color
@@ -79,8 +81,6 @@
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
-## Meadow
-- Fixed creatures being able to get injured.
 ## Meadow
 - Fixed creatures being able to get injured.
 ## Story
