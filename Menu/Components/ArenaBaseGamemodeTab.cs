@@ -2,13 +2,13 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
+
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -39,7 +39,7 @@ namespace RainMeadow.UI.Components
 
 
             nextButton;
-        public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
+        public ArenaOnlineGameMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
         public MenuLabel arenaImportExportLabel;
         public MenuLabel arenaSettingsImportExportLabel;
 
@@ -525,12 +525,12 @@ namespace RainMeadow.UI.Components
                 }
             }
 
-            if (arenaImportExportLabel.text != "Playlist:")
+            if (arenaImportExportLabel.text != menu.Translate("Playlist:"))
             {
                 timeToClearMessage--;
                 if (timeToClearMessage <= 0)
                 {
-                    arenaImportExportLabel.text = "Playlist:";
+                    arenaImportExportLabel.text = menu.Translate("Playlist:");
                     arenaImportExportLabel.label.color = Color.white;
 
                     timeToClearMessage = 120;
@@ -541,12 +541,12 @@ namespace RainMeadow.UI.Components
                 arenaPlaylistImportButton.greyedOut = OwnerSettingsDisabled;
             }
 
-            if (arenaSettingsImportExportLabel.text != "Settings:")
+            if (arenaSettingsImportExportLabel.text != menu.Translate("Settings:"))
             {
                 timeToClearMessage--;
                 if (timeToClearMessage <= 0)
                 {
-                    arenaSettingsImportExportLabel.text = "Settings:";
+                    arenaSettingsImportExportLabel.text = menu.Translate("Settings:");
                     arenaSettingsImportExportLabel.label.color = Color.white;
 
                     timeToClearMessage = 120;

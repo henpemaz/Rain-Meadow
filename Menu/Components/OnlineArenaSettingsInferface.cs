@@ -4,7 +4,6 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
@@ -140,7 +139,7 @@ namespace RainMeadow.UI.Components
             arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena))
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                     return;
                 arena.currentGameMode = value;
             };
@@ -166,7 +165,7 @@ namespace RainMeadow.UI.Components
             };
             countdownTimerTextBox.OnValueUpdate += (config, value, lastValue) =>
             {
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
+                if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
             enableCorpseGrab = new(
@@ -322,7 +321,7 @@ namespace RainMeadow.UI.Components
             arenaGameModeComboBox.greyedOut = SettingsDisabled;
             overseerCheckbox.buttonBehav.greyedOut = SettingsDisabled;
 
-            if (RainMeadow.isArenaMode(out ArenaMode arena))
+            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime)
                     countdownTimerTextBox.valueInt = arena.setupTime;
@@ -462,7 +461,7 @@ namespace RainMeadow.UI.Components
                 if (obj is MultipleChoiceArray array)
                     array.CheckedButton = array.CheckedButton;
             }
-            if (!RainMeadow.isArenaMode(out ArenaMode arena))
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                 return;
             arena.setupTime = countdownTimerTextBox.valueInt;
             arena.currentGameMode = arenaGameModeComboBox.value;

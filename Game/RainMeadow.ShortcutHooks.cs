@@ -185,7 +185,7 @@ namespace RainMeadow
 
                             bool ready = orig_result;
                             if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null) {
-                                apo.world.ActivateRoom(vessel.room);
+                                apo.world.game.roomRealizer.MeadowRealizeAndTrackRoom(vessel.room, true);
                                 if (apo is AbstractCreature critter)
                                 {
                                     ready = ready && self.CreatureAllowedInRoom(critter, vessel.room.realizedRoom);

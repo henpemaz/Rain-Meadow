@@ -62,18 +62,14 @@ Meadow features an extensive API which can be used by other mods to add network 
 
 ## Credits
 ```
-Henpemaz.......Lead Developer   Persondotexe.......Modsync
-Wolfycatt......Lead Artist      invalidunits.......UI, LAN
-Intikus........Audio Designer   forthfora..........Modsync
-Noircatto......Engine           WillowWisp.........Story
-HelloThere.....Sound            @None..............Gameplay
-A1iex..........UI Design        DustyLemmy.........Arena, Story
-FranklyGD......Engine           Elizabeth..........Story, UI
-MC41Games......Menus            niacdoial..........LAN
-Silvyger.......Arena            Capt. Redstone.....Meadow, Story
-Vigaro.........Menus            BitiLope...........Story
-Pudgy Turtle...Story            ddemile............Modsync
-UO.............Story, Arena     Saddest............UI, Chat
-notchoc........Story            phanie_............Illustration
-Timbits........UI, Menus        Zedreus............UI, Story
+Henpemaz.......Lead Developer   Persondotexe.......Modsync        Wolfycatt......Lead Artist
+invalidunits.......UI, LAN      Intikus........Audio Designer     forthfora..........Modsync
+Noircatto......Engine           WillowWisp.........Story          HelloThere.....Sound
+@None..............Gameplay     A1iex..........UI Design          DustyLemmy.........Arena, Story
+FranklyGD......Engine           Elizabeth..........Story, UI      MC41Games......Menus
+niacdoial..........LAN          Silvyger.......Arena              Capt. Redstone.....Meadow, Story
+Vigaro.........Menus            BitiLope...........Story          Pudgy Turtle...Story
+ddemile............Modsync      UO.............Story, Arena       Saddest............UI, Chat
+notchoc........Story            phanie_............Illustration   Timbits........UI, Menus
+Zedreus............UI, Story    EdEnStonne.........Arena
 ```
