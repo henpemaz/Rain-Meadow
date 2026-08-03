@@ -20,6 +20,7 @@ namespace RainMeadow
     {
         private void EssentialMenuHooks()
         {
+            IL.Menu.MainMenu.AddMainMenuButton += IL_MainMenu_AddMainMenuButton;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
         }
 
@@ -684,6 +685,28 @@ namespace RainMeadow
                 }
             }
             orig(self, ID);
+        }
+
+        private static void IL_MainMenu_AddMainMenuButton(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                const int maxCountLoc = 1; // int, max amount of buttons in a column
+
+                // int maxCount = _;
+                cursor.GotoNext(code => code.MatchStloc(maxCountLoc));
+                cursor.GotoPrev(MoveType.After, code => code.MatchLdcI4(out _));
+
+                // int maxCount = _ + 1;
+                cursor.Emit(OpCodes.Ldc_I4, 1);
+                cursor.Emit(OpCodes.Add);
+            }
+            catch (Exception ex)
+            {
+                Warn("failed to increase main menu button limit");
+                Error(ex);
+            }
         }
 
         private bool showed_no_steam_warning = false;

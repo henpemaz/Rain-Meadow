@@ -341,7 +341,7 @@ namespace RainMeadow.UI.Components
                 fullInvisRippleSpaceCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace.Value), positioner - spacing * 2);
                 fullInvisRippleSpaceCheckbox.OnChange += () =>
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.fullInvisInRippleSpace = fullInvisRippleSpaceCheckbox.GetValueBool();
                     fullInvisRippleSpaceCheckbox.description = fullInvisRippleSpaceCheckbox.GetValueBool() ? menu.Translate("Watcher will be fully invisible to everyone when in ripple space") : menu.Translate("Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.");
                 };
