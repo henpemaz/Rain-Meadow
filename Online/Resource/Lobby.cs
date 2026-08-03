@@ -38,6 +38,20 @@ namespace RainMeadow
         public bool cheats = false;
         public bool eventGags = false;
 
+        // used for LAN lobby listings
+        public string ActiveTimeline
+        {
+            get
+            {
+                if (gameModeType == OnlineGameMode.OnlineGameModeType.Meadow)
+                    return meadowTimeline ?? "";
+                if (gameMode is StoryGameMode storyGameMode)
+                    return clientSettings.Values.Any(cs => cs.inGame) ? storyGameMode.currentCampaign.value : "";
+                return field;
+            }
+            set;
+        }
+
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
