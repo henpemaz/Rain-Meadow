@@ -98,16 +98,36 @@ namespace RainMeadow
             
             System.Collections.IEnumerator WaitForLarva()
             {
-                while (larvaHolder.abstractLarva?.realizedObject is null) { yield return null; }
+                var wait = new WaitForSeconds(.05f);
+                int count = 0;
 
-                if(larvaHolder.larva.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlineLarva)
+                while (larvaHolder.abstractLarva?.realizedObject is null) 
+                {
+                    if (count++ > 60) // will try for 3 second
+                    {
+                        RainMeadow.Error($"larva in larvaHolder index {index} was not realized");
+                        yield break;
+                    }
+                    yield return wait;
+                }                
+                
+                yield return wait; // waiting a bit make sure onlineLarva does not arrive as null
+
+                if (larvaHolder.larva.abstractPhysicalObject?.GetOnlineObject() is OnlinePhysicalObject onlineLarva)
+                {         
                     rpc.from.InvokeRPC(SendOnlineLarvaRPC, opo, onlineLarva, index);
+                }
             }            
         }
 
         [RPCMethod]
         void SendOnlineLarvaRPC(OnlinePhysicalObject onlineBoxWorm, OnlinePhysicalObject onlineLarva, byte index)
-        {            
+        {
+            if (onlineLarva is null)
+            {
+                RainMeadow.Error($"onlineLarva is null"); 
+                return;
+            }
             if (onlineBoxWorm.apo.realizedObject is not Watcher.BoxWorm boxWorm)
             {
                 RainMeadow.Error($"realizedObject is not boxWorm or null");
@@ -118,10 +138,20 @@ namespace RainMeadow
 
             System.Collections.IEnumerator WaitForLarva()
             {
-                while (!onlineLarva.realized) { yield return null; }                
+                var wait = new WaitForSeconds(.05f);
+                int count = 0;
 
-                if (onlineLarva.apo.realizedObject is Watcher.BoxWorm.Larva larva)
+                while (!onlineLarva.realized) 
                 {
+                    if (count++ > 60) // will try for 3 second
+                    {
+                        RainMeadow.Error($"onlineLarva {onlineLarva} at index {index} was not realized");
+                        yield break;
+                    }
+                    yield return wait; 
+                }                
+                if (onlineLarva.apo.realizedObject is Watcher.BoxWorm.Larva larva)
+                {                
                     var larvaHolder = boxWorm.larvaHolders[index];
                     
                     larvaHolder.hasLarva = true;
