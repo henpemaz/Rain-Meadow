@@ -18,9 +18,16 @@
 - Added scarfs(?)
 - Added Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Brand new lobby select menu
+  - lobby metadata is now shown directly in the menu. This includes the previous data shown on cards, in addition to:
+    - active lobby timeline (always present in Meadow mode, Story mode requires the game to be in progress to show)
+    - mods needed to join the selected lobby
+  - lobby cards now have icons showing the active lobby timeline and required DLCs
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu object
+- Added `SlugIcon` menu object. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
+- `activeTimeline` is now part of `LobbyInfo`
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
