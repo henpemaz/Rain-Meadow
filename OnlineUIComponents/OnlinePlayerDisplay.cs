@@ -192,13 +192,16 @@ namespace RainMeadow
             this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
 
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
-            if (RainMeadow.isArenaMode(out var a) && owner.RealizedPlayer?.isCamo == true)
+            int myRippleLayer = owner.abstractPlayer?.world?.game?.ActiveRippleLayer ?? 0;
+            if (RainMeadow.isArenaMode(out var a) && (owner.RealizedPlayer?.isCamo == true || myRippleLayer == 1))
             {
                 // Check if we are teammates (Only true if it's Team Battle AND we are on the same team)
                 bool isTeammate = TeamBattleMode.IsTeamBattleMode(out _) && ArenaHelpers.CheckSameTeam(OnlineManager.mePlayer, player);
+                // Check the ripple layer of the other player
+                int otherRippleLayer = owner.abstractPlayer?.rippleLayer ?? 0;
 
-                // Hide if it's NOT me AND it's NOT a teammate
-                if (!player.isMe && !isTeammate)
+                // Hide if it's NOT me AND it's NOT a teammate AND you're NOT both in the ripple space
+                if (!player.isMe && !isTeammate && (myRippleLayer != 1 || otherRippleLayer != 1))
                 {
                     show = false;
                     pos.x = -1000f;
@@ -388,14 +391,14 @@ namespace RainMeadow
                     this.scoreLabel.alpha = num;
                     this.scoreLabel.SetPosition(pos.x + 20f, pos.y);
 
-                    if (arena.session != null && owner?.RealizedPlayer != null
+                    if (arena.ArenaSession != null && owner?.RealizedPlayer != null
                         && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
                         && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
                     {
-                        int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                        int score = arena.ArenaSession.ScoreOfPlayer(owner.RealizedPlayer, true);
                         bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;
                         this.scoreLabel.text = showAdded
-                            ? (arena.session.sessionEnded ? totScore : totScore + score).ToString()
+                            ? (arena.ArenaSession.sessionEnded ? totScore : totScore + score).ToString()
                             : score.ToString();
                     }
                 }

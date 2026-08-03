@@ -4,8 +4,17 @@
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
+- The Debug Overlay has been changed to be able to track non physical object entities.
+- The Debug Overlay now has an Ownership view to Dev Tools.
+  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+### Modders
+- Added `MatchmakingManager.OnLobbyLeaving` event.
+- Added `ScrollableConfirmDialog` menu objects
 ## General
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
+- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
+- Fixed objects marked as destroyOnAbstraction not being destroyed.
 - Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
@@ -17,12 +26,8 @@
 - Added a checkbox for Rainbow Cape that's only active during events
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
-- Added Ownership view to Dev Tools.
-  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
-### Modders
-- Added `MatchmakingManager.OnLobbyLeaving` event.
-- Added `ScrollableConfirmDialog` menu object
 ## Arena
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
@@ -33,7 +38,7 @@
 - Added configurable Void Amoeba lethality. Default multiplier is now 3x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
-- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled
+- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled; Default keybind is "S"; update the keybind in the Meadow Arena Remix page
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
@@ -43,16 +48,36 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
-- Fixed sound/visual cue of parrying being inconsistant.
+- Fixed sound/visual cue of parrying being inconsistent.
 - Fixed gourmand not being shown as exhausted when throwing a spear
-- Added score tracker to in-game UI; can be toggled on & off. Check Meadow Arena Remix page
 - Slightly improved timer accuracy
 - Fixed the result box bump sound effect on the final results screen playing per player instead of just once
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
+- Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
 ### Watcher
+- Disabling Ripple Trail in online arena
 - Gave summoned Ameobas the Watcher's body color
+- Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
+- Amoeba is now going in the right layer when summoned
+- Summoned amoebas have idle behaviors now
+- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned amoebas can stun non-player creatures now
+- Amoeba won't slow down for dead players or friendlies
+- Distortion effect fades away on player's death
+- Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
+- Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
+- Watcher will always have white eyes while camouflaged
+- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
+- Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
+- Dev skin doesn't show in ripple space anymore
+- Hands or mud doesn't show in ripple space anymore
+- Watcher camo effect has been reduced for all ripple level
+- Player Tag now interacts well with ripple layer change
+- Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
+- ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property. Renamed to `ArenaOnlineGameMode.ArenaSession`.
+  - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
@@ -74,6 +99,14 @@
 - Added username color customization as a Remix options
 - Added text downscroll as a Remix options
 
+## New Contributors
+Thank you to all of our first-time contributors and welcome EdEnStonne to the Meadow Dev team!
+- Wonky
+- Ombekende
+- ConfiG
+- r3nsen
+- OneLetterShor
+- iiul
 # Release 1.14.1
 
 ## Engine 
