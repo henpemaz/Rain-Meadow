@@ -31,7 +31,7 @@ Rain Meadow Version:|Version de Rain Meadow:
 Credits|Crédits
 
 // Lobby Cards Selector
-Search Lobbies|Rechercher des lobbies
+Search Lobbies|Rechercher des lobbys
 Click to join|Cliquer pour rejoindre
 <USERNAME>'s Lobby|Lobby de <USERNAME>
 Private|Privé
@@ -54,7 +54,7 @@ A peaceful mode about exploring around and discovering little secrets, together 
 Story|Histoire
 Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|Par à l'aventure avec tes amis dans le monde de Rain World, combatez ensemble<LINE>et mourez ensemble.
 Arena|Arène
-Fight against unforgiving creatues and foes where only the strong survive.|Combat des crétures impitoyables et des ennemies redoutables, où seuls les plus forts subsistent.
+Fight against unforgiving creatures and foes where only the strong survive.|Combat des créatures impitoyables et des ennemies redoutables, où seuls les plus forts subsistent.
 Visibility:|Visibilité:
 Public|Public
 Friends Only|Amis seulement
@@ -64,6 +64,12 @@ Lobby Password|Mot de passe du lobby
 Player max:|Joueurs max:
 Maximum number of players that can be in the lobby (up to 32)|Nombre de joueurs maximum qui peuvent être dans ce lobby (jusqu'à 32)
 Creating lobby...|Création du lobby...
+Timeline:|Chronologie :
+Spear|Lancier
+Anniversary Gags:|Gags d’Anniversaire
+ArenaCompetitive|ArèneCompétitive
+Cheats:|Triche :
+If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|Activé, il permet au joueurs d'utiliser les options de triche des outils de développer. À utiliser avec précaution.
 
 // Meadow Character Select
 Locked|Verrouillé
@@ -90,7 +96,7 @@ Fluffers|Duvet
 CICADA|CIGALAMARS
 White|Blanc
 Dark|Obscur
-SCAVENGER|FARFOUILLER
+SCAVENGER|FARFOUILLEUR
 Twigs|Tige
 Acorn|Grand
 Oak|Chêne
@@ -150,22 +156,26 @@ Collision|Colision
 New character unlocked|Nouveau personnage débloqué
 New emote unlocked|Nouvelle emote débloqué
 New skin unlocked|Nouvelle aspect débloqué
+Eye color|Couleurs des yeux
 
 // Story Mode
 Selected Slugcat|Chat-limace<LINE>sélectionné
 Press on the button to open/close the slugcat selection list|Appuyez sur le bouton pour ouvrir/fermer la liste de sélection des chat-limaces
 Current Campaign: |Campagne actuelle :
- - New Game| - Nouvelle Partie
+ - New Game| - Nouvelle Partie
 Unknonw Region|Région inconnue
 Invite Friends|Invitez des amis
 Friendly Fire|Tir ami
-Require Campaign Slugcat|Forcez le chat-limace de la campagne
+Require Campaign Slugcat|Forcez le chat-limace<LINE>de la campagne
 Sync Save|Synchroniser la sauvegarde
 PLAYERS|JOUEURS
 Press again to ban player!|Appuyer encore pour confirmer le ban
 Wait for others to shelter or rescue you, press |Attendez que les autres s'abritent ou vous sauvent, appuyez sur 
- to spectate, or press PAUSE BUTTON to dismiss message| to regarder les autres, ou appuyez sur le bouton PAUSE pour ignorer ce message
+ to spectate, or press PAUSE BUTTON to dismiss message| pour regarder les autres, ou appuyez sur le bouton PAUSE pour ignorer ce message
 READY|PRÊT
+Restart game|Redémarrer la partie
+Wait for others to shelter or rescue you or press |Attendez que les autres s'abritent ou vous sauvent, ou appuyez sur 
+ to spectate| pour regarder les autres
 
 // Arena Mode
 ME|MOI
@@ -199,7 +209,7 @@ READY?|PRÊT ?
 UNREADY|PAS PRÊT
 WAITING|EN ATTENTE
 Ready up to join the host when the match begins|Marquez-vous prêt pour rejoidre l'hôte quand le match commence
-START MATCH!|COMMENCER LE MATCH !
+START MATCH!|COMMENCER !
 Waiting for others...|En attente des autres...
 Waiting for host...|En attente de l'hôte...
 Welcome to Arena Online!<LINE>All players must ready up to begin.|Bienvenue dans l'arène en ligne !<LINE>Tous les joueurs doivent être prêt pour commencer.
@@ -210,7 +220,7 @@ Search for levels|Recherchez un niveau
 Search levels|Rechercher un niveau
 Match Settings|Paramètre du match
 Spears Hit:|Dégats de lance:
-Repeat Rooms:|Répéter les niveaux:
+Repeat Rooms:|Répéter les<LINE>niveaux:
 Allow Item Stealing:|Vol d'object:
 Players can steal items from each other|Les joueurs peuvent voler les objets des autres
 Players cannot steal items from each other|Les joueurs ne peuvent pas voler les objets des autres
@@ -253,6 +263,114 @@ Winner!|Vainqueur !
 <TEAMNAME> WIN!|L'ÉQUIPE «<TEAMNAME>» GAGNE !
 Unknown user|Utilisateur inconnu
 TO LOBBY|VERS LE LOBBY
+Challenge|Challenge
+Pit yourself against a series of challenges|Mesurez-vous à une série de défis
+RESET|RÉINITIALISER
+Overseers Show:|Superviseurs :
+Overseer Spectators spawn in-game|Spectateurs Superviseurs apparaissent en jeu
+Overseer Spectators do not spawn in-game|Spectateurs Superviseurs n'apparaissent pas en jeu
+Item Stealing|Vol d'objects
+Join In Progress|Rejoindre mid-partie
+Better Hitbox|Meilleur Hitboxes
+Piggybacking|Courte-échelle
+Players cannot piggyback each other|Les joueurs ne peuvent pas porter d'autres joueurs sur le dos.
+Players can piggyback each other|Les joueurs peuvent porter d'autres joueurs sur le dos.
+Bombs|Bombes
+Scavenger bombs follow vanilla spawn behavior|Les Bombes de Farfouilleurs apparaissent de façon usuel
+No scavenger bombs spawn|Les Bombes de Farfouilleurs ne peuvent pas apparaitre.
+Bees|Ruches
+Bee hives follow vanilla spawn behavior|Les Ruches d'Abeilles apparaissent de façon usuel
+No beehives spawn|Les Ruches d'Abeilles ne peuvent pas apparaitre.
+Corpse grab|Saisie de cadavre
+Players can grab dead players|Les joueurs peuvent attraper les cadavres des autres
+Players cannot grab dead players|Les joueurs ne peuvent pas attraper les cadavres des autres
+Go to <SETTINGSNAME> Page|Ouvrir la page de <SETTINGSNAME>
+How long Watcher's abilities last for. Default: 12s|Durée de l'abilité du Guetteur. Défaut : 12s.
+Weaver Watcher:|Guetteur Tisserand :
+Your watcher has synced weaver cosmetics|Votre Guetteur aura les cosmétiques du Tisserand synchronisé.
+Your watcher has synced normal cosmetics|Votre Guetteur aura les cosmétiques normaux synchronisé.
+Voidkeeper:|Gardien du Néant :
+Summon amoebas at the cost of your camo timer|Invoquez des Amibes au prix de votre temps de camouflage.
+Amoeba summoning is disabled lobby-wide|L'invocation d'Amibe est désactivé dans le lobby
+Voidkeeper Amoeba Duration:|Durée de vie de l'Amibe
+Amoeba duration time in seconds|Combien de temps l'Amibe subsistent dans le monde réel, en seconde
+Void's Vengeance:|Vengeance du Néant :
+Amoeba's direction is influenced by pointing|L'Amibe peut être dirigé en pointant du doigt
+Amoebas chase targets at-will|L'Amibe choisi elle-même sa proie
+How many explosions Artificer can use before cooldown|Combient d'explosion l'Artificier peut utiliser avant de subir le temps de recharge
+Arena Settings|Paramètre d'arène
+Food Score:|Score de Nourriture :
+Food points multiplier|Multiplieur des points gagnés par la nourriture
+Spear Hit Score:|Score de coup de lance :
+Points a spear is worth (non-lethal)|Points gagnés quand une lance touche un adversaire (sans le tuer)
+Kill Score:|Score de kill :
+Points a kill is worth|Points gagnés par kill
+Survival Score:|Score de survie :
+Points for surviving inside the shelter|Points gagnés en survivant dans un abri
+Empty Kill Score:|Score de kill non-réclamé :
+Points for other players if someone dies without a killer|Points gagnés par les autres si quelqu’un meurt par lui-même
+Unlock Dens:|Débloquer des abris
+Points required to unlock dens|Points requis pour déverrouiller les abris
+Den Entry:|Dévérouillage des abris :
+Den entry behavior|Comment les abris sont dévérouillés
+Score|Score
+Standard|Standard
+Always|Toujours
+Den Ejection:|Expulsion des abris :
+Dens eject and block players after some time|Les abris expulses les joueurs et se bloquent après un certain temps
+Playlist:|Playlist :
+Copy playlist to clipboard|Copier la playlist dans le presse-papier
+Copied|Copié
+Import playlist from clipboard|Importer la playlist depuis le presse-papier
+Imported|Importé
+Friendly Fire:|Tir amical :
+Challenge ID|ID du challenge
+Challenge Settings|Paramètre du challenge
+View Post-Game Stats|Voir les stats post-partie
+View Current Mode Info|Voir les infos du mode actuel
+Customize your colors|Personnaliser vos couleurs
+Go to Slugcat Selection Page|Accéder à la page de sélection des slugcat
+This user is the lobby host|Cet utilisateur est l'hôte du lobby
+GAME IN SESSION|EN JEU
+Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op|Tue et survie pour acheter ta liberté<LINE><LINE>Déactivez les Dégats de lance pour de la Co-Op
+Amoeba Lethality Factor:|Facteur de léthalité des Amibes :
+Multiplier for amoeba lethality|Multiplieur de léthalité des Amibes
+Artificer Stun Range Multiplier|Multiplieur de porté d'onde de choc de l'Artificier
+Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|Multiplieur de la porté auquel l'Artificier peut assommer les autres créatures par rapport à la porté de base. Défaut : 0.5
+Artificer Parry Range Multiplier|Multiplieur de porté de parade de l'Artificier
+How far Artificer can parry from compared to vanilla range. Default: 0.3|Multiplieur de la porté auquel l'Artificier peut parer des projectiles par rapport à la porté de base. Défaut : 0.3
+Artificer Parry Leniency:|Parade indulgence de l'Artificier
+Gives Artificer more leniency frames in the concussive blast's parry|Fait durer le temps de parade pendant plus de frames
+Starting match in|Départ dans
+SESSION RESULTS|RÉSULTAT DE LA PARTIE
+SESSION ENDED!|PARTIE TERMINÉ !
+IT'S A DRAW!|MATCH NUL !
+Settings:|Paramètres :
+Copy|Copier
+Import|Importer
+Drown Settings|Paramètre de Drown
+Store keybind|Ouvrir le shop
+Points required to buy a ... rock?|Points requis pour acheter... un cailloux ?
+Points required to buy a spear|Points requis pour acheter une lance
+Points required to buy an explosive spear|Points requis pour acheter une lance explosive
+Points required to buy a scav bomb|Points requis pour acheter une bombe
+[MSC]: Points required to buy an electric spear|[MSC] : Points requis pour acheter une lance électrique
+[Watcher]: Points required to buy a boomerang|[Watcher] : Points requis pour acheter un boomerang
+Points required to buy a respawn|Points requis pour pouvoir ré-apparaitre 
+Points required to open dens|Points requit pour ouvrir les abris
+How many waves before creature cleanup|Vagues avant le nettoyage des créatures
+Max creatures in level|Nombre max de créatures en jeu
+STORE|SHOP
+Rock|Pierre
+Electric Spear|Lance Électrique
+Boomerang|Boomerang
+Respawn|Ré-apparaitre
+Open Dens|Ouvrir des abris
+LOADING|CHARGEMENT
+Cheats are disabled in this lobby.|Les options de triche sont déactiver dans ce lobby.
+Allow Piggyback:|Autoriser la Courte-échelle :
+Corpes grab|Saisie de cadavre
+Survive,|Survie,
 
 // Arena Slugcat Select
 Back To Lobby|Retourner au Lobby
@@ -282,6 +400,16 @@ Am I Cat Searching for many, or a Mouse searching for one?|Suis-je un cat à la 
 <LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>Suis-je un samaritain maudit, ou suis-je coincé pour toujours dans l'ombre ?
 <LINE>I do not know, for I am not one. I am many.|<LINE>Je ne sais point, car je ne suis plus. Nous sommes.
 Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Ceux qui traverse un chemin trouveront peut-être un trésor.<LINE>Ceux qui en traverse beaucoup trouveront la vérité.
+CHOOSE YOUR CHARACTER|CHOISI TON PERSONNAGE
+THE OVERSEER|LE SUPERVISEUR
+Normal den behavior|Comportement d'abri normal
+Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?|Loin et seul au milieu des vagues.<LINE>Tisserez-vous avec la marée ou contre elle ?
+Observe without peril|Observe sans péril
+Playlist: |Playlist : 
+Failed|Échec
+You could have saved them.|Vous aurez pu les sauver.
+With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.|Ayant perdu tout attachment, le retrait est la seule option.<LINE>Fuit et attaque dans l'ombre avec attention, avant que ça aussi, soit perdu.
+Players will rotate through all slugcats|Le joueur aura un chat-limace aléatoire
 
 // Paincat's Names & Descriptions
 Paincat|Chat-douleur
@@ -317,7 +445,7 @@ You will lose this round<LINE>Your body will not be found<LINE>6 feet undergroun
 "i luv u <3"|«Je t'M <3».
 WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|POURQUOI CE TRUC EST UNE VARIABLE ??<LINE>num2 EST LITTÉRALEMENT 0
 Don't Care<LINE>Nuh<LINE>Yuh|M'en fous<LINE>Nah<LINE>Ouais
-Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|Et soudain, le rectangle des résultats de session n'apparait plus, tu est softlock.<LINE>Hein ??<LINE>Je pensais qu'on avait réglé ce bug il y a un bail...
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|Et soudain, le rectangle des résultats de la partie n'apparait plus, tu est softlock.<LINE>Hein ??<LINE>Je pensais qu'on avait réglé ce bug il y a un bail...
 Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|Avez-vous déjà envisagé à contribuer à<LINE>https://github.com/henpemaz/Rain-Meadow ?
 Be careful when selecting the Fartificer|Faite gafe quand vous sélectionnez Pettificer
 am getting "among us potion at 3 am" vibes<LINE>add that /lh|Asy j'ai la vibe «potion d'among us à 3h du mat»<LINE>ajoute ce truc /lh
@@ -327,6 +455,14 @@ There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Y'a assez de 
 "i'm ded"|«Suis mort».
 bleh|bleh
 inv? like invalidunits?|inv ?, genre invalidunits ?
+My little shadow, show them your peeping eyes!|Ma petite ombre, montre-leur tes yeux curieux !
+Abandoned, separated from your kin, bound by your fate.<LINE>You've hidden, walked places no others have.<LINE>But now is the time to come out and fight.|Abandonné, séparé des tiens, lié par ton destin.<LINE>Tu t'es caché, parcourant des lieux inconnus de tous.<LINE>Mais il est maintenant temps de revenir, et combattre.
+A failed warp has brought you here.<LINE>You must now fight for your life<LINE>With no difference between friend and foe.|Un portal qui a mal tourné vous a amené ici.<LINE>Vous devez maintenant vous battre pour votre vie,<LINE> sans distinction entre ami et ennemi.
+Shattered by destiny, exiled to the unknown.<LINE>Step out of your ripple to find answers.<LINE>No matter the cost.|Brisé par le destin, exilé dans l'inconnu.<LINE>Sortez du néant pour trouver vos réponses.<LINE>Coûte que coûte.
+You have bore witness to unforeseen catastrophes<LINE>Watched as the world crumbles around you<LINE>You have stood in the shadows long enough.|Vous avez été témoin de catastrophes inconnu de tous<LINE>Témoin de l'effondrement de votre monde<LINE>Vous êtes resté assez longtemps témoin de l'ombre.
+CONSIDER:<LINE>A ripple in silent waters,<LINE>an echo of fear,<LINE>a cycle of violence.|CONSIDÈRE :<LINE>une ondulation dans l'eau silencieuse,<LINE>un écho de la terreur,<LINE>un cycle de violence.
+Oh, before you go... a gift.<LINE>Perhaps we are not so different after all.|Oh, avant que tu partes... un cadeau<LINE>Peut-être nous ne sommes pas si différent au final.
+
 
 // Scugslots
 Press and hold something on screen to spin the slots / Hope you brought green|Maintenez le clique sur un élement du menu pour faire tourner les fentes / Espèrons que t'as amené du cash
@@ -384,6 +520,15 @@ was zapped by a|a été électrocuté par un
 was ambushed by a|a été pris en embuscade par un
 was taken by a|s'est fait emporté par un
 was slain by a|s'est fait tué par un
+was blown up by|a été détruit par
+blew up.|a explosé.
+was consummed by the swarm.|a été comsumé par l'essaim.
+was taken into the abyss thanks to|a été emporté dans l'abymes par
+asphyxiated.|a asphyxié.
+hit the ground too hard thanks to|est mort de chute à cause de
+tried to swim in burning liquid to escape|a essayé de nager dans de l'eau brulante pour fuir
+was drowned by a|a été noyé par un
+was swallowed by the walls thanks to|s'est fait dévoré par les murs à cause de
 
 // creature names for death messages
 Pink Lizard|Lézard Rose
@@ -466,6 +611,11 @@ Indigo Lizard|Lézard Indigos
 Rat|Rat
 Frog|Grenouille
 Tardigrade|Tardigrade
+MothGrub|Larve de Phalènes
+Slugcat NPC|PNG Chat-limace
+Peach Lizard|Lézard Pêche
+Angler|Anglers
+TowerCrab|Crabe des Tours
 
 // Direct Connection Dialogue
 Direct Connection... |Conection directe... 
@@ -500,6 +650,10 @@ This may cause unstable play.|Cela peut causer des instabilités en cours de par
 Reorder your mods now?|Voulez-vous réordonner les mods ?
 Cannot join due to missing DLC!|Vous ne pouvez pas rejoindre car un DLC est manquant !
 Missing DLC Mods that have to be enabled: |Mods DLC qui doivent être activé : 
+A restart may take place to sync game objects|Un redémarrage est possiblement nécessaire pour synchroniser les objects du jeu
+Apply these changes now?<LINE>A restart may take place to sync game objects|Appliquer ces changements maintenant ?<LINE>Un redémarrage est possiblement nécessaire pour synchroniser les objects du jeu
+/// ???????????? why do I have to translate that ??
+mod_menu_apply_mods|mod_menu_apply_mods
 
 // Remix Options
 Note: These inputs are not used in Meadow mode|Note : Ces entrées ne sont pas utilisées dans le mode de jeu Meadow.

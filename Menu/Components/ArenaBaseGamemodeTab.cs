@@ -68,7 +68,10 @@ namespace RainMeadow.UI.Components
             float labelWidth = 100f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
-            float boxMargin = leftMargin + labelWidth + 50f; // The X-position for all boxes
+            float boxMargin = leftMargin + labelWidth 
+                + (menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
+                    ? 100f
+                    : 50f); // The X-position for all boxes
 
 
             foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),

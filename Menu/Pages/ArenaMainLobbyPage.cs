@@ -156,7 +156,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             matchSettingsTab,
             new Vector2(120f, 0f),
             Arena.currentGameMode,
-            [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v, menu.Translate(v)))]
+            [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v, menu.Translate(v)))],
+            menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
+                ? 270f
+                : default
         );
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
