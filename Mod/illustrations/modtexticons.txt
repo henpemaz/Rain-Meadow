@@ -1,0 +1,92 @@
+{
+	"frames": {
+		"watcher_dlc_text_icon.png": {
+			"frame": {
+				"x": 0,
+				"y": 0,
+				"w": 86,
+				"h": 34
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 86,
+				"h": 34
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 86,
+				"h": 34
+			}
+		},
+		"mod_text_icon.png": {
+			"frame": {
+				"x": 0,
+				"y": 34,
+				"w": 78,
+				"h": 34
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 78,
+				"h": 34
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 78,
+				"h": 34
+			}
+		},
+		"rmx_mod_text_icon.png": {
+			"frame": {
+				"x": 0,
+				"y": 68,
+				"w": 74,
+				"h": 34
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 74,
+				"h": 34
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 74,
+				"h": 34
+			}
+		},
+		"msc_dlc_text_icon.png": {
+			"frame": {
+				"x": 0,
+				"y": 102,
+				"w": 70,
+				"h": 34
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 70,
+				"h": 34
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 70,
+				"h": 34
+			}
+		}
+	},
+	"meta": {
+		"app": "https://goofybox-studios.github.io/tools/texture_packer",
+		"image": "modtexticons",
+		"size": {
+			"w": 86,
+			"h": 136
+		}
+	}
+}
