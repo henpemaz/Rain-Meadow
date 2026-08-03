@@ -76,6 +76,8 @@
 - Player Tag now interacts well with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
 ### Modders
+- ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property. Renamed to `ArenaOnlineGameMode.ArenaSession`.
+  - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 

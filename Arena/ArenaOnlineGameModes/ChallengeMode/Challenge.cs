@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Menu;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
@@ -81,9 +80,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            if (arena?.session?.arenaSitting?.players != null && arena.session.arenaSitting.players.Count > 0 && (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
+            if (arena.ArenaSession?.arenaSitting?.players?.Count > 0 && (arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE))
             {
-                return arena.session.arenaSitting.players.Max(pl => pl.timeAlive);
+                return arena.ArenaSession.arenaSitting.players.Max(pl => pl.timeAlive);
             }
             return 0;
         }
@@ -96,7 +95,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
 
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            if (arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.session?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
+            if (arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.PROTECT || arena.ArenaSession?.chMeta?.secondaryWinMethod == MoreSlugcats.ChallengeInformation.ChallengeMeta.WinCondition.SURVIVE)
             {
                 return ++arena.setupTime;
             }

@@ -180,7 +180,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+            if (arena.ArenaSession != null && arena.ArenaSession.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
             {
                 waveText = $"Current Wave: {currentWave}. Next wave: {waveTimer}";
             }

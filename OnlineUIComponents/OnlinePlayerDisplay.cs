@@ -391,14 +391,14 @@ namespace RainMeadow
                     this.scoreLabel.alpha = num;
                     this.scoreLabel.SetPosition(pos.x + 20f, pos.y);
 
-                    if (arena.session != null && owner?.RealizedPlayer != null
+                    if (arena.ArenaSession != null && owner?.RealizedPlayer != null
                         && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
                         && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
                     {
-                        int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                        int score = arena.ArenaSession.ScoreOfPlayer(owner.RealizedPlayer, true);
                         bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;
                         this.scoreLabel.text = showAdded
-                            ? (arena.session.sessionEnded ? totScore : totScore + score).ToString()
+                            ? (arena.ArenaSession.sessionEnded ? totScore : totScore + score).ToString()
                             : score.ToString();
                     }
                 }

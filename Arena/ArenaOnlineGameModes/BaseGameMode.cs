@@ -43,7 +43,6 @@ namespace RainMeadow
             RainWorldGame game
         )
         {
-            arena.session = self;
             arena.ResetAtSession_ctor();
         }
 
@@ -56,9 +55,6 @@ namespace RainMeadow
         {
             arena.ResetAtNextLevel();
         }
-
-        /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
-
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
