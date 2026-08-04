@@ -64,18 +64,16 @@ namespace RainMeadow
 
         public int countdownSafetyCatchTimer = RainMeadow.rainMeadowOptions.CountdownSafetyCatchTimer.Value;
 
-        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
-        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
-        public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
-        public int emptyDeathScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
         public int survivalScore = RainMeadow.rainMeadowOptions.ArenaSurvivalScore.Value;
+        public int killScore = RainMeadow.rainMeadowOptions.ArenaKillScore.Value;
+        public int emptyDeathScore = RainMeadow.rainMeadowOptions.ArenaEmptyDeathScore.Value;
+        public int spearHitScore = RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value;
+        public int foodScore = RainMeadow.rainMeadowOptions.ArenaFoodScore.Value;
 
         public int denScore = RainMeadow.rainMeadowOptions.ArenaDenScore.Value;
 
         public ArenaSetup.GameTypeSetup.DenEntryRule denEntryRule = RainMeadow.rainMeadowOptions.ArenaDenType.Value;
 
-
-        public bool WinByScore => killScore > 0 || survivalScore > 0 || emptyDeathScore > 0 || spearHitScore > 0 || externalArenaGameMode is ArenaChallengeMode || externalArenaGameMode is DrownMode;
         public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
 
@@ -118,6 +116,7 @@ namespace RainMeadow
 
         public Dictionary<OnlinePlayer, int> WinsByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> DeathsByOPlayer { get; set; } = [];
+        public Dictionary<OnlinePlayer, int> RoundDeathsByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> TotalScoreByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> ScoreByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> AllKillsByOPlayer { get; set; } = [];
@@ -171,7 +170,6 @@ namespace RainMeadow
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             ArenaHelpers.RecreateSlugcatCache();
-            AllKillsByOPlayer = [];
             avatarSettings = new SlugcatCustomization()
             {
                 nickname = OnlineManager.mePlayer.id.name,
@@ -456,6 +454,7 @@ namespace RainMeadow
         {
             WinsByOPlayer.Clear();
             DeathsByOPlayer.Clear();
+            RoundDeathsByOPlayer.Clear();
             TotalScoreByOPlayer.Clear();
             ScoreByOPlayer.Clear();
             AllKillsByOPlayer.Clear();
@@ -466,6 +465,7 @@ namespace RainMeadow
         {
             arenaPlayer.wins = 0;
             arenaPlayer.deaths = 0;
+            arenaPlayer.RoundDeaths = 0;
             arenaPlayer.totScore = 0;
             arenaPlayer.score = 0;
             arenaPlayer.allKills = [];
@@ -477,6 +477,7 @@ namespace RainMeadow
         public void ResetArenaPlayerPerSessionStats(ArenaSitting.ArenaPlayer arenaPlayer)
         {
             arenaPlayer.score = 0;
+            arenaPlayer.RoundDeaths = 0;
             arenaPlayer.roundKills = [];
             arenaPlayer.winner = false;
             arenaPlayer.alive = false;
@@ -493,6 +494,9 @@ namespace RainMeadow
 
             if (!DeathsByOPlayer.ContainsKey(player))
                 DeathsByOPlayer.Add(player, 0);
+
+            if (!RoundDeathsByOPlayer.ContainsKey(player))
+                RoundDeathsByOPlayer.Add(player, 0);
 
             if (!TotalScoreByOPlayer.ContainsKey(player))
                 TotalScoreByOPlayer.Add(player, 0);
@@ -515,12 +519,13 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer arenaPlayer,
             OnlinePlayer onlinePlayer)
         {
-            WinsByOPlayer[onlinePlayer]       = arenaPlayer.wins;
-            DeathsByOPlayer[onlinePlayer]     = arenaPlayer.deaths;
-            TotalScoreByOPlayer[onlinePlayer] = arenaPlayer.totScore;
-            ScoreByOPlayer[onlinePlayer]      = arenaPlayer.score;
-            AllKillsByOPlayer[onlinePlayer]   = arenaPlayer.allKills.ToList();
-            RoundKillsByOPlayer[onlinePlayer] = arenaPlayer.roundKills.ToList();
+            WinsByOPlayer[onlinePlayer]        = arenaPlayer.wins;
+            DeathsByOPlayer[onlinePlayer]      = arenaPlayer.deaths;
+            RoundDeathsByOPlayer[onlinePlayer] = arenaPlayer.RoundDeaths;
+            TotalScoreByOPlayer[onlinePlayer]  = arenaPlayer.totScore;
+            ScoreByOPlayer[onlinePlayer]       = arenaPlayer.score;
+            AllKillsByOPlayer[onlinePlayer]    = arenaPlayer.allKills.ToList();
+            RoundKillsByOPlayer[onlinePlayer]  = arenaPlayer.roundKills.ToList();
         }
 
         /// <summary>
@@ -537,12 +542,13 @@ namespace RainMeadow
         {
             AddMissingStatEntries(onlinePlayer);
 
-            arenaPlayer.wins       = WinsByOPlayer[onlinePlayer];
-            arenaPlayer.deaths     = DeathsByOPlayer[onlinePlayer];
-            arenaPlayer.totScore   = TotalScoreByOPlayer[onlinePlayer];
-            arenaPlayer.score      = ScoreByOPlayer[onlinePlayer];
-            arenaPlayer.allKills   = AllKillsByOPlayer[onlinePlayer].ToList();
-            arenaPlayer.roundKills = RoundKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.wins        = WinsByOPlayer[onlinePlayer];
+            arenaPlayer.deaths      = DeathsByOPlayer[onlinePlayer];
+            arenaPlayer.RoundDeaths = RoundDeathsByOPlayer[onlinePlayer];
+            arenaPlayer.totScore    = TotalScoreByOPlayer[onlinePlayer];
+            arenaPlayer.score       = ScoreByOPlayer[onlinePlayer];
+            arenaPlayer.allKills    = AllKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.roundKills  = RoundKillsByOPlayer[onlinePlayer].ToList();
         }
 
         public void ResetInvDetails()
@@ -1135,6 +1141,7 @@ namespace RainMeadow
 
             WinsByOPlayer.Remove(onlinePlayer);
             DeathsByOPlayer.Remove(onlinePlayer);
+            RoundDeathsByOPlayer.Remove(onlinePlayer);
             TotalScoreByOPlayer.Remove(onlinePlayer);
             ScoreByOPlayer.Remove(onlinePlayer);
             AllKillsByOPlayer.Remove(onlinePlayer);

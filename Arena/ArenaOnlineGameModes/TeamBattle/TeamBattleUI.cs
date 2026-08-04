@@ -13,7 +13,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public OnlineTeamBattleSettingsInterface? myTeamBattleSettingInterface;
         public ConditionalWeakTable<ArenaPlayerBox, TeamBattlePlayerBox> playerBoxes = new();
 
-        public int winningTeam = -1;
         public int martyrsSpawn;
         public int outlawsSpawn;
         public int dragonslayersSpawn;
@@ -98,7 +97,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 if (button is ArenaPlayerBox playerBox)
                 {
                     ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
-                    playerBox.showRainbow = teamSettings?.team == winningTeam && winningTeam != -1;
+                    playerBox.showRainbow = WinningTeamIndex is not null && teamSettings?.team == WinningTeamIndex.Value;
                     string symbolName = teamSettings != null ? teamIcons[teamSettings.team] : "pixel";
                     if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox) && playerBox.profileIdentifier != OnlineManager.lobby.owner)
                     {
@@ -141,7 +140,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override bool DidPlayerWinRainbow(ArenaOnlineGameMode arenaOnline, OnlinePlayer player)
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
-            return base.DidPlayerWinRainbow(arenaOnline, player) || teamSettings?.team == winningTeam && winningTeam != -1;
+            return base.DidPlayerWinRainbow(arenaOnline, player)
+                || WinningTeamIndex is not null && teamSettings?.team == WinningTeamIndex.Value;
         }
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)

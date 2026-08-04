@@ -201,6 +201,9 @@ namespace RainMeadow
             public Dictionary<int, int> deathsByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
+            public Dictionary<int, int> roundDeathsByInLobbyId;
+
+            [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> totalScoreByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
@@ -246,6 +249,10 @@ namespace RainMeadow
                     kvp => kvp.Value
                 );
                 deathsByInLobbyId = arenaOnline.DeathsByOPlayer.ToDictionary(
+                    kvp => (int)kvp.Key.inLobbyId,
+                    kvp => kvp.Value
+                );
+                roundDeathsByInLobbyId = arenaOnline.RoundDeathsByOPlayer.ToDictionary(
                     kvp => (int)kvp.Key.inLobbyId,
                     kvp => kvp.Value
                 );
@@ -355,6 +362,12 @@ namespace RainMeadow
                 arenaOnline.DeathsByOPlayer = OnlineManager.players.ToDictionary(
                     player => player,
                     player => deathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
+                        ? value
+                        : 0
+                );
+                arenaOnline.RoundDeathsByOPlayer = OnlineManager.players.ToDictionary(
+                    player => player,
+                    player => roundDeathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
                         ? value
                         : 0
                 );

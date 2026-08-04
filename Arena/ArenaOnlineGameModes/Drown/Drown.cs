@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Drown;
 using Menu;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class DrownMode : ExternalArenaGameMode
     {
+        public const int StartingScore = 5;
+
         public static ArenaSetup.GameTypeID Drown = new("Drown");
 
         public static string Rock = "Rock";
@@ -32,7 +34,6 @@ namespace RainMeadow
         }
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        private bool spearHits;
         public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
         public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
         public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
@@ -52,9 +53,6 @@ namespace RainMeadow
         public int lastCleanupWave = 0;
         public bool waveNeedsUpdate = true;
 
-        public int timerPoints = 0; // no way to get this from ArenaGameSession without breaking API
-
-        public int teamPoints;
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
 
@@ -73,6 +71,39 @@ namespace RainMeadow
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override bool ShouldWinByScore(ArenaSetup.GameTypeSetup gameTypeSetup) => false;
+
+        public override void InitAsCustomGameType(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSetup.GameTypeSetup self)
+        {
+            base.InitAsCustomGameType(arenaOnline, self);
+
+            self.survivalScore = 0;
+            self.EmptyDeathScore = 0;
+
+            self.rainWhenOnePlayerLeft = false;
+            self.fliesSpawn = true;
+        }
+
+        public int CalculateTeamScore(ArenaOnlineGameMode arenaOnline, ArenaSitting arenaSitting)
+        {
+            int score = 0;
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
+            {
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, arenaPlayer.playerNumber);
+                if (onlinePlayer is null)
+                    continue;
+                if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                    continue;
+
+                score += arenaPlayer.score;
+            }
+
+            return score;
         }
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
@@ -99,86 +130,37 @@ namespace RainMeadow
             return false;
         }
 
-        public override void On_ArenaGameSession_ctor(
-            ArenaOnlineGameMode arenaOnline,
-            On.ArenaGameSession.orig_ctor orig,
-            ArenaGameSession self,
-            RainWorldGame game)
-        {
-            base.On_ArenaGameSession_ctor(arenaOnline, orig, self, game);
-            openedDen = false;
-            currentWave = 1;
-            lastCleanupWave = 0;
-
-            foreach (var player in self.arenaSitting.players)
-            {
-                player.score = 5;
-                OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                if (cs != null)
-                {
-
-                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                    if (clientSettings != null)
-                    {
-                        clientSettings.iOpenedDen = false;
-                    }
-                }
-            }
-
-        }
-
-        public override void InitAsCustomGameType(
-            ArenaOnlineGameMode arenaOnline,
-            ArenaSetup.GameTypeSetup self)
-        {
-            self.foodScore = 1;
-            self.survivalScore = arenaOnline.survivalScore;
-            self.spearHitScore = arenaOnline.spearHitScore;
-            self.repeatSingleLevelForever = false;
-            self.denEntryRule = arenaOnline.denEntryRule;
-            self.rainWhenOnePlayerLeft = false;
-            self.levelItems = true;
-            self.fliesSpawn = true;
-            self.saveCreatures = false;
-            self.spearsHitPlayers = ArenaHelpers.GetOptionFromArena("SPEARSHIT", self.spearsHitPlayers);
-            spearHits = self.spearsHitPlayers;
-            if (arenaOnline.killScore == 0)
-            {
-                SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
-            }
-
-        }
-
         public override string TimerText()
         {
+            ArenaSitting arenaSitting = Custom.rainWorld.processManager.arenaSitting;
+
+            if (arenaSitting is null)
+            {
+                RainMeadow.Error("Could not find arena sitting.");
+                return "";
+            }
+
             ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+            ArenaSetup.GameTypeSetup gameTypeSetup = arenaSitting.gameTypeSetup;
 
-            var text = !spearHits ? "Team points" : "Current points";
-            var waveText = "";
+            string scoreTypeText = gameTypeSetup.spearsHitPlayers
+                ? "Current points"
+                : "Team points";
 
-            var waveTimer = ArenaPrepTimer.FormatTime(currentWaveTimer);
-            OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
+            int displayScore = gameTypeSetup.spearsHitPlayers
+                ? ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arenaOnline,
+                    arenaSitting,
+                    OnlineManager.mePlayer
+                )!.score
+                : CalculateTeamScore(arenaOnline, arenaSitting);
 
-            if (cs != null)
-            {
-                cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                if (clientSettings != null)
-                {
-                    if (!spearHits)
-                    {
-                        timerPoints = teamPoints;
-                    }
-                    else
-                    {
-                        timerPoints = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arenaOnline, OnlineManager.mePlayer)].score;
-                    }
-                }
-            }
-            if (arenaOnline.ArenaSession != null && arenaOnline.ArenaSession.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
-            {
-                waveText = $"Current Wave: {currentWave}. Next wave: {waveTimer}";
-            }
-            return $": {text}: {timerPoints}. {waveText}";
+            string waveText = gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off
+                ? ""
+                : $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}";
+
+
+            return $": {scoreTypeText}: {displayScore}.{waveText}";
         }
 
         public override int SetTimer(ArenaOnlineGameMode arenaOnline)
@@ -210,6 +192,114 @@ namespace RainMeadow
             {
                 return arenaOnline.setupTime;
             }
+        }
+
+        public override void On_ArenaGameSession_ctor(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaGameSession.orig_ctor orig,
+            ArenaGameSession self,
+            RainWorldGame game)
+        {
+            base.On_ArenaGameSession_ctor(arenaOnline, orig, self, game);
+            openedDen = false;
+            currentWave = 1;
+            lastCleanupWave = 0;
+
+            ArenaSitting arenaSitting = self.arenaSitting;
+
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
+            {
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arenaOnline,
+                    arenaPlayer.playerNumber
+                );
+
+                if (onlinePlayer is null)
+                    continue;
+                if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                    continue;
+
+                arenaPlayer.score = StartingScore;
+
+                if (OnlineManager.lobby.isOwner)
+                    arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
+            }
+        }
+
+        public override void On_ArenaGameSession_Update(
+            On.ArenaGameSession.orig_Update orig,
+            ArenaGameSession self,
+            ArenaOnlineGameMode arenaOnline)
+        {
+            if (IsDrownMode(out DrownMode drown))
+            {
+                if (!self.sessionEnded)
+                {
+                    for (int i = 0; i < self.Players.Count; i++)
+                    {
+                        var onlinePlayer = OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineP);
+                        if (onlinePlayer)
+                        {
+                            if (self.Players[i].state.alive)
+                            {
+                                bool openedDen = false;
+                                OnlineManager.lobby.clientSettings.TryGetValue(onlineP.owner, out var cs);
+                                if (cs != null)
+                                {
+
+                                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
+                                    if (clientSettings != null)
+                                    {
+                                        openedDen = clientSettings.iOpenedDen;
+                                    }
+                                }
+
+                                if (drown.openedDen && !openedDen && self.Players[i] != null && self.Players[i].realizedCreature != null && self.Players[i].realizedCreature.State.alive && self.GameTypeSetup.spearsHitPlayers)
+                                {
+                                    self.game.cameras[0].hud.PlaySound(SoundID.UI_Slugcat_Die);
+                                    self.Players[i].realizedCreature.Die();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!openedDen)
+                {
+                    if (currentWaveTimer % waveStart == 0 && self.playersSpawned && waveNeedsUpdate)
+                    {
+                        var creatureAlive = 0;
+                        for (int i = 0; i < self.room.abstractRoom.creatures.Count; i++)
+                        {
+                            var currentCreature = self.room.abstractRoom.creatures[i];
+
+                            // Check if the creature is actually realized in the room
+                            if (currentCreature.realizedCreature != null)
+                            {
+                                // Check if it is alive and not a Slugcat
+                                if (currentCreature.state.alive && currentCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat)
+                                {
+                                    creatureAlive++;
+                                }
+                            }
+                        }
+                        if (creatureAlive < maxCreatures)
+                        {
+                            self.SpawnCreatures();
+                        }
+                        currentWave++;
+                    }
+                    if (currentWave % creatureCleanupWaves == 0 && currentWave > lastCleanupWave)
+                    {
+                        lastCleanupWave = currentWave;
+
+                        CreatureCleanup(arenaOnline, self);
+                    }
+                    waveNeedsUpdate = false;
+                }
+            }
+            base.On_ArenaGameSession_Update(orig, self, arenaOnline);
+
         }
 
         public override void On_HUD_HUD_InitMultiplayerHud(
@@ -286,121 +376,33 @@ namespace RainMeadow
             myTab = null;
         }
 
-        public override void On_ArenaSitting_SessionEnded(
+        /// <inheritdoc/>
+        public override List<ArenaSitting.ArenaPlayer> DetermineArenaSessionWinners(
             ArenaOnlineGameMode arenaOnline,
-            On.ArenaSitting.orig_SessionEnded orig,
-            ArenaSitting self,
-            ArenaGameSession session)
+            ArenaGameSession arenaSession)
         {
-            if (IsDrownMode(out _))
+            ArenaSitting arenaSitting = arenaSession.arenaSitting;
+            List<ArenaSitting.ArenaPlayer> winners = [];
+
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
             {
-                foreach (var player in self.players)
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, arenaPlayer.playerNumber);
+                if (onlinePlayer is null)
+                    continue;
+                if (arenaPlayer.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                    continue;
+
+                if (!OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData(out ArenaDrownClientSettings clientData))
                 {
-                    var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, player.playerNumber);
-                    if (onlinePlayer != null)
-                    {
-                        OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs);
-                        if (cs != null)
-                        {
-                            if (cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
-                            {
-                                player.winner = clientSettings.iOpenedDen;
-                                if (player.winner)
-                                {
-                                    player.score = 1;
-                                }
-                                else
-                                {
-                                    player.score = 0;
-                                }
-                            }
-                        }
-                    }
+                    RainMeadow.Error($"Unable to find {onlinePlayer}'s drown client data.");
+                    continue;
                 }
+
+                if (clientData.iOpenedDen || !arenaSession.GameTypeSetup.spearsHitPlayers)
+                    winners.Add(arenaPlayer);
             }
-            base.On_ArenaSitting_SessionEnded(arenaOnline, orig, self, session);
-        }
 
-        public override void On_ArenaGameSession_Update(
-            On.ArenaGameSession.orig_Update orig,
-            ArenaGameSession self,
-            ArenaOnlineGameMode arenaOnline)
-        {
-            if (IsDrownMode(out DrownMode drown))
-            {
-                if (!self.sessionEnded)
-                {
-                    for (int i = 0; i < self.Players.Count; i++)
-                    {
-                        var onlinePlayer = OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineP);
-                        if (onlinePlayer)
-                        {
-                            if (self.Players[i].state.alive)
-                            {
-                                bool openedDen = false;
-                                OnlineManager.lobby.clientSettings.TryGetValue(onlineP.owner, out var cs);
-                                if (cs != null)
-                                {
-
-                                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                                    if (clientSettings != null)
-                                    {
-                                        openedDen = clientSettings.iOpenedDen;
-                                    }
-                                }
-
-                                if (drown.openedDen && !openedDen && self.Players[i] != null && self.Players[i].realizedCreature != null && self.Players[i].realizedCreature.State.alive && self.GameTypeSetup.spearsHitPlayers)
-                                {
-                                    self.game.cameras[0].hud.PlaySound(SoundID.UI_Slugcat_Die);
-                                    self.Players[i].realizedCreature.Die();
-                                }
-                            }
-                        }
-
-                    }
-                    if (!self.GameTypeSetup.spearsHitPlayers) // team work makes the dream work
-                    {
-                        teamPoints = self.arenaSitting.players.Sum(x => x.score);
-                    }
-
-                }
-
-                if (!openedDen)
-                {
-                    if (currentWaveTimer % waveStart == 0 && self.playersSpawned && waveNeedsUpdate)
-                    {
-                        var creatureAlive = 0;
-                        for (int i = 0; i < self.room.abstractRoom.creatures.Count; i++)
-                        {
-                            var currentCreature = self.room.abstractRoom.creatures[i];
-
-                            // Check if the creature is actually realized in the room
-                            if (currentCreature.realizedCreature != null)
-                            {
-                                // Check if it is alive and not a Slugcat
-                                if (currentCreature.state.alive && currentCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat)
-                                {
-                                    creatureAlive++;
-                                }
-                            }
-                        }
-                        if (creatureAlive < maxCreatures)
-                        {
-                            self.SpawnCreatures();
-                        }
-                        currentWave++;
-                    }
-                    if (currentWave % creatureCleanupWaves == 0 && currentWave > lastCleanupWave)
-                    {
-                        lastCleanupWave = currentWave;
-
-                        CreatureCleanup(arenaOnline, self);
-                    }
-                    waveNeedsUpdate = false;
-                }
-            }
-            base.On_ArenaGameSession_Update(orig, self, arenaOnline);
-
+            return winners;
         }
 
         private void CreatureCleanup(ArenaOnlineGameMode arenaOnline, ArenaGameSession session)

@@ -1,5 +1,5 @@
-﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using System;
+﻿using System;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,8 +15,6 @@ namespace RainMeadow
         {
             [OnlineFieldHalf]
             public float lerp;
-            [OnlineField]
-            public int winningTeam;
             [OnlineField]
             public int martyrs;
             [OnlineField]
@@ -60,7 +58,6 @@ namespace RainMeadow
                 outlawsName = teamBattle.teamNames[1];
                 dragonslayersName = teamBattle.teamNames[2];
                 chieftainsName = teamBattle.teamNames[3];
-                winningTeam = teamBattle.winningTeam;
                 martyrs = teamBattle.martyrsSpawn;
                 outlaws = teamBattle.outlawsSpawn;
                 dragonslayers = teamBattle.dragonslayersSpawn;
@@ -82,7 +79,6 @@ namespace RainMeadow
                 teamBattle.teamNames[1] = outlawsName;
                 teamBattle.teamNames[2] = dragonslayersName;
                 teamBattle.teamNames[3] = chieftainsName;
-                teamBattle.winningTeam = winningTeam;
                 teamBattle.martyrsSpawn = martyrs;
                 teamBattle.outlawsSpawn = outlaws;
                 teamBattle.dragonslayersSpawn = dragonslayers;
