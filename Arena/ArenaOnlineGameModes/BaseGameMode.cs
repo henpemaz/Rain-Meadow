@@ -360,12 +360,12 @@ namespace RainMeadow
                 if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(session.game.cameras[0]);
                 else overlayHUD.SetNewChatHUDCamera(session.game.cameras[0]);
             }
-                
+
 
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
-            
+
             self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
 
             if (OnlineManager
@@ -373,18 +373,18 @@ namespace RainMeadow
                     .GetData<ArenaClientSettings>()
                     .playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator && arena.enableOverseer)
             {
-                
-                self.AddPart(new MeadowEmoteHud(self, session.game.cameras[0], 
+
+                self.AddPart(new MeadowEmoteHud(self, session.game.cameras[0],
                     arena.avatars.First(x => x.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Overseer).realizedCreature));
             }
             else
             {
                 self.AddPart(new Pointing(self));
-                foreach(AbstractCreature localPlayer in session.Players.Where(x => x != null && x.IsLocal()).ToArray())
+                foreach (AbstractCreature localPlayer in session.Players.Where(x => x != null && x.IsLocal()).ToArray())
                 {
                     var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, localPlayer)
                     {
-                        cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x, 
+                        cornerPos = new Vector2(self.rainWorld.options.ScreenSize.x - self.rainWorld.options.SafeScreenOffset.x,
                                     20f + self.rainWorld.options.SafeScreenOffset.y),
                         flip = -1
                     };
@@ -405,8 +405,8 @@ namespace RainMeadow
                         self.AddPart(new Watcher.CamoMeter(self, psmh, self.fContainers[1]));
                     }
                 }
-                
-            }   
+
+            }
         }
 
         public virtual void ArenaCreatureSpawner_SpawnCreatures(
@@ -466,7 +466,7 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-            if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+            if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs)
                 && cs.chatUsernameColor is Color color)
             {
                 return color;
@@ -1439,7 +1439,7 @@ namespace RainMeadow
 
                     string key = kvp[0];
                     string val = kvp[1];
-                    
+
                     int index = savedSettings.FindIndex(x => x.settingNickname == key);
                     RainMeadow.Debug($"Reading setting {key}, found index {index}, read value is {val}");
                     if (index >= 0)
@@ -1466,7 +1466,7 @@ namespace RainMeadow
         public string settingNickname { get; } = settingNickname == "" ? settingID : settingNickname;
     }
 
-    public class ExternalArenaGameModeFieldSetting(string settingID, string settingNickname = "") 
+    public class ExternalArenaGameModeFieldSetting(string settingID, string settingNickname = "")
         : ExternalArenaGameModeSetting(settingID, settingNickname)
     {
         // For now, suppost simple values (with IConvertible) and list of simple values.
@@ -1486,8 +1486,8 @@ namespace RainMeadow
         }
         protected static object ParseOrDefaultSimpleType(object value, Type type)
         {
-            return TryParseSimpleType(value, type, out var result) && result is not null 
-                ? result 
+            return TryParseSimpleType(value, type, out var result) && result is not null
+                ? result
                 : Activator.CreateInstance(type);
         }
         protected const char SEPARATOR = ',';
@@ -1496,10 +1496,10 @@ namespace RainMeadow
             if (settingType.IsGenericType && typeof(IEnumerable).IsAssignableFrom(settingType))
             {
                 Type ListingType = settingType.GetGenericArguments()[0];
-                IEnumerable<object> elements = string.IsNullOrWhiteSpace(value) 
-                    ? [] 
+                IEnumerable<object> elements = string.IsNullOrWhiteSpace(value)
+                    ? []
                     : value.Split(SEPARATOR).Select(s => ParseOrDefaultSimpleType(s, ListingType));
-                
+
                 RainMeadow.Debug($"Found enumerable {settingType}:{ListingType}, converted values are {string.Join(",", elements)}");
                 if (settingType.GetGenericTypeDefinition() == typeof(List<>))
                 {
@@ -1544,10 +1544,10 @@ namespace RainMeadow
             }
             return settingField.GetValue(arenaMode).ToString();
         }
-        public FieldInfo settingField {get;} = typeof(ArenaOnlineGameMode).GetField(settingID);
-        public Type settingType {get;} = typeof(ArenaOnlineGameMode).GetField(settingID).FieldType;
+        public FieldInfo settingField { get; } = typeof(ArenaOnlineGameMode).GetField(settingID);
+        public Type settingType { get; } = typeof(ArenaOnlineGameMode).GetField(settingID).FieldType;
     }
-    public class ExternalArenaGameModeInterfaceMultiChoiceSetting(string settingID, string settingNickname = "") 
+    public class ExternalArenaGameModeInterfaceMultiChoiceSetting(string settingID, string settingNickname = "")
         : ExternalArenaGameModeSetting(settingID, settingNickname)
     {
         public override object GetValueFromArenaMode(ArenaOnlineGameMode arenaMode)

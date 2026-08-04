@@ -14,7 +14,7 @@ namespace RainMeadow
         public List<FLabel> messageLabels = new();
         public FLabel pingLabel;
         public FLabel? scoreLabel;
-        public FSprite slugIcon;
+        public SlugcatClassIconHud slugIcon;
         public OnlinePlayer player;
         public class Message
         {
@@ -113,7 +113,8 @@ namespace RainMeadow
                 }
                 else
                 {
-                    this.iconString = "Kill_Slugcat";
+                    // "" falls through to the slugcat class icon instead of referencing stuff in-game
+                    this.iconString = "";
                 }
 
 
@@ -139,13 +140,16 @@ namespace RainMeadow
                 }
             }
 
-            this.slugIcon = new FSprite(iconString, true);
-            owner.hud.fContainers[0].AddChild(this.slugIcon);
-            this.slugIcon.alpha = 0f;
-            this.slugIcon.x = -1000f;
+            this.slugIcon = new SlugcatClassIconHud(owner.hud.fContainers[0]);
+            if (iconString != "")
+            {
+                this.slugIcon.SetElement(iconString, lighter_color);
+            }
+            else
+            {
+                this.slugIcon.SetSlugcat(SlugcatName(customization), false, customization.currentColors);
+            }
 
-
-            this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
             this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));
@@ -231,34 +235,29 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine)
-                    {
-                        slugIcon.SetElementByName("Kill_Slugcat");
-                    }
+                    // An empty element means no special-case icon applies, so the player's
+                    // slugcat class icon is drawn instead.
+                    string element;
+                    Color elementColor = lighter_color;
+                    bool dead = owner.PlayerConsideredDead;
+
+                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) element = "";
                     else if (RainMeadow.isArenaMode(out var arena))
                     {
-                        if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
-                        {
-                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player));
-                        }
-                        else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                        slugIcon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
+                        element = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
+                        elementColor = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
+                    }
+                    else if (owner.PlayerInAncientShelter) element = "ShortcutAShelter";
+                    else if (owner.PlayerInShelter) element = "ShortcutShelter";
+                    else if (owner.PlayerInGate) element = "ShortcutGate";
+                    // use the new dead icon vs the old "Multiplayer_Death" sprite.
+                    else if (dead) element = "";
+                    else element = iconString;
 
-                    }
-                    else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
-                    else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
-                    else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
-                    else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
+                    if (element != "") slugIcon.SetElement(element, elementColor);
+                    else slugIcon.SetSlugcat(SlugcatName(customization), dead, customization.currentColors);
 
-                    else slugIcon.SetElementByName(iconString);
-                    if (slugIcon.element.name == "meadowcoin")
-                    {
-                        this.slugIcon.scale = 0.08f;
-                    }
-                    else
-                    {
-                        this.slugIcon.scale = 1f;
-                    }
+                    this.slugIcon.scale = slugIcon.ElementName == "meadowcoin" ? 0.08f : 1f;
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
                     else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
@@ -410,7 +409,7 @@ namespace RainMeadow
             }
 
             this.arrowSprite.alpha = num;
-            this.slugIcon.alpha = num;
+            this.slugIcon.Alpha = num;
             if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
             {
                 this.username.alpha = lighter_color.a;
@@ -432,6 +431,11 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
+        }
+
+        public static string SlugcatName(SlugcatCustomization customization)
+        {
+            return customization.playingAs?.value ?? "";
         }
 
         public string SetTypingUsername()

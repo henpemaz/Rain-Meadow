@@ -51,6 +51,71 @@ public class SlugIcon : PositionedMenuObject
             { "Watcher", ["17234F", "FFFFFF"] },
         };
 
+    public const string AtlasPath = "illustrations/slugicons";
+
+    /// <summary>
+    /// Used to check if the icon is loaded.
+    /// </summary>
+    private const string AtlasProbeElement = "basic_head";
+
+    private static readonly List<string> FallbackSpriteNames =
+    [
+        "basic_head",
+        "basic_face",
+        "modded_feature",
+    ];
+    private static readonly List<string?> FallbackHexColors = ["FFFFFF", "101010", "FFFFFF"];
+
+    public static void LoadAtlas()
+    {
+        if (!Futile.atlasManager.DoesContainElementWithName(AtlasProbeElement))
+            Futile.atlasManager.LoadAtlas(AtlasPath);
+    }
+
+    public static List<string> GetSpriteNames(string slugcat, bool dead = false)
+    {
+        List<string> spriteNames = SlugcatToSpriteNames.TryGetValue(slugcat, out List<string> names)
+            ? [.. names]
+            : [.. FallbackSpriteNames];
+
+        if (dead)
+        {
+            int faceIndex = spriteNames.FindIndex(name => name.EndsWith("_face"));
+            if (faceIndex >= 0)
+                spriteNames[faceIndex] = "dead_face";
+        }
+
+        return spriteNames;
+    }
+
+    public static List<Color> GetColors(string slugcat, List<Color>? colors)
+    {
+        if (colors != null && colors.Count >= 2)
+            return colors;
+
+        if (!SlugcatToDefaultColors.TryGetValue(slugcat, out List<string?> hexColors))
+        {
+            RainMeadow.Error(
+                "Not enough colors provided to SlugIcon and no default colours were found for the given slugcat, using fallback colors"
+            );
+            hexColors = FallbackHexColors;
+        }
+
+        return [.. hexColors.Select(hex => Custom.hexToColor(hex ?? "FFFFFF"))];
+    }
+
+    /// <summary>
+    /// tints sprite with GetColors
+    /// </summary>
+    public static int ColorIndexForSprite(string spriteName) =>
+        spriteName.Split('_').Last() switch
+        {
+            "head" => 0,
+            "face" => 1,
+            "feature" => 2,
+            _ => -1,
+        };
+
     public List<PositionedSprite> sprites = [];
     public Dictionary<string, int> spriteLayerToColorIndex = [];
     public List<Color>? colors = [];
@@ -67,7 +132,7 @@ public class SlugIcon : PositionedMenuObject
     )
         : base(menu, owner, pos)
     {
-        Futile.atlasManager.LoadAtlas("illustrations/slugicons");
+        LoadAtlas();
 
         this.colors = colors;
 
@@ -92,21 +157,17 @@ public class SlugIcon : PositionedMenuObject
         if (slugcat == "")
             return;
 
-        List<string> spriteNames = SlugcatToSpriteNames.TryGetValue(slugcat, out List<string> names)
-            ? names
-            : ["basic_head", "basic_face", "modded_feature"];
-        if (dead)
-            spriteNames[spriteNames.FindIndex(name => name.EndsWith("_face"))] = "dead_face";
+        List<string> spriteNames = GetSpriteNames(slugcat, dead);
 
         for (int i = 0; i < spriteNames.Count; i++)
         {
             string spriteName = spriteNames[i];
             sprites.Add(new PositionedSprite(menu, this, Vector2.zero, new FSprite(spriteName)));
-            spriteLayerToColorIndex.Add(spriteName.Split('_').Last(), i);
+            spriteLayerToColorIndex[spriteName.Split('_').Last()] = i;
         }
 
         subObjects.AddRange([.. sprites]);
-        ApplyPalette();
+        ApplyPalette(this.colors);
     }
 
     public void ApplyPalette(List<Color>? newColors = null)
@@ -116,29 +177,13 @@ public class SlugIcon : PositionedMenuObject
         if (sprites.Count == 0)
             return;
 
-        List<Color> colors = this.colors ?? [];
+        List<Color> colors = GetColors(slugcat, this.colors);
 
-        if (colors.Count < 2)
+        foreach (KeyValuePair<string, int> layer in spriteLayerToColorIndex)
         {
-            if (!SlugcatToDefaultColors.TryGetValue(slugcat, out List<string?> hexColors))
-            {
-                RainMeadow.Debug(
-                    "Not enough colours were provided to SlugIcon and no default colours were found for the given slugcat, using fallback colours"
-                );
-                hexColors = ["FFFFFF", "101010", "FFFFFF"];
-            }
-            colors = [.. hexColors.Select(hex => Custom.hexToColor(hex ?? "FFFFFF"))];
+            int colorIndex = ColorIndexForSprite(layer.Key);
+            if (colorIndex >= 0 && colorIndex < colors.Count)
+                sprites[layer.Value].Sprite.color = colors[colorIndex];
         }
-
-        void TryMapColorsToSprites(string spritePart, Color color)
-        {
-            if (spriteLayerToColorIndex.TryGetValue(spritePart, out int index))
-                sprites[index].Sprite.color = color;
-        }
-
-        TryMapColorsToSprites("head", colors[0]);
-        TryMapColorsToSprites("face", colors[1]);
-        if (colors.Count > 2)
-            TryMapColorsToSprites("feature", colors[2]);
     }
 }

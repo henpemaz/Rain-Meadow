@@ -251,7 +251,8 @@ namespace RainMeadow
                     }
                     else
                     {
-                        return "Kill_Slugcat";
+                        // falls through to the slugcat class icon
+                        return "";
 
                     }
                 }
