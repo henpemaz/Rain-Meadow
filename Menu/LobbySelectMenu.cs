@@ -342,7 +342,7 @@ namespace RainMeadow
         {
             if (checkMods)
             {
-                CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods),
+                CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods), ModStringToArray(lobby.bannedHashes),
                     () =>
                     {
                         ShowLoadingDialog("Joining lobby...");

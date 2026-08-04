@@ -172,4 +172,9 @@ public static class RainMeadowModInfoManager
 
         return null;
     }
+
+    public static List<string> GetBannedHashes()
+    {
+        return MergedModInfo.BannedDllHashes;
+    }
 }
