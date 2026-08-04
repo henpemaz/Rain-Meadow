@@ -33,6 +33,9 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
             float textWidthOfSpearHit = 95;
+            float additionalLanguageWidth = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
+                ? 50f
+                : 0;
 
             spearsHitCheckbox = new(
                 menu,
@@ -173,7 +176,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, countdownTimerTextBox.pos.y),
-                100,
+                100 + additionalLanguageWidth,
                 menu.Translate("Corpse grab"),
                 "CORPSEGRAB"
             );
@@ -192,7 +195,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, stealItemCheckBox.pos.y),
-                100,
+                100 + additionalLanguageWidth,
                 menu.Translate("Join In Progress"),
                 "MIDGAMEJOIN"
             );
@@ -211,7 +214,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y),
-                100,
+                100 + additionalLanguageWidth,
                 menu.Translate("Better Hitbox"),
                 "WEAPONCOLLISIONFIX"
             );
@@ -221,7 +224,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38),
-                100,
+                100 + additionalLanguageWidth,
                 menu.Translate("Bees"),
                 "ENABLEBEES"
             );

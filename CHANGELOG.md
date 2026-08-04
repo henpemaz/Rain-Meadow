@@ -21,6 +21,7 @@
 - Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
 - Added scarfs(?)
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
+- French Translation
 ### ⚠️ Developers
 - The Debug Overlay has been changed to be able to track non physical object entities.
 - The Debug Overlay now has an Ownership view to Dev Tools.

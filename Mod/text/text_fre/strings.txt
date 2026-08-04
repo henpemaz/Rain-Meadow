@@ -220,7 +220,7 @@ Search for levels|Recherchez un niveau
 Search levels|Rechercher un niveau
 Match Settings|Paramètre du match
 Spears Hit:|Dégats de lance:
-Repeat Rooms:|Répéter les<LINE>niveaux:
+Repeat Rooms:|Répéter salles :
 Allow Item Stealing:|Vol d'object:
 Players can steal items from each other|Les joueurs peuvent voler les objets des autres
 Players cannot steal items from each other|Les joueurs ne peuvent pas voler les objets des autres
@@ -309,7 +309,7 @@ Survival Score:|Score de survie :
 Points for surviving inside the shelter|Points gagnés en survivant dans un abri
 Empty Kill Score:|Score de kill non-réclamé :
 Points for other players if someone dies without a killer|Points gagnés par les autres si quelqu’un meurt par lui-même
-Unlock Dens:|Débloquer des abris
+Unlock Dens:|Débloquer les abris :
 Points required to unlock dens|Points requis pour déverrouiller les abris
 Den Entry:|Dévérouillage des abris :
 Den entry behavior|Comment les abris sont dévérouillés
@@ -341,7 +341,7 @@ Artificer Parry Range Multiplier|Multiplieur de porté de parade de l'Artificier
 How far Artificer can parry from compared to vanilla range. Default: 0.3|Multiplieur de la porté auquel l'Artificier peut parer des projectiles par rapport à la porté de base. Défaut : 0.3
 Artificer Parry Leniency:|Parade indulgence de l'Artificier
 Gives Artificer more leniency frames in the concussive blast's parry|Fait durer le temps de parade pendant plus de frames
-Starting match in|Départ dans
+Starting match in|Match commencé dans
 SESSION RESULTS|RÉSULTAT DE LA PARTIE
 SESSION ENDED!|PARTIE TERMINÉ !
 IT'S A DRAW!|MATCH NUL !
@@ -652,8 +652,7 @@ Cannot join due to missing DLC!|Vous ne pouvez pas rejoindre car un DLC est manq
 Missing DLC Mods that have to be enabled: |Mods DLC qui doivent être activé : 
 A restart may take place to sync game objects|Un redémarrage est possiblement nécessaire pour synchroniser les objects du jeu
 Apply these changes now?<LINE>A restart may take place to sync game objects|Appliquer ces changements maintenant ?<LINE>Un redémarrage est possiblement nécessaire pour synchroniser les objects du jeu
-/// ???????????? why do I have to translate that ??
-mod_menu_apply_mods|mod_menu_apply_mods
+mod_menu_apply_mods|Application des mods en cours...
 
 // Remix Options
 Note: These inputs are not used in Meadow mode|Note : Ces entrées ne sont pas utilisées dans le mode de jeu Meadow.
@@ -702,6 +701,59 @@ LAN|LAN
 Username|Pseudo
 UDP timeout (ms)|Délai d'attente UDP (ms)
 UDP heartbeat (ms)|Pulsation d'UDP (ms)
+Global Mute|Mute Globale
+Chat Inactivity Opacity|Opacity de Chat Inactif
+Chat Inactivity Timer|Temps d'Inactivité de Chat
+Anniversary Gift|Cadeau d'd’Anniversaire
+Sound on Mention|Sons de Mention
+Watcher|Guetteur
+Lobby Music|Musique de Lobby
+Gameplay|Gameplay
+Streamer Mode|Mode Streamer
+Me|Moi
+Profanity Filter|Filtre de Langage
+Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|Vitesse de défilement du menu spectateur, du mode histoire, et des résultats d'arène. Défaut: $10
+// Unsure how to translate "Everyone", there's not much context I can find from it, and there's ALOT of possible translation
+Everyone|Tous
+Cape Colors|Couleur de Cape
+Default|Défaut
+Log Level|Niveau de Log
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: $10|Vitesse de défilement du menu spectateur, du mode histoire, et des résultats d'arène. Défaut:  $10
+Flair|Flair
+Custom Chat Username Color|Couleur de Pseudo Personnalisé
+Enable Meadow Cosmetics|Activer les Cosmétiques Meadow
+Toggle Show Score|Montrer Score
+None|Rien
+Sound On New Message|Sons de Nouveau Message
+Death Notification|Notification de Mort
+Session Notification|Notification de Session
+Enable Chat Logging Toggle|Activer la Touche de Log de Chat
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|Activer le Log de Chat en appuyant sur SHIFT + [CHAT KEY] pour voir les erreurs dans le chat en temps réel."
+Gold|Or
+Silver|Argent
+Greedy|Avare
+Aggressive AI:|IA Aggressive :
+Artificer Explosion Capacity|Capacité d'explosion de l'Artificier
+BACK|RETOUR
+Chat|Chat
+Cosmetic|Cosmétique
+Cosmetic Color|Couleur du Cosmétique
+Cosmetic Skin|Skin Cosmétique
+Countdown Safety Time (ticks)|Délai Maximal du Compte à rebours (ticks)
+Dev options|Option de developpeur
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.|Activer le Log de Chat en appuyant sur SHIFT + [CHAT KEY] pour voir les erreurs dans le chat en temps réel.
+Full Invisibility In Ripple Space:|Invisibilité Totale dans l'Espace Ondulatoire
+General|Général
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|Combien de temps le compte à rebours attendra tout le monde. Défaut : 300 ticks (7.5s)
+Join Notification|Notification de Joueurs
+Nightsky Skin|Skin du Ciel Étoilé
+Rain Timer:|Pluie :
+Round Notification|Notification de Round
+Text Downscroll|Défilement vers le bas
+Watcher will be fully invisible to everyone when in ripple space|Le Guetteur sera totalement invisible pour tous les joueurs lorsqu'il se trouvera dans l'espace ondulatoire.
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|Le Guetteur laissera une faible lueur à son emplacement dans l'espace ondulatoire. Les autres Guetteurs pourront également voir ses yeux.
+Wildlife:|Créatures :
+solid|unie
 
 // Credits
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow est une engine multijoueur unique pour un jeu unique. Rien d’autre n'y conviendrait. - Henpemaz
@@ -724,6 +776,10 @@ Programming, UI, menus|Programmation, IU, menu
 Programming, UI, story|Programmation, IU, histoire
 Programming, UI, LAN|Programmation, IU, LAN
 Thank you playtesters from the Rain Meadow discord as well.|Merci aussi aux testeurs du discord de Rain Meadow.
+Programming, gameplay|Programmation, gameplay
+Arena, story, UI|Arène, histoire, IU
+Programming, story, UI|Programmation, histoire, IU
+Meadow, story|Meadow, histoire
 
 // misc
 Players|Joueur
@@ -732,5 +788,105 @@ Leaving Lobby|Quitter le lobby
 You were removed from the previous online game|Vous avez été retiré du dernier lobby
 This player does not have a profile.|Ce joueur n'a pas de profil.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam n'est pas disponible actuellement.<LINE>Certaines optionalitées de Rain Meadow ont été désactivé.
-Rain Meadow failed to start|Rain Meadow a planté.
+Rain Meadow failed to start|Rain Meadow a planté
 Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Utilisez un mod externe pour accéder à la campaigne de Inv, s'il vous plaît.
+Gain achievements online|Obtenez des succès en ligne
+Select Settings|Paramètres d'Abilités
+MSC Settings|Paramètre MSC
+Watcher Settings|Paramètre Watcher
+Return to Select Settings Page|Retourner aux Paramètres d'Abilités
+Watcher Ripple Level:|Niveau d'Ondulation du Guetteur :
+Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Niveau d'Ondulation du Guetteur :
+Press grab to toggle active slugcats|Appuyer sur "attraper" pour activer/désactiver les slugcats actifs.
+Invite friends|Inviter des Amis
+Cape Color|Couleur de Cape
+fell into the abyss thanks to|est tombé dans les abymes à cause de
+blew up thanks to|a explosé à cause de
+LOADING :|CHARGEMENT :
+Overseer Spectator do not spawn in-game|Spectateurs Superviseurs n'apparaissent pas en jeu
+Meadow failed to start|Meadow a planté
+Rain Meadow Anniversary|Anniversaire de Rain Meadow
+April Fool's!|Poisson d'Avril !
+COINS:|PIÈCES :
+YOU ARE POOR|VOUS ÊTES PAUVRE
+You need more Meadow Coins to play this game|Vous avez besoin de plus de Pièce Meadow pour jouer
+Game Over! Try again?|Perdu ! Réessayer ?
+What's the secret password?|Quel est le mot de passe secret ?
+I heard they were removing capes|J'ai ouï-dire qu'ils enlevait les capes
+That crash was probably your fault|Ce crash était sûrement de ta faute
+Rain Meadow definitely failed to start|Rain Meadow a carrément planté
+Rain Meadow servers will go offline soon for maintenance|Les servers de Rain Meadow vont bientôt s'éteindre pour maintenance
+Would you like to erase all save progress?|Voulez-vous effacer toute votre progression ? 
+Take ¤10 Meadow Coins|Prenez ¤10 Pièces Meadow
+Coins remaining:|Pièces restantes :
+wawa|wawa
+Good.|Parfait.
+It was.|C'est vrai.
+Please work|Fonctionne stp
+Ok|Okay
+Yep|Ouais
+Special event|Événement spécial
+Special event:|Événement spécial :
+number:|nombre :
+number|nombre
+Event days remaining:|Jours d'événement restants :
+Days remaining|Jours restants
+Explosive Spear|Lance Explosive
+Scavenger Bomb|Bombe de Farfouilleur
+Joke Rifle|Fusil d'Avril
+Meadow Coin|Coin Meadow
+Rainbow Cape|Cape arc-en-ciel
+Event Gags:|Gags d'Événement :
+The Steam invite feature is currently unstable, and may not work properly. <LINE> Consider using a public lobby with a password instead.|La fonctionnalité d'invitation Steam est actuellement instable, et peut ne pas fonctionner correctement.<LINE>Considez d'utiliser un salon public protégé par un mot de passe à la place.
+View post-Game Stats|Voir les stats post-partie
+
+// Unsorted
+Rain Meadow|Rain Meadow
+Please disable JollyCoop before playing Online|Veuillez désactiver JollyCoop avant de jouer en ligne.
+MSC + Watcher|MSC + Watcher
+Rain Meadow version |La version 
+ is now available.| de Rain Meadow est maintenant disponible.
+Update to join the newest lobbies and get the latest features & fixes.|Mettez à jour pour rejoindre les salons récents, et bénéficier des dernières fonctionnalités & corrections.
+How to Update|Comment MàJ
+For Steam: Restart your game, if Rain Meadow doesn't update automatically resubscribe to force an update.|Pour Steam : Redémarrer le jeu. Si Rain Meadow ne se met pas à jour automatiquement, réabonnez-vous pour forcer la màj.
+For Other Platforms: Visit our GitHub releases page to download the latest release.|Pour une autre platforme : Allez sur notre GitHub pour télécharger la dernière version.
+Updating won't affect your save data.|La mise à jour ne touchera pas vos sauvegardes.
+<TEAMNAME> WINS!|<TEAMNAME> A GAGNÉ !
+<USERNAME> WINS!|<USERNAME> EST LE VAINQUEUR !
+ABOUT|À PROPOS
+Bee hives and scavenger bombs follow vanilla spawn behavior|Les Ruches d'Abeilles et Bombes de Farfouilleur apparaissent de façon usuel
+CANCEL|ANNULER
+cancel|annuler
+Clear playlist|Vider la playlist
+Creatures are vicious and aggressive|Les créatures seront aggressives et sans pitiés
+Custom colors|Couleur personnalisé
+Disabled Error Logging in chat.|Le log d'erreurs dans le chat est désactivé
+Eating contest|Concours de Nourriture
+Enabled Error Logging in chat.|Le log d'erreurs dans le chat est activé
+Failed import|Importation Échoué
+HUE|TON
+Kick player from lobby|Expulser le joueur du lobby
+LIT|LUM
+LOADING...|CHARGEMENT...
+MSC|MSC
+Mute player|Rendre muet
+Unmute player|Rétablir la parole
+No rain|Pas de pluie
+Normal Rain World AI|IA classique de Rain World
+OK|OKAY
+ok|okay
+PLAYER|JOUEUR
+Pinned:|Épinglé :
+Player vs player deathmatch|Joueur contre Joueur deathmatch
+Players: <num_p>|Joueurs : <num_p>
+Press any button to continue|Appuyer sur n'importe quel button pour continuer
+RESTART|REDÉMARRER
+Remove level from playlist|Enlever le niveau de la playlist
+Restore Default|Remettre à default
+SAT|SAT
+SCORE|SCORE
+STATS|STATS
+// Unsure how to translate UNLOCKS, and it's not used anymore anyway
+You aren't allowed to play as this slugcat|Vous ne pouvez pas jouer en tant que ce chat-limace
+You just won 1,000 Meadow coins!!|Vous venez de gagner 1000 pièces Meadow !!
+bee hives and scavenger bombs are disabled|Les Ruches d'Abeilles et Bombes de Farfouilleur sont désactivés

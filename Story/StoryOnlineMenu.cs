@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -644,7 +645,7 @@ namespace RainMeadow
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
-            reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
+            reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Regex.Replace(Translate("Require Campaign Slugcat"), "<LINE>", "\r\n"), "CAMPAIGNSLUGONLY", false);
             if (!OnlineManager.lobby.isOwner)
             {
                 friendlyFire.buttonBehav.greyedOut = true;

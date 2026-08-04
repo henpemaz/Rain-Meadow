@@ -70,7 +70,7 @@ namespace RainMeadow.UI.Components
             float rowHeight = 40f;
             float boxMargin = leftMargin + labelWidth 
                 + (menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
-                    ? 100f
+                    ? 125f
                     : 50f); // The X-position for all boxes
 
 
