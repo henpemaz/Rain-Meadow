@@ -218,7 +218,6 @@ Press '|Нажми «
 ' to toggle the chat log|», чтобы открыть окно чата.
 Mute player|Выключить звук игрока
 Unmute player|Включить звук игрока
-Mute player|Выключить звук игрока
 Kick player from lobby|Выгнать игрока из лобби
 Disabled Error Logging in chat.|Логирование ошибок в чате выключено.
 Enabled Error Logging in chat.|Логирование ошибок в чате включено.
