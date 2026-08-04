@@ -207,7 +207,7 @@ Flair|Стиль
 Enable Meadow Cosmetics|Включить косметику Meadow
 Log Level|Уровень записи логов
 Global Mute|Глобальное отключение звука
-solid|твёрдый
+solid|солидный
 
 
 ///Игра
