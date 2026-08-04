@@ -231,7 +231,7 @@ namespace RainMeadow
 
         public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
-            throw new NotImplementedException();
+            return; 
         }
     }
 }
