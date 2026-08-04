@@ -145,6 +145,32 @@ namespace RainMeadow
             return OnlineManager.mePlayer;
         }
 
+        public static AbstractCreature? FindPlayerACByArenaPlayer(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaGameSession arenaSession,
+            ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arenaOnline, arenaPlayer.playerNumber);
+
+            if (onlinePlayer is null)
+                return null;
+
+            return arenaSession.Players
+                .Find(playerAC => playerAC.GetOnlineCreature()?.owner == onlinePlayer);
+        }
+
+        public static ArenaSitting.ArenaPlayer? FindArenaPlayerByOnlinePlayer(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSitting arenaSitting,
+            OnlinePlayer onlinePlayer)
+        {
+            int playerNumber = FindOnlinePlayerNumber(arenaOnline, onlinePlayer);
+
+            return playerNumber == -1
+                ? null
+                : arenaSitting.players[playerNumber];
+        }
+
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
             ArenaOnlineGameMode arena,
             int playerNumber)

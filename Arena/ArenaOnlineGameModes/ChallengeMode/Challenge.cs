@@ -39,14 +39,22 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return false;
         }
 
+        public override bool ShouldWinByScore(ArenaSetup.GameTypeSetup gameTypeSetup) => false;
+
         public override void InitAsCustomGameType(
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
         {
+            base.InitAsCustomGameType(arenaOnline, self);
+
+            self.survivalScore   = 0;
+            self.KillScore       = 0;
+            self.EmptyDeathScore = 0;
+            self.spearHitScore   = 0;
+            self.foodScore       = 1;
+
             self.challengeID = challengeID;
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
-            self.spearsHitPlayers = arenaOnline.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
-            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
         public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
@@ -92,16 +100,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
             return arenaOnline.countdownInitiatedHoldFire = false;
-        }
-
-        public override void On_ArenaGameSession_PlayerLandSpear(
-            ArenaOnlineGameMode arenaOnline,
-            ArenaGameSession self,
-            Player player,
-            Creature target,
-            ArenaSitting.ArenaPlayer aPlayer)
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
         }
 
         public override string AddIcon(

@@ -97,14 +97,30 @@ namespace RainMeadow
                 FinalizeObjectSpawn(desiredObject);
             }
 
-            var playerSitting = game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)];
-            playerSitting.score -= btn.cost;
+            int scoreChange = -btn.cost;
 
-            foreach (var orderId in arena.arenaSittingOnlineOrder)
+            if (scoreChange != 0)
             {
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(orderId);
-                if (pl == null || pl.isMe) continue;
-                pl.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), playerSitting.score);
+                ArenaGameSession arenaSession = game.GetArenaGameSession;
+                ArenaSitting arenaSitting = arenaSession.arenaSitting;
+
+                ArenaSitting.ArenaPlayer arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arena,
+                    arenaSitting,
+                    OnlineManager.mePlayer
+                )!;
+
+                OnlineCreature myOCreature = ArenaHelpers
+                    .FindPlayerACByArenaPlayer(arena, arenaSession, arenaPlayer)!
+                    .GetOnlineCreature()!;
+
+                ArenaRPCs.ModifyArenaPlayerScore(arenaPlayer.playerNumber, scoreChange);
+
+                myOCreature.BroadcastRPCInRoom(
+                    ArenaRPCs.ModifyArenaPlayerScore,
+                    arenaPlayer.playerNumber,
+                    scoreChange
+                );
             }
         }
 
@@ -138,12 +154,18 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs) && cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
             {
-                bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
-                int currentScore = teamWork ? drown.teamPoints : game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
+                ArenaSitting arenaSitting = game.GetArenaGameSession.arenaSitting;
+                int score = arenaSitting.gameTypeSetup.spearsHitPlayers
+                    ? ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                        arena,
+                        arenaSitting,
+                        OnlineManager.mePlayer
+                    )!.score
+                    : drown.CalculateTeamScore(arena, arenaSitting);
 
                 foreach (var item in storeItemList)
                 {
-                    bool canAfford = currentScore >= item.cost;
+                    bool canAfford = score >= item.cost;
                     bool greyedOut = item.itemName switch
                     {
                         Respawn => isAlive || !canAfford || drown.openedDen,
