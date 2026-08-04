@@ -54,7 +54,7 @@ Meadow|メドウ
 A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|周囲を探索し、小さな秘密を発見する平和なモード。一人でも一緒でも楽しめます。
 Story|ストーリー
 Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|レインワールドの世界で友達と一緒に冒険し、共に戦い、共に死ぬ… 
-Arena|アリーナランク
+Arena|アリーナ
 Fight against unforgiving creatues and foes where only the strong survive.|強者だけが生き残る世界で、容赦のない生き物や敵と戦いましょう。
 Visibility:|公開範囲:
 Public|パブリック
@@ -577,6 +577,10 @@ Illustration|イラスト
 Programming, UI, menus|プログラム・UI、メニュー
 Programming, UI, story|プログラム・UI、ストーリー
 Programming, UI, LAN|プログラム・UI、LAN機能
+Programming, gameplay|プログラム、ゲームプレイ
+Arena, story, UI|アリーナ、ストーリー
+Programming, story, UI|プログラム、ストーリー、UI
+Meadow, story|メドウ、ストーリー
 Thank you playtesters from the Rain Meadow discord as well.|レインメドウのDiscordのプレイテスターの皆さんにも感謝します。
 
 
@@ -618,6 +622,8 @@ Exit to Lobby Select|ロビー選択に戻る
 /// arena invite buton description (this is already exist at Meadow tab but not it not worked)
 Invite friends|フレンドを招待
 
+
+
 /// snuggles additions, Meadow Version 0.1.14.1 
 
 /// remix settings
@@ -625,6 +631,7 @@ Invite friends|フレンドを招待
 /// General Tab
 Lobby Music|ロビー音楽
 Cape Color|マントのカラー
+Cape Colors|マントのカラー
 Log Level|ログレベル
 
 /// Arena Tab
@@ -642,16 +649,16 @@ Streamer Mode|配信モード
 ///death messages
 blew up.|爆発した。
 fell into the abyss thanks to|は深淵に投げ込まれた。死因:
-blew up thanks to|は爆発された。死因:
+was blown up by|は爆発された。死因:
 
 ///Arena 
-LOADING :|ロード :
+LOADING|ロード
 //char select
 THE OVERSEER|監視者
 Observe without peril|危険なく見つめる
 //match settings tab
 Overseers Show:|監視者可視:
-Overseer Spectators spawn in-game|マッチ中に監視者がスポーンする
+Overseer Spectators spawn in-game|マッチ中に監視者はスポーンする
 Overseer Spectator do not spawn in-game|マッチ中に監視者はスポーンしない
 Challenge|チャレンジ
 Players can grab dead players|死んだプレイヤーを捕まえることは禁止しません
@@ -679,7 +686,7 @@ Den entry behavior|雨宿エントリのロジック
 Den Ejection:|雨宿駆出
 Dens eject and block players after some time|雨宿はプレイヤーを取り出し、しばらくしてエントリーをブロックする
 Normal den behavior|通常ロジック
-Playlist:|プレイリスト
+Playlist:|プレイリスト:
 Copy playlist to clipboard|プレイリストをコピー
 Copied|コピー!
 Imported|読み込む
@@ -693,3 +700,130 @@ RESET|リセット
 //challenge settings tab
 Challenge Settings|チャレンジ設定
 Challenge ID|チャレンジID
+
+///meadow 0.1.15 and touch ups
+
+///remix menu
+Gold|ゴルド
+Silver|シルバー
+Toggle Show Score|スコアを視覚化
+None|なし
+Custom Chat Username Color|チャットユーザー名のカラー
+Watcher|ウォッチャー
+Enable Meadow Cosmetics|メドウアクセサリー
+Cosmetic|アクセサリー
+Cosmetic Skin|アクセサリーのスキン
+Cosmetic Color|アクセサリーのカラー
+Gameplay|ゲームプレイ
+Chat|チャット
+Death Notification|デスメッセージ
+Join Notification|参加メッセージ
+Round Notification|ラウンドメッセージ
+Session Notification|セッションメッセージ
+Enable Chat Logging Toggle|チャットログ保持
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|チャットログ保持. シフト+「チャットキー」 チャットでの表示エラー
+Text Downscroll|テキストスクロール
+Sound On New Message|メッセージ音
+Everyone|みんあ
+Default|デフォルト
+Anniversary Gift|記念日ギフト
+BACK|もどる
+Rain Timer:|雨タイマー:
+General|一般
+Greedy|欲深い
+solid|ソリッド
+
+///lobby menu
+Fight against unforgiving creatures and foes where only the strong survive.|容赦のない生物や敵と戦い,強者だけが生き残る世界だ.
+Timeline:|時間軸:
+Spear|スピア
+Cheats:|チート
+If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|有効にすると,プレイヤーはほとんどの開発ツールのチートを使用できるようになります.慎重に使用してください
+Cheats are disabled in this lobby.|チート無効
+Anniversary Gags:|記念日ギャグ:
+ArenaCompetitive|アリーナランク
+
+//meadow
+Eye Color|眼の色
+CONTINUE|続ける
+
+//story
+ - New Game| - 新しいゲーム
+Wait for others to shelter or rescue you or press |ほかのプレイヤーがあなたを救助するか、雨宿り場へたどり着くかを待つ間「
+ to spectate|」キーで他プレイヤーを観戦できます。
+//arena
+Copy|コピー
+Import|インポート
+Settings:|設定:
+Pit yourself against a series of challenges|一連のチャレンジと対戦する
+How many explosions Artificer can use before cooldown|クールダウン前に発明家が使用できる爆発の数
+Artificer Stun Range Multiplier|発明家のスタン範囲倍率
+Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|発明家が他のプレイヤーをスタンさせることができる距離が,通常の射程に比べてどの程度になるかを示す倍率. デフォルト:0.5
+Artificer Parry Range Multiplier|発明家の受け流し範囲倍率
+How far Artificer can parry compared to vanilla range. Default: 0.3|発明家の受け流し範囲は,デフォルトの範囲と比べてどの程度まで広. デフォルト:0.3
+Artificer Parry Leniency:|発明家の受け流しに関する寛容措置:
+Gives Artificer more leniency frames in the concussive blast's parry|発明家の受け流し可能なフレーム数を増やす
+Go to <SETTINGSNAME> Page|<SETTINGSNAME> ページへ移動
+Weaver Watcher:|織り手ウォッチャー:
+Your watcher has synced weaver cosmetics|自分のウォッチャーは織り手に見えます
+Your watcher has synced normal cosmetics|自分のウォッチャーは普通に見えます
+Voidkeeper:|ヴォイドキーパー:
+Summon amoebas at the cost of your camo timer|「透明化タイマー」を使ってアメーバを召喚する
+Amoeba summoning is disabled lobby-wide|アメーバの召喚は無効になって
+Voidkeeper Amoeba Duration:|ヴォイドキーパーアメーバ期間
+Amoeba duration time in seconds|アメーバ期間(秒)
+Void's Vengeance:|ヴォイドの復讐
+Amoeba's direction is influenced by pointing|アメーバは指し示す動作の影響を受ける
+Amoebas chase targets at-will|アメーバが獲物を追いかける
+View Post-Game Stats|セッションの結果を表示する
+View Current Mode Info|現在のモード情報を表示する
+Customize your colors|自分の色をカスタマイズ
+Go to Slugcat Selection Page|ナメクジネコの選択ページへ移動
+This user is the lobby host|このユーザーはホストです
+GAME IN SESSION|セッションが進行中
+Amoeba Lethality Factor:|アメーバ致死因子
+Multiplier for amoeba lethality|アメーバ致死の乗数
+Starting match in|マッチスタート! あと:
+SESSION RESULTS|セッション結果
+SESSION ENDED!|セッションエンド!
+IT'S A DRAW!|引き分けだ!
+How long Wacher's abilities last for. Default: 12s|ウォッチャーの能力の持続時間
+Survive,|生き残る
+//drown
+Drown|ドラウン
+Drown Settings|ドラウン設定
+Store keybind|ストアキー
+Points required to buy a ... rock?|石を買うのに必要なポイント... え?
+Points required to buy a spear|スピアを買うのに必要なポイント
+Points required to buy an explosive spear|爆弾スピアを買うのに必要なポイント
+Points required to buy a scav bomb|爆弾を買うのに必要なポイント
+[MSC]: Points required to buy an electric spear|[MSC]電気スピアを買うのに必要なポイント
+[Watcher]: Points required to buy a boomerang|[ウォッチャー]ブーメランを買うのに必要なポイント
+Points required to buy a respawn|復活を買うのに必要なポイント
+Points required to open dens|雨宿オープンポイント
+How many waves before creature cleanup|クリーチャークリーンアップ前のウエーブの量
+Max creatures in level|クリーチャーの最大数
+Electric Spear|電気スピア
+Boomerang|ブーメラン
+Respawn|復活
+Open Dens|雨宿オープン
+Scavenger Bomb|爆弾
+Explosive Spear|爆弾スピア
+Rock|石
+Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op|殺して生き残り, 自由を手に入れる<LINE><LINE>協力プレイ時は「槍のヒット」をオフにする
+
+//mod manager
+A restart may take place to sync game objects|ゲームオブジェクトを同期するために再起動が行われます
+Apply these changes now?|今すぐ変更を適用しますか？
+
+//creatures
+Peach Lizard|ピーチトカゲ
+Slugcat NPC|ナメクジネコ NPC
+MothGrub|モスグラブ
+Angler|アングラー
+TowerCrab|タワークラブ
+
+//misc
+
+//lacking translate string?
+Current points:|現在のポイント

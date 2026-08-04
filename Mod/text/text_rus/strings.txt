@@ -111,6 +111,8 @@ Username Toggle|Режим переключения имён
 Custom Chat Username Color|Пользовательский цвет имени игрока в чате
 Enable Meadow Cosmetics|Включить косметику Meadow
 Toggle Show Score|Переключение показа счёта
+Countdown Safety Time (ticks)|Время безопасности отсчёта (в тиках)
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|На протяжении какого времени отсчёт будет ждать остальных. По умолчанию: 300 тиков (7,5сек)
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
 Stop Inputs While Spectating|Отключить управление во время наблюдения
@@ -343,6 +345,9 @@ Watcher Camo Duration:|Длительность камуфляжа Созерц�
 How long Watcher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
 Watcher Ripple Level:|Уровень ряби Созерцателя:
 Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Обновляет уровень ряби Созерцателя. Диапазон от 1 до 9. По умолчанию: 1
+Watcher will be fully invisible to everyone when in ripple space|Созерцатель будет полностью невидим для всех пока он в Пространстве Ряби 
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|Созерцатель будет оставлять за собой слабое свечение когда он в Пространстве Ряби. Другие Созерцатели также смогут видеть их глаза.
+Full Invisibility In Ripple Space:|Полная невидимость в Пространстве Ряби:
 Weaver Watcher:|Созерцатель-ткач
 Your watcher has synced weaver cosmetics|Твой Созерцатель будет выглядеть как после встречи Ткача
 Your watcher has synced normal cosmetics|Твой Соцерцатель будет выглядеть как обычно
