@@ -825,5 +825,5 @@ TowerCrab|タワークラブ
 
 //misc
 
-/lacking translate string?
+//lacking translate string?
 Current points:|現在のポイント
