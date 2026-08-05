@@ -272,6 +272,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override void On_ArenaGameSession_SpawnPlayers(
             ArenaOnlineGameMode arenaOnline,
+            On.ArenaGameSession.orig_SpawnPlayers orig,
             ArenaGameSession self,
             Room room,
             List<int> suggestedDens)

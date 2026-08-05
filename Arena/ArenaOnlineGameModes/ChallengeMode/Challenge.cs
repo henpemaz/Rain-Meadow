@@ -57,6 +57,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             self.gameType = DLCSharedEnums.GameTypeID.Challenge;
         }
 
+        public override int On_ArenaSetup_GameTypeSetup_get_ScoreToEnterDen(
+            Func<ArenaSetup.GameTypeSetup, int> orig,
+            ArenaSetup.GameTypeSetup self)
+        {
+            return orig(self);
+        }
+
         public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
