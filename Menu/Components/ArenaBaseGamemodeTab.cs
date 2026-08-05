@@ -64,14 +64,15 @@ namespace RainMeadow.UI.Components
             : base(menu, owner, pos, size)
         {
             tabWrapper = new(menu, this);
+            InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float leftMargin = 10f;
             float labelWidth = 100f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
-            float boxMargin = leftMargin + labelWidth 
-                + (menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
-                    ? 125f
-                    : 50f); // The X-position for all boxes
+            float boxMargin = leftMargin + labelWidth // The X-position for all boxes
+                + (lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Spanish
+                    ? 125f // Add more space for some languages
+                    : 50f); 
 
 
             foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),

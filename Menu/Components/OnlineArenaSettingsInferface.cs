@@ -32,8 +32,9 @@ namespace RainMeadow.UI.Components
             {
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
+            InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float textWidthOfSpearHit = 95;
-            float additionalLanguageWidth = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.French
+            float additionalLanguageWidth = lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Russian
                 ? 50f
                 : 0;
 
