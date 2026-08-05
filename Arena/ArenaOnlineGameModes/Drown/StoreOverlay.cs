@@ -191,7 +191,7 @@ namespace RainMeadow
             for (int i = 0; i < game.room.world.GetAbstractRoom(0).exits; i++) exitList.Add(i);
 
             arena.avatars.Clear();
-            arena.externalArenaGameMode.On_ArenaGameSession_SpawnPlayers(arena, game, game.room, exitList);
+            game.SpawnPlayers(game.room, exitList);
 
             foreach (var orderId in arena.arenaSittingOnlineOrder)
             {

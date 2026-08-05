@@ -227,9 +227,9 @@ namespace RainMeadow
         }
 
         public override void On_ArenaGameSession_Update(
+            ArenaOnlineGameMode arenaOnline,
             On.ArenaGameSession.orig_Update orig,
-            ArenaGameSession self,
-            ArenaOnlineGameMode arenaOnline)
+            ArenaGameSession self)
         {
             if (IsDrownMode(out DrownMode drown))
             {
@@ -298,16 +298,17 @@ namespace RainMeadow
                     waveNeedsUpdate = false;
                 }
             }
-            base.On_ArenaGameSession_Update(orig, self, arenaOnline);
+            base.On_ArenaGameSession_Update(arenaOnline, orig, self);
 
         }
 
         public override void On_HUD_HUD_InitMultiplayerHud(
             ArenaOnlineGameMode arenaOnline,
+            On.HUD.HUD.orig_InitMultiplayerHud orig,
             HUD.HUD self,
             ArenaGameSession session)
         {
-            base.On_HUD_HUD_InitMultiplayerHud(arenaOnline, self, session);
+            base.On_HUD_HUD_InitMultiplayerHud(arenaOnline, orig, self, session);
             self.AddPart(new StoreHUD(self, session.game.cameras[0], this));
         }
 

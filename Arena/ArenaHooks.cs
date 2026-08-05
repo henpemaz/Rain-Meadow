@@ -806,10 +806,9 @@ namespace RainMeadow
 
         public int ScoreToEnterDen(Func<ArenaSetup.GameTypeSetup, int> orig, ArenaSetup.GameTypeSetup self)
         {
-            if (isArenaMode(out var arena) && arena.externalArenaGameMode is not ArenaChallengeMode)
-            {
-                return arena.denScore;
-            }
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return arenaOnline.externalArenaGameMode.On_ArenaSetup_GameTypeSetup_get_ScoreToEnterDen(orig, self);
+
             return orig(self);
         }
         // so many IL hooks mang
@@ -1455,10 +1454,9 @@ namespace RainMeadow
             On.ArenaSitting.orig_FinalSittingResult orig,
             ArenaSitting self)
         {
-            if (isArenaMode(out var arena))
-            {
-                return arena.externalArenaGameMode.On_ArenaSitting_FinalSittingResult(arena, orig, self);
-            }
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
+                return arenaOnline.externalArenaGameMode.On_ArenaSitting_FinalSittingResult(arenaOnline, orig, self);
+
             return orig(self);
         }
 
@@ -1501,8 +1499,16 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer B
         )
         {
-            if (isArenaMode(out var arena))
-                return arena.externalArenaGameMode.On_ArenaSitting_PlayerSittingResultSort(arena, orig, self, A, B);
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
+            {
+                return arenaOnline.externalArenaGameMode.On_ArenaSitting_PlayerSittingResultSort(
+                    arenaOnline,
+                    orig,
+                    self,
+                    A,
+                    B
+                );
+            }
             return orig(self, A, B);
         }
 
@@ -1510,17 +1516,20 @@ namespace RainMeadow
             On.ArenaSitting.orig_PlayerSessionResultSort orig,
             ArenaSitting self,
             ArenaSitting.ArenaPlayer A,
-            ArenaSitting.ArenaPlayer B
-        )
+            ArenaSitting.ArenaPlayer B)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                return arena.externalArenaGameMode.On_ArenaSitting_PlayerSessionResultSort(arena, orig, self, A, B);
+                return arenaOnline.externalArenaGameMode.On_ArenaSitting_PlayerSessionResultSort(
+                    arenaOnline,
+                    orig,
+                    self,
+                    A,
+                    B
+                );
             }
-            else
-            {
-                return orig(self, A, B);
-            }
+
+            return orig(self, A, B);
         }
 
         public void ArenaOverlay_Update(
@@ -2772,17 +2781,15 @@ namespace RainMeadow
         public void ArenaSitting_SessionEnded(
             On.ArenaSitting.orig_SessionEnded orig,
             ArenaSitting self,
-            ArenaGameSession session
-        )
+            ArenaGameSession session)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                arena.externalArenaGameMode.On_ArenaSitting_SessionEnded(arena, orig, self, session);
+                arenaOnline.externalArenaGameMode.On_ArenaSitting_SessionEnded(arenaOnline, orig, self, session);
+                return;
             }
-            else
-            {
-                orig(self, session);
-            }
+
+            orig(self, session);
         }
 
         public Player.InputPackage RWInput_PlayerUIInput_int(
@@ -3363,17 +3370,15 @@ namespace RainMeadow
         public void HUD_InitMultiplayerHud(
             On.HUD.HUD.orig_InitMultiplayerHud orig,
             HUD.HUD self,
-            ArenaGameSession session
-        )
+            ArenaGameSession session)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                arena.externalArenaGameMode.On_HUD_HUD_InitMultiplayerHud(arena, self, session);
+                arenaOnline.externalArenaGameMode.On_HUD_HUD_InitMultiplayerHud(arenaOnline, orig, self, session);
+                return;
             }
-            else
-            {
-                orig(self, session);
-            }
+
+            orig(self, session);
         }
 
         public bool ExitManager_PlayerTryingToEnterDen(
@@ -3517,17 +3522,15 @@ namespace RainMeadow
 
         public void ArenaGameSession_Update(
             On.ArenaGameSession.orig_Update orig,
-            ArenaGameSession self
-        )
+            ArenaGameSession self)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                arena.externalArenaGameMode.On_ArenaGameSession_Update(orig, self, arena);
+                arenaOnline.externalArenaGameMode.On_ArenaGameSession_Update(arenaOnline, orig, self);
+                return;
             }
-            else
-            {
-                orig(self);
-            }
+
+            orig(self);
         }
 
         public void RespawnFlies_Update(
@@ -3603,16 +3606,20 @@ namespace RainMeadow
 
         public bool ExitManager_ExitsOpen(
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
-            ArenaBehaviors.ExitManager self
-        )
+            ArenaBehaviors.ExitManager self)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
+                // Fixes a bug where the host gets stuck in a den if they enter it before anyone else loads.
+                // Now that everyone must be loaded in before the host can move, this may technically be useless.
                 if (self.game.world.rainCycle.timer < 40)
-                {
                     return false;
-                }
-                return arena.externalArenaGameMode.On_ArenaBehaviors_ExitManager_ExitsOpen(arena, orig, self);
+
+                return arenaOnline.externalArenaGameMode.On_ArenaBehaviors_ExitManager_ExitsOpen(
+                    arenaOnline,
+                    orig,
+                    self
+                );
             }
 
             return orig(self);
@@ -3622,17 +3629,21 @@ namespace RainMeadow
             On.ArenaGameSession.orig_SpawnPlayers orig,
             ArenaGameSession self,
             Room room,
-            List<int> suggestedDens
-        )
+            List<int> suggestedDens)
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
-                arena.externalArenaGameMode.On_ArenaGameSession_SpawnPlayers(arena, self, room, suggestedDens);
+                arenaOnline.externalArenaGameMode.On_ArenaGameSession_SpawnPlayers(
+                    arenaOnline,
+                    orig,
+                    self,
+                    room,
+                    suggestedDens
+                );
+                return;
             }
-            else
-            {
-                orig(self, room, suggestedDens);
-            }
+
+            orig(self, room, suggestedDens);
         }
     }
 }
