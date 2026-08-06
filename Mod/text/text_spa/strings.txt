@@ -65,6 +65,13 @@ Player max:|Jugadores:
 Maximum number of players that can be in the lobby (up to 32)|Número máximo de jugadores que pueden estar en la sala (hasta 32)
 Creating lobby...|Creando la sala...
 
+Fight against unforgiving creatures and foes where only the strong survive.|Una lucha contra enemigos y criaturas despiadadas donde sólo los más fuertes sobreviven.
+Timeline:|Era:
+Spear|Lancero
+ArenaCompetitive|ArenaCompetitiva
+Cheats:|Trucos:
+If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|Si están activados, los jugadores podrán usar todos los trucos de Dev Tools. Actívalos con precaución.
+
 // Meadow Character Select
 Locked|Bloqueado
 ENTER|ENTRAR
@@ -166,6 +173,10 @@ Press again to ban player!|¡Pulsa otra vez para banear al jugador!
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
  to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
 READY|LISTO
+ - New Game| - Nueva partida
+Restart game|Reiniciar partida
+Wait for others to shelter or rescue you or press |Espera a que otros hibernen o te rescaten, o presiona 
+ to spectate| para observarlos
 
 // Arena Mode
 ME|YO
@@ -253,6 +264,115 @@ Winner!|¡Ganador!
 <TEAMNAME> WIN!|¡EL EQUIPO «<TEAMNAME>» HA GANADO!
 Unknown user|Usuario desconocido
 TO LOBBY|A LA SALA
+Challenge|Desafío
+Pit yourself against a series of challenges|Pruébate a ti mismo ante una serie de desafíos.
+RESET|REINICIAR
+Overseers Show:|Mostrar supervisores
+Overseer Spectators spawn in-game|Los supervisores aparecerán en la partida
+Overseer Spectators do not spawn in-game|Los supervisores no aparecerán en la partida
+Item Stealing|Robar objetos
+Join In Progress|
+Better Hitbox|Mejores colisiones
+Piggybacking|Cargar a otros
+Players cannot piggyback each other|Los jugadores no podrán cargarse entre sí
+Players can piggyback each other|Los jugadores podrán cargarse entre sí
+Bombs|Bombas
+Scavenger bombs follow vanilla spawn behavior|Las bombas aparecerán como en el juego base
+No scavenger bombs spawn|Las bombas no aparecerán
+Bees|Abejas
+Bee hives follow vanilla spawn behavior|Sus colmenas aparecerán como en el juego base
+No beehives spawn|No aparecerán las colmenas
+Corpse grab|Agarrar
+Players can grab dead players|Se podrá agarrar a jugadores eliminados
+Players cannot grab dead players|No se podrá agarrar a jugadores eliminados
+Go to <SETTINGSNAME> Page|Ir a la página <SETTINGSNAME>
+How long Watcher's abilities last for. Default: 12s|Duración de las habilidades del Vigilante. Por defecto: 12s
+Weaver Watcher:|Tejedor vigilante
+Your watcher has synced weaver cosmetics|¡Tu Vigilante tendrá una apariencia de tejedor sincronizada!
+Your watcher has synced normal cosmetics|Tu Vigilante tendrá una apariencia normal sincronizada.
+Voidkeeper:|Guardián del vacío
+Summon amoebas at the cost of your camo timer|Se podrán invocar amebas a cambio de tiempo de camuflaje
+Amoeba summoning is disabled lobby-wide|No se podrán invocar amebas
+Voidkeeper Amoeba Duration:|Duración de amebas:
+Amoeba duration time in seconds|Tiempo en segundos de la duración de amebas
+Void's Vengeance:|Venganza deñ vacío:
+Amoeba's direction is influenced by pointing|La dirección de las amebas es afectada al apuntar
+Amoebas chase targets at-will|Las amebas persiguen víctimas a voluntad
+How many explosions Artificer can use before cooldown|Número de explosiones que el Artífice puede usar antes de
+Arena Settings|Ajustes de Arena
+Food Score:|Puntos de alimentos
+Food points multiplier|Multiplicador de alimentos
+Spear Hit Score:|Puntos por ataques de lanza
+Points a spear is worth (non-lethal)|Puntos por ataques de lanza no letales
+Kill Score:|Puntos por eliminación
+Points a kill is worth|Puntos por eliminar a un jugador
+Survival Score:|Puntos de supervivencia
+Points for surviving inside the shelter|Puntos por entrar a la madriguera y sobrevivir
+Empty Kill Score:|Puntos al morir
+Points for other players if someone dies without a killer|Puntos para otros jugadores si alguien murió sin asesino
+Unlock Dens:|Desbloquear refugios:
+Points required to unlock dens|Puntos requeridos para desbloquear refugios
+Den Entry:|Modo de entrada
+Den entry behavior|Ajusta el modo de entrada al refugio
+Score|Puntaje
+Standard|Normal
+Always|Siempre
+Den Ejection:|Expulsión del refugio
+Dens eject and block players after some time|Los refugios expulsan y se bloquean para los jugadores después de un tiempo
+Playlist:|Lista de la partida
+Copy playlist to clipboard|Copiar la lista al portapapeles
+Copied|¡Copiada!
+Import playlist from clipboard|Importar la lista del portapapeles
+Imported|¡Importada!
+Friendly Fire:|Fuego amigo:
+Challenge ID|ID del desafío
+Challenge Settings|Ajustes de Desafío
+View Post-Game Stats|Muestra las estadísticas finales
+View Current Mode Info|Muestra la información del modo actual
+Customize your colors|Personaliza tus colores
+Go to Slugcat Selection Page|Ir a la página de selección de gato-babosa
+This user is the lobby host|Este usuario es anfitrión de esta sala
+GAME IN SESSION|SESIÓN DE JUEGO ACTIVA
+Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op|Asesina y sobrevive para pagar tu salida<LINE><LINE>Desactiva ataques de lanzas para Co-Op
+Amoeba Lethality Factor:|Factor de letalidad de amebas:
+Multiplier for amoeba lethality:|Multiplicador de letalidad de ameba:
+Artificer Stun Range Multiplier|Multiplicador de rango de aturdimiento del Artífice
+Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|Modifica la distancia de aturdimiento del Artífice, comparada con el juego base. Predeterminado: 0.5
+Artificer Parry Range Multiplier|Multiplicador de rango para esquivar del Artífice
+How far Artificer can parry from compared to vanilla range. Default: 0.3|Modifica la distancia para esquivar del artífice, comparada con el juego base. Predeterminado: 0.3
+Artificer Parry Leniency:|Margen para esquivar del Artífice
+Gives Artificer more leniency frames in the concussive blast's parry|Otorga al artífice un margen más generoso para esquivar ataques
+Starting match in|Empezando la partida en
+SESSION RESULTS|RESULTADOS DE LA SESIÓN
+SESSION ENDED!|¡FIN DE LA SESIÓN!
+IT'S A DRAW!|¡ES UN EMPATE!
+Settings:|Ajustes:
+Copy|Copiar
+Import|Importar
+Drown Settings|Ajustes de Drown
+Store keybind|Guardar ajuste de entrada
+Points required to buy a ... rock?|Puntos requeridos para comprar una... ¿piedrita?
+Points required to buy a spear|Puntos requeridos para comprar una lanza
+Points required to buy an explosive spear|Puntod requeridos para comprar una lanza explosiva
+Points required to buy a scav bomb|Puntos requeridos para comprar una bomba
+[MSC]: Points required to buy an electric spear|[MSC]: Puntos requeridos para comprar una lanza eléctrica
+[Watcher]: Points required to buy a boomerang|[Watcher]: Puntos requeridos para comprar un búmeran
+Points required to buy a respawn|Puntos requeridos para reaparecer
+Points required to open dens|Puntos requeridos para abrir los refugios
+How many waves before creature cleanup|Número de oleadas antes de borrar criaturas
+Max creatures in level|Numero máximo de criaturas en el nivel
+STORE|TIENDA
+Rock|Piedrita
+Electric Spear|Lanza eléctrica
+Boomerang|Búmeran
+Respawn|Reaparecer
+Open Dens|Abrir refugios
+LOADING|CARGANDO
+Cheats are disabled in this lobby.|Los trucos están desactivados en esta sala
+Allow Piggyback:|Permitir cargar a otros
+Corpes grab|Agarrar a otros
+Survive,|Sobrevive,
+
 
 // Arena Slugcat Select
 Back To Lobby|Volver a la sala
@@ -282,6 +402,16 @@ Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscand
 <LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>¿Estoy condenado a ser un samaritano o estoy atrapado por siempre en tu sombra?
 <LINE>I do not know, for I am not one. I am many.|<LINE>Yo no lo sé puesto que no soy uno. Soy muchos.
 Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar el gran tesoro.<LINE>Aquellos que deambulen muchos de ellos encontrarán la gran verdad.
+CHOOSE YOUR CHARACTER|SELECCIONA TU PERSONAJE
+THE OVERSEER|EL SUPERVISOR
+Normal den behavior|Comportamiento normal de refugios
+Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?|Distante y atrapado entre las olas... .<LINE>¿Te dejarás llevar por la marea, o irás en su contra?
+Observe without peril|Observa sin riesgo
+Playlist: |Lista de la partida
+Failed|Fallaste
+You could have saved them.|Pudiste haberlos salvado.
+With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.|Sin ninguna atadura en tu corazón, retirarse es la única opción.<LINE>Escóndete y ataca con prudencia, antes que tu oportunidad también sea arrebatada.
+Players will rotate through all slugcats|Los jugadores cambiarán cíclicamente de personaje
 
 // Paincat's Names & Descriptions
 Paincat|Gato-dolor
@@ -327,6 +457,13 @@ There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Hay suficient
 "i'm ded"|«Estoy muelto».
 bleh|bleh
 inv? like invalidunits?|¿inv?, o sea, ¿invalidunits?
+My little shadow, show them your peeping eyes!|Mi pequeña sombra... ¡échales un ojito!
+Abandoned, separated from your kin, bound by your fate.<LINE>You've hidden, walked places no others have.<LINE>But now is the time to come out and fight.|Abandonado, separado de los tuyos, y atado por el destino.<LINE>Escondiéndote, has  caminado a donde nadie más ha llegado.<LINE>Pero ahora es tiempo de salir, ¡y luchar!
+A failed warp has brought you here.<LINE>You must now fight for your life<LINE>With no difference between friend and foe.|Una travesía fallida te trajo hasta aquí.<LINE>Pelea por tu vida<LINE>sin distinguir entre aliados y enemigos.
+Shattered by destiny, exiled to the unknown.<LINE>Step out of your ripple to find answers.<LINE>No matter the cost.|Destruido por el destino, exiliado a lo desconocido.<LINE>Emerge del vacío para buscar respuestas.<LINE>Al costo que sea.
+You have bore witness to unforeseen catastrophes<LINE>Watched as the world crumbles around you<LINE>You have stood in the shadows long enough.|Has sido testigo de catástrofes nunca antes vistas<LINE>Has observado como el mundo se desmorona a tu alrededor.<LINE>Y has estado en las sombras... lo suficiente.
+CONSIDER:<LINE>A ripple in silent waters,<LINE>an echo of fear,<LINE>a cycle of violence.|CONSIDERA:<LINE>Una onda sobre aguas silenciosas,<LINE>un eco de miedo,<LINE>un ciclo de violencia.
+Oh, before you go... a gift.<LINE>Perhaps we are not so different after all.|¡Oh!, antes de irte... un regalo.<LINE>Tal vez no somos tan diferentes despúes de todo.
 
 // Scugslots
 Press and hold something on screen to spin the slots / Hope you brought green|Mantén pulsado algo en la pantalla para probar tu suerte / Espero que hayas traído plata
@@ -384,6 +521,15 @@ was zapped by a|ha sido electrocutado por un
 was ambushed by a|ha sido cazado por una
 was taken by a|ha sido llevado por
 was slain by a|ha sido asesinado por
+was blown up by|fue volado en pedazos por
+blew up.|explotó.
+was consummed by the swarm.|fue consumido por el enjambre
+was taken into the abyss thanks to|fue tirado al abismo gracias a
+asphyxiated.|se asfixió.
+hit the ground too hard thanks to|cayó al suelo violentamente gracias a 
+tried to swim in burning liquid to escape|intentó nadar en líquido ardiente al huir de
+was drowned by a|fue ahogado por
+was swallowed by the walls thanks to|fue tragado por las paredes gracias a
 
 // creature names for death messages
 Pink Lizard|Lagarto Rosa
@@ -465,6 +611,11 @@ Indigo Lizard|Lagarto Índigo
 Rat|Rata
 Frog|Rana
 Tardigrade|Tardígrado
+MothGrub|Larva de Polilla
+Slugcat NPC|Gato-Babosa
+Peach Lizard|Lagarto Durazno
+Angler|Pez Pescador
+TowerCrab|Cangrejo Torre
 
 // Direct Connection Dialogue
 Direct Connection... |Conexión directa... 
@@ -499,6 +650,9 @@ This may cause unstable play.|Esto puede ocasionar una jugabilidad inestable.
 Reorder your mods now?|¿Reordenar ahora tus mods?
 Cannot join due to missing DLC!|¡No puedes unirte debido a la falta de DLC!
 Missing DLC Mods that have to be enabled: |Mods DLC perdidos que deben estar activados: 
+A restart may take place to sync game objects|Un reinicio podría ser necesario para sincronizar los objetos del juego.
+Apply these changes now?<LINE>A restart may take place to sync game objects|¿Aplicar estos cambios ahora?<LINE>Un reinicio podría ser necesario para sincronizar los objetos del juego.
+mod_menu_apply_mods|Aplicar mods
 
 // Remix Options
 Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo meadow.
@@ -547,6 +701,57 @@ LAN|LAN
 Username|Nombre de usuario
 UDP timeout (ms)|Tiempo de espera de UDP (ms)
 UDP heartbeat (ms)|Chequeo de vida UDP (ms)
+Global Mute|Silenciar todo
+Chat Inactivity Opacity|Opacidad de chat inactivo
+Chat Inactivity Timer|Tiempo de chat inactivo
+Anniversary Gift|Regalo de aniversario
+Sound on Mention|Notificar menciones
+Watcher|Vigilante
+Lobby Music|Música del lobby
+Gameplay|Jugabilidad
+Streamer Mode|Modo Streamer
+Me|Yo
+Profanity Filter|Filtro de lenguaje ofensivo
+Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|Velocidad de deslizamiento para listas y menús. Predeterminado: $10
+Everyone|Todos
+Cape Colors|Colores de capa
+Default|Predeterminado
+Log Level|Nivel de log
+Flair|
+Custom Chat Username Color|Color personalizado de nombre de usuario en chat
+Enable Meadow Cosmetics|Activar Meadow Cosmetics
+Toggle Show Score|Cambiar la visibilidad del puntaje
+None|Ninguno
+Sound On New Message|Notificar mensajes nuevos
+Death Notification|Notificar muertes
+Session Notification|Notificar sesión
+Enable Chat Logging Toggle|Activar logs en el chat
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|Activa logs en el chat (presionando SHIFT + [CHAT KEY]) para mostrar los errores entrantes."
+Gold|Oro
+Silver|Plata
+Greedy|Codicioso
+Aggressive AI:|IA Agresiva:
+Artificer Explosion Capacity|Capacidad de explosión del artífice
+BACK|VOLVER
+Chat|Chat
+Cosmetic|Cosmético
+Cosmetic Color|Color cosmético
+Cosmetic Skin|Skin cosmética
+Countdown Safety Time (ticks)|Tiempo de seguridad de cuenta regresiva (ticks)
+Dev options|Opciones de desarrollador
+Full Invisibility In Ripple Space:|Invisibilidad total en el Espacio de Ondas
+General|General
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|Cantidad de tiempo en que la cuenta regresiva se detendrá hasta que todos se unan: 300 ticks (7.5s)
+Join Notification|Notificar si alguien se unió
+Nightsky Skin|Skin nocturna
+Rain Timer:|Tiempo para la lluvia
+Round Notification|Notificar siguiente round
+Text Downscroll|Deslizamiento del texto
+Watcher will be fully invisible to everyone when in ripple space|El Vigilante será completamente invisible en el Espacio de Ondas
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|El Vigilante dejará una estela sutil cuando esté en el Espacio de Ondas. Otros Vigilantes podrán ver sus ojos.
+Wildlife:|Vida silvestre:
+solid|sólido
+
 
 // Credits
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
@@ -569,6 +774,11 @@ Programming, UI, menus|Programación, IU, menús
 Programming, UI, story|Programación, IU, historia
 Programming, UI, LAN|Programación, IU, LAN
 Thank you playtesters from the Rain Meadow discord as well.|Gracias también a los playtesters del discord de Rain Meadow.
+Programming, gameplay|Programación, jugabilidad
+Arena, story, UI|Arena, historia, UI
+Programming, story, UI|Programación, historia, UI
+Meadow, story|Meadow, historia
+
 
 // misc
 Players|Jugadores
@@ -579,3 +789,103 @@ This player does not have a profile.|Este jugador no tiene un perfil.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente.<LINE>Algunas características de Rain Meadow han sido desactivadas.
 Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
 Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Por favor, usa un mod externo para acceder a la campaña de Inv.
+Gain achievements online|Obtén logros en línea
+Select Settings|Seleccionar ajustes
+MSC Settings|Ajustes de MSC
+Watcher Settings|Ajustes de Watcher
+Return to Select Settings Page|Volver a la página de selección de ajustes
+Watcher Ripple Level:|Nivel de onda del Vigilante:
+Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Actualiza el nivel de onda del Vigilante. Va del 1 (predeterminado) al 9.
+Press grab to toggle active slugcats|Presiona "Agarrar" para cambiar los Gatos-babosa permitidos
+Invite friends|Invitar amigos
+Cape Color|Color de capa
+fell into the abyss thanks to|fue tirado al abismo gracias a
+blew up thanks to|explotó gracias a
+LOADING :|CARGANDO :
+Overseer Spectator do not spawn in-game|Supervisores observando no aparecerán en el juego
+Meadow failed to start|Rain Meadow no pudo iniciar
+Rain Meadow Anniversary|Aniversario de Rain Meadow
+April Fool's!|¡Día de los inocentes!
+COINS:|MONEDAS:
+YOU ARE POOR|ERES POBRE...
+You need more Meadow Coins to play this game|Necesitas Monedas Meadow para jugar
+Game Over! Try again?|¡PERDISTE! ¿Volver a intentar?
+What's the secret password?|¿Cuál es la clave secreta?
+I heard they were removing capes|Escuché que estaban quitando capas...
+That crash was probably your fault|Ese CRASH fue tu culpa... probablemente
+Rain Meadow definitely failed to start|Rain Meadow definitiva, absoluta y totalmente ha fallado en iniciar.
+Rain Meadow servers will go offline soon for maintenance|Los servidores de Rain Meadow se desconectarán por mantenimiento
+Would you like to erase all save progress?|¿Quieres BORRAR todo el progreso guardado?
+Take ¤10 Meadow Coins|Toma ¤10 Monedas Meadow
+Coins remaining:|Monedas restantes:
+wawa|wawa
+Good.|Bien.
+It was.|Eso fue.
+Please work|Por favor funciona
+Ok|Ok
+Yep|Sip
+Special event:|Evento especial:
+number:|número:
+Event days remaining:|Días restantes para el evento:
+Explosive Spear|Lanza explosiva
+Scavenger Bomb|Bomba
+Joke Rifle|Rifle de broma
+Meadow Coin|Meadow moneda
+Rainbow Cape|Capa arcoíris
+Event Gags:|Chistes de evento:
+Days remaining|Días restantes
+Special event|Evento especial
+The Steam invite feature is currently unstable, and may not work properly. <LINE> Consider using a public lobby with a password instead.|La funcionalidad para invitar de Steam es inestable y puedo no funcionar adecuadamente.<LINE>Considera crear una sala pública con una contraseña.
+View post-Game Stats|Mostrar las estadísticas al final
+number|número
+
+## Unsorted
+Rain Meadow|Rain Meadow
+Please disable JollyCoop before playing Online|Por favor, desactiva JollyCoop antes de jugar en línea
+MSC + Watcher|MSC + Watcher
+Rain Meadow version |Versión de Rain Meadow 
+ is now available.|está disponible.
+Update to join the newest lobbies and get the latest features & fixes.|Actualiza para entrar a las nuevas salas y obtener las últimas funciones y mejoras.
+How to Update|¿Cómo actualizar?
+For Steam: Restart your game, if Rain Meadow doesn't update automatically resubscribe to force an update.|Para usuarios de Steam: Reinicia el juego, si no se actualiza automáticamente, suscríbete nuevamente para forzar la actualización.
+For Other Platforms: Visit our GitHub releases page to download the latest release.|Para usuarios de otras plataformas: Visita la sección de lanzamientos en nuestra página de GitHub para descargar la versión más reciente.
+Updating won't affect your save data.|Actualizar no afectará tus datos guardados.
+<TEAMNAME> WINS!|¡El EQUIPO <TEAMNAME> GANÓ!
+<USERNAME> WINS!|¡<USERNAME> GANÓ!
+ABOUT|MÁS INFORMACIÓN
+Bee hives and scavenger bombs follow vanilla spawn behavior|Los panales y bombas aparecerán como en el juego base.
+CANCEL|CANCELAR
+Clear playlist|Limpiar lista
+Creatures are vicious and aggressive|Las criaturas serán viciosas y agresivas
+Custom colors|Colores personalizados
+Disabled Error Logging in chat.|Logs en el chat desactivados.
+Eating contest|Concurso de comida
+Enabled Error Logging in chat.|Logs en el chat activados.
+Failed import|Importación fallida
+HUE|Tono
+Kick player from lobby|Expulsar jugadores de la sala
+LIT|BRILLO
+LOADING...|CARGANDO...
+MSC|MSC
+Mute player|Silenciar jugador
+No rain|Sin lluvia
+Normal Rain World AI|IA predeterminada de Rain World
+OK|OK
+PLAYER|JUGADOR
+Pinned:|Anclado
+Player vs player deathmatch|Duelo a muerte
+Players: <num_p>|Jugadores: <num_p>
+Press any button to continue|Presiona para continuar
+RESTART|REINICIAR
+Remove level from playlist|Remover nivel de la lista
+Restore Default|Restablecer
+SAT|SATURACIÓN
+SCORE|PUNTAJE
+STATS|ESTADÍSTICAS
+UNLOCKS|DESBLOQUEABLES
+Unmute player|Dejar de silenciar al jugador
+You aren't allowed to play as this slugcat|¡No puedes jugar con este Gato-Babosa!
+You just won 1,000 Meadow coins!!|¡¡¡ACABAS DE GANAR 1000 MEADOW MONEDAS!!!
+bee hives and scavenger bombs are disabled|panales y bombas estarán desactivadas
+cancel|cancelar
+ok|ok
