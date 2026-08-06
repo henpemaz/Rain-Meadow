@@ -18,7 +18,7 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
         playerCountLabel;
     public TextScroller highImpactModsTextScroller;
     public PositionedSprite separator;
-    public SlugIcon timelineIcon;
+    public PositionedSlugIcon timelineIcon;
 
     public LobbySelectMetadataPanel(Menu.Menu menu, MenuObject owner, Vector2 pos)
         : base(menu, owner, pos)
@@ -52,6 +52,8 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
         hasPasswordLabel = EmptyLabel();
         playerCountLabel = EmptyLabel();
 
+        timelineIcon = new PositionedSlugIcon(menu, this, Vector2.zero, "");
+
         separator = new PositionedSprite(
             menu,
             this,
@@ -71,9 +73,9 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
             gamemodeLabel,
             hasPasswordLabel,
             playerCountLabel,
+            timelineIcon,
             separator,
             highImpactModsTextScroller,
-            timelineIcon = new(menu, this, Vector2.zero, "", []),
         ]);
     }
 

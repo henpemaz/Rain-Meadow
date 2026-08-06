@@ -1,20 +1,25 @@
 using System.Collections.Generic;
 using System.Linq;
-using Menu;
-using RainMeadow.UI.Components.Base;
 using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class SlugIcon : PositionedMenuObject
+/// <summary>
+/// A container of 2-3 sprites to draw a little slugcat icon. Use PositionedSlugIcon and SlugIconHud<br/>
+/// to use this in menus and in-game HUD respectively.<br/>
+/// <br/>
+/// SlugcatNameToSpriteNames and SlugcatNameToDefaultColors can have entries added to them to support<br/>
+/// modded slugcats in both the aforementioned SlugIcon components.
+/// </summary>
+public class SlugIcon
 {
     /// <summary>
     /// Sprites are drawn on top of each other from earlier items in list to later, so use that<br/>
     /// to control layering. Colours are given by name of sprite (ending in _head gets base<br/>
     /// colour, ending in _face gets eye colour, ending in _feature gets feature colour if applicable)
     /// </summary>
-    public static Dictionary<string, List<string>> SlugcatToSpriteNames { get; set; } =
+    public static Dictionary<string, List<string>> SlugcatNameToSpriteNames { get; set; } =
         new()
         {
             { "White", ["basic_head", "basic_face"] },
@@ -34,9 +39,9 @@ public class SlugIcon : PositionedMenuObject
     /// add a hex or make it null if you have a coloured sprite and want to preserve its colour.<br/>
     /// <br/>
     /// The difference in colour mapping and sprite mapping comes from the way slugcat colour is<br/>
-    /// handled everywhere else.
+    /// handled everywhere else in Rain World.
     /// </summary>
-    public static Dictionary<string, List<string?>> SlugcatToDefaultColors { get; set; } =
+    public static Dictionary<string, List<string?>> SlugcatNameToDefaultColors { get; set; } =
         new()
         {
             { "White", ["FFFFFF", "101010"] },
@@ -51,48 +56,48 @@ public class SlugIcon : PositionedMenuObject
             { "Watcher", ["17234F", "FFFFFF"] },
         };
 
-    public List<PositionedSprite> sprites = [];
-    public Dictionary<string, int> spriteLayerToColorIndex = [];
-    public List<Color>? colors = [];
+    public FContainer container = new();
+    public List<FSprite> sprites = [];
+    public List<Color>? colors;
+    public Dictionary<string, int> spriteLayerNameToIndex = [];
 
-    public string slugcat = "";
+    public string slugcatName = "";
 
-    public SlugIcon(
-        Menu.Menu menu,
-        MenuObject owner,
-        Vector2 pos,
-        string slugcat,
-        List<Color>? colors = null,
-        bool dead = false
-    )
-        : base(menu, owner, pos)
+    public SlugIcon(string slugcatName, List<Color>? colors = null, bool dead = false)
     {
         Futile.atlasManager.LoadAtlas("illustrations/slugicons");
-
         this.colors = colors;
-
-        DrawScugSprites(slugcat, dead);
+        DrawScugSprites(slugcatName, dead);
     }
 
     public void ClearSprites()
     {
-        for (int i = 0; i < sprites.Count; i++)
-            this.ClearMenuObject(sprites[i]);
-        sprites = [];
-        spriteLayerToColorIndex = [];
+        foreach (FSprite sprite in sprites)
+            sprite.RemoveFromContainer();
+        sprites.Clear();
+        spriteLayerNameToIndex.Clear();
     }
 
-    public void DrawScugSprites(string? newSlugcat = null, bool dead = false)
+    public void RemoveFromContainer()
+    {
+        ClearSprites();
+        container.RemoveFromContainer();
+    }
+
+    public void DrawScugSprites(string? newSlugcatName = null, bool dead = false)
     {
         ClearSprites();
 
-        if (newSlugcat != null)
-            slugcat = newSlugcat;
+        if (newSlugcatName != null)
+            slugcatName = newSlugcatName;
 
-        if (slugcat == "")
+        if (slugcatName == "")
             return;
 
-        List<string> spriteNames = SlugcatToSpriteNames.TryGetValue(slugcat, out List<string> names)
+        List<string> spriteNames = SlugcatNameToSpriteNames.TryGetValue(
+            slugcatName,
+            out List<string> names
+        )
             ? names
             : ["basic_head", "basic_face", "modded_feature"];
         if (dead)
@@ -101,44 +106,44 @@ public class SlugIcon : PositionedMenuObject
         for (int i = 0; i < spriteNames.Count; i++)
         {
             string spriteName = spriteNames[i];
-            sprites.Add(new PositionedSprite(menu, this, Vector2.zero, new FSprite(spriteName)));
-            spriteLayerToColorIndex.Add(spriteName.Split('_').Last(), i);
+            sprites.Add(new FSprite(spriteName));
+            spriteLayerNameToIndex.Add(spriteName.Split('_').Last(), i);
         }
 
-        subObjects.AddRange([.. sprites]);
+        sprites.ForEach(container.AddChild);
         ApplyPalette();
     }
 
     public void ApplyPalette(List<Color>? newColors = null)
     {
-        this.colors = newColors;
+        colors = newColors;
 
         if (sprites.Count == 0)
             return;
 
-        List<Color> colors = this.colors ?? [];
+        List<Color> colorsList = colors ?? [];
 
-        if (colors.Count < 2)
+        if (colorsList.Count < 2)
         {
-            if (!SlugcatToDefaultColors.TryGetValue(slugcat, out List<string?> hexColors))
+            if (!SlugcatNameToDefaultColors.TryGetValue(slugcatName, out List<string?> hexCodes))
             {
                 RainMeadow.Debug(
                     "Not enough colours were provided to SlugIcon and no default colours were found for the given slugcat, using fallback colours"
                 );
-                hexColors = ["FFFFFF", "101010", "FFFFFF"];
+                hexCodes = ["FFFFFF", "101010", "FFFFFF"];
             }
-            colors = [.. hexColors.Select(hex => Custom.hexToColor(hex ?? "FFFFFF"))];
+            colorsList = [.. hexCodes.Select(hex => Custom.hexToColor(hex ?? "FFFFFF"))];
         }
 
         void TryMapColorsToSprites(string spritePart, Color color)
         {
-            if (spriteLayerToColorIndex.TryGetValue(spritePart, out int index))
-                sprites[index].Sprite.color = color;
+            if (spriteLayerNameToIndex.TryGetValue(spritePart, out int index))
+                sprites[index].color = color;
         }
 
-        TryMapColorsToSprites("head", colors[0]);
-        TryMapColorsToSprites("face", colors[1]);
-        if (colors.Count > 2)
-            TryMapColorsToSprites("feature", colors[2]);
+        TryMapColorsToSprites("head", colorsList[0]);
+        TryMapColorsToSprites("face", colorsList[1]);
+        if (colorsList.Count > 2)
+            TryMapColorsToSprites("feature", colorsList[2]);
     }
 }
