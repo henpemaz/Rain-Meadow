@@ -158,18 +158,6 @@ namespace RainMeadow
                 }
             }
 
-            foreach (var player in self.players)
-            {
-                OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arenaOnline,
-                    player.playerNumber
-                );
-                if (currentName != null)
-                {
-                    arenaOnline.CopyStatsFromLobbyData(player, currentName);
-                }
-            }
-
             if (RoomSession.map.TryGetValue(abstractRoom, out var roomSession))
             {
                 // we go over all APOs in the room
