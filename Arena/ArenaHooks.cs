@@ -1417,33 +1417,20 @@ namespace RainMeadow
             MultiplayerResults resultPage,
             MenuObject owner,
             ArenaSitting.ArenaPlayer player,
-            int index
-        )
+            int index)
         {
-            MenuMicrophone menuMic = owner.menu.manager.menuMic;
-
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out _))
             {
-
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                    arena,
-                    player.playerNumber
-                );
-
-                if (pl != null)
-                {
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.CopyStatsToLobbyData(player, pl);
-                    }
-                    arena.CopyStatsFromLobbyData(player, pl);
-                }
+                MenuMicrophone menuMic = owner.menu.manager.menuMic;
 
                 // prevents UI_Multiplayer_Player_Result_Box_Bump playing for every single player in the lobby at once
                 owner.menu.manager.menuMic = null;
+                orig(self, resultPage, owner, player, index);
+                owner.menu.manager.menuMic = menuMic;
+                return;
             }
+
             orig(self, resultPage, owner, player, index);
-            owner.menu.manager.menuMic = menuMic;
         }
 
         public List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(
@@ -2250,18 +2237,6 @@ namespace RainMeadow
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
                         }
-                        foreach (var player in self.manager.arenaSitting.players)
-                        {
-                            OnlinePlayer? onlinePlayer =
-                                ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                                    arena,
-                                    player.playerNumber
-                                );
-                            if (onlinePlayer != null)
-                            {
-                                arena.CopyStatsFromLobbyData(player, onlinePlayer);
-                            }
-                        }
                         self.manager.RequestMainProcessSwitch(
                             ProcessManager.ProcessID.MultiplayerResults
                         );
@@ -3006,21 +2981,11 @@ namespace RainMeadow
             Vector2 pos,
             Vector2 size,
             ArenaSitting.ArenaPlayer player,
-            int index
-        )
+            int index)
         {
-
             // for random class players.
             if (isArenaMode(out var aren))
             {
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
-                aren,
-                player.playerNumber);
-
-                if (pl != null)
-                {
-                    aren.CopyStatsFromLobbyData(player, pl);
-                }
                 bool playingAsRandom = false;
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                     aren,
