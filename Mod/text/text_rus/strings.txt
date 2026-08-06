@@ -354,7 +354,7 @@ bee hives and scavenger bombs are disabled|ульи и бомбы мусорщи
 Bee hives follow vanilla spawn behavior|Ульи используют стандартные условия для спавна
 Bee hives and scavenger bombs follow vanilla spawn behavior|Ульи и бомбы мусорщиков используют стандартные условия для спавна
 No beehives spawn|Ульи не не будут спавниться
-Corpse grab|Носка трупов:
+Corpse grab|Переноска трупов:
 Corpes grab|Носка трупов:
 Players can grab dead players|Игроки могут таскать мёртвых игроков
 Players cannot grab dead players|Игроки не могут таскать мёртвых игроков
