@@ -47,7 +47,7 @@ namespace RainMeadow
                     return meadowTimeline ?? "";
                 if (gameMode is StoryGameMode storyGameMode)
                     return clientSettings.Values.Any(cs => cs.inGame) ? storyGameMode.currentCampaign.value : "";
-                return field;
+                return field ?? "";
             }
             set;
         }
