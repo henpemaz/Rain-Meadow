@@ -124,21 +124,12 @@ namespace RainMeadow
             OnlinePlayer player
         )
         {
-
-            if (base.AddIcon(arena, display, owner, customization, player) != "")
-            {
-                return base.AddIcon(arena, display, owner, customization, player);
-            }
-
+            string arenaIcon = base.AddIcon(arena, display, owner, customization, player);
+            if (arenaIcon != "")
+                return arenaIcon;
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
-            {
                 return "ChieftainA";
-            }
-            else
-            {
-                return "Kill_Slugcat";
-            }
-
+            return "";
         }
 
         public override Color IconColor(
