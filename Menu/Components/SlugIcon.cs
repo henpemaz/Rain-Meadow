@@ -61,6 +61,7 @@ public class SlugIcon
     public List<Color>? colors;
     public Dictionary<string, int> spriteLayerNameToIndex = [];
 
+    public bool? dead = null;
     public string slugcatName = "";
 
     public SlugIcon(string slugcatName, List<Color>? colors = null, bool dead = false)
@@ -86,6 +87,8 @@ public class SlugIcon
 
     public void DrawScugSprites(string? newSlugcatName = null, bool dead = false)
     {
+        if (slugcatName == newSlugcatName && this.dead == dead)
+            return;
         ClearSprites();
 
         if (newSlugcatName != null)
@@ -93,6 +96,8 @@ public class SlugIcon
 
         if (slugcatName == "")
             return;
+
+        this.dead = dead;
 
         List<string> spriteNames = SlugcatNameToSpriteNames.TryGetValue(
             slugcatName,
@@ -116,7 +121,8 @@ public class SlugIcon
 
     public void ApplyPalette(List<Color>? newColors = null)
     {
-        colors = newColors;
+        if (newColors != null)
+            colors = newColors;
 
         if (sprites.Count == 0)
             return;
@@ -128,7 +134,7 @@ public class SlugIcon
             if (!SlugcatNameToDefaultColors.TryGetValue(slugcatName, out List<string?> hexCodes))
             {
                 RainMeadow.Debug(
-                    "Not enough colours were provided to SlugIcon and no default colours were found for the given slugcat, using fallback colours"
+                    $"Not enough colours were provided to SlugIcon and no default colours were found for the given slugcat ({slugcatName}), using fallback colours"
                 );
                 hexCodes = ["FFFFFF", "101010", "FFFFFF"];
             }
