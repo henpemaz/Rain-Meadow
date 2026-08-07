@@ -37,6 +37,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public string painCatName,
         customTextDescription;
     public bool initiateStartGameAfterCountDown;
+    public NullLobbyError nullLobbyError;
     private int lastCountdownSoundPlayed = -1;
     public bool SettingsDisabled =>
         OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
@@ -393,6 +394,27 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Update()
     {
         base.Update();
+
+        if (nullLobbyError != null)
+            return;
+        if (OnlineManager.lobby == null)
+        {
+            nullLobbyError = new NullLobbyError(
+                this,
+                this.pages[0],
+                new Vector2(
+                    manager.rainWorld.options.ScreenSize.x / 2f
+                        - 240f
+                        + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f,
+                    224f
+                ),
+                new Vector2(480f, 320f),
+                "Arena lobby is null! Exiting...",
+                false
+            );
+            this.pages[0].subObjects.Add(nullLobbyError);
+            return;
+        }
 
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
         {
