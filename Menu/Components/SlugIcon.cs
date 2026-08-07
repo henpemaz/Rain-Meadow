@@ -6,8 +6,8 @@ using UnityEngine;
 namespace RainMeadow.UI.Components;
 
 /// <summary>
-/// A container of 2-3 sprites to draw a little slugcat icon. Use PositionedSlugIcon and SlugIconHud<br/>
-/// to use this in menus and in-game HUD respectively.<br/>
+/// A container of 2-3 sprites to draw a little slugcat icon. See PositionedSlugIcon and PlayerIcon<br/>
+/// for usage in menus and in in-game HUDs.<br/>
 /// <br/>
 /// SlugcatNameToSpriteNames and SlugcatNameToDefaultColors can have entries added to them to support<br/>
 /// modded slugcats in both the aforementioned SlugIcon components.
