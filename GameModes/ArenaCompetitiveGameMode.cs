@@ -1254,7 +1254,7 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-            return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
+            return Custom.rainWorld.processManager.arenaSitting?.gameTypeSetup.fliesSpawn == true;
         }
 
         // needs new implementation which doesn't disable capes for other gamemodes.
