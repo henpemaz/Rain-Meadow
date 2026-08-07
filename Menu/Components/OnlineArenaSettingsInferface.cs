@@ -32,19 +32,21 @@ namespace RainMeadow.UI.Components
             {
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
-            InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float textWidthOfSpearHit = 95;
-            float additionalLanguageWidth = lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Russian
-                ? 50f
-                : 0;
+            float additionalLanguageWidth = menu.CurrLang == InGameTranslator.LanguageID.French 
+                || menu.CurrLang == InGameTranslator.LanguageID.Russian 
+                || menu.CurrLang == InGameTranslator.LanguageID.Japanese
+                    ? 50f
+                    : 0;
+            bool UseLargeFont = InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang);
 
             spearsHitCheckbox = new(
                 menu,
                 this,
                 this,
-                new(0, 425),
+                new(UseLargeFont ? -10f : 0, 425),
                 textWidthOfSpearHit,
-                menu.Translate("Spears Hit:"),
+                menu.Translate("Spears Hit:").Replace("<LINE>", "\r\n"),
                 "SPEARSHIT",
                 false
             );
@@ -52,9 +54,9 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 this,
-                new(settingsWidth - 24, spearsHitCheckbox.pos.y),
-                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Aggressive AI:"),
+                new(settingsWidth - 24 + (UseLargeFont ? 10f : 0), spearsHitCheckbox.pos.y),
+                UseLargeFont ? 120 : 100,
+                menu.Translate("Aggressive AI:").Replace("<LINE>", "\r\n"),
                 "EVILAI",
                 false
             );
@@ -63,8 +65,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new((settingsWidth - 24) / 2f, spearsHitCheckbox.pos.y),
-                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Overseers Show:"),
+                UseLargeFont ? 120 : 100,
+                menu.Translate("Overseers Show:").Replace("<LINE>", "\r\n"),
                 "OVERSEER",
                 false
             );
@@ -84,7 +86,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 355),
-                menu.Translate("Repeat Rooms:"),
+                menu.Translate("Repeat Rooms:").Replace("<LINE>", "\r\n"),
                 ROOMREPEAT,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 115 : 95,
                 settingsWidth,
@@ -99,7 +101,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 305),
-                menu.Translate("Rain Timer:"),
+                menu.Translate("Rain Timer:").Replace("<LINE>", "\r\n"),
                 SESSIONLENGTH,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f,
                 settingsWidth,
@@ -114,7 +116,7 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 255),
-                menu.Translate("Wildlife:"),
+                menu.Translate("Wildlife:").Replace("<LINE>", "\r\n"),
                 WILDLIFE,
                 95,
                 settingsWidth,
@@ -126,7 +128,7 @@ namespace RainMeadow.UI.Components
             arenaGameModeLabel = new(
                 menu,
                 this,
-                menu.Translate("Arena Game Mode:"),
+                menu.Translate("Arena Game Mode:").Replace("<LINE>", "\r\n"),
                 new Vector2(-95, 180f),
                 new Vector2(0, 20),
                 false
@@ -151,7 +153,7 @@ namespace RainMeadow.UI.Components
             countdownTimerLabel = new(
                 menu,
                 this,
-                menu.Translate("Countdown Timer:"),
+                menu.Translate("Countdown Timer:").Replace("<LINE>", "\r\n"),
                 new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 45),
                 new Vector2(0, 20),
                 false
@@ -178,7 +180,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(settingsWidth - 24, countdownTimerTextBox.pos.y),
                 100 + additionalLanguageWidth,
-                menu.Translate("Corpse grab"),
+                menu.Translate("Corpse grab").Replace("<LINE>", "\r\n"),
                 "CORPSEGRAB"
             );
 
@@ -188,7 +190,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new Vector2(55f, countdownTimerTextBox.pos.y - 38),
                 150f,
-                menu.Translate("Item Stealing"),
+                menu.Translate("Item Stealing").Replace("<LINE>", "\r\n"),
                 "ITEMSTEAL"
             );
             allowMidGameJoinCheckbox = new(
@@ -197,7 +199,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(settingsWidth - 24, stealItemCheckBox.pos.y),
                 100 + additionalLanguageWidth,
-                menu.Translate("Join In Progress"),
+                menu.Translate("Join In Progress").Replace("<LINE>", "\r\n"),
                 "MIDGAMEJOIN"
             );
 
@@ -207,7 +209,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38),
                 150f,
-                menu.Translate("Piggybacking"),
+                menu.Translate("Piggybacking").Replace("<LINE>", "\r\n"),
                 "PIGGY"
             );
             weaponCollisionCheckBox = new(
@@ -216,7 +218,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y),
                 100 + additionalLanguageWidth,
-                menu.Translate("Better Hitbox"),
+                menu.Translate("Better Hitbox").Replace("<LINE>", "\r\n"),
                 "WEAPONCOLLISIONFIX"
             );
 
@@ -226,7 +228,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38),
                 100 + additionalLanguageWidth,
-                menu.Translate("Bees"),
+                menu.Translate("Bees").Replace("<LINE>", "\r\n"),
                 "ENABLEBEES"
             );
             enableBombs = new(
@@ -235,7 +237,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(stealItemCheckBox.pos.x, enableBees.pos.y),
                 150f,
-                menu.Translate("Bombs"),
+                menu.Translate("Bombs").Replace("<LINE>", "\r\n"),
                 "ENABLEBOMBS"
             );
 
