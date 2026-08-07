@@ -125,11 +125,6 @@ namespace RainMeadow
 
         }
 
-        public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
-        {
-            return false;
-        }
-
         public override string TimerText()
         {
             ArenaSitting arenaSitting = Custom.rainWorld.processManager.arenaSitting;

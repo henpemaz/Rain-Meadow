@@ -76,11 +76,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return false;
         }
 
-        public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
-        {
-            return false;
-        }
-
         public override string TimerText()
         {
             return Utils.Translate("Survive,") + " " + Utils.Translate(PlayingAsText());

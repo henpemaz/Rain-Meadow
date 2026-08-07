@@ -68,11 +68,6 @@ namespace RainMeadow
             return orig(self);
         }
 
-        public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
-        {
-            return false;
-        }
-
         public override string TimerText()
         {
             return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());

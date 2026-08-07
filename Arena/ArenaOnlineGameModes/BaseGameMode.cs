@@ -81,14 +81,35 @@ namespace RainMeadow
                 || gameTypeSetup.foodScore > 0;
         }
 
+        public virtual void InitAsCustomGameType(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSetup.GameTypeSetup self)
+        {
+            self.survivalScore   = arenaOnline.survivalScore;
+            self.KillScore       = arenaOnline.killScore;
+            self.EmptyDeathScore = arenaOnline.emptyDeathScore;
+            self.spearHitScore   = arenaOnline.spearHitScore;
+            self.foodScore       = arenaOnline.foodScore;
+
+            self.repeatSingleLevelForever = false;
+            self.savingAndLoadingSession = true;
+            self.denEntryRule = arenaOnline.denEntryRule;
+            self.rainWhenOnePlayerLeft = true;
+            self.levelItems = true;
+            self.fliesSpawn = false;
+            self.saveCreatures = false;
+            self.gameType = ArenaSetup.GameTypeID.Competitive;
+            self.spearsHitPlayers = arenaOnline.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
+
+            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
+        }
+
         public virtual void ResetOnSessionEnd() { }
 
         public abstract bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
             ArenaBehaviors.ExitManager self);
-
-        public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
 
         public virtual void On_ArenaGameSession_ctor(
             ArenaOnlineGameMode arenaOnline,
@@ -303,29 +324,6 @@ namespace RainMeadow
                 null,
                 () => self.NextLevel(manager)
             );
-        }
-
-        public virtual void InitAsCustomGameType(
-            ArenaOnlineGameMode arenaOnline,
-            ArenaSetup.GameTypeSetup self)
-        {
-            self.survivalScore   = arenaOnline.survivalScore;
-            self.KillScore       = arenaOnline.killScore;
-            self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore   = arenaOnline.spearHitScore;
-            self.foodScore       = arenaOnline.foodScore;
-
-            self.repeatSingleLevelForever = false;
-            self.savingAndLoadingSession = true;
-            self.denEntryRule = arenaOnline.denEntryRule;
-            self.rainWhenOnePlayerLeft = true;
-            self.levelItems = true;
-            self.fliesSpawn = false; // TODO: Check when RW sets this value. Is it related to SpawnBatflies()?
-            self.saveCreatures = false;
-            self.gameType = ArenaSetup.GameTypeID.Competitive;
-            self.spearsHitPlayers = arenaOnline.onlineArenaSettingsInterfaceeBool["SPEARSHIT"];
-
-            SandboxSettingsInterface.DefaultKillScores(ref self.killScores);
         }
 
         public virtual int On_ArenaSetup_GameTypeSetup_get_ScoreToEnterDen(
