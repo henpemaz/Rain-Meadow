@@ -138,7 +138,7 @@ public class SlugIcon
                 RainMeadow.Debug(
                     $"Not enough colours were provided to SlugIcon and no default colours were found for the given slugcat ({slugcatName}), using fallback colours"
                 );
-                hexCodes = ["FFFFFF", "101010", "FFFFFF"];
+                hexCodes = ["FFFFFF", "101010", "E59D52"];
             }
             colorsList = [.. hexCodes.Select(hex => Custom.hexToColor(hex ?? "FFFFFF"))];
         }
