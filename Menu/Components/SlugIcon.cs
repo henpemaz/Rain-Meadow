@@ -17,7 +17,9 @@ public class SlugIcon
     /// <summary>
     /// Sprites are drawn on top of each other from earlier items in list to later, so use that<br/>
     /// to control layering. Colours are given by name of sprite (ending in _head gets base<br/>
-    /// colour, ending in _face gets eye colour, ending in _feature gets feature colour if applicable)
+    /// colour, ending in _face gets eye colour, ending in _feature gets feature colour if applicable)<br/>
+    /// <br/>
+    /// Make sure to load the asset file containing your illustrations as SlugIcon does not do that automatically!
     /// </summary>
     public static Dictionary<string, List<string>> SlugcatNameToSpriteNames { get; set; } =
         new()
