@@ -348,6 +348,12 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             if (lobbyInfo.requiredMods.Contains("watcher"))
                 AddTextIcon("watcher_dlc_text_icon");
 
+            if (lobbyInfo.requiredMods.Contains("jollycoop"))
+                AddTextIcon("jolly_dlc_text_icon");
+
+            if (lobbyInfo.requiredMods.Contains("expedition"))
+                AddTextIcon("expedition_dlc_text_icon");
+
             if (
                 lobbyInfo.requiredMods.Length > 0
                 && lobbyInfo.requiredMods.Split('\n').Length > accountedModCount
