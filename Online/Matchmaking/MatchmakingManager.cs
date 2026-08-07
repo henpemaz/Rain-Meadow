@@ -50,6 +50,7 @@ namespace RainMeadow
         public static string BANNED_MODS_KEY = "banned_mods";
         public static string PINNED_KEY = "pinned";
         public static string PASSWORD_KEY = "password";
+        public static string CAMPAIGN_KEY = "campaign";
         public static int MAX_LOBBY = 4;
 
         static public readonly List<MatchMakingDomain> supported_matchmakers = new();

@@ -6,6 +6,7 @@ using System.Linq;
 using RWCustom;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -109,6 +110,9 @@ namespace RainMeadow
             {
                 storyGameMode.requireCampaignSlugcat = false;
                 storyGameMode.saveToDisk = true;
+
+                if (MatchmakingManager.currentInstance is SteamMatchmakingManager steamMatchmakingManager)
+                    SteamMatchmaking.SetLobbyData(steamMatchmakingManager.lobbyID, MatchmakingManager.CAMPAIGN_KEY, "");
             }
             else
             {
@@ -271,6 +275,9 @@ namespace RainMeadow
             }
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+
+            if (MatchmakingManager.currentInstance is SteamMatchmakingManager steamMatchmakingManager)
+                SteamMatchmaking.SetLobbyData(steamMatchmakingManager.lobbyID, MatchmakingManager.CAMPAIGN_KEY, storyGameMode.currentCampaign.value);
         }
         public override void Update()
         {
