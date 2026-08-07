@@ -30,6 +30,7 @@
 - Added scarfs(?)
 - Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
+- French Translation
 - Brand new lobby select menu
   - lobby metadata is now shown directly in the menu. This includes the previous data shown on cards, in addition to:
     - active lobby timeline (always present in Meadow mode, Story mode requires the game to be in progress to show)

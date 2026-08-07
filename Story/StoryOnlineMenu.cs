@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using System.Text.RegularExpressions;
 using Steamworks;
 
 namespace RainMeadow
@@ -560,7 +561,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 restartCheckbox.IDString = "RESTART";
-                restartCheckbox.label.text = Translate("Restart game");
+                restartCheckbox.label.text = Translate("Restart game").Replace("<LINE>", "\r\n");
 
                 pages.RemoveRange(1, slugcatPages.Count);
                 for (int i = 0; i < slugcatPages.Count; i++)
@@ -596,7 +597,7 @@ namespace RainMeadow
                     slugcatPages.Insert(pageindex - 1, page);
                 }
                 restartCheckbox.IDString = "CLIENTSAVERESET";
-                restartCheckbox.label.text = Translate("Sync Save");
+                restartCheckbox.label.text = Regex.Replace(Translate("Sync Save"), "<LINE>", "\r\n");
 
             }
 
@@ -650,8 +651,11 @@ namespace RainMeadow
             pages[0].subObjects.Add(toggleChat);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
-            friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
-            reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
+            bool friendlyFireNeedMoreSpace = manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.Russian 
+                || manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.Japanese;
+            bool leffBoxesNeedMoreSpace = InGameTranslator.LanguageID.UsesLargeFont(manager?.rainWorld?.inGameTranslator.currentLanguage);
+            friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y + 30), (friendlyFireNeedMoreSpace ? 150f : 70f) + (leffBoxesNeedMoreSpace ? 30f : 0), Regex.Replace(Translate("Friendly Fire"), "<LINE>", "\r\n"), "ONLINEFRIENDLYFIRE", false);
+            reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y), leffBoxesNeedMoreSpace ? 180f : 150f, Regex.Replace(Translate("Require Campaign Slugcat"), "<LINE>", "\r\n"), "CAMPAIGNSLUGONLY", false);
             if (!OnlineManager.lobby.isOwner)
             {
                 friendlyFire.buttonBehav.greyedOut = true;
@@ -682,7 +686,7 @@ namespace RainMeadow
         private void SetupClientOptions()
         {
             //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Sync Save"), "CLIENTSAVERESET", false);
-            restartCheckbox.label.text = Translate("Sync Save");
+            restartCheckbox.label.text = Regex.Replace(Translate("Sync Save"), "<LINE>", "\r\n");
             restartCheckbox.IDString = "CLIENTSAVERESET";
             //pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
