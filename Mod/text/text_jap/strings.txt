@@ -742,6 +742,29 @@ If enabled, players will be allowed to use most Dev Tools cheats. Use with cauti
 Cheats are disabled in this lobby.|チート無効
 Anniversary Gags:|記念日ギャグ:
 ArenaCompetitive|アリーナランク
+Filters|フィルター
+Network|ネットワーク
+Lobby Gamemode|ロビーモード
+JOIN|参加!
+Selected Lobby|選択ロビー
+No Lobby Selected|選択ロビーはありません
+Refresh lobbies list|ロビーリストを再読み込み
+Sort by fullest lobby|プレイヤー数の多い順に並べ替え
+Sort by emptiest lobby|プレイヤーの最小数で並べ替え
++Rain World Remix|+Rain World リミックス
++More Slugcats Expansion|+さらにナメクジネコの拡張
+Any|すべて
+Search lobbies by name|ロビー名前で探す
+<PLAYER_COUNT>/<MAX_PLAYERS> Players|<PLAYER_COUNT>/<MAX_PLAYERS> 人
+Mods to Install|インストールするMOD
+Mods to Enable|有効にするMOD
+Mods to Disable|無効化するMOD
+Filter for only public lobbies|パブリックロビーのみ
+Filter for a maximum lobby size|ロビーの最大プレイヤー数を指定するフィルター
+Filter for a specific lobby gamemode|特定のゲームモードをフィルター
+Filter lobbies for specific mods|特定のMODをフィルタする
+Click to view|クリックして表示
+MSC + Watcher|MSC + ウォッチャー
 
 //meadow
 Eye Color|眼の色
@@ -789,6 +812,14 @@ SESSION ENDED!|セッションエンド!
 IT'S A DRAW!|引き分けだ!
 How long Wacher's abilities last for. Default: 12s|ウォッチャーの能力の持続時間
 Survive,|生き残る
+Item Stealing|アイテム盗む
+Join In Progress|進行中<LINE>マッチへ参加
+Better Hitbox|ヒットボックス改善
+Piggybacking|背負って
+Bombs|爆弾
+Bees|ミツバチ
+Corpse grab|死体つかむ
+
 //drown
 Drown|ドラウン
 Drown Settings|ドラウン設定
