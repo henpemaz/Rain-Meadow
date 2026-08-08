@@ -764,6 +764,7 @@ Filter for a maximum lobby size|ロビーの最大プレイヤー数を指定す
 Filter for a specific lobby gamemode|特定のゲームモードをフィルター
 Filter lobbies for specific mods|特定のMODをフィルタする
 Click to view|クリックして表示
+MSC + Watcher|MSC + ウォッチャー
 
 //meadow
 Eye Color|眼の色
