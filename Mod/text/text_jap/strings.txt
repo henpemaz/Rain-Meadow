@@ -755,6 +755,15 @@ Sort by emptiest lobby|プレイヤーの最小数で並べ替え
 +More Slugcats Expansion|+さらにナメクジネコの拡張
 Any|すべて
 Search lobbies by name|ロビー名前で探す
+<PLAYER_COUNT>/<MAX_PLAYERS> Players|<PLAYER_COUNT>/<MAX_PLAYERS> 人
+Mods to Install|インストールするMOD
+Mods to Enable|有効にするMOD
+Mods to Disable|無効化するMOD
+Filter for only public lobbies|パブリックロビーのみ
+Filter for a maximum lobby size|ロビーの最大プレイヤー数を指定するフィルター
+Filter for a specific lobby gamemode|特定のゲームモードをフィルター
+Filter lobbies for specific mods|特定のMODをフィルタする
+Click to view|クリックして表示
 
 //meadow
 Eye Color|眼の色
