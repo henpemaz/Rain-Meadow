@@ -75,8 +75,7 @@ public class SlugIcon
 
     public void ClearSprites()
     {
-        foreach (FSprite sprite in sprites)
-            sprite.RemoveFromContainer();
+        sprites.ForEach(sprite => sprite.RemoveFromContainer());
         sprites.Clear();
         spriteLayerNameToIndex.Clear();
     }
@@ -87,27 +86,30 @@ public class SlugIcon
         container.RemoveFromContainer();
     }
 
-    public void DrawScugSprites(string? newSlugcatName = null, bool dead = false)
+    public void DrawScugSprites(string? newSlugcatName = null, bool drawDead = false)
     {
-        if (slugcatName == newSlugcatName && this.dead == dead)
+        if (
+            sprites.Count > 0
+            && (slugcatName == newSlugcatName || newSlugcatName == null)
+            && dead == drawDead
+        )
             return;
         ClearSprites();
 
         if (newSlugcatName != null)
             slugcatName = newSlugcatName;
+        dead = drawDead;
 
         if (slugcatName == "")
             return;
-
-        this.dead = dead;
 
         List<string> spriteNames = SlugcatNameToSpriteNames.TryGetValue(
             slugcatName,
             out List<string> names
         )
-            ? names
+            ? [.. names]
             : ["basic_head", "basic_face", "modded_feature"];
-        if (dead)
+        if (drawDead)
             spriteNames[spriteNames.FindIndex(name => name.EndsWith("_face"))] = "dead_face";
 
         for (int i = 0; i < spriteNames.Count; i++)
@@ -116,8 +118,8 @@ public class SlugIcon
             sprites.Add(new FSprite(spriteName));
             spriteLayerNameToIndex.Add(spriteName.Split('_').Last(), i);
         }
-
         sprites.ForEach(container.AddChild);
+
         ApplyPalette();
     }
 

@@ -58,7 +58,7 @@ public class PlayerIcon
     public void DrawSlugIcon(bool dead)
     {
         icon.isVisible = false;
-        slugIcon.DrawScugSprites(dead: dead);
+        slugIcon.DrawScugSprites(drawDead: dead);
     }
 
     public void DrawSingleElement(string elementName)
@@ -71,17 +71,6 @@ public class PlayerIcon
         icon.isVisible = true;
         icon.SetElementByName(elementName);
         icon.scale = elementName == "meadowcoin" ? 0.08f : 1f;
-    }
-
-    public void SetPos(Vector2 pos)
-    {
-        icon.x = pos.x;
-        icon.y = pos.y;
-        foreach (FSprite sprite in slugIcon.sprites)
-        {
-            sprite.x = pos.x;
-            sprite.y = pos.y;
-        }
     }
 
     public void RemoveFromContainer()
