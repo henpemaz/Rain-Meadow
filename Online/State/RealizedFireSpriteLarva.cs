@@ -33,8 +33,9 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
-            base.ReadTo(onlineEntity);
             var larva = (BoxWorm.Larva)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            if(larva.CollideWithTerrain) // colide is true if larva is dislodged, dont wanna update vel.x with online to have a nice pull animation
+                base.ReadTo(onlineEntity);
 
             larva.bites = bites;
             larva.edible = edible;
