@@ -321,7 +321,15 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
 
             if (!lobbyInfo.activeTimeline.IsNullOrWhiteSpace())
                 icons.Add(
-                    (new SlugIcon(menu, this, new Vector2(0, 8), lobbyInfo.activeTimeline), 30)
+                    (
+                        new PositionedSlugIcon(
+                            menu,
+                            this,
+                            new Vector2(0, 8),
+                            lobbyInfo.activeTimeline
+                        ),
+                        30
+                    )
                 );
 
             int accountedModCount = 1; // Rain Meadow :P
