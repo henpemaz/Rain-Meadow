@@ -119,7 +119,7 @@ namespace RainMeadow
         }
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
-        public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
+        public static OnlinePlayer? FindOnlinePlayerByLobbyId(ushort lobbyId)
         {
             foreach (var player in OnlineManager.players)
             {

@@ -474,11 +474,23 @@ namespace RainMeadow
             arenaPlayer.alive = false;
         }
 
-        public void ResetArenaPlayerPerSessionStats(ArenaSitting.ArenaPlayer arenaPlayer)
+        public void ResetArenaPlayerPerSessionStats(
+            ArenaSitting.ArenaPlayer arenaPlayer,
+            bool removeFromPerSittingStats = false)
         {
-            arenaPlayer.score = 0;
+            if (removeFromPerSittingStats)
+            {
+                if (arenaPlayer.winner)
+                    arenaPlayer.wins--;
+                arenaPlayer.deaths -= arenaPlayer.RoundDeaths;
+                arenaPlayer.totScore -= arenaPlayer.score;
+
+                arenaPlayer.roundKills.ForEach(roundTrophy => arenaPlayer.allKills.Remove(roundTrophy));
+            }
+
             arenaPlayer.RoundDeaths = 0;
-            arenaPlayer.roundKills = [];
+            arenaPlayer.score = 0;
+            arenaPlayer.roundKills.Clear();
             arenaPlayer.winner = false;
             arenaPlayer.alive = false;
         }
@@ -664,10 +676,27 @@ namespace RainMeadow
             ResetChampAddition();
         }
 
-        public void RestartGame()
+        public void RestartGame(RainWorldGame game, ArenaGameSession arenaSession)
         {
-            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
-                return;
+            ArenaSitting arenaSitting = arenaSession.arenaSitting;
+
+            if (arenaSession.sessionEnded)
+            {
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
+                {
+                    ResetArenaPlayerPerSessionStats(arenaPlayer, true);
+
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        this,
+                        arenaPlayer.playerNumber
+                    );
+                    if (onlinePlayer is null)
+                        continue;
+
+                    CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
+                }
+            }
+
             for (int i = arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
             {
                 OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
@@ -732,7 +761,6 @@ namespace RainMeadow
             }
 
             List<OnlinePlayer> restartingGamePlayers = new();
-            var arenaSitting = game.GetArenaGameSession.arenaSitting;
             List<OnlinePlayer> waitingPlayers =
             [
                 .. OnlineManager.players.Where(x =>
@@ -1156,7 +1184,9 @@ namespace RainMeadow
             if (leaveToRestart)
             {
                 leaveToRestart = false;
-                RestartGame();
+
+                if (Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+                    RestartGame(game, game.GetArenaGameSession);
             }
 
             base.LobbyTick(tick);

@@ -1373,7 +1373,8 @@ namespace RainMeadow
                     );
                     restartButton.OnClick += (_) =>
                     {
-                        arena.RestartGame();
+                        if (Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+                            arena.RestartGame(game, game.GetArenaGameSession);
                     };
                     self.pages[0].subObjects.Add(restartButton);
                 }
