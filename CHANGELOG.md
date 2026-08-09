@@ -2,7 +2,7 @@
 
 ## Engine
 
-- Added more failsafes to lobby joining
+- Added more failsafes to lobby joining (including a configurable timeout)
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
