@@ -180,6 +180,10 @@ namespace RainMeadow
             bytesOut[nextSnapshotIndex] = 0;
             bytesSnapIndex = nextSnapshotIndex;
 
+            // handle timeout events
+            var timeoutEvents = new Queue<OnlineEvent>(OutgoingEvents.Where(e => e.timeout > 0 && --e.timeout == 0));
+            while (timeoutEvents.Count > 0) timeoutEvents.Dequeue().Timeout();
+
             // clear out aborted events
             if (OutgoingEvents.Any(e => e.aborted)) OutgoingEvents = new Queue<OnlineEvent>(OutgoingEvents.Where(e => !e.aborted));
         }

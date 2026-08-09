@@ -460,6 +460,11 @@ namespace RainMeadow
             this.OnResolve += onResolve;
             return this;
         }
+        public RPCEvent Then(Action<GenericResult> onResolve, int timeout)
+        {
+            this.timeout = timeout;
+            return Then(onResolve);
+        }
 
         public void Resolve(GenericResult genericResult)
         {
@@ -477,6 +482,11 @@ namespace RainMeadow
         {
             base.Abort();
             this.Resolve(new GenericResult.Error(this));
+        }
+        public override void Timeout()
+        {
+            base.Timeout();
+            this.Resolve(new GenericResult.Timeout(this));
         }
 
         public bool IsIdentical(Delegate del, params object[] args)

@@ -36,5 +36,12 @@
 
             public override EventTypeId eventType => EventTypeId.GenericResultError;
         }
+        public class Timeout : GenericResult
+        {
+            public Timeout() { }
+            public Timeout(ResolvableEvent resolvableEvent) : base((OnlineEvent)resolvableEvent) { }
+
+            public override EventTypeId eventType => EventTypeId.GenericResultTimeout;
+        }
     }
 }
