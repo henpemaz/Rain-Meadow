@@ -2,6 +2,7 @@
 
 ## Engine
 
+- Added more failsafes to lobby joining
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
@@ -11,6 +12,7 @@
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ScrollableConfirmDialog` menu objects
+- ⚠️ `MatchmakingManager.JoinLobby` has a new argument `failReason` to handle more joining errors
 ## General
 
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
