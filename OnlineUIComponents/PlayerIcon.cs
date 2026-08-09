@@ -57,8 +57,16 @@ public class PlayerIcon
 
     public void DrawSlugIcon(bool dead)
     {
-        icon.isVisible = false;
-        slugIcon.DrawScugSprites(drawDead: dead);
+        if (!RainMeadow.rainMeadowOptions.MinimalistSlugIcon.Value)
+        {
+            icon.isVisible = false;
+            slugIcon.DrawScugSprites(drawDead: dead);
+            return;
+        }
+        if (dead)
+            DrawSingleElement("Multiplayer_Death");
+        else
+            DrawSingleElement("Kill_Slugcat");
     }
 
     public void DrawSingleElement(string elementName)
