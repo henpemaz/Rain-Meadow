@@ -46,7 +46,7 @@ namespace RainMeadow
         private const string ERROR_WrongPassword = "Wrong password!";
         private const string ERROR_TooManyAttemps = "Unable to connect to the lobby.";
         private const string ERROR_EnumListError = "Unable to get enum list.";
-        private const string ERROR_Timeout = "Request Timeout";
+        private const string ERROR_Timeout = "Request Timeout!";
         public RPCEvent? joiningEvent;
 
         // used for LAN lobby listings
