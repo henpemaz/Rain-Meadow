@@ -402,16 +402,10 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(310, 400f, Translate("Pointing Key")),
                 new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
 
-                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 10"), bigText: false),
+                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results."), bigText: false),
                 new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
                     accept = OpTextBox.Accept.Float
-                },
-
-                new OpLabel(10f, 270, Translate($"Lobby Joining Timeout (in seconds)"), bigText: false),
-                new OpTextBox(JoiningTimeout, new Vector2(10, 240), 160f)
-                {
-                    accept = OpTextBox.Accept.Int
                 },
             };
             onlineTab.AddItems(OnlineGameplay);
@@ -496,18 +490,24 @@ public class RainMeadowOptions : OptionInterface
                 currentlyActiveCosmeticSkinbox = new OpComboBox2(currentlyActiveCosmeticSkin, new Vector2(210f, 160f), 160f, CosmeticSkinItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 new OpLabel(410f, 250f, Translate("Cosmetic Color")),
 
-            cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
-            new OpLabel(10f, 50f, Translate("Log Level")),
-
-        new OpComboBox2(
-        CurrentLogLevel,
-        new Vector2(10f, 20f),
-        160f,
-        OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
-    )
-    {
-        colorEdge = Menu.MenuColorEffect.rgbWhite
-    }
+                cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
+                
+                new OpLabel(10f, 50f, Translate("Log Level")),
+                new OpComboBox2(
+                CurrentLogLevel,
+                new Vector2(10f, 20f),
+                160f,
+                OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
+                )
+                {
+                    colorEdge = Menu.MenuColorEffect.rgbWhite
+                },
+                
+                new OpLabel(210f, 50f, Translate($"Lobby Joining Timeout (in seconds)"), bigText: false),
+                new OpTextBox(JoiningTimeout, new Vector2(210, 20f), 160f)
+                {
+                    accept = OpTextBox.Accept.Int
+                },
 
             };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))

@@ -33,6 +33,7 @@ namespace RainMeadow
         public virtual void Timeout() // Woops, too late
         {
             RainMeadow.Error($"Timeouted {this}");
+            timeout = -1; // so it can't timeout a second time
             aborted = true;
         }
 
