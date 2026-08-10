@@ -63,6 +63,7 @@ public class SlugIcon
     public List<Color>? colors;
     public Dictionary<string, int> spriteLayerNameToIndex = [];
 
+    public bool usingFallbackSprites;
     public bool? dead = null;
     public string slugcatName = "";
 
@@ -103,12 +104,15 @@ public class SlugIcon
         if (slugcatName == "")
             return;
 
-        List<string> spriteNames = SlugcatNameToSpriteNames.TryGetValue(
+        usingFallbackSprites = !SlugcatNameToSpriteNames.TryGetValue(
             slugcatName,
             out List<string> names
-        )
-            ? [.. names]
-            : ["basic_head", "basic_face", "modded_feature"];
+        );
+
+        List<string> spriteNames = usingFallbackSprites
+            ? ["basic_head", "basic_face", "modded_feature"]
+            : [.. names];
+
         if (drawDead)
             spriteNames[spriteNames.FindIndex(name => name.EndsWith("_face"))] = "dead_face";
 
@@ -155,5 +159,7 @@ public class SlugIcon
         TryMapColorsToSprites("face", colorsList[1]);
         if (colorsList.Count > 2)
             TryMapColorsToSprites("feature", colorsList[2]);
+        else if (usingFallbackSprites)
+            sprites[2].color = Custom.hexToColor("E59D52");
     }
 }
