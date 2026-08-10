@@ -402,7 +402,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(310, 400f, Translate("Pointing Key")),
                 new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
 
-                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results."), bigText: false),
+                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
                 new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
                 {
                     accept = OpTextBox.Accept.Float
