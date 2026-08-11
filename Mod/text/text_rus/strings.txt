@@ -288,7 +288,7 @@ Slugpup|Слизнекотёнок
 Invite Friends|Пригласить
 Invite friends|Пригласить друзей
 Friendly Fire|Огонь по своим
-Require Campaign Slugcat|Отключить выбор слизнекота
+Require Campaign Slugcat|Отключить<LINE>выбор слизнекота
 Sync Save|Синхр. сохр.
 Wait for others to shelter or rescue you or press |Подождите пока остальные заснут, либо спасут вас, или же нажмите 
  to spectate| чтобы наблюдать
