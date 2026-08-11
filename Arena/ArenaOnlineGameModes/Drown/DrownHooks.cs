@@ -76,7 +76,7 @@ namespace RainMeadow
                                 ? self.arenaSitting.players[i].score
                                 : drown.CalculateTeamScore(arenaOnline, self.arenaSitting);
 
-                            if (score >= drown.respCost)
+                            if (score >= drown.RespCost)
                             {
                                 canRespawnCount++;
                             }
@@ -160,7 +160,7 @@ namespace RainMeadow
                     OnlineManager.mePlayer
                 )!;
 
-                int scoreChange = -drown.spearCost;
+                int scoreChange = -drown.SpearCost;
 
                 if (scoreChange != 0)
                 {

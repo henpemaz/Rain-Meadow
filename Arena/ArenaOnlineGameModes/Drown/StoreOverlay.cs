@@ -46,14 +46,14 @@ namespace RainMeadow
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], this.Translate("STORE"), new Vector2(pos.x, pos.y + 30f), new Vector2(110, 30), true));
 
             var storeItemsData = new (string name, int cost, KeyCode hotkey)[] {
-                (Spear, drown.spearCost, RainMeadow.rainMeadowOptions.StoreItem1.Value),
-                (Rock, drown.rockCost, RainMeadow.rainMeadowOptions.StoreItem2.Value),
-                (ExplosiveSpear, drown.spearExplCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
-                (ScavengerBomb, drown.bombCost, RainMeadow.rainMeadowOptions.StoreItem4.Value),
-                (ElectricSpear, drown.electricSpearCost, RainMeadow.rainMeadowOptions.StoreItem5.Value),
-                (Boomerang, drown.boomerangeCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
-                (Respawn, drown.respCost, RainMeadow.rainMeadowOptions.StoreItem7.Value),
-                (OpenDens, drown.denCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
+                (Spear, drown.SpearCost, RainMeadow.rainMeadowOptions.StoreItem1.Value),
+                (Rock, drown.RockCost, RainMeadow.rainMeadowOptions.StoreItem2.Value),
+                (ExplosiveSpear, drown.ExplosiveSpearCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
+                (ScavengerBomb, drown.BombCost, RainMeadow.rainMeadowOptions.StoreItem4.Value),
+                (ElectricSpear, drown.ElectricSpearCost, RainMeadow.rainMeadowOptions.StoreItem5.Value),
+                (Boomerang, drown.BoomerangCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
+                (Respawn, drown.RespCost, RainMeadow.rainMeadowOptions.StoreItem7.Value),
+                (OpenDens, drown.DenCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
             };
 
             if (DrownMode.IsDrownMode(out _))
