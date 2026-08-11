@@ -9,11 +9,14 @@ namespace RainMeadow
         public int rockCost;
 
         public int spearCost;
-        public int spearExpCost;
+        public int explosiveSpearCost;
         public int bombCost;
+        public int electricSpearCost;
+        public int boomerangCost;
         public int respCost;
         public int denCost;
         public int maxCreatures;
+        public int creatureCleanupWaves;
         public bool densOpened;
 
         public override ResourceDataState MakeState(OnlineResource resource)
@@ -32,9 +35,13 @@ namespace RainMeadow
             [OnlineField]
             int spearCost;
             [OnlineField]
-            int spearExplCost;
+            int explosiveSpearCost;
             [OnlineField]
             int bombCost;
+            [OnlineField]
+            int electricSpearCost;
+            [OnlineField]
+            int boomerangCost;
             [OnlineField]
             int respCost;
             [OnlineField]
@@ -57,14 +64,16 @@ namespace RainMeadow
                 currentWaveTimer = drown.currentWaveTimer;
                 currentWave = drown.currentWave;
                 densOpened = drown.openedDen;
-                rockCost = drown.rockCost;
-                spearCost = drown.spearCost;
-                spearExplCost = drown.spearExplCost;
-                bombCost = drown.bombCost;
-                respCost = drown.respCost;
-                denCost = drown.denCost;
-                maxCreatures = drown.maxCreatures;
-                creatureCleanupWaves = drown.creatureCleanupWaves;
+                rockCost = drown.RockCost;
+                spearCost = drown.SpearCost;
+                explosiveSpearCost = drown.ExplosiveSpearCost;
+                bombCost = drown.BombCost;
+                electricSpearCost = drown.ElectricSpearCost;
+                boomerangCost = drown.BoomerangCost;
+                respCost = drown.RespCost;
+                denCost = drown.DenCost;
+                maxCreatures = drown.MaxCreatures;
+                creatureCleanupWaves = drown.CreatureCleanupWaves;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -75,14 +84,16 @@ namespace RainMeadow
                 drown.currentWaveTimer = currentWaveTimer;
                 drown.currentWave = currentWave;
                 drown.openedDen = densOpened;
-                drown.rockCost = rockCost;
-                drown.spearCost = spearCost;
-                drown.spearExplCost = spearExplCost;
-                drown.bombCost = bombCost;
-                drown.respCost = respCost;
-                drown.denCost = denCost;
-                drown.maxCreatures = maxCreatures;
-                drown.creatureCleanupWaves = creatureCleanupWaves;
+                drown.RockCost = rockCost;
+                drown.SpearCost = spearCost;
+                drown.ExplosiveSpearCost = explosiveSpearCost;
+                drown.BombCost = bombCost;
+                drown.ElectricSpearCost = electricSpearCost;
+                drown.BoomerangCost = boomerangCost;
+                drown.RespCost = respCost;
+                drown.DenCost = denCost;
+                drown.MaxCreatures = maxCreatures;
+                drown.CreatureCleanupWaves = creatureCleanupWaves;
             }
 
             public override Type GetDataType() => typeof(DrownData);
