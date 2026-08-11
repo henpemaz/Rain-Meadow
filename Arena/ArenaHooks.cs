@@ -278,8 +278,12 @@ namespace RainMeadow
         private void Creature_Update_GetAttackedByAmoeba(On.Creature.orig_Update orig, Creature self, bool eu)
         {
             orig(self, eu);
+
             if (isArenaMode(out _) && self is not Player)
             {
+                if (self.room is null)
+                    return;
+
                 // stun creatures from the summoned Amoeba
                 for (int i = 0; i < self.room.voidSpawns.Count; i++)
                 {
