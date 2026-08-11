@@ -33,8 +33,19 @@ public class SlugIcon
             { "Rivulet", ["basic_head", "basic_face", "rivulet_feature"] },
             { "Saint", ["saint_head", "saint_face"] },
             { "Inv", ["basic_head", "basic_face", "inv_feature"] },
+            { "Slugpup", ["slugpup_head", "slugpup_face"] },
             { "Watcher", ["basic_head", "basic_face", "watcher_feature"] },
         };
+
+    /// <summary>
+    /// The same concept as SlugcatNameToSpriteNames, but for when the slugcat is to be drawn dead.<br/>
+    /// By default, dead slugs will just use the original sprites provided in SlugcatNameToSpriteNames, but<br/>
+    /// with the face replaced by the "dead_face" sprite. If sprites are provided here, they will override<br/>
+    /// the corresponding sprite with the provided one. The default dead_face sprite will not be used if<br/>
+    /// an override is present, so be sure to add "dead_face" yourself if you have other overrides.
+    /// </summary>
+    public static Dictionary<string, List<string>> SlugcatNameToDeathSpriteNames { get; set; } =
+        new() { { "Slugpup", ["slugpup_dead_face"] } };
 
     /// <summary>
     /// First hex is head colour, second is face colour, third is an optional feature colour. Don't<br/>
@@ -55,6 +66,7 @@ public class SlugIcon
             { "Rivulet", ["91CCF0", "101010", "DF2DEA"] },
             { "Saint", ["AAF156", "101010"] },
             { "Inv", ["17244F", "FFFFFF"] },
+            { "Slugpup", ["77DDCF", "101010"] },
             { "Watcher", ["17234F", "FFFFFF"] },
         };
 
@@ -87,6 +99,51 @@ public class SlugIcon
         container.RemoveFromContainer();
     }
 
+    private List<string> GetScugSpriteNames()
+    {
+        usingFallbackSprites = !SlugcatNameToSpriteNames.TryGetValue(
+            slugcatName,
+            out List<string> names
+        );
+
+        List<string> spriteNames = usingFallbackSprites
+            ? ["basic_head", "basic_face", "modded_feature"]
+            : [.. names];
+
+        if (!dead ?? false)
+            return spriteNames;
+
+        bool hasDeathSprites = SlugcatNameToDeathSpriteNames.TryGetValue(
+            slugcatName,
+            out List<string> deathSpriteNames
+        );
+
+        if (!hasDeathSprites)
+        {
+            int faceIndex = spriteNames.FindIndex(name => name.EndsWith("_face"));
+            if (faceIndex > -1)
+                spriteNames[faceIndex] = "dead_face";
+            else
+                RainMeadow.Debug(
+                    $"No face sprite was found for {slugcatName}, so no death face could be provided"
+                );
+            return spriteNames;
+        }
+
+        foreach (string deathSpriteName in deathSpriteNames)
+        {
+            string spriteType = deathSpriteName.Split('_').Last();
+            int spriteIndexToReplace = spriteNames.FindIndex(name =>
+                name.EndsWith("_" + spriteType)
+            );
+            if (spriteIndexToReplace <= -1)
+                continue;
+            spriteNames[spriteIndexToReplace] = deathSpriteName;
+        }
+
+        return spriteNames;
+    }
+
     public void DrawScugSprites(string? newSlugcatName = null, bool drawDead = false)
     {
         if (
@@ -104,17 +161,7 @@ public class SlugIcon
         if (slugcatName == "")
             return;
 
-        usingFallbackSprites = !SlugcatNameToSpriteNames.TryGetValue(
-            slugcatName,
-            out List<string> names
-        );
-
-        List<string> spriteNames = usingFallbackSprites
-            ? ["basic_head", "basic_face", "modded_feature"]
-            : [.. names];
-
-        if (drawDead)
-            spriteNames[spriteNames.FindIndex(name => name.EndsWith("_face"))] = "dead_face";
+        List<string> spriteNames = GetScugSpriteNames();
 
         for (int i = 0; i < spriteNames.Count; i++)
         {
