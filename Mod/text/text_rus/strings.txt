@@ -7,7 +7,7 @@ MEADOW|MEADOW
 Lobby Mode|Режим лобби
 All|Все
 Public Lobbies Only|Только публичные лобби
-Max Lobby Size|Максимальный размер лобби
+Max Lobby Size|Макс. размер лобби
 Lobby Mods|Моды в лобби
 Unfiltered|Без фильтра
 Exact order|Точный порядок
@@ -30,7 +30,6 @@ Lobbies:|Лобби:
 Rain Meadow Version:|Версия Rain Meadow:
 Credits|Создатели
 Search Lobbies|Поиск лобби
-Click to join|Нажми, чтобы присоединиться к
 <USERNAME>'s Lobby|Лобби <USERNAME>
 Private|Прив.
 max|макс.
@@ -54,7 +53,7 @@ MSC|MSC
 <PLAYER_COUNT>/<MAX_PLAYERS> Players|<PLAYER_COUNT>/<MAX_PLAYERS> Игроков
 Filters|Фильтры
 Network|Сеть
-Lobby Gamemode|Игровой режим лобби
+Lobby Gamemode|Игр. режим лобби
 JOIN|ПРИСОЕДИНИТЬСЯ
 Direct Connection|Прямое подключение
 Password|Пароль
@@ -74,8 +73,8 @@ Filter for only public lobbies|Отфильтровать только публ�
 Filter for a maximum lobby size|Отфильтровать по максимальному размеру лобби
 Filter for a specific lobby gamemode|Отфильтровать лобби по конкретному игровому режиму
 Filter lobbies for specific mods|Отфильтровать лобби по конкретным модам
-Click to view|Нажмите чтобы посмотреть подробности
-Click to join|Нажмите чтобы присоединиться к
+Click to view <LOBBY>|Нажми, чтобы посмотреть подробности <LOBBY>
+Click to join <LOBBY>|Нажми, чтобы присоединиться к <LOBBY>
 
 Rain Meadow version |Версия 
  is now available.| Rain Meadow теперь доступна!
