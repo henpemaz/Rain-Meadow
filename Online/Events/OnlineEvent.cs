@@ -9,7 +9,6 @@ namespace RainMeadow
         public OnlinePlayer to;// not serialized
         public ushort eventId;
         public bool aborted;
-        public int timeout = -1;
 
         public override string ToString()
         {
@@ -30,12 +29,6 @@ namespace RainMeadow
             RainMeadow.Error($"Aborted {this}");
             aborted = true;
         }
-        public virtual void Timeout() // Woops, too late
-        {
-            RainMeadow.Error($"Timeouted {this}");
-            timeout = -1; // so it can't timeout a second time
-            aborted = true;
-        }
 
         //public abstract void Acknoledged();
 
@@ -47,7 +40,6 @@ namespace RainMeadow
             GenericResultFail,
             RPCEvent,
             SoftRPCEvent,
-            GenericResultTimeout,
         }
 
         // there used to be a lot more stuff in here until I made everything into RPCs and state
@@ -66,9 +58,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.GenericResultError:
                     e = new GenericResult.Error();
-                    break;
-                case EventTypeId.GenericResultTimeout:
-                    e = new GenericResult.Timeout();
                     break;
                 case EventTypeId.RPCEvent:
                     e = new RPCEvent();

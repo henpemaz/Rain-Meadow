@@ -365,7 +365,7 @@ public class LobbySelectMenu : SmartMenu
                     if (OnlineManager.lobby.joiningEvent is not null)
                     {
                         RainMeadow.Warn("Joining process it taking too long, timing it out !");
-                        OnlineManager.lobby.joiningEvent.timeout = 1; // safely timeout
+                        OnlineManager.lobby.joiningEvent.Abort(); // safely timeout
                     }
                     else
                     {

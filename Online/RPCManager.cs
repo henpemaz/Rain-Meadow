@@ -460,17 +460,13 @@ namespace RainMeadow
             this.OnResolve += onResolve;
             return this;
         }
-        public RPCEvent Then(Action<GenericResult> onResolve, int timeout)
-        {
-            this.timeout = timeout;
-            return Then(onResolve);
-        }
 
         public void Resolve(GenericResult genericResult)
         {
             try
             {
                 this.OnResolve?.Invoke(genericResult);
+                this.OnResolve = null!; // Clear the subscription to not be called again.
             }
             catch (Exception e)
             {
@@ -482,11 +478,6 @@ namespace RainMeadow
         {
             base.Abort();
             this.Resolve(new GenericResult.Error(this));
-        }
-        public override void Timeout()
-        {
-            base.Timeout();
-            this.Resolve(new GenericResult.Timeout(this));
         }
 
         public bool IsIdentical(Delegate del, params object[] args)

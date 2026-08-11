@@ -39,7 +39,6 @@ namespace RainMeadow
 
         public int joiningAttempts = 0;
         public int enumSyncAttempts = 0;
-        private int TimeoutTicks = RainMeadow.rainMeadowOptions.JoiningTimeout.Value * 40; 
         private const int MaxJoiningAttempts = 10;
         private const string ERROR_WrongPassword = "Wrong password!";
         private const string ERROR_TooManyAttemps = "Unable to connect to the lobby.";
@@ -106,7 +105,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Requesting lobby enum list");
             enumSyncAttempts++;
-            joiningEvent = owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression, TimeoutTicks);
+            joiningEvent = owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
         }
         public void ResolveEnumCompression(GenericResult requestResult)
         {
@@ -117,15 +116,15 @@ namespace RainMeadow
                 RainMeadow.Error("Request stopped for " + this);
                 MatchmakingManager.currentInstance.JoinLobby(false, ERROR_EnumListError);
             }
-            else if (requestResult is GenericResult.Timeout) // Took too damm long
-            {
-                RainMeadow.Error("Request timeouted for " + this);
-                MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
-            }
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
                 RainMeadow.Error("request failed for " + this);
-                if (enumSyncAttempts >= MaxJoiningAttempts)
+                if ((requestResult.referencedEvent as RPCEvent)!.aborted) // Timeout
+                {
+                    RainMeadow.Error("Request timeouted for " + this);
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
+                }
+                else if (enumSyncAttempts >= MaxJoiningAttempts) // Too many attemps
                 {
                     RainMeadow.Error($"joining request of {this} cancelled after {enumSyncAttempts} attempts");
                     MatchmakingManager.currentInstance.JoinLobby(false, ERROR_TooManyAttemps);
@@ -154,7 +153,7 @@ namespace RainMeadow
             ClearIncommingBuffers();
             isRequesting = true;
             joiningAttempts++;
-            joiningEvent = supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest, TimeoutTicks);
+            joiningEvent = supervisor.InvokeRPC(RequestedLobby, key!).Then(ResolveLobbyRequest);
         }
 
         [RPCMethod(security = RPCSecurity.NoSecurity)]
@@ -202,22 +201,22 @@ namespace RainMeadow
                 RainMeadow.Error("locked request for " + this);
                 MatchmakingManager.currentInstance.JoinLobby(false, ERROR_WrongPassword);
             }
-            else if (requestResult is GenericResult.Timeout) // Took too damm long
-            {
-                RainMeadow.Error("Request timeout for " + this);
-                MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
-            }
             else if (requestResult is GenericResult.Error) // I should retry
             {
                 RainMeadow.Error("request failed for " + this);
-                if (joiningAttempts >= MaxJoiningAttempts)
+                if ((requestResult.referencedEvent as RPCEvent)!.aborted) // Timeout
+                {
+                    RainMeadow.Error("Request timeouted for " + this);
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
+                }
+                else if (joiningAttempts >= MaxJoiningAttempts) // Too many attemps
                 {
                     RainMeadow.Error($"joining request of {this} cancelled after {joiningAttempts} attempts");
                     MatchmakingManager.currentInstance.JoinLobby(false, ERROR_TooManyAttemps);
                 }
                 else
                 {
-                    RequestLobby((requestResult.referencedEvent as RPCEvent).args[0] as string);
+                    RequestLobby((requestResult.referencedEvent as RPCEvent)!.args[0] as string);
                 }
             }
         }

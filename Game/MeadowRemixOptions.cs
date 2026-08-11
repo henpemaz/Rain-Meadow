@@ -258,7 +258,7 @@ public class RainMeadowOptions : OptionInterface
         EnablePiggyBack = config.Bind("EnablePiggyBack", true);
 
         CountdownSafetyCatchTimer = config.Bind("CountdownSafetyCatchTimer", 300);
-        JoiningTimeout = config.Bind("JoiningTimeout", 15);
+        JoiningTimeout = config.Bind("JoiningTimeout", 60);
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LobbyMusic = config.Bind("MeadowLobbyMusic", "default"); // Happy One Year, Meadow

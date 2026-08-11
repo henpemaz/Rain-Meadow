@@ -13,7 +13,7 @@
 
         public override void Process()
         {
-            (referencedEvent as ResolvableEvent).Resolve(this);
+            (referencedEvent as ResolvableEvent)!.Resolve(this);
         }
 
         public class Ok : GenericResult
@@ -35,13 +35,6 @@
             public Error(ResolvableEvent resolvableEvent) : base((OnlineEvent)resolvableEvent) { }
 
             public override EventTypeId eventType => EventTypeId.GenericResultError;
-        }
-        public class Timeout : GenericResult
-        {
-            public Timeout() { }
-            public Timeout(ResolvableEvent resolvableEvent) : base((OnlineEvent)resolvableEvent) { }
-
-            public override EventTypeId eventType => EventTypeId.GenericResultTimeout;
         }
     }
 }
