@@ -385,7 +385,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
     {
         public List<LobbyInfo> filteredInfos = [];
 
-        public int maxPlayerCount = 32;
+        public int maxPlayerCount = 99;
         public bool publicOnly = false;
         public string gamemode = "__any",
             lobbyName = "",

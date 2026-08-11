@@ -15,7 +15,7 @@ namespace RainMeadow
         public static Slider.SliderID[] MMFHSLSLiderIDs => [MMFEnums.SliderID.Hue, MMFEnums.SliderID.Saturation, MMFEnums.SliderID.Lightness];
         public float SizeXOfDefaultCol => CurrLang == InGameTranslator.LanguageID.Japanese || CurrLang == InGameTranslator.LanguageID.French ? 110 : 
             CurrLang == InGameTranslator.LanguageID.Italian || CurrLang == InGameTranslator.LanguageID.Spanish ? 180 : 110;
-        public ColorSlugcatDialog(ProcessManager manager, SlugcatStats.Name name, Action onOK) : base("", Utils.Translate("Custom colors"), new(500f, 400f), manager, onOK)
+        public ColorSlugcatDialog(ProcessManager manager, SlugcatStats.Name name, Action onOK) : base("", Utils.Translate("Custom colors").Replace("<LINE>", "\r\n"), new(500f, 400f), manager, onOK)
         {
             SetUpSafeColorChoices();
             id = name;

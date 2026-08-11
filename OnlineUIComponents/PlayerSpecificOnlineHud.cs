@@ -138,6 +138,7 @@ namespace RainMeadow
                 }
             }
 
+            this.shouldSkipDrawposLerp = false;
             this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;

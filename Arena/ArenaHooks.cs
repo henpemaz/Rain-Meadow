@@ -1550,8 +1550,10 @@ namespace RainMeadow
             {
                 if (self.allResultBoxesInPlaceCounter > 10 && !arena.clientSettings.isInteracting)
                 {
-                    int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
-                    if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
+                    int myPlayerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+                    ArenaSitting.ArenaPlayer myArenaPlayer = self.ArenaSitting.players[myPlayerNumber];
+
+                    if (myPlayerNumber != -1 && !myArenaPlayer.readyForNextRound)
                     {
                         Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
                         if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
