@@ -36,6 +36,7 @@
     - mods needed to join the selected lobby
   - lobby cards now have icons showing the active lobby timeline and required DLCs
 - Slugcat icon in player HUD now reflects the target player's chosen slugcat and colours in use
+  - An additional remix option has been added to use the old icon if players find the new icons too distracting
 ### Modders
 
 - Added `MatchmakingManager.OnLobbyLeaving` event.
