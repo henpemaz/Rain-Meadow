@@ -58,6 +58,7 @@ JOIN|ПРИСОЕДИНИТЬСЯ
 Direct Connection|Прямое подключение
 Password|Пароль
 Selected Lobby|Выбранное лобби
+Join selected lobby|Присоединиться к выбранному лобби
 View Rain Meadow credits|Посмотреть титры Rain Meadow
 Directly connect to a local IP|Подключиться напрямую к локальному IP
 No Lobby Selected|Лобби не выбрано
