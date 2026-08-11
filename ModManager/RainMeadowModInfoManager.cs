@@ -104,8 +104,8 @@ public static class RainMeadowModInfoManager
         var modInfo = new RainMeadowModInfo();
 
         // TODO: consider mod.modifiesRegions
-        // Mods that change the world (regions) or the arena levels are high-impact: clients missing
-        // them can't load what the host is running.
+        // Mods that change the world regions or the arena levels are high-impact: clients missing
+        // them would crash on level join .
         string[] highImpactDirectories =
         [
             Path.Combine(mod.path, "modify", "world"),
