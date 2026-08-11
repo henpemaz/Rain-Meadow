@@ -1,9 +1,9 @@
 using System;
+using System.Linq;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using UnityEngine;
-using System.Linq;
 using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -327,31 +327,37 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_ReadyForNextRound()
         {
-            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
                 return;
             if (Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game)
                 return;
             if (game.manager.upcomingProcess is not null)
                 return;
+
+            ArenaSitting arenaSitting = game.GetArenaGameSession.arenaSitting;
             OnlinePlayer readyPlayer = RPCEvent.currentRPCEvent?.from ?? OnlineManager.mePlayer;
+
             if (readyPlayer == OnlineManager.lobby.owner)
             {
-                foreach (ArenaSitting.ArenaPlayer arenaPlayer in game.arenaOverlay.result)
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
                     arenaPlayer.readyForNextRound = true;
                 game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_All_Players_Ready);
                 if (readyPlayer.isMe)
                 {
-                    game.arenaOverlay.countdownToNextRound = game.arenaOverlay.countdownToNextRound == -1 ? 10 :
-                        Math.Min(game.arenaOverlay.countdownToNextRound, 10);
+                    game.arenaOverlay.countdownToNextRound = game.arenaOverlay.countdownToNextRound == -1
+                        ? 10
+                        : Math.Min(game.arenaOverlay.countdownToNextRound, 10);
                 }
             }
             else
             {
-                int index = ArenaHelpers.FindOnlinePlayerNumber(arena, readyPlayer);
-                if (index < 0 || index >= game.arenaOverlay.result.Count)
-                    return;
-                game.arenaOverlay.result[index].readyForNextRound = true;
-                game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arenaOnline, readyPlayer);
+
+                if (playerNumber != -1)
+                {
+                    arenaSitting.players[playerNumber].readyForNextRound = true;
+                    game.arenaOverlay.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                }
             }
         }
 
