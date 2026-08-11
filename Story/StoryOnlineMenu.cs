@@ -654,6 +654,7 @@ namespace RainMeadow
             bool friendlyFireNeedMoreSpace = manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.Russian 
                 || manager?.rainWorld?.inGameTranslator.currentLanguage == InGameTranslator.LanguageID.Japanese;
             bool leffBoxesNeedMoreSpace = InGameTranslator.LanguageID.UsesLargeFont(manager?.rainWorld?.inGameTranslator.currentLanguage);
+            
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y + 30), (friendlyFireNeedMoreSpace ? 150f : 70f) + (leffBoxesNeedMoreSpace ? 30f : 0), Regex.Replace(Translate("Friendly Fire"), "<LINE>", "\r\n"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y), leffBoxesNeedMoreSpace ? 180f : 150f, Regex.Replace(Translate("Require Campaign Slugcat"), "<LINE>", "\r\n"), "CAMPAIGNSLUGONLY", false);
             if (!OnlineManager.lobby.isOwner)
