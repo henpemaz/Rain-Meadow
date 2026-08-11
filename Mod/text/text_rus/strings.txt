@@ -7,7 +7,7 @@ MEADOW|MEADOW
 Lobby Mode|Режим лобби
 All|Все
 Public Lobbies Only|Только публичные лобби
-Max Lobby Size|Максимальный размер лобби
+Max Lobby Size|Макс. размер лобби
 Lobby Mods|Моды в лобби
 Unfiltered|Без фильтра
 Exact order|Точный порядок
@@ -30,7 +30,6 @@ Lobbies:|Лобби:
 Rain Meadow Version:|Версия Rain Meadow:
 Credits|Создатели
 Search Lobbies|Поиск лобби
-Click to join|Нажми, чтобы присоединиться к
 <USERNAME>'s Lobby|Лобби <USERNAME>
 Private|Прив.
 max|макс.
@@ -46,9 +45,37 @@ Unknown Sorting Method|Неизвестный способ сортировки
 Refresh list|Обновить список
 Watcher|Созерцатель
 MSC + Watcher|MSC + Созерцатель
+Msc + Watcher|MSC + Созерцатель
 MSC|MSC
 +Rain World Remix|+Rain World Ремикс
++More Slugcats Expansion|+More Slugcats Expansion
 +The Watcher|+Созерцатель
+<PLAYER_COUNT>/<MAX_PLAYERS> Players|<PLAYER_COUNT>/<MAX_PLAYERS> Игроков
+Filters|Фильтры
+Network|Сеть
+Lobby Gamemode|Игр. режим лобби
+JOIN|ПРИСОЕДИНИТЬСЯ
+Direct Connection|Прямое подключение
+Password|Пароль
+Selected Lobby|Выбранное лобби
+Join selected lobby|Присоединиться к выбранному лобби
+View Rain Meadow credits|Посмотреть титры Rain Meadow
+Directly connect to a local IP|Подключиться напрямую к локальному IP
+No Lobby Selected|Лобби не выбрано
+Refresh lobbies list|Обновить лист лобби
+Sort by fullest lobby|Отсортировать по наиболее заполненным лобби
+Sort by emptiest lobby|Отсортировать по наименее заполненным лобби
+Any|Любой
+Search lobbies by name|Искать лобби по имени
+Mods to Install|Моды которые нужно установить
+Mods to Enable|Моды которые нужно включить
+Mods to Disable|Моды которые нужно выключить
+Filter for only public lobbies|Отфильтровать только публичные лобби
+Filter for a maximum lobby size|Отфильтровать по максимальному размеру лобби
+Filter for a specific lobby gamemode|Отфильтровать лобби по конкретному игровому режиму
+Filter lobbies for specific mods|Отфильтровать лобби по конкретным модам
+Click to view <LOBBY>|Нажми, чтобы посмотреть подробности <LOBBY>
+Click to join <LOBBY>|Нажми, чтобы присоединиться к <LOBBY>
 
 Rain Meadow version |Версия 
  is now available.| Rain Meadow теперь доступна!
@@ -60,6 +87,7 @@ Updating won't affect your save data.|Обновление не затронет
 
 ///Меню создания лобби
 CREATE!|СОЗДАТЬ!
+Create a new lobby|Создать новое лобби
 Mode:|Режим:
 Meadow|Meadow
 A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|Мирный режим, позволяющий исследовать окрестности и<LINE>открывать маленькие секреты, вместе или в одиночку.
@@ -260,7 +288,7 @@ Slugpup|Слизнекотёнок
 Invite Friends|Пригласить
 Invite friends|Пригласить друзей
 Friendly Fire|Огонь по своим
-Require Campaign Slugcat|Отключить выбор слизнекота
+Require Campaign Slugcat|Отключить<LINE>выбор слизнекота
 Sync Save|Синхр. сохр.
 Wait for others to shelter or rescue you or press |Подождите пока остальные заснут, либо спасут вас, или же нажмите 
  to spectate| чтобы наблюдать
