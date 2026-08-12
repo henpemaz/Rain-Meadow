@@ -35,10 +35,10 @@ namespace RainMeadow
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
         public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
-        public int spearExplCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
+        public int explosiveSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
         public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
         public int electricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
-        public int boomerangeCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
+        public int boomerangCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
         public int respCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
         public int rockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
 
@@ -52,6 +52,9 @@ namespace RainMeadow
         public int currentWave = 0;
         public int lastCleanupWave = 0;
         public bool waveNeedsUpdate = true;
+        public int liveCreatureCount = 0;
+
+        public bool WavesHeldByCreatureCap => liveCreatureCount >= maxCreatures;
 
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
@@ -150,10 +153,16 @@ namespace RainMeadow
                 )!.score
                 : CalculateTeamScore(arenaOnline, arenaSitting);
 
-            string waveText = gameTypeSetup.wildLifeSetting == ArenaSetup.GameTypeSetup.WildLifeSetting.Off
-                ? ""
-                : $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}";
+            string waveText = "";
+            if (gameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+            {
+                // The countdown keeps running at the cap, so inform why nothing is spawning.
+                string capText = WavesHeldByCreatureCap
+                    ? $" ({liveCreatureCount}/{maxCreatures} creatures - kill to resume waves)"
+                    : $" ({liveCreatureCount}/{maxCreatures} creatures)";
 
+                waveText = $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}{capText}";
+            }
 
             return $": {scoreTypeText}: {displayScore}.{waveText}";
         }
@@ -173,7 +182,6 @@ namespace RainMeadow
         {
             if (!openedDen)
             {
-
                 currentWaveTimer--;
                 if (currentWaveTimer == 0)
                 {
@@ -261,28 +269,19 @@ namespace RainMeadow
 
                 if (!openedDen)
                 {
+                    if (self.playersSpawned)
+                    {
+                        liveCreatureCount = ThatsCap(self);
+                    }
+
                     if (currentWaveTimer % waveStart == 0 && self.playersSpawned && waveNeedsUpdate)
                     {
-                        var creatureAlive = 0;
-                        for (int i = 0; i < self.room.abstractRoom.creatures.Count; i++)
-                        {
-                            var currentCreature = self.room.abstractRoom.creatures[i];
-
-                            // Check if the creature is actually realized in the room
-                            if (currentCreature.realizedCreature != null)
-                            {
-                                // Check if it is alive and not a Slugcat
-                                if (currentCreature.state.alive && currentCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat)
-                                {
-                                    creatureAlive++;
-                                }
-                            }
-                        }
-                        if (creatureAlive < maxCreatures)
+                        // A wave that cannot spawn is not a wave, so hold the counter.
+                        if (!WavesHeldByCreatureCap)
                         {
                             self.SpawnCreatures();
+                            currentWave++;
                         }
-                        currentWave++;
                     }
                     if (currentWave % creatureCleanupWaves == 0 && currentWave > lastCleanupWave)
                     {
@@ -401,6 +400,32 @@ namespace RainMeadow
             return winners;
         }
 
+        private static int ThatsCap(ArenaGameSession session)
+        {
+            List<AbstractCreature>? creatures = session.room?.abstractRoom?.creatures;
+
+            if (creatures == null)
+                return 0;
+
+            int count = 0;
+
+            for (int i = 0; i < creatures.Count; i++)
+            {
+                AbstractCreature creature = creatures[i];
+
+                if (creature?.realizedCreature == null || !creature.state.alive)
+                    continue;
+                if (creature.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
+                    continue;
+                if (creature.creatureTemplate.type == CreatureTemplate.Type.Fly)
+                    continue;
+
+                count++;
+            }
+
+            return count;
+        }
+
         private void CreatureCleanup(ArenaOnlineGameMode arenaOnline, ArenaGameSession session)
         {
             if (RoomSession.map.TryGetValue(session.room.abstractRoom, out var roomSession))
@@ -432,15 +457,15 @@ namespace RainMeadow
             var pairs = new List<string>
             {
                 $"bombCost={bombCost}",
-                $"boomerangeCost={boomerangeCost}",
+                $"boomerangCost={boomerangCost}",
                 $"creatureCleanupWaves={creatureCleanupWaves}",
                 $"denCost={denCost}",
                 $"electricSpearCost={electricSpearCost}",
+                $"explosiveSpearCost={explosiveSpearCost}",
                 $"maxCreatures={maxCreatures}",
                 $"respCost={respCost}",
                 $"rockCost={rockCost}",
                 $"spearCost={spearCost}",
-                $"spearExplCost={spearExplCost}",
             };
 
             string combined = string.Join("|", pairs);
@@ -478,8 +503,8 @@ namespace RainMeadow
                         case "bombCost":
                             if (int.TryParse(val, out int i1)) bombCost = i1;
                             break;
-                        case "boomerangeCost":
-                            if (int.TryParse(val, out int i2)) boomerangeCost = i2;
+                        case "boomerangCost":
+                            if (int.TryParse(val, out int i2)) boomerangCost = i2;
                             break;
                         case "creatureCleanupWaves":
                             if (int.TryParse(val, out int i3)) creatureCleanupWaves = i3;
@@ -490,20 +515,20 @@ namespace RainMeadow
                         case "electricSpearCost":
                             if (int.TryParse(val, out int i5)) electricSpearCost = i5;
                             break;
+                        case "explosiveSpearCost":
+                            if (int.TryParse(val, out int i6)) explosiveSpearCost = i6;
+                            break;
                         case "maxCreatures":
-                            if (int.TryParse(val, out int i6)) maxCreatures = i6;
+                            if (int.TryParse(val, out int i7)) maxCreatures = i7;
                             break;
                         case "respCost":
-                            if (int.TryParse(val, out int i7)) respCost = i7;
+                            if (int.TryParse(val, out int i8)) respCost = i8;
                             break;
                         case "rockCost":
-                            if (int.TryParse(val, out int i8)) rockCost = i8;
+                            if (int.TryParse(val, out int i9)) rockCost = i9;
                             break;
                         case "spearCost":
-                            if (int.TryParse(val, out int i9)) spearCost = i9;
-                            break;
-                        case "spearExplCost":
-                            if (int.TryParse(val, out int i10)) spearExplCost = i10;
+                            if (int.TryParse(val, out int i10)) spearCost = i10;
                             break;
                     }
                 }

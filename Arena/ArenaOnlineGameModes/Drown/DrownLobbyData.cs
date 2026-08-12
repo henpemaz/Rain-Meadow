@@ -9,11 +9,14 @@ namespace RainMeadow
         public int rockCost;
 
         public int spearCost;
-        public int spearExpCost;
+        public int explosiveSpearCost;
         public int bombCost;
+        public int electricSpearCost;
+        public int boomerangCost;
         public int respCost;
         public int denCost;
         public int maxCreatures;
+        public int creatureCleanupWaves;
         public bool densOpened;
 
         public override ResourceDataState MakeState(OnlineResource resource)
@@ -32,9 +35,13 @@ namespace RainMeadow
             [OnlineField]
             int spearCost;
             [OnlineField]
-            int spearExplCost;
+            int explosiveSpearCost;
             [OnlineField]
             int bombCost;
+            [OnlineField]
+            int electricSpearCost;
+            [OnlineField]
+            int boomerangCost;
             [OnlineField]
             int respCost;
             [OnlineField]
@@ -59,8 +66,10 @@ namespace RainMeadow
                 densOpened = drown.openedDen;
                 rockCost = drown.rockCost;
                 spearCost = drown.spearCost;
-                spearExplCost = drown.spearExplCost;
+                explosiveSpearCost = drown.explosiveSpearCost;
                 bombCost = drown.bombCost;
+                electricSpearCost = drown.electricSpearCost;
+                boomerangCost = drown.boomerangCost;
                 respCost = drown.respCost;
                 denCost = drown.denCost;
                 maxCreatures = drown.maxCreatures;
@@ -77,8 +86,10 @@ namespace RainMeadow
                 drown.openedDen = densOpened;
                 drown.rockCost = rockCost;
                 drown.spearCost = spearCost;
-                drown.spearExplCost = spearExplCost;
+                drown.explosiveSpearCost = explosiveSpearCost;
                 drown.bombCost = bombCost;
+                drown.electricSpearCost = electricSpearCost;
+                drown.boomerangCost = boomerangCost;
                 drown.respCost = respCost;
                 drown.denCost = denCost;
                 drown.maxCreatures = maxCreatures;

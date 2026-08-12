@@ -48,10 +48,10 @@ namespace RainMeadow
             var storeItemsData = new (string name, int cost, KeyCode hotkey)[] {
                 (Spear, drown.spearCost, RainMeadow.rainMeadowOptions.StoreItem1.Value),
                 (Rock, drown.rockCost, RainMeadow.rainMeadowOptions.StoreItem2.Value),
-                (ExplosiveSpear, drown.spearExplCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
+                (ExplosiveSpear, drown.explosiveSpearCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
                 (ScavengerBomb, drown.bombCost, RainMeadow.rainMeadowOptions.StoreItem4.Value),
                 (ElectricSpear, drown.electricSpearCost, RainMeadow.rainMeadowOptions.StoreItem5.Value),
-                (Boomerang, drown.boomerangeCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
+                (Boomerang, drown.boomerangCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
                 (Respawn, drown.respCost, RainMeadow.rainMeadowOptions.StoreItem7.Value),
                 (OpenDens, drown.denCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
             };
