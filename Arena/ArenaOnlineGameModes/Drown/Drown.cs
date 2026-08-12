@@ -182,7 +182,6 @@ namespace RainMeadow
         {
             if (!openedDen)
             {
-
                 currentWaveTimer--;
                 if (currentWaveTimer == 0)
                 {
@@ -277,11 +276,12 @@ namespace RainMeadow
 
                     if (currentWaveTimer % waveStart == 0 && self.playersSpawned && waveNeedsUpdate)
                     {
+                        // A wave that cannot spawn is not a wave, so hold the counter.
                         if (!WavesHeldByCreatureCap)
                         {
                             self.SpawnCreatures();
+                            currentWave++;
                         }
-                        currentWave++;
                     }
                     if (currentWave % creatureCleanupWaves == 0 && currentWave > lastCleanupWave)
                     {
