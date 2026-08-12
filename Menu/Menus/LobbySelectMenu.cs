@@ -338,18 +338,21 @@ public class LobbySelectMenu : SmartMenu
         joinButton.buttonBehav.greyedOut = lobbyCardSelector.SelectedLobby == null;
         if (joiningDialog is not null && OnlineManager.lobby is not null)
         {
-            int attempts = OnlineManager.lobby.enumsChecked 
-                ? OnlineManager.lobby.joiningAttempts 
-                : OnlineManager.lobby.enumSyncAttempts;
-            int step = !OnlineManager.lobby.enumsChecked
-                ? 0
-                : OnlineManager.lobby.isRequesting
-                    ? 1
-                    : 2;
+            if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
+            {
+                int attempts = OnlineManager.lobby.enumsChecked 
+                    ? OnlineManager.lobby.joiningAttempts 
+                    : OnlineManager.lobby.enumSyncAttempts;
+                int step = !OnlineManager.lobby.enumsChecked
+                    ? 0
+                    : OnlineManager.lobby.isRequesting
+                        ? 1
+                        : 2;
 
-            string text = Translate("Joining lobby...") + $" {step}/2";
-            if (attempts > 2) text += "\n" + Translate("(Attempt <NUM>)").Replace("<NUM>", attempts.ToString());
-            joiningDialog.SetText(text);
+                string text = Translate("Joining lobby...") + $" {step}/2";
+                if (attempts > 2) text += "\n" + Translate("(Attempt <NUM>)").Replace("<NUM>", attempts.ToString());
+                joiningDialog.SetText(text);
+            }
 
             if (TimeoutTicks > 0)
             {
