@@ -1,11 +1,13 @@
+using System;
 using Menu;
 using UnityEngine;
 
 namespace RainMeadow.UI.Dialogs;
 
-// DialogNotify does exist... but it requires passing in an action to show continue button
 public class NotifyDialog : Dialog
 {
+    public event Action? OnConfirm;
+
     public NotifyDialog(
         ProcessManager manager,
         string message,
@@ -27,6 +29,10 @@ public class NotifyDialog : Dialog
         );
     }
 
-    // since there's only one object and one signal
-    public override void Singal(MenuObject sender, string message) => manager.StopSideProcess(this);
+    public override void Singal(MenuObject sender, string message)
+    {
+        PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        manager.StopSideProcess(this);
+        OnConfirm?.Invoke();
+    }
 }

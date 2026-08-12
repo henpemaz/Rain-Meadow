@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Menu;
+using RainMeadow.UI.Dialogs;
 using UnityEngine;
 namespace RainMeadow.UI.Components
 {
@@ -18,8 +16,13 @@ namespace RainMeadow.UI.Components
             inviteFriends = this.AddSideButton("Meadow_Menu_InviteFriends", description: menu.Translate("Invite Friends"), signal: "INVITE_FRIENDS");
             inviteFriends.OnClick += (_) =>
             {
-                SimpleDialogBoxNotify dialogBox = new(menu, owner, "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
-                MatchmakingManager.currentInstance.OpenInvitationOverlay();
+                NotifyDialog dialog = new(
+                    menu.manager,
+                    "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
+                    UIUtils.DIALOG_SIZE
+                );
+                dialog.OnConfirm += () => MatchmakingManager.currentInstance.OpenInvitationOverlay();
+                menu.manager.ShowDialog(dialog);
             };
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(onlinePlayers);

@@ -7,6 +7,8 @@ using RWCustom;
 using UnityEngine;
 using System.Text.RegularExpressions;
 using Steamworks;
+using RainMeadow.UI.Dialogs;
+using RainMeadow.UI;
 
 namespace RainMeadow
 {
@@ -638,8 +640,13 @@ namespace RainMeadow
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
             invite.OnClick += (_) =>
             {
-                SimpleDialogBoxNotify dialogBox = new(this, pages[0], "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
-                MatchmakingManager.currentInstance.OpenInvitationOverlay();
+                NotifyDialog dialog = new(
+                    manager,
+                    "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
+                    UIUtils.DIALOG_SIZE
+                );
+                dialog.OnConfirm += () => MatchmakingManager.currentInstance.OpenInvitationOverlay();
+                manager.ShowDialog(dialog);
             };
             pages[0].subObjects.Add(invite);
 
