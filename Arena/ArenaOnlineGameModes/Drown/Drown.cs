@@ -34,17 +34,17 @@ namespace RainMeadow
         }
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        public int SpearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
-        public int ExplosiveSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
-        public int BombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
-        public int ElectricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
-        public int BoomerangCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
-        public int RespCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
-        public int RockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
+        public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
+        public int explosiveSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
+        public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;
+        public int electricSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value;
+        public int boomerangCost = RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value;
+        public int respCost = RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value;
+        public int rockCost = RainMeadow.rainMeadowOptions.DrownPointsForRock.Value;
 
-        public int DenCost = RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value;
-        public int MaxCreatures = RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value;
-        public int CreatureCleanupWaves = RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value;
+        public int denCost = RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value;
+        public int maxCreatures = RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value;
+        public int creatureCleanupWaves = RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value;
 
         public bool openedDen = false;
         public int waveStart = 20;
@@ -54,7 +54,7 @@ namespace RainMeadow
         public bool waveNeedsUpdate = true;
 
         /// <summary>
-        /// Creatures alive in the room that count against <see cref="MaxCreatures"/>. Recounted
+        /// Creatures alive in the room that count against <see cref="maxCreatures"/>. Recounted
         /// locally each frame, so it stays accurate on clients without needing to be synced.
         /// </summary>
         public int liveCreatureCount = 0;
@@ -63,7 +63,7 @@ namespace RainMeadow
         /// True while the room is at or over the creature cap, which makes the next wave boundary
         /// pass without spawning. The wave countdown itself keeps running.
         /// </summary>
-        public bool WavesHeldByCreatureCap => liveCreatureCount >= MaxCreatures;
+        public bool WavesHeldByCreatureCap => liveCreatureCount >= maxCreatures;
 
         public DrownInterface? drownInterface;
         public TabContainer.Tab? myTab;
@@ -167,8 +167,8 @@ namespace RainMeadow
             {
                 // The countdown keeps running at the cap, so inform why nothing is spawning.
                 string capText = WavesHeldByCreatureCap
-                    ? $" ({liveCreatureCount}/{MaxCreatures} creatures - kill to resume waves)"
-                    : $" ({liveCreatureCount}/{MaxCreatures} creatures)";
+                    ? $" ({liveCreatureCount}/{maxCreatures} creatures - kill to resume waves)"
+                    : $" ({liveCreatureCount}/{maxCreatures} creatures)";
 
                 waveText = $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}{capText}";
             }
@@ -292,7 +292,7 @@ namespace RainMeadow
                         }
                         currentWave++;
                     }
-                    if (currentWave % CreatureCleanupWaves == 0 && currentWave > lastCleanupWave)
+                    if (currentWave % creatureCleanupWaves == 0 && currentWave > lastCleanupWave)
                     {
                         lastCleanupWave = currentWave;
 
@@ -465,16 +465,16 @@ namespace RainMeadow
 
             var pairs = new List<string>
             {
-                $"BombCost={BombCost}",
-                $"BoomerangCost={BoomerangCost}",
-                $"CreatureCleanupWaves={CreatureCleanupWaves}",
-                $"DenCost={DenCost}",
-                $"ElectricSpearCost={ElectricSpearCost}",
-                $"ExplosiveSpearCost={ExplosiveSpearCost}",
-                $"MaxCreatures={MaxCreatures}",
-                $"RespCost={RespCost}",
-                $"RockCost={RockCost}",
-                $"SpearCost={SpearCost}",
+                $"bombCost={bombCost}",
+                $"boomerangCost={boomerangCost}",
+                $"creatureCleanupWaves={creatureCleanupWaves}",
+                $"denCost={denCost}",
+                $"electricSpearCost={electricSpearCost}",
+                $"explosiveSpearCost={explosiveSpearCost}",
+                $"maxCreatures={maxCreatures}",
+                $"respCost={respCost}",
+                $"rockCost={rockCost}",
+                $"spearCost={spearCost}",
             };
 
             string combined = string.Join("|", pairs);
@@ -509,35 +509,35 @@ namespace RainMeadow
                     // Sorted alphanumerically
                     switch (key)
                     {
-                        case "BombCost":
-                            if (int.TryParse(val, out int i1)) BombCost = i1;
+                        case "bombCost":
+                            if (int.TryParse(val, out int i1)) bombCost = i1;
                             break;
-                        case "BoomerangCost":
-                            if (int.TryParse(val, out int i2)) BoomerangCost = i2;
+                        case "boomerangCost":
+                            if (int.TryParse(val, out int i2)) boomerangCost = i2;
                             break;
-                        case "CreatureCleanupWaves":
-                            if (int.TryParse(val, out int i3)) CreatureCleanupWaves = i3;
+                        case "creatureCleanupWaves":
+                            if (int.TryParse(val, out int i3)) creatureCleanupWaves = i3;
                             break;
-                        case "DenCost":
-                            if (int.TryParse(val, out int i4)) DenCost = i4;
+                        case "denCost":
+                            if (int.TryParse(val, out int i4)) denCost = i4;
                             break;
-                        case "ElectricSpearCost":
-                            if (int.TryParse(val, out int i5)) ElectricSpearCost = i5;
+                        case "electricSpearCost":
+                            if (int.TryParse(val, out int i5)) electricSpearCost = i5;
                             break;
-                        case "ExplosiveSpearCost":
-                            if (int.TryParse(val, out int i6)) ExplosiveSpearCost = i6;
+                        case "explosiveSpearCost":
+                            if (int.TryParse(val, out int i6)) explosiveSpearCost = i6;
                             break;
-                        case "MaxCreatures":
-                            if (int.TryParse(val, out int i7)) MaxCreatures = i7;
+                        case "maxCreatures":
+                            if (int.TryParse(val, out int i7)) maxCreatures = i7;
                             break;
-                        case "RespCost":
-                            if (int.TryParse(val, out int i8)) RespCost = i8;
+                        case "respCost":
+                            if (int.TryParse(val, out int i8)) respCost = i8;
                             break;
-                        case "RockCost":
-                            if (int.TryParse(val, out int i9)) RockCost = i9;
+                        case "rockCost":
+                            if (int.TryParse(val, out int i9)) rockCost = i9;
                             break;
-                        case "SpearCost":
-                            if (int.TryParse(val, out int i10)) SpearCost = i10;
+                        case "spearCost":
+                            if (int.TryParse(val, out int i10)) spearCost = i10;
                             break;
                     }
                 }

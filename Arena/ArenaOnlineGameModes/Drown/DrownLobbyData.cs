@@ -64,16 +64,16 @@ namespace RainMeadow
                 currentWaveTimer = drown.currentWaveTimer;
                 currentWave = drown.currentWave;
                 densOpened = drown.openedDen;
-                rockCost = drown.RockCost;
-                spearCost = drown.SpearCost;
-                explosiveSpearCost = drown.ExplosiveSpearCost;
-                bombCost = drown.BombCost;
-                electricSpearCost = drown.ElectricSpearCost;
-                boomerangCost = drown.BoomerangCost;
-                respCost = drown.RespCost;
-                denCost = drown.DenCost;
-                maxCreatures = drown.MaxCreatures;
-                creatureCleanupWaves = drown.CreatureCleanupWaves;
+                rockCost = drown.rockCost;
+                spearCost = drown.spearCost;
+                explosiveSpearCost = drown.explosiveSpearCost;
+                bombCost = drown.bombCost;
+                electricSpearCost = drown.electricSpearCost;
+                boomerangCost = drown.boomerangCost;
+                respCost = drown.respCost;
+                denCost = drown.denCost;
+                maxCreatures = drown.maxCreatures;
+                creatureCleanupWaves = drown.creatureCleanupWaves;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -84,16 +84,16 @@ namespace RainMeadow
                 drown.currentWaveTimer = currentWaveTimer;
                 drown.currentWave = currentWave;
                 drown.openedDen = densOpened;
-                drown.RockCost = rockCost;
-                drown.SpearCost = spearCost;
-                drown.ExplosiveSpearCost = explosiveSpearCost;
-                drown.BombCost = bombCost;
-                drown.ElectricSpearCost = electricSpearCost;
-                drown.BoomerangCost = boomerangCost;
-                drown.RespCost = respCost;
-                drown.DenCost = denCost;
-                drown.MaxCreatures = maxCreatures;
-                drown.CreatureCleanupWaves = creatureCleanupWaves;
+                drown.rockCost = rockCost;
+                drown.spearCost = spearCost;
+                drown.explosiveSpearCost = explosiveSpearCost;
+                drown.bombCost = bombCost;
+                drown.electricSpearCost = electricSpearCost;
+                drown.boomerangCost = boomerangCost;
+                drown.respCost = respCost;
+                drown.denCost = denCost;
+                drown.maxCreatures = maxCreatures;
+                drown.creatureCleanupWaves = creatureCleanupWaves;
             }
 
             public override Type GetDataType() => typeof(DrownData);
