@@ -52,17 +52,8 @@ namespace RainMeadow
         public int currentWave = 0;
         public int lastCleanupWave = 0;
         public bool waveNeedsUpdate = true;
-
-        /// <summary>
-        /// Creatures alive in the room that count against <see cref="maxCreatures"/>. Recounted
-        /// locally each frame, so it stays accurate on clients without needing to be synced.
-        /// </summary>
         public int liveCreatureCount = 0;
 
-        /// <summary>
-        /// True while the room is at or over the creature cap, which makes the next wave boundary
-        /// pass without spawning. The wave countdown itself keeps running.
-        /// </summary>
         public bool WavesHeldByCreatureCap => liveCreatureCount >= maxCreatures;
 
         public DrownInterface? drownInterface;
