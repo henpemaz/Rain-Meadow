@@ -6,11 +6,18 @@ namespace RainMeadow.UI.Dialogs;
 
 public class NotifyDialog : Dialog
 {
+    public DialogBoxNotify dialogBox;
     public ProcessManager.ProcessID initialProcessID;
 
     public event Action? OnContinue;
 
     public bool onlyShowInInitialProcess;
+
+    public float TimeOut
+    {
+        get => dialogBox.timeOut;
+        set => dialogBox.timeOut = value;
+    }
 
     public NotifyDialog(
         ProcessManager manager,
@@ -23,7 +30,7 @@ public class NotifyDialog : Dialog
         : base(manager)
     {
         dialogPage.subObjects.Add(
-            new DialogBoxNotify(
+            dialogBox = new DialogBoxNotify(
                 this,
                 dialogPage,
                 Translate(message),

@@ -276,6 +276,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     "You cant color without Remix on!",
                     UIUtils.DIALOG_SIZE
                 )
+                {
+                    TimeOut = 0
+                }
             );
             return;
         }

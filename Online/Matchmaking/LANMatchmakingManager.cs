@@ -64,6 +64,9 @@ namespace RainMeadow {
                         dialogue,
                         UIUtils.DIALOG_SIZE
                     )
+                    {
+                        TimeOut = 0
+                    }
                 );
             }
 
@@ -373,6 +376,9 @@ namespace RainMeadow {
                     "You cannot use this feature here.",
                     UIUtils.DIALOG_SIZE
                 )
+                {
+                    TimeOut = 0
+                }
             );
         }
     }

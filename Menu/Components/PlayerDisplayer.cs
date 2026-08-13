@@ -21,7 +21,10 @@ namespace RainMeadow.UI.Components
                     "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
                     UIUtils.DIALOG_SIZE,
                     MatchmakingManager.currentInstance.OpenInvitationOverlay
-                );
+                )
+                {
+                    TimeOut = 0
+                };
                 menu.manager.ShowDialog(dialog);
             };
             refreshDisplayButtons = PopulatePlayerDisplays;

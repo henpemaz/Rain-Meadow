@@ -746,6 +746,9 @@ namespace RainMeadow
                             UIUtils.DIALOG_SIZE,
                             Ext_ProcessID.LobbySelectMenu
                         )
+                        {
+                            TimeOut = 0,
+                        }
                     );
                     return;
                 }
