@@ -273,11 +273,11 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             menu.manager.ShowDialog(
                 new NotifyDialog(
                     menu.manager,
-                    "You cant color without Remix on!",
+                    "You can't customize colors without Remix on!",
                     UIUtils.DIALOG_SIZE
                 )
                 {
-                    TimeOut = 0
+                    TimeOut = 0,
                 }
             );
             return;
