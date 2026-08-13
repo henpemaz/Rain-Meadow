@@ -42,8 +42,7 @@ namespace RainMeadow
 
             On.Watcher.SandGrubAI.PickNewBurrow += SandGrubAI_PickNewBurrow;
 
-            On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
-            IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
+            On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;            
             On.Watcher.BoxWorm.LarvaHolder.ctor += LarvaHolder_ctor; 
 
             IL.Hazer.Update += Hazer_HasSprayed;
@@ -258,15 +257,8 @@ namespace RainMeadow
 
         private void LarvaHolder_ctor(On.Watcher.BoxWorm.LarvaHolder.orig_ctor orig, BoxWorm.LarvaHolder self, int index, BodyChunk parentBodyChunk, float horizontalOffset, float verticalOffset, bool hasLarva)
         {
-            orig(self, index, parentBodyChunk, horizontalOffset, verticalOffset, hasLarva);
-            if (OnlineManager.lobby is null) return;
-
-            if (!parentBodyChunk.owner.IsLocal() && hasLarva)
-            {
-                if(parentBodyChunk.owner.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject opo)
-                    opo.owner.InvokeRPC(AskForOnlineLarvaRPC, opo, (byte)index);
-                self.hasLarva = false;
-            }
+            orig(self, index, parentBodyChunk, horizontalOffset, verticalOffset, hasLarva);            
+            if (!parentBodyChunk.owner.IsLocal()) self.hasLarva = false;
         }
 
         private bool Rattler_ValidSpawnPos(On.Watcher.Rattler.orig_ValidSpawnPos orig, Room room, RWCustom.IntVector2 pos, List<Vector2> rattlerSpawnLocsSoFar)
@@ -288,25 +280,6 @@ namespace RainMeadow
         {
             if (!self.Grub.IsLocal()) return null; // Don't try switching burrows if we are a remote, only my owner is allowed to do that.
             return orig(self);
-        }
-
-        private void LarvaHolder_Update(ILContext il)
-        {
-            var c = new ILCursor(il);
-
-            // this.ManageLarvaDetachment();
-
-            c.GotoNext(MoveType.Before,
-                i => i.MatchLdarg(0),
-                i => i.MatchCallOrCallvirt<BoxWorm.LarvaHolder>(nameof(BoxWorm.LarvaHolder.ManageLarvaDetachment)));
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((BoxWorm.LarvaHolder self) =>
-            {
-                if (!RealizedFireSpriteLarva.themoddershavebeenlefttostarve.TryGetValue((BoxWorm.Larva)self.abstractLarva.realizedObject, out _))
-                {
-                    RealizedFireSpriteLarva.themoddershavebeenlefttostarve.Add((BoxWorm.Larva)self.abstractLarva.realizedObject, self);
-                }
-            });
         }
 
         private void BoxWorm_RecieveHelp(On.Watcher.BoxWorm.orig_RecieveHelp orig, Watcher.BoxWorm self)
