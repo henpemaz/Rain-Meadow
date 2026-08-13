@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Kittehface.Framework20;
 using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using UnityEngine;
 
 namespace RainMeadow
@@ -152,8 +154,13 @@ namespace RainMeadow
             if (ModManager.MSC && manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
                 manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = SlugcatStats.Name.White;
-                var popupDialog = new DialogBoxNotify(self, self.pages[0], self.Translate("Rain Meadow: Please use an external mod to access Inv's campaign."), "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
-                self.pages[0].subObjects.Add(popupDialog);
+                manager.ShowDialog(
+                    new NotifyDialog(
+                        manager,
+                        "Rain Meadow: Please use an external mod to access Inv's campaign.",
+                        UIUtils.DIALOG_SIZE
+                    )
+                );
                 self.manager.menuMic?.PlaySound(SoundID.Thunder, 0f, 0.7f, 1f);
                 if (manager.musicPlayer?.song is Music.Song song && song is Music.IntroRollMusic) song.FadeOut(2f); 
             }
