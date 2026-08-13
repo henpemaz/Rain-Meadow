@@ -747,6 +747,7 @@ namespace RainMeadow
                             Ext_ProcessID.LobbySelectMenu
                         )
                         {
+                            soundOnButtonPress = SoundID.MENU_Switch_Page_In,
                             TimeOut = 0,
                         }
                     );

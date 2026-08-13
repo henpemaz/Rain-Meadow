@@ -6,6 +6,7 @@ namespace RainMeadow.UI.Dialogs;
 
 public class NotifyDialog : Dialog
 {
+    public SoundID soundOnButtonPress = SoundID.MENU_Button_Standard_Button_Pressed;
     public DialogBoxNotify dialogBox;
     public ProcessManager.ProcessID initialProcessID;
 
@@ -75,7 +76,7 @@ public class NotifyDialog : Dialog
 
     public override void Singal(MenuObject sender, string message)
     {
-        PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        PlaySound(soundOnButtonPress);
         manager.StopSideProcess(this);
         OnContinue?.Invoke();
     }
