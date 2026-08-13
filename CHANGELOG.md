@@ -37,12 +37,15 @@
     - active lobby timeline (always present in Meadow mode, Story mode requires the game to be in progress to show)
     - mods needed to join the selected lobby
   - lobby cards now have icons showing the active lobby timeline and required DLCs
+- Slugcat icon in player HUD now reflects the target player's chosen slugcat and colours in use
+  - An additional remix option has been added to use the old icon if players find the new icons too distracting
 ### Modders
 
 - Added `MatchmakingManager.OnLobbyLeaving` event.
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings
 - Added `ScrollableConfirmDialog` menu object
-- Added `SlugIcon` menu object. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
+- Added `SlugIcon`. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
+  - Lobby cards and in-game slugcat icons will automatically use the sprites and layerings if they are set, and a fallback icon will be used if they are not.
 - `activeTimeline` is now part of `LobbyInfo`
 
 ## Arena
