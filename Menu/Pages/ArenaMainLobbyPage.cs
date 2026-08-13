@@ -7,6 +7,7 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
@@ -42,7 +43,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
     private bool lastSyncedShufflePlayList;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
-    public NullLobbyError nullLobbyError;
+    public bool shownNullLobbyDialog;
 
     public ArenaMainLobbyPage(
         Menu.Menu menu,
@@ -584,6 +585,24 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
     public override void Update()
     {
         base.Update();
+
+        if (shownNullLobbyDialog)
+            return;
+
+        if (OnlineManager.lobby == null)
+        {
+            menu.manager.ShowDialog(
+                new NotifyDialog(
+                    menu.manager,
+                    "Lobby is null! Exiting...",
+                    UIUtils.DIALOG_SIZE,
+                    RainMeadow.Ext_ProcessID.LobbySelectMenu
+                )
+            );
+            shownNullLobbyDialog = true;
+            return;
+        }
+
         if (menu.holdButton && menu.lastHoldButton && menu.selectedObject != null)
         {
             if (
@@ -677,28 +696,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
         chatLobbyStateDivider.y =
             chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
-        if (nullLobbyError != null)
-        {
-            return;
-        }
-        if (OnlineManager.lobby == null && nullLobbyError == null)
-        {
-            nullLobbyError = new NullLobbyError(
-                this.ArenaMenu!,
-                this.ArenaMenu!.pages[0],
-                new Vector2(
-                    this.ArenaMenu.manager.rainWorld.options.ScreenSize.x / 2f
-                        - 240f
-                        + (1366f - this.ArenaMenu.manager.rainWorld.options.ScreenSize.x) / 2f,
-                    224f
-                ),
-                new Vector2(480f, 320f),
-                "Arena lobby is null! Exiting...",
-                false
-            );
-            this.ArenaMenu.pages[0].subObjects.Add(nullLobbyError);
-            return;
-        }
     }
 
     public void BindDynamicSelectable(MenuObject objRequested)

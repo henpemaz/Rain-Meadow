@@ -29,6 +29,18 @@ public class NotifyDialog : Dialog
         );
     }
 
+    public NotifyDialog(
+        ProcessManager manager,
+        string message,
+        Vector2 size,
+        ProcessManager.ProcessID processOnConfirm,
+        bool forceWrapping = false
+    )
+        : this(manager, message, size, forceWrapping)
+    {
+        OnConfirm += () => manager.RequestMainProcessSwitch(processOnConfirm);
+    }
+
     public override void Singal(MenuObject sender, string message)
     {
         PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);

@@ -38,7 +38,7 @@ namespace RainMeadow
         private ButtonScroller.TextAnchor textAnchor;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
-        public NullLobbyError nullLobbyError;
+        public bool shownNullLobbyDialog;
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -288,15 +288,19 @@ namespace RainMeadow
         }
         public override void Update()
         {
-            if (nullLobbyError != null)
-            {
-                base.Update();
+            if (shownNullLobbyDialog)
                 return;
-            }
-            if (OnlineManager.lobby == null && nullLobbyError == null)
+            if (OnlineManager.lobby == null)
             {
-                nullLobbyError = new NullLobbyError(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Story lobby is null! Exiting...", false);
-                this.pages[0].subObjects.Add(nullLobbyError);
+                manager.ShowDialog(
+                    new NotifyDialog(
+                        manager,
+                        "Lobby is null! Exiting...",
+                        UIUtils.DIALOG_SIZE,
+                        RainMeadow.Ext_ProcessID.LobbySelectMenu
+                    )
+                );
+                shownNullLobbyDialog = true;
                 return;
             }
             var jollyallowed = false;
