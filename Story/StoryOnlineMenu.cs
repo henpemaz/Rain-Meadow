@@ -648,9 +648,9 @@ namespace RainMeadow
                 NotifyDialog dialog = new(
                     manager,
                     "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
-                    UIUtils.DIALOG_SIZE
+                    UIUtils.DIALOG_SIZE,
+                    MatchmakingManager.currentInstance.OpenInvitationOverlay
                 );
-                dialog.OnConfirm += () => MatchmakingManager.currentInstance.OpenInvitationOverlay();
                 manager.ShowDialog(dialog);
             };
             pages[0].subObjects.Add(invite);

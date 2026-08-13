@@ -226,8 +226,12 @@ public class LobbySelectMenu : SmartMenu
 
         if (lobbyInfo.hasPassword)
         {
-            InputDialog passwordDialog = new(manager, "Password Required", UIUtils.DIALOG_SIZE);
-            passwordDialog.OnConfirm += (password) => StartJoiningLobby(lobbyInfo, password);
+            InputDialog passwordDialog = new(
+                manager,
+                "Password Required",
+                UIUtils.DIALOG_SIZE,
+                (password) => StartJoiningLobby(lobbyInfo, password)
+            );
             manager.ShowDialog(passwordDialog);
         }
         else
@@ -287,8 +291,10 @@ public class LobbySelectMenu : SmartMenu
             return;
         }
 
-        NotLocalDialog notLocalDialog = new(manager);
-        notLocalDialog.OnConfirm += () => RequestJoinLobby(fakeLobbyInfo, password);
+        NotLocalDialog notLocalDialog = new(
+            manager,
+            () => RequestJoinLobby(fakeLobbyInfo, password)
+        );
         manager.ShowDialog(notLocalDialog);
     }
 

@@ -9,7 +9,7 @@ public class NotLocalDialog : Dialog
 {
     public event Action? OnConfirm;
 
-    public NotLocalDialog(ProcessManager manager)
+    public NotLocalDialog(ProcessManager manager, Action? onConfirm = null)
         : base(manager)
     {
         Futile.atlasManager.LoadAtlas("illustrations/notlocalwarning");
@@ -65,5 +65,7 @@ public class NotLocalDialog : Dialog
             yesButton,
             theButtonThatYouClickToDesideThatYouDoNotWantToDoThisAction,
         ]);
+
+        OnConfirm += onConfirm;
     }
 }
