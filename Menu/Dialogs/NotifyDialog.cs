@@ -6,13 +6,18 @@ namespace RainMeadow.UI.Dialogs;
 
 public class NotifyDialog : Dialog
 {
+    public ProcessManager.ProcessID? initialProcessID;
+
     public event Action? OnConfirm;
+
+    public bool onlyShowInInitialProcess;
 
     public NotifyDialog(
         ProcessManager manager,
         string message,
         Vector2 size,
-        bool forceWrapping = false
+        bool forceWrapping = false,
+        bool onlyShowInInitialProcess = false
     )
         : base(manager)
     {
@@ -27,6 +32,10 @@ public class NotifyDialog : Dialog
                 forceWrapping
             )
         );
+
+        this.onlyShowInInitialProcess = onlyShowInInitialProcess;
+        if (onlyShowInInitialProcess)
+            initialProcessID = manager.currentMainLoop.ID;
     }
 
     public NotifyDialog(
@@ -34,11 +43,19 @@ public class NotifyDialog : Dialog
         string message,
         Vector2 size,
         ProcessManager.ProcessID processOnConfirm,
-        bool forceWrapping = false
+        bool forceWrapping = false,
+        bool onlyShowInInitialProcess = false
     )
-        : this(manager, message, size, forceWrapping)
+        : this(manager, message, size, forceWrapping, onlyShowInInitialProcess)
     {
         OnConfirm += () => manager.RequestMainProcessSwitch(processOnConfirm);
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (onlyShowInInitialProcess && manager.currentMainLoop.ID != initialProcessID)
+            manager.StopSideProcess(this);
     }
 
     public override void Singal(MenuObject sender, string message)

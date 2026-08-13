@@ -596,7 +596,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     menu.manager,
                     "Lobby is null! Exiting...",
                     UIUtils.DIALOG_SIZE,
-                    RainMeadow.Ext_ProcessID.LobbySelectMenu
+                    RainMeadow.Ext_ProcessID.LobbySelectMenu,
+                    onlyShowInInitialProcess: true
                 )
             );
             shownNullLobbyDialog = true;
