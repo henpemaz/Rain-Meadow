@@ -14,7 +14,7 @@ namespace RainMeadow
         public List<FLabel> messageLabels = new();
         public FLabel pingLabel;
         public FLabel? scoreLabel;
-        public FSprite slugIcon;
+        public PlayerIcon playerIcon;
         public OnlinePlayer player;
         public class Message
         {
@@ -44,7 +44,7 @@ namespace RainMeadow
         public float blink;
         public float lastBlink;
         public int onlineTimeSinceSpawn;
-        public string iconString;
+        public string? iconString;
         public bool flashIcons;
         public float fadeSpeed;
         public int realPing;
@@ -111,11 +111,6 @@ namespace RainMeadow
                 {
                     this.iconString = "ChieftainA";
                 }
-                else
-                {
-                    this.iconString = "Kill_Slugcat";
-                }
-
 
                 if (customization.globalMute)
                 {
@@ -127,25 +122,11 @@ namespace RainMeadow
                 }
 
             }
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
-                {
-                    this.iconString = "Multiplayer_Star";
-                }
-                else if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
-                {
-                    this.iconString = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
-                }
-            }
 
-            this.slugIcon = new FSprite(iconString, true);
-            owner.hud.fContainers[0].AddChild(this.slugIcon);
-            this.slugIcon.alpha = 0f;
-            this.slugIcon.x = -1000f;
+            playerIcon = new PlayerIcon(owner.hud.fContainers[0], customization, lighter_color);
+            playerIcon.container.alpha = 0f;
+            playerIcon.container.x = -1000f;
 
-
-            this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
             this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));
@@ -205,9 +186,7 @@ namespace RainMeadow
                 {
                     show = false;
                     pos.x = -1000f;
-                    lastPos.x = -1000f;
-                    alpha = 0f;
-                    lastAlpha = 0f;
+                    this.alpha = 0f;
                 }
             }
 
@@ -227,38 +206,26 @@ namespace RainMeadow
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
-                    if (this.lastAlpha == 0 || owner.shouldSkipDrawposLerp || lastPos.x <= -999f) this.lastPos = pos;
+                    if (this.lastAlpha == 0) this.lastPos = pos;
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
                     if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine)
                     {
-                        slugIcon.SetElementByName("Kill_Slugcat");
+                        playerIcon.DrawSlugIcon(false);
                     }
                     else if (RainMeadow.isArenaMode(out var arena))
                     {
-                        if (arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player) != "")
-                        {
-                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player));
-                        }
-                        else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                        slugIcon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
-
+                        string arenaIcon = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
+                        if (arenaIcon != "") playerIcon.DrawSingleElement(arenaIcon);
+                        else playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
+                        playerIcon.icon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
                     }
-                    else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
-                    else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
-                    else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
-                    else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-
-                    else slugIcon.SetElementByName(iconString);
-                    if (slugIcon.element.name == "meadowcoin")
-                    {
-                        this.slugIcon.scale = 0.08f;
-                    }
-                    else
-                    {
-                        this.slugIcon.scale = 1f;
-                    }
+                    else if (owner.PlayerInAncientShelter) playerIcon.DrawSingleElement("ShortcutAShelter");
+                    else if (owner.PlayerInShelter) playerIcon.DrawSingleElement("ShortcutShelter");
+                    else if (owner.PlayerInGate) playerIcon.DrawSingleElement("ShortcutGate");
+                    else if (iconString is null) playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
+                    else playerIcon.DrawSingleElement(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
                     else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
@@ -266,7 +233,6 @@ namespace RainMeadow
                 else
                 {
                     pos.x = -1000f;
-                    lastPos.x = -1000f;
                 }
 
                 this.counter++;
@@ -381,8 +347,7 @@ namespace RainMeadow
                 messageLabels[i].text = "";
             }
 
-            this.slugIcon.x = pos.x;
-            this.slugIcon.y = pos.y;
+            playerIcon.Pos = pos;
 
             if (RainMeadow.isArenaMode(out var arena) && this.scoreLabel != null)
             {
@@ -391,14 +356,14 @@ namespace RainMeadow
                     this.scoreLabel.alpha = num;
                     this.scoreLabel.SetPosition(pos.x + 20f, pos.y);
 
-                    if (arena.session != null && owner?.RealizedPlayer != null
+                    if (arena.ArenaSession != null && owner?.RealizedPlayer != null
                         && ArenaHelpers.FindOnlinePlayerNumber(arena, player) != -1
                         && arena.playerTotScore.TryGetValue(player.inLobbyId, out int totScore))
                     {
-                        int score = arena.session.ScoreOfPlayer(owner.RealizedPlayer, true);
+                        int score = arena.ArenaSession.ScoreOfPlayer(owner.RealizedPlayer, true);
                         bool showAdded = arena.externalArenaGameMode?.ShowAddedScoreBetweenRoundsInOnlinePlayerUI == true;
                         this.scoreLabel.text = showAdded
-                            ? (arena.session.sessionEnded ? totScore : totScore + score).ToString()
+                            ? (arena.ArenaSession.sessionEnded ? totScore : totScore + score).ToString()
                             : score.ToString();
                     }
                 }
@@ -410,7 +375,7 @@ namespace RainMeadow
             }
 
             this.arrowSprite.alpha = num;
-            this.slugIcon.alpha = num;
+            playerIcon.Alpha = num;
             if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
             {
                 this.username.alpha = lighter_color.a;
@@ -453,7 +418,7 @@ namespace RainMeadow
             this.username.RemoveFromContainer();
             pingLabel.RemoveFromContainer();
             foreach (var label in this.messageLabels) label.RemoveFromContainer();
-            this.slugIcon.RemoveFromContainer();
+            this.playerIcon.RemoveFromContainer();
             if (this.scoreLabel != null)
             {
                 this.scoreLabel.RemoveFromContainer();

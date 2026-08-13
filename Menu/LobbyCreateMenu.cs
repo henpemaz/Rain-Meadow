@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Menu.Remix.MixedUI.ValueTypes;
+using Steamworks;
 
 namespace RainMeadow;
 
@@ -197,6 +198,9 @@ public class LobbyCreateMenu : SmartMenu
             OnlineManager.lobby.cheats = lobbyCheats?.GetValueBool() ?? false;
             OnlineManager.lobby.eventGags = lobbyEventGags?.GetValueBool() ?? false;
             OnlineManager.lobby.meadowTimeline = this.meadowTimeline;
+
+            if (MatchmakingManager.currentInstance is SteamMatchmakingManager steamMatchmakingManager)
+                SteamMatchmaking.SetLobbyData(steamMatchmakingManager.lobbyID, MatchmakingManager.CAMPAIGN_KEY, meadowTimeline);
         }
 
         MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;

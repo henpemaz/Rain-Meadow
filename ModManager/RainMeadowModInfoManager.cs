@@ -104,7 +104,16 @@ public static class RainMeadowModInfoManager
         var modInfo = new RainMeadowModInfo();
 
         // TODO: consider mod.modifiesRegions
-        if (Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+        // Mods that change the world regions or the arena levels are high-impact
+        // For arena, clients missing them would crash on level join .
+        string[] highImpactDirectories =
+        [
+            Path.Combine(mod.path, "modify", "world"),
+            Path.Combine(mod.path, "levels"),
+            Path.Combine(mod.path, "modify", "levels"),
+        ];
+
+        if (highImpactDirectories.Any(Directory.Exists))
         {
             modInfo.SyncRequiredMods.Add(mod.id);
         }

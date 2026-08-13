@@ -1,47 +1,63 @@
 # Release 1.15.0
 
 ## Engine
+
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
+- The Debug Overlay has been changed to be able to track non physical object entities.
+- The Debug Overlay now has an Ownership view to Dev Tools.
+  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Mods containing changes to the levels/ directory are now considered high-impact
+### Modders
+- Added `MatchmakingManager.OnLobbyLeaving` event.
 ## General
+
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
-- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Prevent the abstraction of rooms that contain player avatars or other non-transferable objects.
 - Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
-- Fixed objects marked as destroyOnAbstraction not being detroyed.
+- Fixed objects marked as destroyOnAbstraction not being destroyed.
 - Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
   - The host will still be allowed to use cheats but no other players can.
-  - A select few function such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
+  - A select few functions such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
   - This update completely disables cycle restarting via Dev Tools (R) whilst online.
-  - This update also fixes Dev Tools item spawning, restricting it to just the player spawning the item, and teleporting to exits trying to teleport everyone instead of just the local player.
+  - This update also fixes Dev Tools item spawning (now restricted to just the player spawning the item) and teleporting to exits (now only teleports the local player instead of everyone).
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
-- Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
-- Added scarfs(?)
+- Cape Fetching now runs asynchronously, which will improve startup times on slow internet connections.
+- Added scarfs
 - Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
-### ⚠️ Developers
-- The Debug Overlay has been changed to be able to track non physical object entities.
-- The Debug Overlay now has an Ownership view to Dev Tools.
-  - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
-- Added `MatchmakingManager.OnLobbyLeaving` event.
-- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
-- Added `ScrollableConfirmDialog` menu object
+- Added French translation, updated Japenese, Spanish, and Russian
+- Brand new lobby select menu!
+  - lobby metadata is now shown directly in the menu. This includes the previous data shown on cards, in addition to:
+    - active lobby timeline (always present in Meadow mode, Story mode requires the game to be in progress to show)
+    - mods needed to join the selected lobby
+  - lobby cards now have icons showing the active lobby timeline and required DLCs
+- Slugcat icon in player HUD now reflects the target player's chosen slugcat and colours in use
+  - An additional remix option has been added to use the old icon if players find the new icons too distracting
+### Modders
+
+- Added `SlugIcon`. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
+  - Lobby cards and in-game slugcat icons will automatically use the sprites and layerings if they are set, and a fallback icon will be used if they are not.
+- `activeTimeline` is now part of `LobbyInfo`
+- Added `ScrollableConfirmDialog` menu objects
+
 ## Arena
+
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
-- Fixed a thing that should happen when you win that hidden thing
 - Fixed winning conditions on that hidden thing
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
 - Slightly improved Void Amoeba's swim speed
 - Added configurable Void Amoeba lethality. Default multiplier is now 3x. You better run.
 - Added debuff icon for players impacted by visual distortion from Amoeba
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
-- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled
+- Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled; Default keybind is "S"; update the keybind in the Meadow Arena Remix page
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
-- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+- Switched the input for banning slugcats from pickup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
 - Added configurable setting to change Artificer's parry range.
 - Changed configurable setting for Artificer's stun to be a multiplier instead of an on and off checkbox.
@@ -49,91 +65,124 @@
 - Added a sound cue to Artificer's parry.
 - Fixed parried spears not being deflected on late parries.
 - Fixed explosive spears still damaging the player when parried.
-- Fixed sound/visual cue of parrying being inconsistant.
+- Fixed sound/visual cue of parrying being inconsistent.
 - Fixed gourmand not being shown as exhausted when throwing a spear
-- Added score tracker to in-game UI; can be toggled on & off. Check Meadow Arena Remix page
 - Slightly improved timer accuracy
 - Fixed the result box bump sound effect on the final results screen playing per player instead of just once
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 - Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
 ### Watcher
+
 - Disabling Ripple Trail in online arena
-- Gave summoned Ameobas the Watcher's body color
+- Gave summoned Amoebas the Watcher's body color
 - Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
 - Amoeba is now going in the right layer when summoned
-- Summoned amoebas have idle behaviors now
-- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
-- Summoned amoebas can stun non-player creatures now
+- Summoned Amoebas have idle behaviors now
+- Summoned Amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned Amoebas can stun non-player creatures now
 - Amoeba won't slow down for dead players or friendlies
 - Distortion effect fades away on player's death
 - Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
 - Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
-- Watcher will always have while eyes in camo
-- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
+- Watcher will always have white eyes while camouflaged
 - Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
-- Dev skin doesn't show in ripple space anymore
-- Hands or mud doesn't show in ripple space anymore
-- Watcher camo effect has been reduced for all ripple level
-- Player Tag now interacts well with ripple layer change
+- Dev skin doesn't show in ripple space
+- Hands and mud don't show in ripple space
+- Watcher camo VFX-aura has been reduced for all ripple levels
+- Player nametag interacts as expectanted with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
+
 ### Modders
+- ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property. Renamed to `ArenaOnlineGameMode.ArenaSession`.
+  - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
-- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings 
+- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings
+
 ## Meadow
+
 - Fixed creatures being able to get injured.
+
 ## Story
+
 - Allow players to spectate their own corpses as long as they still exist
 - Fixed players readied on the sleep screen hearing the continue sound many times in a row after the host continues
+
 ### Watcher
+
 - Fixed watcher warp not working when warping from a world for the second time in the cycle
 - Fixed prince's duplication
 - Synced prince's position and look point
 - Synced lightning storms
+
 ## Chat
+
 - Put Chat in its own overlay so it is available at all times
 - Chat now keeps history of what was typed in/out of the lobby menu
-- Moved all chat related Remix option in its own tab
+- Moved all chat-related Remix options into their own tab
 - Added Remix options for different system messages in arena and story mode
-- Added username color customization as a Remix options
-- Added text downscroll as a Remix options
+- Added username color customization as a Remix option
+- Added text downscroll as a Remix option
 
+## New Contributors
+Thank you to all of our first-time contributors and welcome EdEnStonne to the Meadow Dev team!
+- Wonky
+- Ombekende
+- ConfiG
+- r3nsen
+- OneLetterShor
+- iiul
+- solo snuggles
 # Release 1.14.1
 
-## Engine 
+## Engine
+
 - Improved parry netcode.
-- Fixed ghost spear poles after a spear was pulled out by a remote slugcat. 
+- Fixed ghost spear poles after a spear was pulled out by a remote slugcat.
 
 ## Chat
+
 - Fixed events not displaying while Global Mute was toggled
 - Fixed username color not updating between Arena games
 
 ## Arena
+
 - Fixed Watcher Amoebas not appearing under certain conditions
-- Fixed score being granted for killing teammates 
+- Fixed score being granted for killing teammates
 
 # Release 1.14.0
 
 ## Engine
+
 - Fixed a scenario where transferring entities could lead to deadlocks
 - Fixed Joke Rifle bullets duping and consuming high bandwith.
 - Improved piggyback netcode
 - Added documentation to the GitHub wiki on OnlinEntity Locks() to manage state race conditions
+
 ## Story
+
 - Fixed shelters not closing if there's an untamed Slugpup / SlugNPC in the world. Slugpups should also respond to commands more reliably.
 - Fixed duplication of some save records when loading on clients. This should fix save bloating that caused load slowdown over time.
+
 ### Watcher
+
 - Fixed some scenarios where watcher warps were not working correctly
 - Fixed clients not being sucked into warps
+
 ### Saint
+
 - Fixed some critical errors in Saint's ending
+
 ## General
+
 - Added Global Mute toggle to Meadow Remix's "Gameplay" tab
 - Fixed most cases of pearl strings duplicating. This should noticeably decrease latency
 - Fixed Vultures not properly killing players when taken off-screen
 - Fixed Saint ascensions not working reliably outside of Arena
+
 ## Arena
+
 - Fixed scoring across all modes
 - Added import/export map playlists from clipboard
 - Added configurable Artificer explosion capacity
@@ -142,31 +191,44 @@
 - Synced more attributes in Challenge 70
 - Added additional flair for winning a secret minigame. Check Rain Meadow's Arena Remix page
 - Post-game stats now persist for duration of lobby life or reset as desired
+
 ### Team Battle
+
 - Teammates will now see the location of Watcher while invisible
+
 ### Modders
--  ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
+
+- ⚠️ Updated `arena.ExternalGameMode.GetGamemodeId` to become a getter
 - Added `FinalResultBox_ctor` to `arena.ExternalGameMode`
 
 # Release 1.13.2
+
 - Fixed Meadow crashing in single-player
 - Fixed Meadow initialization logs being lost
 - Fixed some arena menus running at twice the tickrate
 - Fixed an issue with the password resetting when a lobby's host changes
 
 # Release 1.13.1
+
 ## General
+
 - Fixed Hunter_Illness IL Hook
 - Updated target game version
 - Fixed empty Remix menu when playing with non-English translation settings
 - Fixed persistent purchases from being greyed out unless you met the store's value
+
 ## Arena
+
 - Fixed a bug where you might spawn multiple times during special events
+
 ## Meadow
+
 - Granted more event progress when meeting a Meadow Echo
-  
+
 # Release 1.13.0
+
 ## General
+
 - The Dev Tools debug UI now shows the local instance's client flags, and arena now shows its "[L]obbied" client flag.
 - The Dev Tools debug UI now groups creature/item symbols together, and should lag less.
 - Fixed meadow abyss respawns and arena/story abyss death messages failing if the player entered WallCling between -250y and -500y.
@@ -177,9 +239,11 @@
 - Fixed your spectated scug resetting every time you opened the spectate menu.
 - Updated Chinease Translation (Thanks HapiFive)
 - Fixed translation code for mod applier (Thanks HapiFive)
+
 ## Arena
+
 - If MSC is enabled, closed dens will mirror challenge mode by eventually forcing players out, and completely blocking reentry attempts.
-- Added More Slugcat's "Challenges" to Arena! 
+- Added More Slugcat's "Challenges" to Arena!
 - Synced round kills
 - Added configurable scoring
 - Added KillList & ScoreCounter HUDs from vanilla Arena
@@ -187,117 +251,158 @@
 - Granted Saint a kill credit if using ascension to ascend others
 - Fixed Spears Hit toggle not actually working during that current game session
 - Added "Loading x%" message in Arena Overlay to notify of remaining users waiting to leave active resource
-### Modders 
-- ⚠️ BREAKING: Updated  `GetPlayerTrophies ` to  `GetAllPlayerTrophies ` and  `GetRoundPlayerTrophies`
+
+### Modders
+
+- ⚠️ BREAKING: Updated `GetPlayerTrophies ` to `GetAllPlayerTrophies ` and `GetRoundPlayerTrophies`
 - ⚠️ BREAKING: Moved all arena `arena.Killing` to reside inside of `arena.ExternalGameMode` and removed the `playerIndex` param
 - ⚠️ BREAKING: Updated `ExternalGameMode.AddIcon` to include OnlinePlayerDisplay to access all UI elements used in the in-game overhead UI
+
 ## Story
+
 - Fixed the "Wait for others to rescue you" death prompt blocking pause inputs.
+
 ### Watcher
+
 - Impossibly high ripple levels (6+) no longer crash the game when viewed.
 - Fixed a crash where clients would load into the wrong regions
+
 ## Meadow
+
 - Slugcats can now enter the lower depths regardless of remix's "Vanilla Exploits".
 - MS_CORE and Saint's intro rooms should no longer break the rain timer and/or game.
 - The pounce tutorial barrier, the guaranteed jetfish in SL, and the three guaranteed scav corpses in Artificer's GW no longer load in.
 - Many different room-specific tooltips across all campaigns are now disabled.
 - Added configurable eye color
+
 # Release 1.12.0
+
 ## Arena
+
 - Added `arena.session` to access the current ArenaGameSession
-- Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
+- Moved ` ArenaGameSession_Update` fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
 - Disabled Watcher glow from ripple level in online arena sessions
 - Blocked next level call until chatbar is closed
 - Blocked exiting to lobby if host already initiated next level loading to prevent crash
 - A new character approaches: The Overseer! Select to spectate games
-### Team Battle 
+
+### Team Battle
+
 - Added friendly fire toggle
 
 ## Story
-- Fixed Moon dying if the room transferred owners 
+
+- Fixed Moon dying if the room transferred owners
 - Enabled Sync Save option for clients regardless of save state status
+
 ### Watcher
+
 - Fixed end-game ability not working
 - Fixed mind control happening post-warp
 
 ## Meadow
+
 - Disabled Outer Expanse, Spearmaster and Artificer endings in Meadow mode.
   - These endings would cause a crash if done in Meadow mode.
 
 ## General
+
 - Fixed Dev Tools trying to teleport remote players when holding V
 - Updated documentation in codebase.
 - Added OnlineGameMode.ResetOverworld() to release the overworld at the discretion of the gamemode
 - Added support for 4:3 resolution for Spectate overlay
-- Fixed proto-rot showing up in unexpected campaigns 
+- Fixed proto-rot showing up in unexpected campaigns
 - Fixed issues with port assignment resulting in meadow failing to start.
+
 ## Engine
+
 Synced the following
+
 - Waterflux
 - Gourmand exhaustion and player lung exhaustion
 - Vulture demasking
 - Box Worms
 - Sand Grubs
-Improved sync for the following
+  Improved sync for the following
 - Big Moths
   - Moths will flap their wings correctly and creature interactions are synced..
- - Vultures
-   - Vultures should be noticably less jittery and sync more accurately. King Vultures should also work a lot better.
+- Vultures
+  - Vultures should be noticably less jittery and sync more accurately. King Vultures should also work a lot better.
 - Fixed Sand Grubs causing crashes and graphical glitches.
 - Added coroutine for world loading; blocked entity states during world transitions
 
 ### Chat:
-- Auto-fill usernames when using "@" in chat. 
+
+- Auto-fill usernames when using "@" in chat.
 - Fixed chat filters not applying to messages above player heads.
 
 # Release 1.11.1
-## Engine 
+
+## Engine
+
 - Fixed an issue where transitioning regions led to disappearing players
 
 # Release 1.11.0
+
 ## Arena
+
 - Added flash to tab arrow to assist users in locating game mode tab settings
 - Publicized arena.blockList for developers
 - Fixed bees/bombs spawning client-side
 - Fixed pipe eating during the first few frames of the game if moving into den
 - Fixed Saints ascending teammates. Stop that.
+
 ## General
+
 - Added Chinese translation (thanks @havenoideawhatismyname!)
 - Fixed custom background thumbnails not disappearing when scrolling background pages
-- Fixed large lobbies interrupting ping cycle key inputs 
+- Fixed large lobbies interrupting ping cycle key inputs
 - Fixed spectating never abstracting previous rooms
+
 ### Chat
--  Chat Opacity (Makes chat semi transparent when a player is behind it)
--  Chat Inactivity (Makes chat semi transparent after a short period of inactivity (no new messages and no typing))
--  Enforce max message length for receiving messages.
--  Copy/Paste support
--  Recently Sent Messages (Up/Down arrows)
--  Sound when mentioned by name in chat.
--  Host icon in chat
--  Deprecate ChatTextBox2 and use just ChatTextBox
+
+- Chat Opacity (Makes chat semi transparent when a player is behind it)
+- Chat Inactivity (Makes chat semi transparent after a short period of inactivity (no new messages and no typing))
+- Enforce max message length for receiving messages.
+- Copy/Paste support
+- Recently Sent Messages (Up/Down arrows)
+- Sound when mentioned by name in chat.
+- Host icon in chat
+- Deprecate ChatTextBox2 and use just ChatTextBox
+
 ## Story
-- Fixes creature duplication occurring the next cycle  after a creature enters a den
-- Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
+
+- Fixes creature duplication occurring the next cycle after a creature enters a den
+- Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't
 - Updated "Match Save" to "Sync Save" for clarity
 - Updated the Text Prompt on death to dismiss after 5 seconds instead of requiring input
 - Fixed forced den re-sheltering when a client has a valid den
+
 ## Meadow
+
 - Added configurable timelines
+
 ## Engine
+
 - Fixed a sizing issue with Custom Packets
 
 # Release 1.10.0 (Anniversary Edition)
 
 ## Arena:
+
 - Fixes Amoeba controls not listening to your pointed direction
 - Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
 - Fixed watcher cosmetic option not saving for clients
-- Fixed Saint's ascendance timer not updating its default value  
+- Fixed Saint's ascendance timer not updating its default value
+
 ## Story:
+
 - Fixed an issue where custom karma gates wouldn't open
+
 ## General
+
 - Fixes infinite tinnitus
 - Adds copy/paste functionality to password & IP text boxes
 - Fixed Gourmand's damage collision to not linearly increase by player count
@@ -305,7 +410,9 @@ Improved sync for the following
 - Added custom backgrounds for the anniversary! Check them out under Options->Backgrounds
 
 # Release 1.9.0
+
 ## General:
+
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
 - Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
 - Added Gameplay remix tab
@@ -313,7 +420,9 @@ Improved sync for the following
 - Synced grasp stealing. Works in both Story and Arena gamemodes.
 - Fixed weapon phasing
 - Fixed sleep-crawling bug
+
 ## Story:
+
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
@@ -322,48 +431,57 @@ Improved sync for the following
 - Fix sand grubs softlocking the game
 - Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
   ⚠️ Developers: InputOverrides class is now GameplayOverrides
-- Stabilized backpacking through gates & portals 
+- Stabilized backpacking through gates & portals
+
 ## Arena:
-- Added beehives 
+
+- Added beehives
 - Synced trophies
 - Updated menu to better support controller navigation between UI elements in and outside tabs
 - Fixed MSC Settings' back button being greyed out
 - Added round reset button
-- Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
+- Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "\_meadowsettings" to import them for use in Meadow Arena
 - Saved backpack toggle selction between game restarts
 - Fixed clients being unable to pick up items when host enters ripple space
 - Incressed time until singularity bomb vortex activates
 - Added additional watcher cosmetic option
 - Updated winning logic to consider number of kills and deaths in the event of a tie.
 - Added variable watcher description
+
 ## Engine
+
 - Added Overworld resource:
   1. WorldSessions will only be created for regions specific to the playercharacters timeline.
-  2. Allows players to join a lobby without immidietly loading all regions.
-  3. Allows non-host players to manage WorldSessions. (Meadow mode)
-  4. Adds potential for downloading custom regions while inside the lobby.
+  1. Allows players to join a lobby without immidietly loading all regions.
+  1. Allows non-host players to manage WorldSessions. (Meadow mode)
+  1. Adds potential for downloading custom regions while inside the lobby.
 - Synced the following:
-	RainWorldGame.clock
-	Geysers (via RainWorldGame.clock)
-	WaterLevelCycle
-	WindRect (via RainWorldGame.clock)
-	Big Moths (Drinking Chunk & Legs)
-	Death Rain Mode
-	FlameJets
-	Pomegranates
-	Creature Hypothermia
-  
+  RainWorldGame.clock
+  Geysers (via RainWorldGame.clock)
+  WaterLevelCycle
+  WindRect (via RainWorldGame.clock)
+  Big Moths (Drinking Chunk & Legs)
+  Death Rain Mode
+  FlameJets
+  Pomegranates
+  Creature Hypothermia
+
 # Release 1.8.0
+
 ## General:
+
 - Updated to game version 1.11.3
 - Japanese translation by MisodeN [ミソデン]. どうもありがとう
+
 ## Arena:
+
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
 - Added a toggle for Watcher's ripple level
 - Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
 
 ## Story:
+
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
 - Fixed an ending 3 crash if playing local with Meadow installed
@@ -371,30 +489,33 @@ Improved sync for the following
 - Added a remix options to gain achievements online. Default is FALSE.
 - Fixed ripple space being shared between players
 
-
 # Release 1.7.1
+
 ## Story:
+
 - First pass at stabilizing Watcher warps
-- Fixed missing cursor 
+- Fixed missing cursor
 - Fixed lobby chat to not select back button on throw input
 - Fixes Passages crashing the game
+
 ## General
+
 - Fixed chat "..." from persisting unexpectedly
 - ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
 - Fixed an issue where backpacked slugcats were not dropped on carrier's death
 - Added Profiler to Dev Tools. Click "=" to open, "[" and "]" to change views. Use with discretion
 - Prevented achievements from being unlocked in online multiplayer
 
-
 # Release 1.7.0
 
 ## Arena:
-- Adds Slugcat banning 
+
+- Adds Slugcat banning
 - Adds piggyback toggle
 - Fixed a *specific* edge case where a player might not be protected from a parry.
-- Fixed a crash in Teams mode when another user suddenly disconnected 
-- If you had choppy frame rate in Teams UI, please resubscribe to  “Extended Color Config” mod. 
-- Fixed dupe trophy awards in results screen 
+- Fixed a crash in Teams mode when another user suddenly disconnected
+- If you had choppy frame rate in Teams UI, please resubscribe to “Extended Color Config” mod.
+- Fixed dupe trophy awards in results screen
 - Fixed timer not showing when running some langugages
 - Fixed an issue where Inv's friend would cause you to duplicate your spawn
 - Fixed Arena's menu chatbot interactions duplicating in Team name display
@@ -404,38 +525,39 @@ Improved sync for the following
 - Fixed kicking someone else crashing you
 
 ## Engine:
-- Added additional security measures 
-- Fixed an issue with shortcut loading 
-- Added custom packet capabilities 
 
+- Added additional security measures
+- Fixed an issue with shortcut loading
+- Added custom packet capabilities
 
 ## General
+
 - Updated pointing logic to prefer *primary* hand, Slups can now poke eyes
 - Fixed Gourm stomp not hurting NPCs
-- Desynced 5P neurons to marginally improve latency. 
-- Synced Vulture grub & hazers  
-- Synced Player "special" input 
-- Fixed the AFK sleeping animation not cancelling when stunned/killed (thanks <@380127561621176323> for AFK fixes)
+- Desynced 5P neurons to marginally improve latency.
+- Synced Vulture grub & hazers
+- Synced Player "special" input
+- Fixed the AFK sleeping animation not cancelling when stunned/killed (thanks \<@380127561621176323> for AFK fixes)
 - Fixed Spearmaster not closing their eyes during afk sleep.
-- Fixed afk sleep rarely triggering when piggybacked onto someone else. 
+- Fixed afk sleep rarely triggering when piggybacked onto someone else.
 - Fixed the "Don't fall back asleep when waking up" check not working.
 - Fixed an oddity where shelters closing would cause afk sleep to stop.
 - Cleared ping label when a user leaves instead of burning it into the foreground in memorium
-- Fixed a crash while pointing if the lobby no longer existed <:rmconfused:1177681041822072892>
+- Fixed a crash while pointing if the lobby no longer existed \<:rmconfused:1177681041822072892>
 - Added chat typing notification
 
-
 ## Meadow:
+
 - Fixed Slugcat timelines (Meadow mode)
-- Fixed Emote grid animations not playing 
+- Fixed Emote grid animations not playing
 - Updated autohide for emote grid
 
-
 ## Story:
-- Fixed Slugcat selection not allowing a specific slug to be chosen 
+
+- Fixed Slugcat selection not allowing a specific slug to be chosen
 - Fixed a crash when selecting slugcat colors
-- Fixed Saint’s ending 
-- Fixed cases where single room warp code  was not running 
+- Fixed Saint’s ending
+- Fixed cases where single room warp code was not running
 - Fixed players inability to progress past the end-of-game statistics screen
 - Updated client story menu to match host's
 - Updated to support Watcher 1.5

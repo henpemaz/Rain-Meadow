@@ -1,31 +1,26 @@
-﻿using System.Net;
+﻿namespace RainMeadow;
 
-namespace RainMeadow
+// abstracted for displaying lobby data
+public abstract class LobbyInfo(
+    string name,
+    string mode,
+    int playerCount,
+    bool hasPassword,
+    int? maxPlayerCount,
+    string highImpactMods = "",
+    string bannedMods = "",
+    string activeTimeline = ""
+)
 {
-    // trimmed down version for listing lobbies in menus
-    public abstract class LobbyInfo
-    {
-        public string name;
-        public string mode;
-        public int playerCount;
-        public bool hasPassword;
-        public int maxPlayerCount;
-        public string requiredMods;
-        public string bannedMods;        
-        public bool pinned;
+    public string name = name,
+        mode = mode,
+        requiredMods = highImpactMods,
+        bannedMods = bannedMods;
+    public string activeTimeline = activeTimeline;
+    public int playerCount = playerCount,
+        maxPlayerCount = maxPlayerCount ?? 0;
+    public bool hasPassword = hasPassword,
+        pinned;
 
-        public LobbyInfo(string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "")
-        {
-            this.name = name;
-            this.mode = mode;
-            this.playerCount = playerCount;
-            this.hasPassword = hasPassword;
-            this.maxPlayerCount = (int)maxPlayerCount;
-            this.requiredMods = highImpactMods;
-            this.bannedMods = bannedMods;
-        }
-
-        public abstract string GetLobbyJoinCode(string? password = null);
-        
-    }
+    public abstract string GetLobbyJoinCode(string? password = null);
 }

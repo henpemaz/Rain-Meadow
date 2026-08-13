@@ -43,7 +43,6 @@ namespace RainMeadow
             RainWorldGame game
         )
         {
-            arena.session = self;
             arena.ResetAtSession_ctor();
         }
 
@@ -56,9 +55,6 @@ namespace RainMeadow
         {
             arena.ResetAtNextLevel();
         }
-
-        /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
-
 
         public virtual void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
@@ -450,7 +446,6 @@ namespace RainMeadow
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon != null) display.slugIcon.scale = 0.08f;
                 return "meadowcoin";
             }
 
@@ -1394,6 +1389,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.piggyBack)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.sainot)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.setupTime)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.shufflePlayList)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.spearHitScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidMasterEnabled)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor)),

@@ -7,17 +7,17 @@ using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RWCustom;
 using UnityEngine;
-using static RainMeadow.ArenaPrepTimer;
 
 namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
         /// <summary>
-        /// Acts as a quick way to access current game session. Assigned during ArenaSessionCtor, after orig()
+        /// Helper property that statically gets the current <see cref="ArenaGameSession"/>.
         /// </summary>
-        public ArenaGameSession session;
+        public ArenaGameSession? ArenaSession => (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.GetArenaGameSession;
         public ArenaOnlineSetup myArenaSetup;
         public ExternalArenaGameMode externalArenaGameMode;
         public string currentGameMode;
@@ -1320,7 +1320,7 @@ namespace RainMeadow
 
                     if (arenaPrepTimer != null)
                     {
-                        if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                        if (setupTime > 0 && arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Countdown)
                         {
                             setupTime = externalArenaGameMode.TimerDirection(this, setupTime);
                         }

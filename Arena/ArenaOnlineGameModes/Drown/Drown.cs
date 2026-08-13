@@ -40,25 +40,15 @@ namespace RainMeadow
             return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
-        /// and <see cref="DrownMode"/> is not registered.
-        /// </exception>
         public static bool IsDrownMode(out DrownMode drown)
         {
             drown = null!;
 
             if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
                 return false;
-            if (!arenaOnline.registeredGameModes.TryGetValue(Drown.value, out ExternalArenaGameMode externalArena))
-            {
-                throw new InvalidOperationException(
-                    $"Could not find game mode. Registered: " +
-                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
-                );
-            }
 
-            if (arenaOnline.currentGameMode == Drown.value)
+            if (arenaOnline.registeredGameModes.TryGetValue(Drown.value, out ExternalArenaGameMode externalArena)
+                && arenaOnline.currentGameMode == Drown.value)
             {
                 drown = (DrownMode)externalArena;
                 return true;
@@ -180,7 +170,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (arena.session != null && arena.session.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
+            if (arena.ArenaSession != null && arena.ArenaSession.GameTypeSetup.wildLifeSetting != ArenaSetup.GameTypeSetup.WildLifeSetting.Off)
             {
                 waveText = $"Current Wave: {currentWave}. Next wave: {waveTimer}";
             }
@@ -246,17 +236,11 @@ namespace RainMeadow
 
                     cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
                     if (clientSettings != null && clientSettings.isInStore)
-                    {
                         return "spearSymbol";
-                    }
                     else
-                    {
-                        return "Kill_Slugcat";
-
-                    }
+                        return "";
                 }
             }
-
 
             return base.AddIcon(arena, display, owner, customization, player);
         }

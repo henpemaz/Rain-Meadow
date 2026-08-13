@@ -121,25 +121,15 @@ public override ArenaSetup.GameTypeID GetGameModeId
 
 ## GameMode Check
 ```csharp
-/// <exception cref="InvalidOperationException">
-/// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
-/// and <see cref="MyCoolNewGameMode"/> is not registered.
-/// </exception>
 public static bool IsMyCoolNewGameMode(out MyCoolNewGameMode myCoolNewGameMode)
 {
     myCoolNewGameMode = null!;
 
     if (!RainMeadow.RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
         return false;
-    if (!arenaOnline.registeredGameModes.TryGetValue(Id.value, out ExternalArenaGameMode externalArena))
-    {
-        throw new InvalidOperationException(
-            $"Could not find game mode. Registered: " +
-            $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
-        );
-    }
 
-    if (arenaOnline.currentGameMode == MyGameModeName.value)
+    if (arenaOnline.registeredGameModes.TryGetValue(Id.value, out ExternalArenaGameMode externalArena)
+        && arenaOnline.currentGameMode == MyGameModeName.value)
     {
         myCoolNewGameMode = (MyCoolNewGameMode)externalArena;
         return true;
