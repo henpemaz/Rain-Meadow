@@ -339,7 +339,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
                     menu,
                     this,
                     new Vector2(0, 10),
-                    new FSprite(iconName) { scale = 0.5f }
+                    new FSprite(iconName)
                 );
                 icons.Add((sprite, sprite.Size.x));
                 accountedModCount += 1;
