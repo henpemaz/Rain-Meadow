@@ -35,10 +35,7 @@ namespace RainMeadow
 
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
-        {
-            return new DialogNotify(menu.LongTranslate("Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
-        }
+        public override string GameModeInfo => "Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op";
 
         public static bool IsDrownMode(out DrownMode drown)
         {

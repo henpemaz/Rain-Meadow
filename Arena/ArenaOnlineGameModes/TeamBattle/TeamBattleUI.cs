@@ -1,5 +1,4 @@
-﻿using Menu;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using RainMeadow.UI.Components;
 using RainMeadow.UI;
@@ -50,6 +49,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value },
     { 3,  RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value }
     };
+
+        public override string GameModeInfo => "Choose a faction. Last team standing wins.";
+
         public void ArenaSettingsInit()
         {
             martyrsSpawn = 0;
@@ -128,10 +130,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1;
         }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
-        {
-            return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
-        }
         public static Color GetColorFromHex(string hexCode)
         {
             Color color;

@@ -19,6 +19,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public override ArenaSetup.GameTypeID GetGameModeId => ChallengeMode;
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
+        public override string GameModeInfo => "Pit yourself against a series of challenges";
 
         public override void InitAsCustomGameType(ArenaOnlineGameMode arena, ArenaSetup.GameTypeSetup self)
         {
@@ -148,21 +149,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             }
 
             return base.IconColor(arena, display, owner, customization, player);
-        }
-
-
-
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
-        {
-            return new DialogNotify(
-                menu.LongTranslate("Pit yourself against a series of challenges"),
-                new Vector2(500f, 400f),
-                menu.manager,
-                () =>
-                {
-                    menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                }
-            );
         }
     }
 }

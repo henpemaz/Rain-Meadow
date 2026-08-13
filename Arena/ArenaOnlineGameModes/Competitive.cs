@@ -16,6 +16,8 @@ namespace RainMeadow
         private int _timerDuration;
         public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
 
+        public override string GameModeInfo => "Trust no one. Last scug standing wins";
+
         public static bool IsFfaMode(out FFA ffa)
         {
             ffa = null!;
@@ -153,19 +155,6 @@ namespace RainMeadow
             }
 
             return base.IconColor(arena, display, owner, customization, player);
-        }
-
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
-        {
-            return new DialogNotify(
-                menu.LongTranslate("Trust no one. Last scug standing wins"),
-                new Vector2(500f, 400f),
-                menu.manager,
-                () =>
-                {
-                    menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                }
-            );
         }
     }
 }

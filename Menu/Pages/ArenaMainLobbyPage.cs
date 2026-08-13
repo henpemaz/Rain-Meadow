@@ -252,8 +252,17 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         if (!RainMeadow.isArenaMode(out _))
             return;
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = Arena.externalArenaGameMode?.AddGameModeInfo(Arena, menu);
-        menu.manager.ShowDialog(dialog);
+        menu.manager.ShowDialog(
+            new NotifyDialog(
+                menu.manager,
+                Arena.externalArenaGameMode?.GameModeInfo
+                    ?? "This game mode doesn't have any info to give",
+                UIUtils.DIALOG_SIZE
+            )
+            {
+                TimeOut = 0,
+            }
+        );
     }
 
     public void OpenGameStatsDialog()
