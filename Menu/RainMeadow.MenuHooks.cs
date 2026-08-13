@@ -4,6 +4,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Menus;
 using System;
 using System.Collections.Generic;
@@ -717,7 +718,13 @@ namespace RainMeadow
 
             if (!fullyInit)
             {
-                self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
+                self.manager.ShowDialog(
+                    new NotifyDialog(
+                        self.manager,
+                        "Rain Meadow failed to start",
+                        UIUtils.DIALOG_SIZE
+                    )
+                );
                 return;
             }
             
@@ -732,8 +739,14 @@ namespace RainMeadow
                 if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
-                    self.manager.ShowDialog(new DialogNotify(self.LongTranslate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager,
-                        () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
+                    self.manager.ShowDialog(
+                        new NotifyDialog(
+                            self.manager,
+                            "Steam is not currently available. Some features of Rain Meadow have been disabled.",
+                            UIUtils.DIALOG_SIZE,
+                            Ext_ProcessID.LobbySelectMenu
+                        )
+                    );
                     return;
                 }
 

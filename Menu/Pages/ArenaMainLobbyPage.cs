@@ -270,16 +270,13 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         if (!ModManager.MMF)
         {
             menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            dialog = new DialogNotify(
-                menu.LongTranslate("You cant color without Remix on!"),
-                new Vector2(500f, 200f),
-                menu.manager,
-                () =>
-                {
-                    menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                }
+            menu.manager.ShowDialog(
+                new NotifyDialog(
+                    menu.manager,
+                    "You cant color without Remix on!",
+                    UIUtils.DIALOG_SIZE
+                )
             );
-            menu.manager.ShowDialog(dialog);
             return;
         }
 

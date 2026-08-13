@@ -1,6 +1,5 @@
-﻿using Menu;
-using System;
-
+﻿using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 
 namespace RainMeadow
 {
@@ -8,27 +7,21 @@ namespace RainMeadow
     {
         public static void ShowBan(ProcessManager manager)
         {
-
-            Action confirmProceed = () =>
+            NotifyDialog dialog = new(
+                manager,
+                "You were removed from the previous online game",
+                UIUtils.DIALOG_SIZE
+            );
+            dialog.OnContinue += () =>
             {
-                manager.dialog = null;
                 if (OnlineManager.lobby != null)
-                {
                     OnlineManager.LeaveLobby(); // kill anything leftover
-                }
             };
 
-            DialogNotify informBadUser = new DialogNotify(Utils.Translate("You were removed from the previous online game"), manager, confirmProceed);
+            while (manager.dialog != null)
+                manager.StopSideProcess(manager.dialog);
 
-            if (manager.dialog != null)
-            {
-
-                manager.dialog = null;
-            }
-
-
-            manager.ShowDialog(informBadUser);
-
+            manager.ShowDialog(dialog);
         }
 
         public static void BanUser(OnlinePlayer steamUser)
@@ -42,8 +35,6 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.bannedUsers.list.Add(steamUser.id);
             }
-
         }
-
     }
 }

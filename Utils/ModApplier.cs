@@ -1,4 +1,6 @@
 ﻿using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -77,8 +79,14 @@ namespace RainMeadow
                         ClearPopups();
                         manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     };
-                    checkUserConfirmation = new DialogNotify(menu.Translate("Error loading mods!"), new Vector2(480f, 320f), manager, cancelProceed);
-                    manager.ShowDialog(checkUserConfirmation);
+                    manager.ShowDialog(
+                        checkUserConfirmation = new NotifyDialog(
+                            manager,
+                            "Error loading mods!",
+                            UIUtils.DIALOG_SIZE,
+                            cancelProceed
+                        )
+                    );
                 }
                 else if (!this.requiresRestart)
                 {
@@ -192,9 +200,14 @@ namespace RainMeadow
 
             modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC);
 
-            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
-
-            manager.ShowDialog(checkUserConfirmation);
+            manager.ShowDialog(
+                checkUserConfirmation = new NotifyDialog(
+                    manager,
+                    modMismatchString,
+                    UIUtils.DIALOG_SIZE,
+                    Cancel
+                )
+            );
         }
     }
 }
