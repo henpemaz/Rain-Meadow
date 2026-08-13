@@ -327,7 +327,7 @@ public class LobbySelectMenu : SmartMenu
         // Stop any process/menu switch when an error occur 
         if (OnlineManager.instance.manager._processSwitchQueue.Count > 0)
         {
-            RainMeadow.Warn("Found process(es) in queue, clearing it !");
+            RainMeadow.Warn("Found process(es) in queue, clearing it!");
             OnlineManager.instance.manager._processSwitchQueue.Clear();
         }
     }
@@ -367,12 +367,12 @@ public class LobbySelectMenu : SmartMenu
                 {
                     if (OnlineManager.lobby.joiningEvent is not null)
                     {
-                        RainMeadow.Warn("Joining process it taking too long, timing it out !");
+                        RainMeadow.Warn("Joining process it taking too long, timing it out!");
                         OnlineManager.lobby.joiningEvent.Abort(); // safely timeout
                     }
                     else
                     {
-                        RainMeadow.Error($"No process running ? What's happening ? Timing it out ! (enumChecked <{OnlineManager.lobby.enumsChecked}>, isRequesting <{OnlineManager.lobby.isRequesting}>, isAvailable <{OnlineManager.lobby.isAvailable}>)");
+                        RainMeadow.Error($"No process running? What's happening? Timing it out! (enumChecked <{OnlineManager.lobby.enumsChecked}>, isRequesting <{OnlineManager.lobby.isRequesting}>, isAvailable <{OnlineManager.lobby.isAvailable}>)");
                         MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Unexpected);
                     }
                 }
