@@ -326,14 +326,9 @@ namespace RainMeadow
 
                     cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
                     if (clientSettings != null && clientSettings.isInStore)
-                    {
                         return "spearSymbol";
-                    }
                     else
-                    {
-                        return "Kill_Slugcat";
-
-                    }
+                        return "";
                 }
             }
 

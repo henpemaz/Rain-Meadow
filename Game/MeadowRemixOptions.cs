@@ -13,6 +13,7 @@ public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
     public readonly Configurable<bool> ShowFriends;
+    public readonly Configurable<bool> MinimalistSlugIcon;
     public readonly Configurable<bool> SlugcatCustomToggle;
     public readonly Configurable<bool> ReadyToContinueToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
@@ -190,6 +191,7 @@ public class RainMeadowOptions : OptionInterface
     {
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         ShowFriends = config.Bind("ShowFriends", false);
+        MinimalistSlugIcon = config.Bind("MinimalistSlugIcon", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
         ReadyToContinueToggle = config.Bind("ContinueToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
@@ -384,24 +386,26 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 490f, Translate("Show usernames")),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
-                new OpLabel(310f, 490f, Translate("Username Toggle"), bigText: false),
-                new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
-                new OpLabel(340f, 475f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Replace holding with toggling"))),
+                new OpLabel(10, 430f, Translate("Pointing Key")),
+                new OpKeyBinder(PointingKey, new Vector2(10f, 400f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
-                new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
+                new OpLabel(10, 370f, Translate("Key used for toggling spectator mode")),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 340f), new Vector2(150f, 30f)),
 
-                new OpLabel(310, 445f, Translate("Stop Inputs While Spectating")),
-                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 420)),
-
-                new OpLabel(310, 400f, Translate("Pointing Key")),
-                new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
-
-                new OpLabel(10f, 340, Translate($"Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: ${ScrollSpeed.Value}"), bigText: false),
-                new OpTextBox(ScrollSpeed, new Vector2(10, 310), 160f)
+                new OpLabel(10f, 310, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: <SCROLLSPEED>").Replace("<SCROLLSPEED>", ScrollSpeed.Value.ToString()), bigText: false),
+                new OpTextBox(ScrollSpeed, new Vector2(10, 280), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
+
+                new OpLabel(310f, 490f, Translate("Replace holding with toggling"), bigText: false),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
+
+                new OpLabel(310, 435f, Translate("Stop Inputs While Spectating")),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 410)),
+
+                new OpLabel(310, 380f, Translate("Use simpler slugcat indicator icons above usernames")),
+                new OpCheckBox(MinimalistSlugIcon, 310, 355),
             };
             onlineTab.AddItems(OnlineGameplay);
 

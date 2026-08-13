@@ -650,16 +650,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             SlugcatCustomization customization,
             OnlinePlayer player)
         {
-
-            if (base.AddIcon(arenaOnline, display, owner, customization, player) != "")
-            {
-                return base.AddIcon(arenaOnline, display, owner, customization, player);
-            }
+            string arenaIcon = base.AddIcon(arenaOnline, display, owner, customization, player);
+            if (arenaIcon != "")
+                return arenaIcon;
 
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
-            {
                 return "";
-            }
 
             if (
                 OnlineManager

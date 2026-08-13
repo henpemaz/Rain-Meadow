@@ -102,21 +102,12 @@ namespace RainMeadow
             SlugcatCustomization customization,
             OnlinePlayer player)
         {
-
-            if (base.AddIcon(arenaOnline, display, owner, customization, player) != "")
-            {
-                return base.AddIcon(arenaOnline, display, owner, customization, player);
-            }
-
+            string arenaIcon = base.AddIcon(arenaOnline, display, owner, customization, player);
+            if (arenaIcon != "")
+                return arenaIcon;
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
-            {
                 return "ChieftainA";
-            }
-            else
-            {
-                return "Kill_Slugcat";
-            }
-
+            return "";
         }
 
         public override Color IconColor(

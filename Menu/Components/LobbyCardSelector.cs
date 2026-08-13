@@ -321,7 +321,15 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
 
             if (!lobbyInfo.activeTimeline.IsNullOrWhiteSpace())
                 icons.Add(
-                    (new SlugIcon(menu, this, new Vector2(0, 8), lobbyInfo.activeTimeline), 30)
+                    (
+                        new PositionedSlugIcon(
+                            menu,
+                            this,
+                            new Vector2(0, 8),
+                            lobbyInfo.activeTimeline
+                        ),
+                        30
+                    )
                 );
 
             int accountedModCount = 1; // Rain Meadow :P
@@ -331,7 +339,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
                     menu,
                     this,
                     new Vector2(0, 10),
-                    new FSprite(iconName) { scale = 0.5f }
+                    new FSprite(iconName)
                 );
                 icons.Add((sprite, sprite.Size.x));
                 accountedModCount += 1;
