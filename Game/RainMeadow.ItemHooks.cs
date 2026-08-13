@@ -17,6 +17,17 @@ namespace RainMeadow
             // Seedcobs are cursed
             APOFS += SeedCob_APOFS;
             IL.SeedCob.PlaceInRoom += SeedCob_PlaceInRoom;
+
+            APOFS += FireSpriteLarva_APOFS;
+        }
+
+        private AbstractPhysicalObject FireSpriteLarva_APOFS(World world, string[] array, EntityID entityID, AbstractPhysicalObject.AbstractObjectType apoType, WorldCoordinate pos)
+        {
+            if (apoType == Watcher.WatcherEnums.AbstractObjectType.FireSpriteLarva)
+            {
+                return new Watcher.BoxWorm.Larva.AbstractLarva(world, null, pos, entityID);
+            }
+            return null;
         }
 
         private void SeedCob_PlaceInRoom(ILContext il)
