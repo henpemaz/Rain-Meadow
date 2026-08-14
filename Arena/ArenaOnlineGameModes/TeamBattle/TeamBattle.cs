@@ -15,25 +15,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override ArenaSetup.GameTypeID GetGameModeId => TeamBattle;
 
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if the online game mode is <see cref="ArenaOnlineGameMode"/>
-        /// and <see cref="TeamBattleMode"/> is not registered.
-        /// </exception>
         public static bool IsTeamBattleMode(out TeamBattleMode teamBattle)
         {
             teamBattle = null!;
 
             if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
                 return false;
-            if (!arenaOnline.registeredGameModes.TryGetValue(TeamBattle.value, out ExternalArenaGameMode externalArena))
-            {
-                throw new InvalidOperationException(
-                    $"Could not find game mode. Registered: " +
-                    $"[ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]."
-                );
-            }
 
-            if (arenaOnline.currentGameMode == TeamBattle.value)
+            if (arenaOnline.registeredGameModes.TryGetValue(TeamBattle.value, out ExternalArenaGameMode externalArena)
+                && arenaOnline.currentGameMode == TeamBattle.value)
             {
                 teamBattle = (TeamBattleMode)externalArena;
                 return true;
@@ -643,16 +633,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             OnlinePlayer player
         )
         {
-
-            if (base.AddIcon(arena, display, owner, customization, player) != "")
-            {
-                return base.AddIcon(arena, display, owner, customization, player);
-            }
+            string arenaIcon = base.AddIcon(arena, display, owner, customization, player);
+            if (arenaIcon != "")
+                return arenaIcon;
 
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
-            {
                 return "";
-            }
 
             if (
                 OnlineManager
