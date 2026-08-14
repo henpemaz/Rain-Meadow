@@ -164,11 +164,6 @@ namespace RainMeadow
         public void ConfirmReorder()
         {
             //note: lobby isn't left immediately, because the user still has the option to join
-
-            var modMismatchString = menu.Translate("Warning: Differing Mod Load Orders!")
-                + Environment.NewLine + menu.Translate("This may cause unstable play.")
-                + Environment.NewLine + Environment.NewLine + menu.Translate("Reorder your mods now?");
-
             Action confirmProceed = () =>
             {
                 ClearPopups();
@@ -182,9 +177,15 @@ namespace RainMeadow
                 Start(filesInBadState);
             };
 
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, EndModApplier);
-
-            manager.ShowDialog(checkUserConfirmation);
+            manager.ShowDialog(
+                checkUserConfirmation = new ConfirmCancelDialog(
+                    menu.manager,
+                    "Warning: Differing Mod Load Orders!<LINE>This may cause unstable play.<LINE><LINE>Reorder your mods now?",
+                    UIUtils.DIALOG_SIZE,
+                    confirmProceed,
+                    EndModApplier
+                )
+            );
         }
 
         public void ShowMissingDLCMessage(List<string> missingDLC)

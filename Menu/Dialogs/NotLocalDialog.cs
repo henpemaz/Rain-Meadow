@@ -12,7 +12,7 @@ public class NotLocalDialog : ConfirmCancelDialog
             "This address is possibly not local to your current network.<LINE>If so, This is very unstable and will most likely NOT work<LINE>Are you SURE you know what you're doing?",
             UIUtils.DIALOG_SIZE,
             onConfirm,
-            "YES",
+            confirmButtonText: "YES",
             cancelButtonText: "NEVER MIND"
         )
     {

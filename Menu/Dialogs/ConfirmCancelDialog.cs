@@ -16,8 +16,8 @@ public class ConfirmCancelDialog : Dialog
         string message,
         Vector2 size,
         Action? onConfirm = null,
-        string confirmButtonText = "OK",
         Action? onCancel = null,
+        string confirmButtonText = "OK",
         string cancelButtonText = "CANCEL"
     )
         : base(manager)
