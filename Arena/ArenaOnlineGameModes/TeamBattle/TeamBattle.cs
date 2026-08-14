@@ -24,10 +24,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         /// are applicable, this is empty (such as when everyone is a spectator).
         /// </summary>
         /// <remarks>
-        /// This only has meaning after a session or sitting ends and
-        /// before a new session starts/players exit to the lobby.
+        /// This only has meaning at the end of <see cref="ArenaGameSession"/>s
+        /// and <see cref="ArenaSitting"/>s.
         /// </remarks>
-        public int? WinningTeamIndex { get; set; }
+        public List<int> BestTeamIndexes { get; set; } = [];
 
         public static bool IsTeamBattleMode(out TeamBattleMode teamBattle)
         {
@@ -553,9 +553,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             // There needs at least 2 teams for someone to win. If there is only 1, they can't logically win or lose.
             if (teamGroupedPlayers.Count(players => players.Count > 0) < 2)
+            {
+                BestTeamIndexes.Clear();
                 return [];
+            }
 
-            List<int> bestTeamIndexes = GetTeamIndexesWithHighestValue(
+            BestTeamIndexes = GetTeamIndexesWithHighestValue(
                 teamGroupedPlayers,
                 ShouldWinByScore(arenaSitting.gameTypeSetup)
                     ? players => players.Sum(plr => plr.score)
@@ -563,14 +566,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             );
 
 
-            if (bestTeamIndexes.Count == 1)
-            {
-                WinningTeamIndex = bestTeamIndexes[0];
-                return teamGroupedPlayers[bestTeamIndexes[0]];
-            }
-
-            WinningTeamIndex = null;
-            return [];
+            return BestTeamIndexes.Count == 1
+                ? teamGroupedPlayers[BestTeamIndexes[0]]
+                : [];
         }
 
         /// <inheritdoc/>
@@ -586,23 +584,21 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             // There needs at least 2 teams for someone to win. If there is only 1, they can't logically win or lose.
             if (teamGroupedPlayers.Count(players => players.Count > 0) < 2)
+            {
+                BestTeamIndexes.Clear();
                 return [];
+            }
 
-            List<int> bestTeamIndexes = GetTeamIndexesWithHighestValue(
+            BestTeamIndexes = GetTeamIndexesWithHighestValue(
                 teamGroupedPlayers,
                 ShouldWinByScore(arenaSitting.gameTypeSetup)
                     ? players => players.Sum(plr => plr.totScore)
                     : players => players.Sum(plr => plr.wins)
             );
 
-            if (bestTeamIndexes.Count == 1)
-            {
-                WinningTeamIndex = bestTeamIndexes[0];
-                return teamGroupedPlayers[bestTeamIndexes[0]];
-            }
-
-            WinningTeamIndex = null;
-            return [];
+            return BestTeamIndexes.Count == 1
+                ? teamGroupedPlayers[BestTeamIndexes[0]]
+                : [];
         }
 
         /// <summary>

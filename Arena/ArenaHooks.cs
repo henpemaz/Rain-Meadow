@@ -1455,8 +1455,7 @@ namespace RainMeadow
             ArenaOverlay self,
             ProcessManager manager,
             ArenaSitting ArenaSitting,
-            List<ArenaSitting.ArenaPlayer> result
-        )
+            List<ArenaSitting.ArenaPlayer> result)
         {
             orig(self, manager, ArenaSitting, result);
 
@@ -1465,19 +1464,10 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                     arenaOnline.hostLoadedOverlay = true;
 
-                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
-                {
-                    if (teamBattle.WinningTeamIndex is not null)
-                    {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!")
-                            .Replace(
-                                "<TEAMNAME>",
-                                MatchmakingManager.currentInstance.FilterTeamName(
-                                    teamBattle.teamNames[teamBattle.WinningTeamIndex.Value].ToUpper()
-                                )
-                            );
-                    }
-                }
+                string resultText = arenaOnline.externalArenaGameMode.GetResultText(arenaOnline, self, out bool _);
+                int roundNumber = self.ArenaSitting.currentLevel + 1;
+
+                self.headingLabel.text = $"{self.Translate("ROUND")} {roundNumber} - {resultText}";
             }
         }
 
@@ -3197,14 +3187,15 @@ namespace RainMeadow
                 orig(self, eu);
             }
         }
+
         public void MultiplayerResults_ctor(
             On.Menu.MultiplayerResults.orig_ctor orig,
-            Menu.MultiplayerResults self,
-            ProcessManager manager
-        )
+            MultiplayerResults self,
+            ProcessManager manager)
         {
             orig(self, manager);
-            if (isArenaMode(out var arena))
+
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
             {
                 // play once per menu instead of per every FinalResultbox
                 manager.menuMic.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Bump);
@@ -3217,7 +3208,7 @@ namespace RainMeadow
                     sprite.MoveToFront();
                 self.continueButton.menuLabel.label.MoveToFront();
 
-                var exitButton = new Menu.SimpleButton(
+                var exitButton = new SimpleButton(
                     self,
                     self.pages[0],
                     self.Translate("QUIT"),
@@ -3227,31 +3218,21 @@ namespace RainMeadow
                 );
                 self.pages[0].subObjects.Add(exitButton);
 
-                string winnerName = "";
-                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
-                {
-                    if (teamBattle.WinningTeamIndex is not null)
-                    {
-                        winnerName = MatchmakingManager.currentInstance.FilterTeamName(
-                            teamBattle.teamNames[teamBattle.WinningTeamIndex.Value].ToUpper()
-                        );
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WINS!")
-                            .Replace("<TEAMNAME>", winnerName);
-                    }
-                }
-                else
-                {
-                    var winningResult = self.result.FirstOrDefault(x => x.winner);
-                    if (winningResult != null)
-                    {
-                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, winningResult.playerNumber);
-                        winnerName = pl != null ? pl.id.DisplayName : "";
-                        self.headingLabel.text = self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", MatchmakingManager.currentInstance.FilterTeamName(winnerName != "" ? winnerName : "SESSION RESULTS"));
-                    }
-                }
 
+                string resultText = arenaOnline.externalArenaGameMode.GetResultText(
+                    arenaOnline,
+                    self,
+                    out bool isSpecific
+                );
+
+                self.headingLabel.text = resultText;
                 RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
-                ChatLogManager.LogSystemMessage(Utils.Translate("SESSION ENDED!") + " " + (winnerName == "" ? Utils.Translate("IT'S A DRAW!") : self.Translate("<USERNAME> WINS!").Replace("<USERNAME>", winnerName)), ChatLogManager.SystemMessageType.EndOfSession);
+
+                string systemMessage = self.Translate("SESSION ENDED!");
+                if (isSpecific)
+                    systemMessage += $" {resultText}";
+
+                ChatLogManager.LogSystemMessage(systemMessage, ChatLogManager.SystemMessageType.EndOfSession);
             }
         }
 

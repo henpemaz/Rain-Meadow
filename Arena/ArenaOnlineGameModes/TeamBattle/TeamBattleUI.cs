@@ -97,7 +97,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 if (button is ArenaPlayerBox playerBox)
                 {
                     ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
-                    playerBox.showRainbow = WinningTeamIndex is not null && teamSettings?.team == WinningTeamIndex.Value;
+                    playerBox.showRainbow = BestTeamIndexes.Count == 1 && teamSettings?.team == BestTeamIndexes[0];
                     string symbolName = teamSettings != null ? teamIcons[teamSettings.team] : "pixel";
                     if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox) && playerBox.profileIdentifier != OnlineManager.lobby.owner)
                     {
@@ -141,12 +141,39 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
             return base.DidPlayerWinRainbow(arenaOnline, player)
-                || WinningTeamIndex is not null && teamSettings?.team == WinningTeamIndex.Value;
+                || BestTeamIndexes.Count == 1 && teamSettings?.team == BestTeamIndexes[0];
         }
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+        }
+
+        /// <inheritdoc/>
+        public override string GetResultText(
+            ArenaOnlineGameMode arenaOnline,
+            PlayerResultMenu resultMenu,
+            out bool isSpecific)
+        {
+            isSpecific = true;
+            string nonSpecificText = resultMenu is MultiplayerResults
+                ? resultMenu.Translate("SESSION ENDED!")
+                : resultMenu.Translate("GAME OVER");;
+
+            if (BestTeamIndexes.Count == 0)
+            {
+                isSpecific = false;
+                return nonSpecificText;
+            }
+            if (BestTeamIndexes.Count > 1)
+                return resultMenu.Translate("IT'S A DRAW!");
+
+            string filteredTeamName = MatchmakingManager.currentInstance.FilterTeamName(
+                teamNames[0].ToUpper()
+            );
+
+            return resultMenu.Translate("<TEAMNAME> WINS!")
+                .Replace("<TEAMNAME>", filteredTeamName);
         }
 
         public static Color GetColorFromHex(string hexCode)

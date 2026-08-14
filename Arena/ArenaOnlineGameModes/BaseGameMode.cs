@@ -1656,6 +1656,66 @@ namespace RainMeadow
             return origPortraitColor;
         }
 
+        /// <summary>
+        /// Gets a translated, user-displayable message describing the results of the game.
+        /// </summary>
+        /// <param name="arenaOnline"></param>
+        /// <param name="resultMenu"></param>
+        /// <param name="isSpecific">
+        /// Indicates if the returned text describes the result of
+        /// the game. (rather than simply stating that the game ended)
+        /// </param>
+        public virtual string GetResultText(
+            ArenaOnlineGameMode arenaOnline,
+            PlayerResultMenu resultMenu,
+            out bool isSpecific)
+        {
+            isSpecific = true;
+            string nonSpecificText = resultMenu is MultiplayerResults
+                ? resultMenu.Translate("SESSION ENDED!")
+                : resultMenu.Translate("GAME OVER");
+
+            List<ArenaSitting.ArenaPlayer> activeArenaPlayers = resultMenu.result
+                .Where(arenaPlayer => arenaPlayer.playerClass != RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                .ToList();
+
+            if (activeArenaPlayers.Count < 2)
+            {
+                isSpecific = false;
+                return nonSpecificText;
+            }
+
+            List<ArenaSitting.ArenaPlayer> winners = activeArenaPlayers
+                .Where(arenaPlayer => arenaPlayer.winner)
+                .ToList();
+
+            // Multiple winners are technically supported. Zero or multiple winners is a draw.
+            if (winners.Count != 1)
+                return resultMenu.Translate("IT'S A DRAW!");
+
+            ArenaSitting.ArenaPlayer winner = winners[0];
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                arenaOnline,
+                winner.playerNumber
+            );
+
+            if (onlinePlayer is null)
+            {
+                RainMeadow.Error(
+                    $"Unable to find the online player corresponding to the winner. "
+                    + $"Player number: {winner.playerNumber}."
+                );
+
+                isSpecific = false;
+                return nonSpecificText;
+            }
+
+            string displayName = MatchmakingManager.currentInstance.FilterTeamName(onlinePlayer.id.DisplayName);
+
+            return resultMenu.Translate("<USERNAME> WINS!")
+                .Replace("<USERNAME>", displayName);
+        }
+
         public virtual Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(
