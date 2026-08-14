@@ -244,9 +244,11 @@ namespace RainMeadow
                         manager,
                         "Lobby is null! Exiting...",
                         UIUtils.DIALOG_SIZE,
-                        RainMeadow.Ext_ProcessID.LobbySelectMenu,
-                        onlyShowInInitialProcess: true
+                        RainMeadow.Ext_ProcessID.LobbySelectMenu
                     )
+                    {
+                        OnlyShowInInitialProcess = true,
+                    }
                 );
                 shownNullLobbyDialog = true;
                 return;

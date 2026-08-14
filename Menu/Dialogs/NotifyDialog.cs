@@ -6,19 +6,14 @@ namespace RainMeadow.UI.Dialogs;
 
 public class NotifyDialog : Dialog
 {
-    public SoundID soundOnButtonPress = SoundID.MENU_Button_Standard_Button_Pressed;
     public DialogBoxNotify dialogBox;
     public ProcessManager.ProcessID initialProcessID;
 
     public event Action? OnContinue;
 
-    public bool onlyShowInInitialProcess;
+    public SoundID SoundOnButtonPress = SoundID.MENU_Button_Standard_Button_Pressed;
 
-    public float TimeOut
-    {
-        get => dialogBox.timeOut;
-        set => dialogBox.timeOut = value;
-    }
+    public bool OnlyShowInInitialProcess;
 
     public NotifyDialog(
         ProcessManager manager,
@@ -26,7 +21,7 @@ public class NotifyDialog : Dialog
         Vector2 size,
         Action? onContinue = null,
         bool forceWrapping = false,
-        bool onlyShowInInitialProcess = false
+        float timeOut = 1f
     )
         : base(manager)
     {
@@ -43,8 +38,7 @@ public class NotifyDialog : Dialog
         );
 
         OnContinue += onContinue;
-
-        this.onlyShowInInitialProcess = onlyShowInInitialProcess;
+        dialogBox.timeOut = timeOut;
         initialProcessID = manager.currentMainLoop.ID;
     }
 
@@ -54,15 +48,9 @@ public class NotifyDialog : Dialog
         Vector2 size,
         ProcessManager.ProcessID processOnContinue,
         bool forceWrapping = false,
-        bool onlyShowInInitialProcess = false
+        float timeOut = 1f
     )
-        : this(
-            manager,
-            message,
-            size,
-            forceWrapping: forceWrapping,
-            onlyShowInInitialProcess: onlyShowInInitialProcess
-        )
+        : this(manager, message, size, forceWrapping: forceWrapping, timeOut: timeOut)
     {
         OnContinue += () => manager.RequestMainProcessSwitch(processOnContinue);
     }
@@ -70,13 +58,13 @@ public class NotifyDialog : Dialog
     public override void Update()
     {
         base.Update();
-        if (onlyShowInInitialProcess && manager.currentMainLoop.ID != initialProcessID)
+        if (OnlyShowInInitialProcess && manager.currentMainLoop.ID != initialProcessID)
             manager.StopSideProcess(this);
     }
 
     public override void Singal(MenuObject sender, string message)
     {
-        PlaySound(soundOnButtonPress);
+        PlaySound(SoundOnButtonPress);
         manager.StopSideProcess(this);
         OnContinue?.Invoke();
     }

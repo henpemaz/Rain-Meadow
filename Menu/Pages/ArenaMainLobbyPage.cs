@@ -257,11 +257,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                 menu.manager,
                 Arena.externalArenaGameMode?.GameModeInfo
                     ?? "This game mode doesn't have any info to give",
-                UIUtils.DIALOG_SIZE
+                UIUtils.DIALOG_SIZE,
+                timeOut: 0f
             )
-            {
-                TimeOut = 0,
-            }
         );
     }
 
@@ -283,11 +281,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                 new NotifyDialog(
                     menu.manager,
                     "You can't customize colors without Remix on!",
-                    UIUtils.DIALOG_SIZE
+                    UIUtils.DIALOG_SIZE,
+                    timeOut: 0f
                 )
-                {
-                    TimeOut = 0,
-                }
             );
             return;
         }
@@ -605,9 +601,11 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     menu.manager,
                     "Lobby is null! Exiting...",
                     UIUtils.DIALOG_SIZE,
-                    RainMeadow.Ext_ProcessID.LobbySelectMenu,
-                    onlyShowInInitialProcess: true
+                    RainMeadow.Ext_ProcessID.LobbySelectMenu
                 )
+                {
+                    OnlyShowInInitialProcess = true,
+                }
             );
             shownNullLobbyDialog = true;
             return;

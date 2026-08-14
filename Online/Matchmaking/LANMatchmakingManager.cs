@@ -62,11 +62,9 @@ namespace RainMeadow {
                     new NotifyDialog(
                         OnlineManager.instance.manager,
                         dialogue,
-                        UIUtils.DIALOG_SIZE
+                        UIUtils.DIALOG_SIZE,
+                        timeOut: 0f
                     )
-                    {
-                        TimeOut = 0
-                    }
                 );
             }
 
@@ -374,11 +372,9 @@ namespace RainMeadow {
                 new NotifyDialog(
                     OnlineManager.instance.manager,
                     "You cannot use this feature here.",
-                    UIUtils.DIALOG_SIZE
+                    UIUtils.DIALOG_SIZE,
+                    timeOut: 0f
                 )
-                {
-                    TimeOut = 0
-                }
             );
         }
     }

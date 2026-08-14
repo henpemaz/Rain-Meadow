@@ -744,11 +744,11 @@ namespace RainMeadow
                             self.manager,
                             "Steam is not currently available. Some features of Rain Meadow have been disabled.",
                             UIUtils.DIALOG_SIZE,
-                            Ext_ProcessID.LobbySelectMenu
+                            Ext_ProcessID.LobbySelectMenu,
+                            timeOut: 0f
                         )
                         {
-                            soundOnButtonPress = SoundID.MENU_Switch_Page_In,
-                            TimeOut = 0,
+                            SoundOnButtonPress = SoundID.MENU_Switch_Page_In,
                         }
                     );
                     return;

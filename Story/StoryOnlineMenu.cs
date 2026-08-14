@@ -297,9 +297,11 @@ namespace RainMeadow
                         manager,
                         "Lobby is null! Exiting...",
                         UIUtils.DIALOG_SIZE,
-                        RainMeadow.Ext_ProcessID.LobbySelectMenu,
-                        onlyShowInInitialProcess: true
+                        RainMeadow.Ext_ProcessID.LobbySelectMenu
                     )
+                    {
+                        OnlyShowInInitialProcess = true,
+                    }
                 );
                 shownNullLobbyDialog = true;
                 return;
@@ -649,11 +651,9 @@ namespace RainMeadow
                     manager,
                     "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
                     UIUtils.DIALOG_SIZE,
-                    MatchmakingManager.currentInstance.OpenInvitationOverlay
-                )
-                {
-                    TimeOut = 0
-                };
+                    MatchmakingManager.currentInstance.OpenInvitationOverlay,
+                    timeOut: 0f
+                );
                 manager.ShowDialog(dialog);
             };
             pages[0].subObjects.Add(invite);
