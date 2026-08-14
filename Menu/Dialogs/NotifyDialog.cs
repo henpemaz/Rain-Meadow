@@ -30,7 +30,7 @@ public class NotifyDialog : Dialog
                 this,
                 dialogPage,
                 Translate(message),
-                "",
+                "shorreallywantedthis",
                 UIUtils.ScreenCenter(manager) - (size / 2),
                 size,
                 forceWrapping
@@ -64,6 +64,9 @@ public class NotifyDialog : Dialog
 
     public override void Singal(MenuObject sender, string message)
     {
+        if (message != "shorreallywantedthis")
+            return;
+
         PlaySound(SoundOnButtonPress);
         manager.StopSideProcess(this);
         OnContinue?.Invoke();
