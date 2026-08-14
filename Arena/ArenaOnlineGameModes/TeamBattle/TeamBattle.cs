@@ -171,6 +171,25 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self);
         }
 
+        public override void On_ArenaGameSession_ctor(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaGameSession.orig_ctor orig,
+            ArenaGameSession self,
+            RainWorldGame game)
+        {
+            ArenaTeamClientSettings teamClientData = OnlineManager.lobby
+                .clientSettings[OnlineManager.mePlayer]
+                .GetData<ArenaTeamClientSettings>();
+
+            arenaOnline.avatarSettings.bodyColor = Color.Lerp(
+                arenaOnline.avatarSettings.bodyColor,
+                teamColors[teamClientData.team],
+                lerp
+            );
+
+            base.On_ArenaGameSession_ctor(arenaOnline, orig, self, game);
+        }
+
         public override string TimerText()
         {
             return Utils.Translate("Prepare for war,") + " " + Utils.Translate(PlayingAsText());
