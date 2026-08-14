@@ -39,15 +39,16 @@ Documentation will most likely be done separately.
   - [ ] ArenaPostGameStatsDialog.cs
   - [ ] ColorMultipleSlugcatsDialog.cs
   - [ ] ColorSlugcatDialog.cs
+  - [ ] ConfirmCancelDialog.cs
   - [ ] DialogAsyncWait.cs
   - [x] DialogBox.cs
   - [ ] DirectConnectionDialog.cs
   - [ ] InputDialog.cs
-  - [x] NotifyDialog.cs
+  - [ ] NotifyDialog.cs
   - [ ] NotLocalDialog.cs
   - [ ] ScrollableConfirmDialog.cs
   - [ ] SlugcatSelector.cs
-  - [ ] UpdateDialog.cs
+  - [ ] ~~UpdateDialog.cs~~
 - Interfaces/
   - [ ] IDyanicBindHandler.cs
   - [ ] IPLEASEUPDATEME.cs
