@@ -196,8 +196,30 @@ public class LobbySelectMenu : SmartMenu
             SteamNetworkingUtils.InitRelayNetworkAccess();
         MatchmakingManager.currentInstance.RequestLobbyList();
 
-        if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
-            manager.ShowDialog(new UpdateDialog(manager));
+        if (string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
+            return;
+
+        ConfirmCancelDialog updateDialog = new(
+            manager,
+            Translate(
+                    "Rain Meadow version <NEW_VERSION> is now available.<LINE><LINE>Update to join the newest lobbies and get the latest features & fixes."
+                )
+                .Replace("<NEW_VERSION>", RainMeadow.NewVersionAvailable),
+            UIUtils.DIALOG_SIZE,
+            cancelButtonText: "HOW TO UPDATE"
+        );
+        updateDialog.OnCancel += () =>
+            manager.ShowDialog(
+                new NotifyDialog(
+                    manager,
+                    Translate(
+                        "For Steam: Restart your game. If Rain Meadow doesn't update automatically, resubscribe to force an update.<LINE><LINE>For Other Platforms: Visit our GitHub releases page to download the latest release.<LINE><LINE>Updating won't affect your save data."
+                    ),
+                    UIUtils.DIALOG_SIZE,
+                    timeOut: 0f
+                )
+            );
+        manager.ShowDialog(updateDialog);
     }
 
     public void UpdateStats()
