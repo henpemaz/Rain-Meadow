@@ -151,7 +151,11 @@ namespace RainMeadow
             return colorIfNotFound == default ? Color.white : colorIfNotFound;
         }
 
-        public enum SystemMessageType
+        /// <remarks>
+        /// Each value corresponds to the <see langword="char"/>
+        /// prefixed to the chat 'user'.
+        /// </remarks>
+        public enum SystemMessageType : ushort
         {
             System = 'y',
             LogError = 'e',
@@ -163,12 +167,13 @@ namespace RainMeadow
             StartOfRound = 'r',
             EndOfSession = 'S',
         }
+
         public static readonly Dictionary<SystemMessageType, Color> SystemMessageTypeColor = new(){
             [SystemMessageType.System] = defaultSystemColor,
             [SystemMessageType.PlayerJoin] = defaultSystemColor,   
             [SystemMessageType.CreatureDeath] = defaultSystemColor,
             [SystemMessageType.PlayerJoinFail] = Color.Lerp(defaultSystemColor, Color.black, 0.5f),
-            
+
             [SystemMessageType.StartOfRound] = Color.Lerp(orangeSystemColor, Color.black, 0.25f),
             [SystemMessageType.EndOfRound] = Color.Lerp(orangeSystemColor, Color.black, 0.25f),
             [SystemMessageType.EndOfSession] = orangeSystemColor,
@@ -176,6 +181,7 @@ namespace RainMeadow
             [SystemMessageType.LogNotify] = redSystemColor,
             [SystemMessageType.LogError] = Color.Lerp(redSystemColor, Color.black, 0.25f),
         };
+
         public static Color GetColorOfSystemMessage(SystemMessageType systemMessageType)
             => SystemMessageTypeColor.TryGetValue(systemMessageType, out var color) ? color : defaultSystemColor;
         public static Color GetColorOfSystemMessage(SystemMessageType? systemMessageType)
