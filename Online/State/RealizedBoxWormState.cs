@@ -4,7 +4,7 @@ namespace RainMeadow
 {
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedBoxWormState : RealizedCreatureState
-    {        
+    {
         [OnlineField(nullable = true)]
         Generics.DynamicOrderedStates<LarvaHolderState> larvaHolders;
 
@@ -14,7 +14,7 @@ namespace RainMeadow
         int releaseSteamTimer;
         [OnlineField]
         int steamAvailable;
-        
+
 
         public RealizedBoxWormState() { }
 
@@ -27,9 +27,10 @@ namespace RainMeadow
             steamAvailable = boxWorm.steamAvailable;
 
             System.Collections.Generic.List<LarvaHolderState> LarvaHolders = new();
+
             for (int i = 0; i < boxWorm.larvaHolders.Length; i++)
             {
-                if (boxWorm.larvaHolders[i].hasLarva)
+                if (boxWorm.larvaHolders[i].abstractLarva is not null)
                 {
                     LarvaHolders.Add(new LarvaHolderState(boxWorm.larvaHolders[i], i));
                 }
@@ -51,38 +52,45 @@ namespace RainMeadow
                 int index = larvaHolders.list[i].index;
                 larvaHolders.list[i].ReadTo(boxWorm.larvaHolders[index]);
             }
-        }      
+        }
     }
 
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class LarvaHolderState : OnlineState
     {
-        [OnlineField(nullable = true)]
-        public OnlineEntity.EntityId onlineLarvaID;
         [OnlineField]
         public byte index;
-       
         [OnlineField]
         byte timeToDislodge;
+
+        [OnlineField]
+        bool hasLarva;
+
+        [OnlineField(nullable = true)]
+        OnlineEntity.EntityId? onlineLarvaID;
 
         public LarvaHolderState() { }
         public LarvaHolderState(BoxWorm.LarvaHolder holder, int index)
         {
             this.index = (byte)index;
             timeToDislodge = (byte)holder.timeToDislodge;
-            if (holder.abstractLarva?.GetOnlineObject() is OnlinePhysicalObject opo)
-                onlineLarvaID = opo.id;
+
+            if (holder.abstractLarva?.GetOnlineObject() is OnlinePhysicalObject opo) onlineLarvaID = opo.id;
+            hasLarva = holder.hasLarva;
         }
         public void ReadTo(BoxWorm.LarvaHolder holder)
         {
             holder.timeToDislodge.SetClamped(timeToDislodge);
-            if (onlineLarvaID.FindEntity() is not OnlinePhysicalObject onlineLarva) return;
-            if (onlineLarva.apo?.realizedObject is not Watcher.BoxWorm.Larva larva) return;
-            if (holder.abstractLarva != larva.abstractPhysicalObject)
+
+            if (onlineLarvaID?.FindEntity() is not OnlinePhysicalObject onlineLarva || onlineLarva.apo?.realizedObject is not Watcher.BoxWorm.Larva)
             {
-                holder.abstractLarva = (BoxWorm.Larva.AbstractLarva)onlineLarva.apo;
-                holder.hasLarva = true;
+                holder.hasLarva = false;
+                return;
             }
+            
+            if (holder.abstractLarva != onlineLarva.apo) holder.abstractLarva = (BoxWorm.Larva.AbstractLarva)onlineLarva.apo;
+            
+            holder.hasLarva = hasLarva;                        
         }
     }
 }
