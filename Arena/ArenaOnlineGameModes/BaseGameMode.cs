@@ -446,7 +446,6 @@ namespace RainMeadow
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
             {
                 SpecialEvents.LoadElement("meadowcoin");
-                if (display.slugIcon != null) display.slugIcon.scale = 0.08f;
                 return "meadowcoin";
             }
 

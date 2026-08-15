@@ -24,7 +24,7 @@ class LobbySelectFiltersPanel : PositionedMenuObject, CheckBox.IOwnCheckBox
         modFilterLabel;
     public OpComboBox2 gamemodeFilterComboBox,
         modFilterComboBox;
-    public OpTextBox sizeFilterTextBox;
+    public OpUpdown sizeFilterTextBox;
     public RestorableCheckbox publicLobbiesOnlyCheckBox;
 
     public event OnFilterUpdateHandler? OnFilterUpdated;
@@ -54,13 +54,12 @@ class LobbySelectFiltersPanel : PositionedMenuObject, CheckBox.IOwnCheckBox
 
         positioner.y -= 40;
 
-        sizeFilterTextBox = new OpTextBox(
-            new Configurable<int>(32),
-            positioner + new Vector2(45, 0),
-            50
+        sizeFilterTextBox = new OpUpdown(
+            new Configurable<int>(99, new ConfigAcceptableRange<int>(0, 99)),
+            positioner + new Vector2(40, -5),
+            60
         )
         {
-            alignment = FLabelAlignment.Center,
             description = menu.Translate("Filter for a maximum lobby size"),
             accept = OpTextBox.Accept.Int,
             maxLength = 2,
@@ -73,7 +72,7 @@ class LobbySelectFiltersPanel : PositionedMenuObject, CheckBox.IOwnCheckBox
             OnFilterChange();
         };
         new PatchedUIelementWrapper(tabWrapper, sizeFilterTextBox);
-        maxLobbySize = 32;
+        maxLobbySize = 99;
 
         sizeFilterLabel = new MenuLabel(
             menu,

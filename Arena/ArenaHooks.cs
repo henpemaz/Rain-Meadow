@@ -278,8 +278,12 @@ namespace RainMeadow
         private void Creature_Update_GetAttackedByAmoeba(On.Creature.orig_Update orig, Creature self, bool eu)
         {
             orig(self, eu);
+
             if (isArenaMode(out _) && self is not Player)
             {
+                if (self.room is null)
+                    return;
+
                 // stun creatures from the summoned Amoeba
                 for (int i = 0; i < self.room.voidSpawns.Count; i++)
                 {
@@ -303,7 +307,8 @@ namespace RainMeadow
                     x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod())))
                 {
                     // Set the level artificially to 0.5 when in arena, no matter the real level... unless it's max ripple.
-                    cursor.EmitDelegate((float orig) => isArenaMode(out _) && (includeRippleMax || orig < 5) ? 0.5f : orig);
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((float orig, Player player) => isArenaMode(out _) && !player.IsLocal() && (includeRippleMax || orig < 5) ? 0.5f : orig);
                 }
             }
             catch (Exception e)
@@ -330,7 +335,7 @@ namespace RainMeadow
                 {
                     // If it's areana mode, don't spawn 4373 bajilion effects
                     cursor.Emit(OpCodes.Ldarg_0);
-                    cursor.EmitDelegate((Player player) => isArenaMode(out _)); // && player.rippleLevel < 5
+                    cursor.EmitDelegate((Player player) => isArenaMode(out _) && !player.IsLocal()); // && player.rippleLevel < 5
                     cursor.Emit(OpCodes.Brtrue, label);
                 }
                 else
@@ -1550,8 +1555,10 @@ namespace RainMeadow
             {
                 if (self.allResultBoxesInPlaceCounter > 10 && !arena.clientSettings.isInteracting)
                 {
-                    int playerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
-                    if (playerNumber != -1 && !self.result[playerNumber].readyForNextRound)
+                    int myPlayerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
+                    ArenaSitting.ArenaPlayer myArenaPlayer = self.ArenaSitting.players[myPlayerNumber];
+
+                    if (myPlayerNumber != -1 && !myArenaPlayer.readyForNextRound)
                     {
                         Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
                         if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)

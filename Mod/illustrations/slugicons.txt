@@ -280,7 +280,7 @@
 				"h": 24
 			}
 		},
-		"spearmaster_feature.png": {
+		"slugpup_dead_face.png": {
 			"frame": {
 				"x": 48,
 				"y": 72,
@@ -300,10 +300,70 @@
 				"h": 24
 			}
 		},
-		"watcher_feature.png": {
+		"slugpup_face.png": {
 			"frame": {
 				"x": 72,
 				"y": 72,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"slugpup_head.png": {
+			"frame": {
+				"x": 96,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"spearmaster_feature.png": {
+			"frame": {
+				"x": 96,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"watcher_feature.png": {
+			"frame": {
+				"x": 96,
+				"y": 48,
 				"w": 24,
 				"h": 24
 			},
@@ -325,7 +385,7 @@
 		"app": "https://goofybox-studios.github.io/tools/texture_packer",
 		"image": "slugicons",
 		"size": {
-			"w": 96,
+			"w": 120,
 			"h": 96
 		}
 	}
