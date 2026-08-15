@@ -81,15 +81,6 @@ namespace RainMeadow
                 || gameTypeSetup.foodScore > 0;
         }
 
-        public virtual bool ShouldSortByScore(ArenaSetup.GameTypeSetup gameTypeSetup)
-        {
-            return gameTypeSetup.survivalScore > 0
-                || gameTypeSetup.KillScore > 0
-                || gameTypeSetup.EmptyDeathScore > 0
-                || gameTypeSetup.spearHitScore > 0
-                || gameTypeSetup.foodScore > 0;
-        }
-
         public virtual void InitAsCustomGameType(
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
@@ -429,12 +420,12 @@ namespace RainMeadow
             }
             if (!attackerOCreature.isAvatar)
             {
-                RainMeadow.Info("Attacker is not an avatar. Returning early.");
+                RainMeadow.Debug("Attacker is not an avatar. Returning early.");
                 return;
             }
             if (!targetOCreature.isMine)
             {
-                RainMeadow.Info("Target is not mine. Returning early.");
+                RainMeadow.Debug("Target is not mine. Returning early.");
                 return;
             }
 
@@ -563,25 +554,25 @@ namespace RainMeadow
             }
             if (attackerOCreature is not { isAvatar: true, isMine: true })
             {
-                RainMeadow.Info("Attacker is not my avatar. Returning early.");
+                RainMeadow.Debug("Attacker is not my avatar. Returning early.");
                 return;
             }
             if (!targetOCreature.isAvatar)
             {
-                RainMeadow.Info("A non-avatar creature was stabbed. Returning early.");
+                RainMeadow.Debug("A non-avatar creature was stabbed. Returning early.");
                 return;
             }
             if (target.State is PlayerState { permanentDamageTracking: >= 1 })
             {
-                RainMeadow.Info(
+                RainMeadow.Debug(
                     $"Target ({targetOCreature.owner}) is going to die or is already "
                     + $"dead. Kill scoring is handled elsewhere. Returning early."
                 );
                 return;
             }
-            if (attacker.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+            if (attacker.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
             {
-                RainMeadow.Info(
+                RainMeadow.Debug(
                     "Gourmand stabbed someone. Logic needs to be added to give the spear hit "
                     + "score if the gourmand was not exhausted before throwing. Returning early."
                 );
@@ -1162,7 +1153,7 @@ namespace RainMeadow
 
             if (onlineCreature is not { isAvatar: true, isMine: true })
             {
-                RainMeadow.Info("Player is not my avatar. Returning early.");
+                RainMeadow.Debug("Player is not my avatar. Returning early.");
                 return;
             }
             if (ArenaHelpers.FindArenaPlayerByOnlinePlayer(arenaOnline, arenaSitting, onlineCreature.owner)
@@ -1487,16 +1478,28 @@ namespace RainMeadow
             if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 return true;
 
-            bool shouldSortByScore = ShouldSortByScore(self.gameTypeSetup);
+            bool shouldWinByScore = ShouldWinByScore(self.gameTypeSetup);
 
             if (a.winner != b.winner)
                 return a.winner;
-            if (a.score != b.score && shouldSortByScore)
-                return a.score > b.score;
-            if (a.alive != b.alive && !shouldSortByScore)
-                return a.alive;
-            if (a.roundKills.Count != b.roundKills.Count)
-                return a.roundKills.Count > b.roundKills.Count;
+            if (shouldWinByScore)
+            {
+                if (a.score != b.score)
+                    return a.score > b.score;
+                if (a.roundKills.Count != b.roundKills.Count)
+                    return a.roundKills.Count > b.roundKills.Count;
+                if (a.alive != b.alive)
+                    return a.alive;
+            }
+            else
+            {
+                if (a.alive != b.alive)
+                    return a.alive;
+                if (a.score != b.score)
+                    return a.score > b.score;
+                if (a.roundKills.Count != b.roundKills.Count)
+                    return a.roundKills.Count > b.roundKills.Count;
+            }
 
             return a.timeAlive > b.timeAlive;
         }
@@ -1513,14 +1516,24 @@ namespace RainMeadow
             if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 return true;
 
-            bool shouldSortByScore = ShouldSortByScore(self.gameTypeSetup);
+            bool shouldWinByScore = ShouldWinByScore(self.gameTypeSetup);
 
             if (a.winner != b.winner)
                 return a.winner;
-            if (a.totScore != b.totScore && shouldSortByScore)
-                return a.totScore > b.totScore;
-            if (a.wins != b.wins)
-                return a.wins > b.wins;
+            if (shouldWinByScore)
+            {
+                if (a.totScore != b.totScore)
+                    return a.totScore > b.totScore;
+                if (a.wins != b.wins)
+                    return a.wins > b.wins;
+            }
+            else
+            {
+                if (a.wins != b.wins)
+                    return a.wins > b.wins;
+                if (a.totScore != b.totScore)
+                    return a.totScore > b.totScore;
+            }
             if (a.deaths != b.deaths)
                 return a.deaths > b.deaths;
 

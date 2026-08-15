@@ -146,12 +146,13 @@ namespace RainMeadow
                 ? "Current points"
                 : "Team points";
 
+            // TODO: Why can't arena player be found when exiting to the lobby manually?
             int displayScore = gameTypeSetup.spearsHitPlayers
                 ? ArenaHelpers.FindArenaPlayerByOnlinePlayer(
                     arenaOnline,
                     arenaSitting,
                     OnlineManager.mePlayer
-                )!.score
+                )?.score ?? 0
                 : CalculateTeamScore(arenaOnline, arenaSitting);
 
             string waveText = "";
@@ -162,7 +163,8 @@ namespace RainMeadow
                     ? $" ({liveCreatureCount}/{maxCreatures} creatures - kill to resume waves)"
                     : $" ({liveCreatureCount}/{maxCreatures} creatures)";
 
-                waveText = $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}{capText}";
+                waveText =
+                    $" Current Wave: {currentWave}. Next wave: {ArenaPrepTimer.FormatTime(currentWaveTimer)}{capText}";
             }
 
             return $": {scoreTypeText}: {displayScore}.{waveText}";

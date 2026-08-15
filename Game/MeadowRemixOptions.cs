@@ -640,7 +640,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
 
                 new OpLabel(210f, 340, Translate("Toggle Show Score")),
-                new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f)),
+                new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f), false),
 
                 new OpLabel(10f, 280, Translate("Countdown Safety Time (ticks)")),
                 new OpTextBox(CountdownSafetyCatchTimer, new Vector2(10f, 250), 160f)
