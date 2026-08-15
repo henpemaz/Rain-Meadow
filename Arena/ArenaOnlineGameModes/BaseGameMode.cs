@@ -81,6 +81,15 @@ namespace RainMeadow
                 || gameTypeSetup.foodScore > 0;
         }
 
+        public virtual bool ShouldSortByScore(ArenaSetup.GameTypeSetup gameTypeSetup)
+        {
+            return gameTypeSetup.survivalScore > 0
+                || gameTypeSetup.KillScore > 0
+                || gameTypeSetup.EmptyDeathScore > 0
+                || gameTypeSetup.spearHitScore > 0
+                || gameTypeSetup.foodScore > 0;
+        }
+
         public virtual void InitAsCustomGameType(
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
@@ -1478,11 +1487,13 @@ namespace RainMeadow
             if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 return true;
 
-            bool shouldWinByScore = ShouldWinByScore(self.gameTypeSetup);
+            bool shouldSortByScore = ShouldSortByScore(self.gameTypeSetup);
 
-            if (a.score != b.score && shouldWinByScore)
+            if (a.winner != b.winner)
+                return a.winner;
+            if (a.score != b.score && shouldSortByScore)
                 return a.score > b.score;
-            if (a.alive != b.alive && !shouldWinByScore)
+            if (a.alive != b.alive && !shouldSortByScore)
                 return a.alive;
             if (a.roundKills.Count != b.roundKills.Count)
                 return a.roundKills.Count > b.roundKills.Count;
@@ -1502,11 +1513,13 @@ namespace RainMeadow
             if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
                 return true;
 
-            bool shouldWinByScore = ShouldWinByScore(self.gameTypeSetup);
+            bool shouldSortByScore = ShouldSortByScore(self.gameTypeSetup);
 
-            if (a.totScore != b.totScore && shouldWinByScore)
+            if (a.winner != b.winner)
+                return a.winner;
+            if (a.totScore != b.totScore && shouldSortByScore)
                 return a.totScore > b.totScore;
-            if (a.wins != b.wins && !shouldWinByScore)
+            if (a.wins != b.wins)
                 return a.wins > b.wins;
             if (a.deaths != b.deaths)
                 return a.deaths > b.deaths;

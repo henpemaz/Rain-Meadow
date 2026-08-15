@@ -1,9 +1,9 @@
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using Watcher;
 
 namespace RainMeadow
@@ -302,7 +302,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource().ApoEnteringWorld(apo);
+                self.world.GetResource()?.ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
