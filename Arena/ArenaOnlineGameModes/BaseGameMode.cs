@@ -85,11 +85,11 @@ namespace RainMeadow
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
         {
-            self.survivalScore   = arenaOnline.survivalScore;
-            self.KillScore       = arenaOnline.killScore;
+            self.survivalScore = arenaOnline.survivalScore;
+            self.KillScore = arenaOnline.killScore;
             self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore   = arenaOnline.spearHitScore;
-            self.foodScore       = arenaOnline.foodScore;
+            self.spearHitScore = arenaOnline.spearHitScore;
+            self.foodScore = arenaOnline.foodScore;
 
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
@@ -468,7 +468,7 @@ namespace RainMeadow
             // Handle Trophies
             if (CreatureSymbol.DoesCreatureEarnATrophy(target.Template.type))
             {
-                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [ trophy.ToString() ]);
+                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [trophy.ToString()]);
 
                 attackerOCreature.BroadcastRPCInRoom(
                     ArenaRPCs.AddArenaPlayerRoundKills,
@@ -623,7 +623,7 @@ namespace RainMeadow
             else
             {
                 self.AddPart(new Pointing(self));
-                foreach(AbstractCreature localPlayer in session.Players.Where(x => x != null && x.IsLocal()).ToArray())
+                foreach (AbstractCreature localPlayer in session.Players.Where(x => x != null && x.IsLocal()).ToArray())
                 {
                     var psmh = new HUD.PlayerSpecificMultiplayerHud(self, session, localPlayer)
                     {
@@ -1142,18 +1142,26 @@ namespace RainMeadow
             // There isn't a specific reason self.room.game.GetArenaGameSession isn't used, I just don't trust room to be non-null.
             ArenaSitting arenaSitting = Custom.rainWorld.processManager.arenaSitting;
 
+            OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
+
+            // Remote avatars die when their owner's state says so, not from our local
+            // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
+            // too) would get corrected by the next state and fake a revive on the HUD.
+            if (onlineCreature is { isMine: false })
+                return;
+
             bool wasAlreadyDead = self.dead;
             orig(self);
 
             if (wasAlreadyDead)
                 return;
 
-            if (self.abstractCreature.GetOnlineCreature() is not OnlineCreature onlineCreature)
+            if (onlineCreature is null)
             {
                 RainMeadow.Error("Unable to find the attacker online creature.");
                 return;
             }
-            if (onlineCreature is not { isAvatar: true, isMine: true })
+            if (!onlineCreature.isAvatar)
             {
                 RainMeadow.Info("Player is not my avatar. Returning early.");
                 return;
@@ -1800,7 +1808,7 @@ namespace RainMeadow
         public abstract string GetSaveString(ArenaOnlineGameMode arenaOnline);
     }
 
-    public class ExternalArenaGameModeFieldSetting(string settingID, string settingNickname = "") 
+    public class ExternalArenaGameModeFieldSetting(string settingID, string settingNickname = "")
         : ExternalArenaGameModeSetting(settingID, settingNickname)
     {
         protected const char SEPARATOR = ',';
@@ -1836,10 +1844,10 @@ namespace RainMeadow
             if (settingType.IsGenericType && typeof(IEnumerable).IsAssignableFrom(settingType))
             {
                 Type ListingType = settingType.GetGenericArguments()[0];
-                IEnumerable<object> elements = string.IsNullOrWhiteSpace(value) 
-                    ? [] 
+                IEnumerable<object> elements = string.IsNullOrWhiteSpace(value)
+                    ? []
                     : value.Split(SEPARATOR).Select(s => ParseOrDefaultSimpleType(s, ListingType));
-                
+
                 RainMeadow.Debug($"Found enumerable {settingType}:{ListingType}, converted values are {string.Join(",", elements)}");
                 if (settingType.GetGenericTypeDefinition() == typeof(List<>))
                 {

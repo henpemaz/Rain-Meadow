@@ -2095,6 +2095,8 @@ public partial class RainMeadow
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
             throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
 
+        if (!onlineEntity.isMine) return; // remote players die through their owner's state, not our simulation
+
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
         orig(self);
     }
