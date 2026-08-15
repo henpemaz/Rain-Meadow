@@ -64,6 +64,38 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             return orig(self);
         }
 
+        /// <inheritdoc/>
+        public override bool On_ArenaSitting_PlayerSessionResultSort(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaSitting.orig_PlayerSessionResultSort orig,
+            ArenaSitting self,
+            ArenaSitting.ArenaPlayer a,
+            ArenaSitting.ArenaPlayer b)
+        {
+            if (a.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                return false;
+            if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                return true;
+
+            return a.score > b.score;
+        }
+
+        /// <inheritdoc/>
+        public override bool On_ArenaSitting_PlayerSittingResultSort(
+            ArenaOnlineGameMode arenaOnline,
+            On.ArenaSitting.orig_PlayerSittingResultSort orig,
+            ArenaSitting self,
+            ArenaSitting.ArenaPlayer a,
+            ArenaSitting.ArenaPlayer b)
+        {
+            if (a.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                return false;
+            if (b.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                return true;
+
+            return a.totScore > b.totScore;
+        }
+
         public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
             ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,

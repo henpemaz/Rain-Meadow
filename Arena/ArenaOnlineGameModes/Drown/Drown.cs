@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Drown;
 using Menu;
@@ -388,11 +389,65 @@ namespace RainMeadow
                     continue;
                 }
 
-                if (clientData.iOpenedDen || !arenaSession.GameTypeSetup.spearsHitPlayers)
+                if (!clientData.iOpenedDen)
+                    continue;
+
+                AbstractCreature? playerAC = ArenaHelpers.FindPlayerACByArenaPlayer(arenaOnline, arenaSession, arenaPlayer);
+                if (playerAC != null && arenaSession.exitManager?.IsPlayerInDen(playerAC) == true)
                     winners.Add(arenaPlayer);
             }
 
             return winners;
+        }
+
+        /// <inheritdoc/>
+        public override string GetResultText(
+            ArenaOnlineGameMode arenaOnline,
+            PlayerResultMenu resultMenu,
+            out bool isSpecific)
+        {
+            isSpecific = true;
+            string nonSpecificText = resultMenu is MultiplayerResults
+                ? resultMenu.Translate("SESSION ENDED!")
+                : resultMenu.Translate("GAME OVER");
+
+            List<ArenaSitting.ArenaPlayer> activeArenaPlayers = resultMenu.result
+                .Where(arenaPlayer => arenaPlayer.playerClass != RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                .ToList();
+
+            List<ArenaSitting.ArenaPlayer> winners = activeArenaPlayers
+                .Where(arenaPlayer => arenaPlayer.winner)
+                .ToList();
+
+            if (winners.Count == 0)
+                return resultMenu.Translate("EVERYONE DROWNED!");
+
+            if (winners.Count == activeArenaPlayers.Count)
+                return resultMenu.Translate("EVERYONE ESCAPED!");
+
+            if (winners.Count > 1)
+                return resultMenu.Translate("SOME PLAYERS ESCAPED!");
+
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                arenaOnline,
+                winners[0].playerNumber
+            );
+
+            if (onlinePlayer is null)
+            {
+                RainMeadow.Error(
+                    $"Unable to find the online player corresponding to the winner. "
+                    + $"Player number: {winners[0].playerNumber}."
+                );
+
+                isSpecific = false;
+                return nonSpecificText;
+            }
+
+            string displayName = MatchmakingManager.currentInstance.FilterTeamName(onlinePlayer.id.DisplayName);
+
+            return resultMenu.Translate("<USERNAME> ESCAPED!")
+                .Replace("<USERNAME>", displayName);
         }
 
         private static int ThatsCap(ArenaGameSession session)
