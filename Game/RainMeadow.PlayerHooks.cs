@@ -2086,18 +2086,23 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
+        OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
+        if (onlineCreature is null)
+            throw new InvalidProgrammerException("Player doesn't have an OnlineCreature counterpart!!");
+
+        // Remote avatars die when their owner's state says so, not from our local
+        // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
+        // too) would get corrected by the next state and fake a revive on the HUD.
+        if (!onlineCreature.isMine)
+            return;
+
         if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
         {
             arenaOnline.externalArenaGameMode.On_Player_Die(arenaOnline, orig, self);
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
-            throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-
-        if (!onlineEntity.isMine) return; // remote players die through their owner's state, not our simulation
-
-        RainMeadow.Debug($"%%% DIE {onlineEntity}");
+        Debug($"%%% DIE {onlineCreature}");
         orig(self);
     }
 

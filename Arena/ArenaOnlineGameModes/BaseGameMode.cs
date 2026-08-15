@@ -85,11 +85,11 @@ namespace RainMeadow
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
         {
-            self.survivalScore = arenaOnline.survivalScore;
-            self.KillScore = arenaOnline.killScore;
+            self.survivalScore   = arenaOnline.survivalScore;
+            self.KillScore       = arenaOnline.killScore;
             self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore = arenaOnline.spearHitScore;
-            self.foodScore = arenaOnline.foodScore;
+            self.spearHitScore   = arenaOnline.spearHitScore;
+            self.foodScore       = arenaOnline.foodScore;
 
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
@@ -468,7 +468,7 @@ namespace RainMeadow
             // Handle Trophies
             if (CreatureSymbol.DoesCreatureEarnATrophy(target.Template.type))
             {
-                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [trophy.ToString()]);
+                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [ trophy.ToString() ]);
 
                 attackerOCreature.BroadcastRPCInRoom(
                     ArenaRPCs.AddArenaPlayerRoundKills,
@@ -1142,13 +1142,8 @@ namespace RainMeadow
             // There isn't a specific reason self.room.game.GetArenaGameSession isn't used, I just don't trust room to be non-null.
             ArenaSitting arenaSitting = Custom.rainWorld.processManager.arenaSitting;
 
-            OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
-
-            // Remote avatars die when their owner's state says so, not from our local
-            // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
-            // too) would get corrected by the next state and fake a revive on the HUD.
-            if (onlineCreature is { isMine: false })
-                return;
+            // We can always find an online creature because before forwarding this hook, Rain Meadow requires one to exist.
+            OnlineCreature onlineCreature = self.abstractCreature.GetOnlineCreature()!;
 
             bool wasAlreadyDead = self.dead;
             orig(self);
@@ -1156,12 +1151,7 @@ namespace RainMeadow
             if (wasAlreadyDead)
                 return;
 
-            if (onlineCreature is null)
-            {
-                RainMeadow.Error("Unable to find the attacker online creature.");
-                return;
-            }
-            if (!onlineCreature.isAvatar)
+            if (onlineCreature is not { isAvatar: true, isMine: true })
             {
                 RainMeadow.Info("Player is not my avatar. Returning early.");
                 return;
