@@ -8,7 +8,7 @@ namespace RainMeadow
     /// <para>Serialized as one entry of <see cref="ArenaLobbyData.State.playerStats"/>,
     /// so the player key is only sent once for all of their stats.</para>
     /// </summary>
-    public class ArenaPlayerStats : Serializer.ICustomSerializable, Serializer.IIdentifiable<ushort>
+    public class ArenaPlayerStats : Serializer.ICustomSerializable, Generics.IIdentifiable<ushort>
     {
         public ushort inLobbyId;
         public int wins;
@@ -19,7 +19,7 @@ namespace RainMeadow
         public List<IconSymbol.IconSymbolData> allKills = [];
         public List<IconSymbol.IconSymbolData> roundKills = [];
 
-public ushort ID => inLobbyId;
+        public ushort ID => inLobbyId;
 
         public ArenaPlayerStats() { }
 
