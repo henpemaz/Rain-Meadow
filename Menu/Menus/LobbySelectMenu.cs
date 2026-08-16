@@ -85,7 +85,7 @@ public class LobbySelectMenu : SmartMenu
         ProperlyAlignedMenuLabel versionLabel = new(
             this,
             mainPage,
-            $"{Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}",
+            $"{Translate("Rain Meadow Version:")} {RainMeadow.Version}",
             new Vector2(
                 (1366f - manager.rainWorld.screenSize.x) / 2f + 5f,
                 manager.rainWorld.screenSize.y - 768f

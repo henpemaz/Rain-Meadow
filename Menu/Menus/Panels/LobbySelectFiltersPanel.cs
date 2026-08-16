@@ -134,7 +134,7 @@ class LobbySelectFiltersPanel : PositionedMenuObject, CheckBox.IOwnCheckBox
         string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
         foreach (string id in requiredModIDs)
         {
-            if (id == "henpemaz_rainmeadow")
+            if (id == RainMeadow.GuidRainWorld)
                 continue;
             requiredModsList.Add(
                 new ListItem(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count)
