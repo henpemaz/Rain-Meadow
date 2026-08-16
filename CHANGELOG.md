@@ -2,37 +2,39 @@
 
 ## Engine
 
+- Added more failsafes to lobby joining (including a configurable timeout)
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
 - The Debug Overlay has been changed to be able to track non physical object entities.
 - The Debug Overlay now has an Ownership view to Dev Tools.
   - Pressing '-' will allow you to view a list of players showing which objects they own and how many.
+- Mods containing changes to the levels/ directory are now considered high-impact
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
-- Added `ScrollableConfirmDialog` menu objects
+- ⚠️ `MatchmakingManager.JoinLobby` has a new argument `failReason` to handle more joining errors
+
 ## General
 
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
-- Prevent the abstraction of rooms that contain player avatars or other non-tranferrable objects.
+- Prevent the abstraction of rooms that contain player avatars or other non-transferable objects.
 - Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
 - Fixed objects marked as destroyOnAbstraction not being destroyed.
 - Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
   - The host will still be allowed to use cheats but no other players can.
-  - A select few function such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
+  - A select few functions such as viewing logs (K), reloading rooms (Q) and debug/profiler information will continue to work.
   - This update completely disables cycle restarting via Dev Tools (R) whilst online.
-  - This update also fixes Dev Tools item spawning, restricting it to just the player spawning the item, and teleporting to exits trying to teleport everyone instead of just the local player.
+  - This update also fixes Dev Tools item spawning (now restricted to just the player spawning the item) and teleporting to exits (now only teleports the local player instead of everyone).
 - Replaced dropdown menu for Cape Colors with a textbox that accepts a hexcode of any possible color
 - Added a checkbox for Rainbow Cape that's only active during events
-- Cape Fetching is ran asynchronously which will improve startup times on slow internet connections.
-- Added scarfs(?)
+- Cape Fetching now runs asynchronously, which will improve startup times on slow internet connections.
+- Added scarfs
 - Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
 - Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
-- French Translation
-- Updated various existing translations
-- Brand new lobby select menu
+- Added French translation, updated Japenese, Spanish, and Russian
+- Brand new lobby select menu!
   - lobby metadata is now shown directly in the menu. This includes the previous data shown on cards, in addition to:
     - active lobby timeline (always present in Meadow mode, Story mode requires the game to be in progress to show)
     - mods needed to join the selected lobby
@@ -40,24 +42,20 @@
 - Slugcat icon in player HUD now reflects the target player's chosen slugcat and colours in use
   - An additional remix option has been added to use the old icon if players find the new icons too distracting
 ### Modders
-
-- Added `MatchmakingManager.OnLobbyLeaving` event.
-- Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings
-- Added `ScrollableConfirmDialog` menu object
 - Added `SlugIcon`. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
   - Lobby cards and in-game slugcat icons will automatically use the sprites and layerings if they are set, and a fallback icon will be used if they are not.
 - `activeTimeline` is now part of `LobbyInfo`
+- Added `ScrollableConfirmDialog` menu objects
 
 ## Arena
 
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
 - Arena stats update:
-  - Empty deaths and friendly fire now subtract from the dying player/teammate killer instead of adding points to everyone else.
-  - In Team Battle, teams now have per-player stats.
-  - Improved round and session end result text.
-  - Fixed bugs where leaving to the lobby early and restarting would not clear all stats sometimes.
-  - Fixed various other small bugs.
-- Fixed a thing that should happen when you win that hidden thing
+    - Empty deaths and friendly fire now subtract from the dying player/teammate killer instead of adding points to everyone else.
+    - In Team Battle, teams now have per-player stats.
+    - Improved round and session end result text.
+    - Fixed bugs where leaving to the lobby early and restarting would not clear all stats sometimes.
+    - Fixed various other small bugs.
 - Fixed winning conditions on that hidden thing
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
 - Slightly improved Void Amoeba's swim speed
@@ -66,7 +64,7 @@
 - Watcher now has normal camo transition tick time at 5+ ripple to enable levitation tech
 - Added scoring in-game UI for Challenge, Drown, or if scoring logic is enabled; Default keybind is "S"; update the keybind in the Meadow Arena Remix page
 - Added Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
-- Switched the input for banning slugcats from pckup to Shift+Click when using the mouse.
+- Switched the input for banning slugcats from pickup to Shift+Click when using the mouse.
 - Made Artificer's and Gourmand's parry defender side.
 - Added configurable setting to change Artificer's parry range.
 - Changed configurable setting for Artificer's stun to be a multiplier instead of an on and off checkbox.
@@ -81,28 +79,27 @@
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 - Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
+
 ### Watcher
 
 - Disabling Ripple Trail in online arena
-- Gave summoned Ameobas the Watcher's body color
+- Gave summoned Amoebas the Watcher's body color
 - Fixed summoned Amoeba getting annihilated for diverse unwanted reasons
 - Amoeba is now going in the right layer when summoned
-- Summoned amoebas have idle behaviors now
-- Summoned amoeba's friendly fire has been adjusted to teams and spear hit
-- Summoned amoebas can stun non-player creatures now
+- Summoned Amoebas have idle behaviors now
+- Summoned Amoeba's friendly fire has been adjusted to teams and spear hit
+- Summoned Amoebas can stun non-player creatures now
 - Amoeba won't slow down for dead players or friendlies
 - Distortion effect fades away on player's death
 - Watcher will have the same effect as a failed portal opening when trying to summon an Amoeba in countdown or without enough charge
 - Ripple 9 makes Watcher fully invisible, leaving only a faint glow behind
 - Watcher will always have white eyes while camouflaged
-- Other Watchers can see Watcher's eyes when they are in ripple space, at a lower opacity
 - Watcher will see only the eyes of other Watchers in ripple space, instead of the full body
-- Dev skin doesn't show in ripple space anymore
-- Hands or mud doesn't show in ripple space anymore
-- Watcher camo effect has been reduced for all ripple level
-- Player Tag now interacts well with ripple layer change
+- Dev skin doesn't show in ripple space
+- Hands and mud don't show in ripple space
+- Watcher camo VFX-aura has been reduced for all ripple levels
+- Player nametag interacts as expectanted with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
-
 ### Modders
 - ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property. Renamed to `ArenaOnlineGameMode.ArenaSession`.
   - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
@@ -115,6 +112,7 @@
 ## Meadow
 
 - Fixed creatures being able to get injured.
+
 ## Story
 
 - Allow players to spectate their own corpses as long as they still exist
@@ -131,12 +129,13 @@
 
 - Put Chat in its own overlay so it is available at all times
 - Chat now keeps history of what was typed in/out of the lobby menu
-- Moved all chat related Remix option in its own tab
+- Moved all chat-related Remix options into their own tab
 - Added Remix options for different system messages in arena and story mode
-- Added username color customization as a Remix options
-- Added text downscroll as a Remix options
+- Added username color customization as a Remix option
+- Added text downscroll as a Remix option
 
 ## New Contributors
+
 Thank you to all of our first-time contributors and welcome EdEnStonne to the Meadow Dev team!
 - Wonky
 - Ombekende
@@ -145,6 +144,7 @@ Thank you to all of our first-time contributors and welcome EdEnStonne to the Me
 - OneLetterShor
 - iiul
 - solo snuggles
+
 # Release 1.14.1
 
 ## Engine

@@ -113,6 +113,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
     public Configurable<RainMeadow.LogLevel> CurrentLogLevel;
     public readonly Configurable<bool> ArenaUnhandledOptimizations;
+    public readonly Configurable<int> JoiningTimeout;
+    public readonly Configurable<bool> JoiningExtraInfo;
 
     public readonly Configurable<bool> GlobalMute;
 
@@ -145,7 +147,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> StoreItem7;
     public readonly Configurable<KeyCode> StoreItem8;
 
-
+    // CHAT
     public readonly Configurable<bool> EnableChatArenaDeathNotification;
     public readonly Configurable<bool> EnableChatArenaJoinNotification;
     public readonly Configurable<bool> EnableChatStoryDeathNotification;
@@ -256,6 +258,8 @@ public class RainMeadowOptions : OptionInterface
         EnablePiggyBack = config.Bind("EnablePiggyBack", true);
 
         CountdownSafetyCatchTimer = config.Bind("CountdownSafetyCatchTimer", 300);
+        JoiningTimeout = config.Bind("JoiningTimeout", 60);
+        JoiningExtraInfo = config.Bind("JoiningExtraInfo", false);
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LobbyMusic = config.Bind("MeadowLobbyMusic", "default"); // Happy One Year, Meadow
@@ -489,19 +493,27 @@ public class RainMeadowOptions : OptionInterface
                 currentlyActiveCosmeticSkinbox = new OpComboBox2(currentlyActiveCosmeticSkin, new Vector2(210f, 160f), 160f, CosmeticSkinItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 new OpLabel(410f, 250f, Translate("Cosmetic Color")),
 
-            cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
-            new OpLabel(10f, 50f, Translate("Log Level")),
-
-        new OpComboBox2(
-        CurrentLogLevel,
-        new Vector2(10f, 20f),
-        160f,
-        OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
-    )
-    {
-        colorEdge = Menu.MenuColorEffect.rgbWhite
-    }
-
+                cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
+                
+                new OpLabel(10f, 50f, Translate("Log Level")),
+                new OpComboBox2(
+                CurrentLogLevel,
+                new Vector2(10f, 20f),
+                160f,
+                OpResourceSelector.GetEnumNames(null, typeof(RainMeadow.LogLevel)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
+                )
+                {
+                    colorEdge = Menu.MenuColorEffect.rgbWhite
+                },
+                
+                new OpLabel(210f, 50f, Translate($"Lobby Joining Timeout (seconds)")),
+                new OpTextBox(JoiningTimeout, new Vector2(210, 20f), 160f)
+                {
+                    accept = OpTextBox.Accept.Int
+                },
+                
+                new OpLabel(410, 50, Translate("Lobby Joining Extra Info")),
+                new OpCheckBox(JoiningExtraInfo, new Vector2(410, 20)),
             };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
