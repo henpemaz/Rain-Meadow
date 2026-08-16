@@ -1,9 +1,7 @@
-using Menu;
 using System.Collections.Generic;
-using UnityEngine;
-using MoreSlugcats;
 using Drown;
-using System.CodeDom;
+using Menu;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -50,17 +48,17 @@ namespace RainMeadow
             var storeItemsData = new (string name, int cost, KeyCode hotkey)[] {
                 (Spear, drown.spearCost, RainMeadow.rainMeadowOptions.StoreItem1.Value),
                 (Rock, drown.rockCost, RainMeadow.rainMeadowOptions.StoreItem2.Value),
-                (ExplosiveSpear, drown.spearExplCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
+                (ExplosiveSpear, drown.explosiveSpearCost, RainMeadow.rainMeadowOptions.StoreItem3.Value),
                 (ScavengerBomb, drown.bombCost, RainMeadow.rainMeadowOptions.StoreItem4.Value),
                 (ElectricSpear, drown.electricSpearCost, RainMeadow.rainMeadowOptions.StoreItem5.Value),
-                (Boomerang, drown.boomerangeCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
+                (Boomerang, drown.boomerangCost, RainMeadow.rainMeadowOptions.StoreItem6.Value),
                 (Respawn, drown.respCost, RainMeadow.rainMeadowOptions.StoreItem7.Value),
                 (OpenDens, drown.denCost, RainMeadow.rainMeadowOptions.StoreItem8.Value)
             };
 
-            foreach (var itemData in storeItemsData)
+            if (DrownMode.IsDrownMode(out _))
             {
-                if (DrownMode.isDrownMode(arena, out var _))
+                foreach (var itemData in storeItemsData)
                 {
                     storeItemList.Add(new ArenaItemButton(this, pages[0], pos, itemData.name, itemData.cost, itemData.hotkey));
                     pos.y -= 40;
@@ -99,14 +97,30 @@ namespace RainMeadow
                 FinalizeObjectSpawn(desiredObject);
             }
 
-            var playerSitting = game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)];
-            playerSitting.score -= btn.cost;
+            int scoreChange = -btn.cost;
 
-            foreach (var orderId in arena.arenaSittingOnlineOrder)
+            if (scoreChange != 0)
             {
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(orderId);
-                if (pl == null || pl.isMe) continue;
-                pl.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), playerSitting.score);
+                ArenaGameSession arenaSession = game.GetArenaGameSession;
+                ArenaSitting arenaSitting = arenaSession.arenaSitting;
+
+                ArenaSitting.ArenaPlayer arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arena,
+                    arenaSitting,
+                    OnlineManager.mePlayer
+                )!;
+
+                OnlineCreature myOCreature = ArenaHelpers
+                    .FindPlayerACByArenaPlayer(arena, arenaSession, arenaPlayer)!
+                    .GetOnlineCreature()!;
+
+                ArenaRPCs.ModifyArenaPlayerScore(arenaPlayer.playerNumber, scoreChange);
+
+                myOCreature.BroadcastRPCInRoom(
+                    ArenaRPCs.ModifyArenaPlayerScore,
+                    arenaPlayer.playerNumber,
+                    scoreChange
+                );
             }
         }
 
@@ -133,23 +147,29 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (!RainMeadow.isArenaMode(out var arena) || !DrownMode.isDrownMode(arena, out var drownMode) || storeItemList.Count == 0)
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena) || !DrownMode.IsDrownMode(out _) || storeItemList.Count == 0)
                 return;
 
             bool isAlive = me != null && (me.state.alive || me.realizedCreature?.State?.alive == true);
 
             if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs) && cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings))
             {
-                bool teamWork = !game.GetArenaGameSession.GameTypeSetup.spearsHitPlayers;
-                int currentScore = teamWork ? drown.teamPoints : game.GetArenaGameSession.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score;
+                ArenaSitting arenaSitting = game.GetArenaGameSession.arenaSitting;
+                int score = arenaSitting.gameTypeSetup.spearsHitPlayers
+                    ? ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                        arena,
+                        arenaSitting,
+                        OnlineManager.mePlayer
+                    )!.score
+                    : drown.CalculateTeamScore(arena, arenaSitting);
 
                 foreach (var item in storeItemList)
                 {
-                    bool canAfford = currentScore >= item.cost;
+                    bool canAfford = score >= item.cost;
                     bool greyedOut = item.itemName switch
                     {
                         Respawn => isAlive || !canAfford || drown.openedDen,
-                        OpenDens => drownMode.openedDen || !canAfford,
+                        OpenDens => drown.openedDen || !canAfford,
                         ElectricSpear => !ModManager.MSC || !canAfford || !isAlive,
                         Boomerang => !ModManager.Watcher || !canAfford || !isAlive,
                         _ => !canAfford || !isAlive
@@ -171,7 +191,7 @@ namespace RainMeadow
             for (int i = 0; i < game.room.world.GetAbstractRoom(0).exits; i++) exitList.Add(i);
 
             arena.avatars.Clear();
-            arena.externalArenaGameMode.SpawnPlayer(arena, game, game.room, exitList);
+            game.SpawnPlayers(game.room, exitList);
 
             foreach (var orderId in arena.arenaSittingOnlineOrder)
             {

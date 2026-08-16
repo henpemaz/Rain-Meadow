@@ -1,4 +1,3 @@
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -13,7 +12,7 @@ namespace RainMeadow.UI.Components
         public EventfulScrollButton? prevButton, nextButton;
         private int currentOffset;
 
-        public ArenaMode arenaMode;
+        public ArenaOnlineGameMode arenaMode;
         public DrownMode DROWN;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true);
 
@@ -33,8 +32,21 @@ namespace RainMeadow.UI.Components
         public OpKeyBinder? storeButton;
 
 
+        private static int NonNegative(OpTextBox textBox) => Mathf.Max(0, textBox.valueInt);
+        private static void SyncTextBox(OpTextBox? textBox, int value, bool greyedOut)
+        {
+            if (textBox == null) return;
 
-        public DrownInterface(ArenaMode arena, DrownMode drown, Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+            textBox.held = textBox._KeyboardOn;
+            if (!textBox.held)
+            {
+                textBox.valueInt = value;
+            }
+
+            textBox.greyedOut = greyedOut;
+        }
+
+        public DrownInterface(ArenaOnlineGameMode arena, DrownMode drown, Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             tabWrapper = new(menu, this);
             DROWN = drown;
@@ -62,8 +74,8 @@ namespace RainMeadow.UI.Components
             };
             pointsForRockTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.rockCost = pointsForRockTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForRock.Value = pointsForRockTextBox.valueInt;
+                DROWN.rockCost = NonNegative(pointsForRockTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForRock.Value = DROWN.rockCost;
 
             };
             UIelementWrapper pointsForRockWrapper = new UIelementWrapper(tabWrapper, pointsForRockTextBox);
@@ -77,23 +89,23 @@ namespace RainMeadow.UI.Components
             };
             pointsForSpearTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.spearCost = pointsForSpearTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value = pointsForSpearTextBox.valueInt;
+                DROWN.spearCost = NonNegative(pointsForSpearTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value = DROWN.spearCost;
 
             };
             UIelementWrapper pointsForSpearTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForSpearTextBox);
 
             // --- 4. EXPLOSIVE SPEAR ---
             var pointsForExplSpearLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Points required to buy an explosive spear"), new Vector2(10f, pointsForSpearTextBox.pos.y - 15), new Vector2(0, 20), false);
-            pointsForExplSpearTextBox = new(new Configurable<int>(drown.spearExplCost), new Vector2(10, pointsForExplSpearLabel.pos.y - 25), 160f)
+            pointsForExplSpearTextBox = new(new Configurable<int>(drown.explosiveSpearCost), new Vector2(10, pointsForExplSpearLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
                 greyedOut = OwnerSettingsDisabled
             };
             pointsForExplSpearTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.spearExplCost = pointsForExplSpearTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value = pointsForExplSpearTextBox.valueInt;
+                DROWN.explosiveSpearCost = NonNegative(pointsForExplSpearTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value = DROWN.explosiveSpearCost;
 
 
             };
@@ -108,8 +120,8 @@ namespace RainMeadow.UI.Components
             };
             pointsForBombTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.bombCost = pointsForBombTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value = pointsForBombTextBox.valueInt;
+                DROWN.bombCost = NonNegative(pointsForBombTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value = DROWN.bombCost;
 
             };
             UIelementWrapper pointsForBombTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForBombTextBox);
@@ -123,23 +135,23 @@ namespace RainMeadow.UI.Components
             };
             pointsForElecSpear.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.electricSpearCost = pointsForElecSpear.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value = pointsForElecSpear.valueInt;
+                DROWN.electricSpearCost = NonNegative(pointsForElecSpear);
+                RainMeadow.rainMeadowOptions.DrownPointsForElectricSpear.Value = DROWN.electricSpearCost;
 
             };
             UIelementWrapper pointsForElectricWrapper = new UIelementWrapper(tabWrapper, pointsForElecSpear);
 
             // --- 7. BOOMERANG ---
             var pointsForBoomerang = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("[Watcher]: Points required to buy a boomerang"), new Vector2(10f, pointsForElecSpear.pos.y - 15), new Vector2(0, 20), false);
-            pointsForBoomerangText = new(new Configurable<int>(drown.boomerangeCost), new Vector2(10, pointsForBoomerang.pos.y - 25), 160f)
+            pointsForBoomerangText = new(new Configurable<int>(drown.boomerangCost), new Vector2(10, pointsForBoomerang.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
                 greyedOut = !ModManager.Watcher || OwnerSettingsDisabled
             };
             pointsForBoomerangText.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.boomerangeCost = pointsForBoomerangText.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value = pointsForBoomerangText.valueInt;
+                DROWN.boomerangCost = NonNegative(pointsForBoomerangText);
+                RainMeadow.rainMeadowOptions.DrownPointsForBoomerang.Value = DROWN.boomerangCost;
 
             };
             UIelementWrapper pointsForBoomerangWrapper = new UIelementWrapper(tabWrapper, pointsForBoomerangText);
@@ -153,8 +165,8 @@ namespace RainMeadow.UI.Components
             };
             pointsForRespawnTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.respCost = pointsForRespawnTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value = pointsForRespawnTextBox.valueInt;
+                DROWN.respCost = NonNegative(pointsForRespawnTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForRespawn.Value = DROWN.respCost;
 
             };
             UIelementWrapper pointsForRespawnTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForRespawnTextBox);
@@ -168,8 +180,8 @@ namespace RainMeadow.UI.Components
             };
             pointsForDenOpenTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.denCost = pointsForDenOpenTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value = pointsForDenOpenTextBox.valueInt;
+                DROWN.denCost = NonNegative(pointsForDenOpenTextBox);
+                RainMeadow.rainMeadowOptions.DrownPointsForDenOpen.Value = DROWN.denCost;
 
             };
             UIelementWrapper pointsForDenOpenTextBoxWrapper = new UIelementWrapper(tabWrapper, pointsForDenOpenTextBox);
@@ -183,14 +195,15 @@ namespace RainMeadow.UI.Components
             };
             creatureCleanupsTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.creatureCleanupWaves = creatureCleanupsTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value = creatureCleanupsTextBox.valueInt;
+                // Used as a modulo divisor when scheduling cleanups, so it must never reach 0.
+                DROWN.creatureCleanupWaves = Mathf.Max(1, creatureCleanupsTextBox.valueInt);
+                RainMeadow.rainMeadowOptions.DrownCreatureCleanup.Value = DROWN.creatureCleanupWaves;
 
             };
             UIelementWrapper creatureCleanupsTextBoxWrapper = new UIelementWrapper(tabWrapper, creatureCleanupsTextBox);
 
             // --- 11. MAX CREATURES ---
-            var maxCLLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Max creatures in level"), new Vector2(10f, creatureCleanupsTextBox.pos.y - 15), new Vector2(0, 20), false);
+            var maxCLLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Creature limit before waves pause"), new Vector2(10f, creatureCleanupsTextBox.pos.y - 15), new Vector2(0, 20), false);
             maxCTextBox = new(new Configurable<int>(drown.maxCreatures), new Vector2(10, maxCLLabel.pos.y - 25), 160f)
             {
                 accept = OpTextBox.Accept.Int,
@@ -198,8 +211,8 @@ namespace RainMeadow.UI.Components
             };
             maxCTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                DROWN.maxCreatures = maxCTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value = maxCTextBox.valueInt;
+                DROWN.maxCreatures = NonNegative(maxCTextBox);
+                RainMeadow.rainMeadowOptions.DrownMaxCreatureCount.Value = DROWN.maxCreatures;
             };
             UIelementWrapper maxCTextBoxWrapper = new UIelementWrapper(tabWrapper, maxCTextBox);
 
@@ -268,50 +281,16 @@ namespace RainMeadow.UI.Components
         {
             base.Update();
 
-            if (maxCTextBox != null)
-            {
-                maxCTextBox.valueInt = DROWN.maxCreatures;
-            }
-
-            if (pointsForRockTextBox != null)
-            {
-                pointsForRockTextBox.valueInt = DROWN.rockCost;
-            }
-            if (pointsForSpearTextBox != null)
-            {
-                pointsForSpearTextBox.valueInt = DROWN.spearCost;
-            }
-            if (pointsForExplSpearTextBox != null)
-            {
-                pointsForExplSpearTextBox.valueInt = DROWN.spearExplCost;
-            }
-            if (pointsForBombTextBox != null)
-            {
-                pointsForBombTextBox.valueInt = DROWN.bombCost;
-            }
-            if (pointsForElecSpear != null)
-            {
-                pointsForElecSpear.valueInt = DROWN.electricSpearCost;
-            }
-
-            if (pointsForBoomerangText != null)
-            {
-                pointsForBoomerangText.valueInt = DROWN.boomerangeCost;
-            }
-            if (pointsForRespawnTextBox != null)
-            {
-                pointsForRespawnTextBox.valueInt = DROWN.respCost;
-            }
-            if (pointsForDenOpenTextBox != null)
-            {
-                pointsForDenOpenTextBox.valueInt = DROWN.denCost;
-            }
-            if (creatureCleanupsTextBox != null)
-            {
-                creatureCleanupsTextBox.valueInt = DROWN.creatureCleanupWaves;
-            }
-
-
+            SyncTextBox(pointsForRockTextBox, DROWN.rockCost, OwnerSettingsDisabled);
+            SyncTextBox(pointsForSpearTextBox, DROWN.spearCost, OwnerSettingsDisabled);
+            SyncTextBox(pointsForExplSpearTextBox, DROWN.explosiveSpearCost, OwnerSettingsDisabled);
+            SyncTextBox(pointsForBombTextBox, DROWN.bombCost, OwnerSettingsDisabled);
+            SyncTextBox(pointsForElecSpear, DROWN.electricSpearCost, !ModManager.MSC || OwnerSettingsDisabled);
+            SyncTextBox(pointsForBoomerangText, DROWN.boomerangCost, !ModManager.Watcher || OwnerSettingsDisabled);
+            SyncTextBox(pointsForRespawnTextBox, DROWN.respCost, OwnerSettingsDisabled);
+            SyncTextBox(pointsForDenOpenTextBox, DROWN.denCost, OwnerSettingsDisabled);
+            SyncTextBox(creatureCleanupsTextBox, DROWN.creatureCleanupWaves, OwnerSettingsDisabled);
+            SyncTextBox(maxCTextBox, DROWN.maxCreatures, OwnerSettingsDisabled);
         }
 
     }

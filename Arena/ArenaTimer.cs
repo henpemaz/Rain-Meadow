@@ -32,6 +32,7 @@ namespace RainMeadow
             arena.arenaPrepTimer = this;
             session = arenaGameSession;
             arena.trackSetupTime = arena.externalArenaGameMode.SetTimer(arena);
+            arena.timerTicks = 0;
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel(Custom.GetFont(), FormatTime(0))
@@ -83,7 +84,7 @@ namespace RainMeadow
                     showMode = TimerMode.Countdown;
                 }
 
-                if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
+                if (safetyCatchTimer > arena.countdownSafetyCatchTimer) // Something went wrong with the timer. Let's move on
                 {
                     showMode = TimerMode.Countdown;
                 }

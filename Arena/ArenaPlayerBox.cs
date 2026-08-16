@@ -175,9 +175,9 @@ namespace RainMeadow.UI.Components
             }
             if (hostIdentifierButton != null)
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
+                    hostIdentifierButton.symbolSprite.SetElementByName(teamBattle.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
                 }
                 else
                 {
@@ -214,11 +214,23 @@ namespace RainMeadow.UI.Components
             }
             if (OnlineManager.lobby != null && profileIdentifier == OnlineManager.lobby.owner)
             {
-                if (!RainMeadow.isArenaMode(out var arena))
-                {
+                if (!RainMeadow.isArenaMode(out _))
                     return;
-                }
-                hostIdentifierButton = new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
+
+                string hostIdentifierSymbolName = TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
+                    ? teamBattle.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team]
+                    : "ChieftainA";
+
+                hostIdentifierButton = new ScrollSymbolButton(
+                    menu,
+                    this,
+                    hostIdentifierSymbolName,
+                    "HOST_INFO",
+                    new Vector2(
+                        infoKickButton.pos.x + infoKickButton.size.x + 30,
+                        basePos.y + 21
+                    )
+                );
                 UiLineConnector connector = new(menu, infoKickButton, hostIdentifierButton, false);
                 connector.MoveLineSpriteBeforeNode(hostIdentifierButton.roundedRect.sprites[0]);
                 lines.Add(connector);

@@ -1,9 +1,9 @@
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using Watcher;
 
 namespace RainMeadow
@@ -40,18 +40,18 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
-            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;           
             On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
-
+            
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
         private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
-        {         
+        {
             orig(self);
             if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
             {
-                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);              
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
             }
         }
 
@@ -256,11 +256,26 @@ namespace RainMeadow
         private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
         {
             if (OnlineManager.lobby != null && !self.CanMove()) return;
+            bool wasdestroyonabstraction = self.destroyOnAbstraction;
+            if (self.GetOnlineObject(out var oe) && (oe.isTransferable || !oe.isMine)) self.destroyOnAbstraction = false;
+
             orig(self, coord);
-            if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe) && oe.isMine)
+            
+            if (OnlineManager.lobby != null && oe is not null)
             {
-                if (oe.realized && oe.isTransferable && !oe.isPending) oe.Release();
                 oe.realized = false;
+                self.destroyOnAbstraction = wasdestroyonabstraction;
+                if (!oe.isPending && oe.isMine)
+                {
+                    if (oe.isTransferable) oe.Release();
+                    if (self.destroyOnAbstraction && !self.slatedForDeletion)
+                    {
+                        if (!oe.isPending && oe.isMine)
+                        {
+                            self.Destroy();
+                        }
+                    } 
+                }
             }
         }
 
@@ -287,7 +302,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource().ApoEnteringWorld(apo);
+                self.world.GetResource()?.ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }

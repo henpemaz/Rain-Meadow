@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -37,6 +36,29 @@ namespace RainMeadow
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
         public bool cheats = false;
         public bool eventGags = false;
+
+        public int joiningAttempts = 0;
+        public int enumSyncAttempts = 0;
+        private const int MaxJoiningAttempts = 10;
+        private const string ERROR_WrongPassword = "Wrong password!";
+        private const string ERROR_TooManyAttemps = "Unable to connect to the lobby.";
+        private const string ERROR_EnumListError = "Unable to get enum list.";
+        private const string ERROR_Timeout = "Request Timeout!";
+        public RPCEvent? joiningEvent;
+
+        // used for LAN lobby listings
+        public string ActiveTimeline
+        {
+            get
+            {
+                if (gameModeType == OnlineGameMode.OnlineGameModeType.Meadow)
+                    return meadowTimeline ?? "";
+                if (gameMode is StoryGameMode storyGameMode)
+                    return clientSettings.Values.Any(cs => cs.inGame) ? storyGameMode.currentCampaign.value : "";
+                return field ?? "";
+            }
+            set;
+        }
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
@@ -74,6 +96,7 @@ namespace RainMeadow
             else
             {
                 this.enteredPassword = password;
+                enumSyncAttempts = 0;
                 RequestCompressedEnums();
             }
         }
@@ -81,20 +104,35 @@ namespace RainMeadow
         public void RequestCompressedEnums()
         {
             RainMeadow.Debug("Requesting lobby enum list");
-            owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
+            enumSyncAttempts++;
+            joiningEvent = owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
         }
         public void ResolveEnumCompression(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
+            joiningEvent = null;
             if (requestResult is GenericResult.Fail) // I didn't send it to the right person somehow
             {
                 RainMeadow.Error("Request stopped for " + this);
-                MatchmakingManager.currentInstance.JoinLobby(false);
+                MatchmakingManager.currentInstance.JoinLobby(false, ERROR_EnumListError);
             }
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
                 RainMeadow.Error("request failed for " + this);
-                RequestCompressedEnums();
+                if ((requestResult.referencedEvent as RPCEvent)!.aborted) // Timeout
+                {
+                    RainMeadow.Error("Request timeouted for " + this);
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
+                }
+                else if (enumSyncAttempts >= MaxJoiningAttempts) // Too many attemps
+                {
+                    RainMeadow.Error($"joining request of {this} cancelled after {enumSyncAttempts} attempts");
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_TooManyAttemps);
+                }
+                else
+                {
+                    RequestCompressedEnums();
+                }
             }
         }
 
@@ -102,6 +140,8 @@ namespace RainMeadow
         {
             enumsChecked = true;
             RainMeadow.Debug("Requesting lobby");
+            joiningAttempts = 0;
+            joiningEvent = null;
             RequestLobby(this.enteredPassword);
         }
 
@@ -112,7 +152,8 @@ namespace RainMeadow
             if (isAvailable) throw new InvalidOperationException("available");
             ClearIncommingBuffers();
             isRequesting = true;
-            supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
+            joiningAttempts++;
+            joiningEvent = supervisor.InvokeRPC(RequestedLobby, key!).Then(ResolveLobbyRequest);
         }
 
         [RPCMethod(security = RPCSecurity.NoSecurity)]
@@ -141,6 +182,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             isRequesting = false;
+            joiningEvent = null;
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.currentInstance.JoinLobby(true);
@@ -157,12 +199,25 @@ namespace RainMeadow
             else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
             {
                 RainMeadow.Error("locked request for " + this);
-                MatchmakingManager.currentInstance.JoinLobby(false);
+                MatchmakingManager.currentInstance.JoinLobby(false, ERROR_WrongPassword);
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                RequestLobby((requestResult.referencedEvent as RPCEvent).args[0] as string);
                 RainMeadow.Error("request failed for " + this);
+                if ((requestResult.referencedEvent as RPCEvent)!.aborted) // Timeout
+                {
+                    RainMeadow.Error("Request timeouted for " + this);
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Timeout);
+                }
+                else if (joiningAttempts >= MaxJoiningAttempts) // Too many attemps
+                {
+                    RainMeadow.Error($"joining request of {this} cancelled after {joiningAttempts} attempts");
+                    MatchmakingManager.currentInstance.JoinLobby(false, ERROR_TooManyAttemps);
+                }
+                else
+                {
+                    RequestLobby((requestResult.referencedEvent as RPCEvent)!.args[0] as string);
+                }
             }
         }
 

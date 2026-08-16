@@ -1,23 +1,24 @@
-using Drown;
 using System;
-using System.Linq;
 
 namespace RainMeadow
 {
     internal class DrownData : OnlineResource.ResourceData
     {
-
         public int currentWaveTimer;
         public int currentWave;
         public int rockCost;
 
         public int spearCost;
-        public int spearExpCost;
+        public int explosiveSpearCost;
         public int bombCost;
+        public int electricSpearCost;
+        public int boomerangCost;
         public int respCost;
         public int denCost;
         public int maxCreatures;
+        public int creatureCleanupWaves;
         public bool densOpened;
+
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
@@ -34,9 +35,13 @@ namespace RainMeadow
             [OnlineField]
             int spearCost;
             [OnlineField]
-            int spearExplCost;
+            int explosiveSpearCost;
             [OnlineField]
             int bombCost;
+            [OnlineField]
+            int electricSpearCost;
+            [OnlineField]
+            int boomerangCost;
             [OnlineField]
             int respCost;
             [OnlineField]
@@ -45,57 +50,53 @@ namespace RainMeadow
             int maxCreatures;
             [OnlineField]
             int creatureCleanupWaves;
-
             [OnlineField]
             bool densOpened;
+
+
             public State() { }
-            public State(DrownData drownLobbyData, OnlineResource onlineResource)
+
+            public State(DrownData lobbyData, OnlineResource onlineResource)
             {
+                if (!DrownMode.IsDrownMode(out DrownMode drown))
+                    return;
 
-                ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                var cachedDrown = DrownMode.isDrownMode(arena, out var drownData);
-
-                if (cachedDrown)
-                {
-                    currentWaveTimer = (drownData).currentWaveTimer;
-                    currentWave = drownData.currentWave;
-                    densOpened = drownData.openedDen;
-                    rockCost = drownData.rockCost;
-                    spearCost = drownData.spearCost;
-                    spearExplCost = drownData.spearExplCost;
-                    bombCost = drownData.bombCost;
-                    respCost = drownData.respCost;
-                    denCost = drownData.denCost;
-                    maxCreatures = drownData.maxCreatures;
-                    creatureCleanupWaves = drownData.creatureCleanupWaves;
-
-                }
-
+                currentWaveTimer = drown.currentWaveTimer;
+                currentWave = drown.currentWave;
+                densOpened = drown.openedDen;
+                rockCost = drown.rockCost;
+                spearCost = drown.spearCost;
+                explosiveSpearCost = drown.explosiveSpearCost;
+                bombCost = drown.bombCost;
+                electricSpearCost = drown.electricSpearCost;
+                boomerangCost = drown.boomerangCost;
+                respCost = drown.respCost;
+                denCost = drown.denCost;
+                maxCreatures = drown.maxCreatures;
+                creatureCleanupWaves = drown.creatureCleanupWaves;
             }
-
-            public override Type GetDataType() => typeof(DrownData);
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (resource as Lobby);
-                var cachedDrown = DrownMode.isDrownMode((lobby.gameMode as ArenaOnlineGameMode), out var drownData);
+                if (!DrownMode.IsDrownMode(out DrownMode drown))
+                    return;
 
-                if (cachedDrown && drownData != null && (drownData as DrownMode != null))
-                {
-                    (drownData).currentWaveTimer = currentWaveTimer;
-                    drownData.currentWave = currentWave;
-                    drownData.openedDen = densOpened;
-                    drownData.rockCost = rockCost;
-                    drownData.spearCost = spearCost;
-                    drownData.spearExplCost = spearExplCost;
-                    drownData.bombCost = bombCost;
-                    drownData.respCost = respCost;
-                    drownData.denCost = denCost;
-                    drownData.maxCreatures = maxCreatures;
-                    drownData.creatureCleanupWaves = creatureCleanupWaves;
-
-                }
+                drown.currentWaveTimer = currentWaveTimer;
+                drown.currentWave = currentWave;
+                drown.openedDen = densOpened;
+                drown.rockCost = rockCost;
+                drown.spearCost = spearCost;
+                drown.explosiveSpearCost = explosiveSpearCost;
+                drown.bombCost = bombCost;
+                drown.electricSpearCost = electricSpearCost;
+                drown.boomerangCost = boomerangCost;
+                drown.respCost = respCost;
+                drown.denCost = denCost;
+                drown.maxCreatures = maxCreatures;
+                drown.creatureCleanupWaves = creatureCleanupWaves;
             }
+
+            public override Type GetDataType() => typeof(DrownData);
         }
     }
 }

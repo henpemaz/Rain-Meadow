@@ -466,6 +466,7 @@ namespace RainMeadow
             try
             {
                 this.OnResolve?.Invoke(genericResult);
+                this.OnResolve = null!; // Clear the subscription to not be called again.
             }
             catch (Exception e)
             {

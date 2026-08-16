@@ -50,6 +50,7 @@ namespace RainMeadow
         public static string BANNED_MODS_KEY = "banned_mods";
         public static string PINNED_KEY = "pinned";
         public static string PASSWORD_KEY = "password";
+        public static string CAMPAIGN_KEY = "campaign";
         public static int MAX_LOBBY = 4;
 
         static public readonly List<MatchMakingDomain> supported_matchmakers = new();
@@ -95,7 +96,7 @@ namespace RainMeadow
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
-        public abstract void JoinLobby(bool success);
+        public abstract void JoinLobby(bool success, string failReason = "");
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
         public static void JoinLobbyUsingCode(string code) {

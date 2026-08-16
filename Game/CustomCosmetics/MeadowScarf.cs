@@ -80,7 +80,7 @@ namespace RainMeadow
                 {
                     Vector2 headpos = Vector2.Lerp(playerGraphics.player.bodyChunks[0].lastPos, playerGraphics.player.bodyChunks[0].pos, timeStacker);
                     Vector2 bodypos = Vector2.Lerp(playerGraphics.player.bodyChunks[1].lastPos, playerGraphics.player.bodyChunks[1].pos, timeStacker);
-                    return Vector2.LerpUnclamped(headpos, bodypos, 0.65f);
+                    return Vector2.LerpUnclamped(headpos, bodypos, 0.4f);
                 }
 
                 case ScavengerGraphics scavGrphs:

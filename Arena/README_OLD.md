@@ -121,14 +121,20 @@ public override ArenaSetup.GameTypeID GetGameModeId
 
 ## GameMode Check
 ```csharp
-public static bool isMyCoolGameMode(ArenaOnlineGameMode arena, out MyCoolNewGameMode tb)
+public static bool IsMyCoolNewGameMode(out MyCoolNewGameMode myCoolNewGameMode)
 {
-    tb = null;
-    if (arena.currentGameMode == MyGameModeName.value)
+    myCoolNewGameMode = null!;
+
+    if (!RainMeadow.RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+        return false;
+
+    if (arenaOnline.registeredGameModes.TryGetValue(Id.value, out ExternalArenaGameMode externalArena)
+        && arenaOnline.currentGameMode == MyGameModeName.value)
     {
-        tb = (arena.registeredGameModes.FirstOrDefault(x => x.Key == MyGameModeName.value).Value as MyCoolNewGameMode);
+        myCoolNewGameMode = (MyCoolNewGameMode)externalArena;
         return true;
     }
+
     return false;
 }
 ```

@@ -307,7 +307,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public SideButton showThumbsButton;
         public LevelPreview levelPreviewer;
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
-        public override float MaxDownScroll => (int)base.MaxDownScroll; 
+        public override float MaxDownScroll => (int)base.MaxDownScroll;
         public override float DownScrollOffset
         {
             get => base.DownScrollOffset;
@@ -431,7 +431,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (searchList.Count() == currentList.Count() && searchList.SequenceEqual(currentList)) return;
             RemoveAllButtons(false);
             for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
-                if (searchList.Contains(MyLevelSelector.allLevels[i])) 
+                if (searchList.Contains(MyLevelSelector.allLevels[i]))
                     AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], menu.Translate(AddOnClick)));
             for (int i = 0; i < buttons.Count - 1; i++)
             {
@@ -452,7 +452,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public void AddSearchBar(float sizeX = 150, float decreaseSizeY = 20)
         {
             if (searchButton != null) return;
-         
+
             searchButton = AddSideButton("modSearch", "", menu.Translate("Search for levels"), "SEARCHLEVEL");
             searchButton.OnClick += (btn) =>
             {
@@ -490,6 +490,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     {
         public SideButton clearButton, shuffleButton;
         public int clearAllCounter = -1, mismatchCounter;
+        private bool? shownShuffleStatus;
         public override int SavedScrollPos
         {
             get
@@ -516,7 +517,15 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             set
             {
                 if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.shufflePlaylist = value;
+                RefreshShuffleButton();
             }
+        }
+        public void RefreshShuffleButton()
+        {
+            if (shuffleButton == null || shownShuffleStatus == ShuffleStatus) return;
+            shownShuffleStatus = ShuffleStatus;
+            shuffleButton.label.text = menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order");
+            shuffleButton.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
         }
         public bool IsMismatched => MyLevelSelector?.SelectedPlayList != null && (LevelItems.Count != MyLevelSelector.SelectedPlayList.Count || !MyLevelSelector.SelectedPlayList.SequenceEqual(LevelItems.Select(x => x.name)));
         public PlaylistHolder(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos) //no support for searchbar
@@ -529,11 +538,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 menu.PlaySound(btn.buttonBehav.greyedOut ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Greyed_Out_Button_Clicked);
             };
             shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order"), "", "SHUFFLE");
+            shownShuffleStatus = ShuffleStatus;
             shuffleButton.OnClick += btn =>
             {
                 ShuffleStatus = !ShuffleStatus;
-                btn.label.text = menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order");
-                btn.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
                 menu.PlaySound(ShuffleStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             };
         }
@@ -588,7 +596,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             shuffleButton.buttonBehav.greyedOut = MyLevelSelector?.ForceGreyOutAll == true;
             if (clearAllCounter > 0)
             {
-                if (searchBox != null) 
+                if (searchBox != null)
                     searchBox.value = "";
                 clearAllCounter--;
                 if (clearAllCounter < 1 && buttons.Count > 0)
@@ -674,9 +682,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         string[] rawLevelDirData = AssetManager.ListDirectory("Levels");
         for (int j = 0; j < rawLevelDirData.Length; j++)
         {
-            if (rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 4, 4) != ".txt" || 
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 13, 13) == "_settings.txt" || 
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 10, 10) == "_arena.txt" || 
+            if (rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 4, 4) != ".txt" ||
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 13, 13) == "_settings.txt" ||
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 10, 10) == "_arena.txt" ||
                 rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 15, 15) == "_properties.txt" ||
                 rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 19, 19) == "_meadowsettings.txt" ||
                 rawLevelDirData[j].Contains("unlockall"))

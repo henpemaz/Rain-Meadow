@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Drown;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace RainMeadow
 {
@@ -17,31 +15,15 @@ namespace RainMeadow
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActiveDrown;
             On.Player.checkInput += Player_checkInputDrown;
-            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayerDrown;
-        }
-
-
-
-        public int ArenaGameSession_ScoreOfPlayerDrown(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
-        {
-            int score = orig(self, player, inHands);
-            if (isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var d))
-            {
-                d.timerPoints = score;
-            }
-            return score;
         }
 
         private void Player_checkInputDrown(On.Player.orig_checkInput orig, Player self)
         {
             orig(self);
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var _) && self.IsLocal())
+            if (DrownMode.IsDrownMode(out _) && self.IsLocal())
             {
                 if (ArenaHelpers.GetDataSettings<ArenaDrownClientSettings>(self.abstractCreature.GetOnlineCreature()?.owner)?.isInStore == true)
-                {
                     GameplayOverrides.StopPlayerMovement(self);
-                }
-
             }
         }
 
@@ -50,10 +32,10 @@ namespace RainMeadow
             // 1. ALWAYS run orig first. 
             int activeCount = orig(self, addToAliveTime, dontCountSandboxLosers);
 
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+            if (isArenaMode(out ArenaOnlineGameMode arenaOnline)
+                && DrownMode.IsDrownMode(out DrownMode drown))
             {
                 int canRespawnCount = 0;
-                bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
 
                 // If dens are opened, nobody can respawn. Let native logic decide the end state.
                 if (drown.openedDen || self.sessionEnded)
@@ -90,7 +72,10 @@ namespace RainMeadow
                         // Check if they have the resources to come back.
                         if (!isConsideredActiveByVanilla)
                         {
-                            int score = teamWork ? drown.teamPoints : self.arenaSitting.players[i].score;
+                            int score = self.GameTypeSetup.spearsHitPlayers
+                                ? self.arenaSitting.players[i].score
+                                : drown.CalculateTeamScore(arenaOnline, self.arenaSitting);
+
                             if (score >= drown.respCost)
                             {
                                 canRespawnCount++;
@@ -121,7 +106,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
+                    if (self.IsLocal() && isArenaMode(out ArenaOnlineGameMode arena) && DrownMode.IsDrownMode(out _))
                     {
                         try
                         {
@@ -160,16 +145,37 @@ namespace RainMeadow
         private void Spear_Spear_makeNeedle(On.Spear.orig_Spear_makeNeedle orig, Spear self, int type, bool active)
         {
             orig(self, type, active);
-            if (!self.IsLocal())
-            {
-                return;
-            }
-            if (RainMeadow.isArenaMode(out var arena) && DrownMode.isDrownMode(arena, out var drown))
-            {
-                ArenaSitting sitting = self.room.game.GetArenaGameSession.arenaSitting;
-                sitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].score -= drown.spearCost;
-            }
 
+            OnlinePhysicalObject? opo = self.abstractSpear.GetOnlineObject();
+
+            if (opo?.isMine == true &&
+                isArenaMode(out ArenaOnlineGameMode arenaOnline) &&
+                DrownMode.IsDrownMode(out DrownMode drown))
+            {
+                ArenaGameSession arenaSession = self.room.game.GetArenaGameSession;
+
+                ArenaSitting.ArenaPlayer myArenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arenaOnline,
+                    arenaSession.arenaSitting,
+                    OnlineManager.mePlayer
+                )!;
+
+                int scoreChange = -drown.spearCost;
+
+                if (scoreChange != 0)
+                {
+                    ArenaRPCs.ModifyArenaPlayerScore(
+                        myArenaPlayer.playerNumber,
+                        scoreChange
+                    );
+
+                    opo.BroadcastRPCInRoom(
+                        ArenaRPCs.ModifyArenaPlayerScore,
+                        myArenaPlayer.playerNumber,
+                        scoreChange
+                    );
+                }
+            }
         }
 
 

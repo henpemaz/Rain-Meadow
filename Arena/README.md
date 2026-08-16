@@ -48,19 +48,21 @@ public sealed class SuperArenaMode : ExternalArenaGameMode
 {
     public static ArenaSetup.GameTypeID Id { get; } = new(Plugin.Name); // Or whatever you want the game mode name to be.
     
-    /// <exception cref="InvalidOperationException">Thrown if game mode is not registered.</exception>
-    public static bool IsSuperArenaMode(ArenaOnlineGameMode arenaOnline, out SuperArenaMode superArena)
+    public static bool IsSuperArenaMode(out SuperArenaMode superArena)
     {
-        string name = Id.value;
-        if (!arenaOnline.registeredGameModes.TryGetValue(name, out ExternalArenaGameMode registeredMode))
-            throw new InvalidOperationException($"Could not find game mode. registered: [ {string.Join(", ", arenaOnline.registeredGameModes.Keys)} ]");
-        
         superArena = null!;
-        if (arenaOnline.currentGameMode == name)
+
+        if (!RainMeadow.RainMeadow.isArenaMode(out ArenaOnlineGameMode arenaOnline))
+            return false;
+
+        if (arenaOnline.registeredGameModes.TryGetValue(Id.value, out ExternalArenaGameMode externalArena)
+            && arenaOnline.currentGameMode == Id.value)
         {
-            superArena = (SuperArenaMode)registeredMode;
+            superArena = (SuperArenaMode)externalArena;
             return true;
         }
+
+        return false;
     }
 }
 ```
@@ -86,7 +88,7 @@ public override ArenaSetup.GameTypeID GetGameModeId => Id;
 
 public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom) => throw new NotImplementedException();
 
-public override bool IsExitsOpen(
+public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
     ArenaOnlineGameMode arena,
     ExitManager.orig_ExitsOpen orig,
     ArenaBehaviors.ExitManager self)

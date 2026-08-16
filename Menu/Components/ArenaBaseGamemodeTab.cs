@@ -2,13 +2,13 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using RainMeadow.UI.Components.Patched;
 using System.Linq;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Text;
+
 namespace RainMeadow.UI.Components
 {
     public class OnlineArenaBaseGameModeTab
@@ -23,15 +23,15 @@ namespace RainMeadow.UI.Components
         public OpTextBox spearHitScoreTextBox;
         public MenuLabel killScoreLabel;
         public OpTextBox killScoreTextBox;
-        public MenuLabel aliveScoreLabel;
-        public OpTextBox aliveScoreTextBox;
+        public MenuLabel survivalScoreLabel;
+        public OpTextBox survivalScoreTextBox;
         public MenuLabel denEntryRuleLabel;
         public OpTextBox denScoreTextBox;
         public MenuLabel denScoreLabel;
         public OpComboBox2 denEntryRule;
 
-        public MenuLabel emptyKillTagScoreLabel;
-        public OpTextBox emptyKillTagScore;
+        public MenuLabel emptyDeathScoreLabel;
+        public OpTextBox emptyDeathScoreTextBox;
 
         public MenuLabel challengeDenEjectionLabel;
         public OpCheckBox challengeDenEjectionCheckbox;
@@ -39,7 +39,7 @@ namespace RainMeadow.UI.Components
 
 
             nextButton;
-        public ArenaMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
+        public ArenaOnlineGameMode arena => OnlineManager.lobby.gameMode as ArenaOnlineGameMode;
         public MenuLabel arenaImportExportLabel;
         public MenuLabel arenaSettingsImportExportLabel;
 
@@ -64,11 +64,15 @@ namespace RainMeadow.UI.Components
             : base(menu, owner, pos, size)
         {
             tabWrapper = new(menu, this);
+            InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float leftMargin = 10f;
             float labelWidth = 100f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
-            float boxMargin = leftMargin + labelWidth + 50f; // The X-position for all boxes
+            float boxMargin = leftMargin + labelWidth // The X-position for all boxes
+                + (lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Spanish
+                    ? 125f // Add more space for some languages
+                    : 50f); 
 
 
             foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),
@@ -126,32 +130,32 @@ namespace RainMeadow.UI.Components
                 arena.killScore = killScoreTextBox.valueInt;
             };
 
-            aliveScoreLabel = new(menu, this, menu.Translate("Survival Score:"),
+            survivalScoreLabel = new(menu, this, menu.Translate("Survival Score:"),
                 new(leftMargin, topOffset - (rowHeight * 3)), new(labelWidth, 20f), false);
-            aliveScoreLabel.label.alignment = FLabelAlignment.Left;
+            survivalScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            aliveScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaAliveScore,
+            survivalScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaSurvivalScore,
                new(boxMargin, topOffset - (rowHeight * 3) - 2f), 60)
             { alignment = FLabelAlignment.Center, description = menu.Translate("Points for surviving inside the shelter"), accept = OpTextBox.Accept.Int };
 
-            aliveScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
+            survivalScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                if (aliveScoreTextBox.valueInt < 0) aliveScoreTextBox.valueInt = 0;
-                arena.aliveScore = aliveScoreTextBox.valueInt;
+                if (survivalScoreTextBox.valueInt < 0) survivalScoreTextBox.valueInt = 0;
+                arena.survivalScore = survivalScoreTextBox.valueInt;
             };
 
-            emptyKillTagScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
+            emptyDeathScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
                 new(leftMargin, topOffset - rowHeight * 4), new(labelWidth, 20f), false);
-            emptyKillTagScoreLabel.label.alignment = FLabelAlignment.Left;
+            emptyDeathScoreLabel.label.alignment = FLabelAlignment.Left;
 
-            emptyKillTagScore = new(RainMeadow.rainMeadowOptions.ArenaEmptyKillTagScore,
+            emptyDeathScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaEmptyDeathScore,
             new(boxMargin, topOffset - (rowHeight * 4)), 60)
             { alignment = FLabelAlignment.Center, description = menu.Translate("Points for other players if someone dies without a killer"), accept = OpTextBox.Accept.Int };
 
-            emptyKillTagScore.OnValueUpdate += (config, value, oldValue) =>
+            emptyDeathScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
-                if (emptyKillTagScore.valueInt < 0) emptyKillTagScore.valueInt = 0;
-                arena.emptyKillTagScore = emptyKillTagScore.valueInt;
+                if (emptyDeathScoreTextBox.valueInt < 0) emptyDeathScoreTextBox.valueInt = 0;
+                arena.emptyDeathScore = emptyDeathScoreTextBox.valueInt;
             };
 
             denScoreLabel = new(menu, this, menu.Translate("Unlock Dens:"),
@@ -356,10 +360,10 @@ namespace RainMeadow.UI.Components
                 foodScoreLabel,
                 spearHitScoreLabel,
                 killScoreLabel,
-                aliveScoreLabel,
+                survivalScoreLabel,
                 denEntryRuleLabel,
                 denScoreLabel,
-                emptyKillTagScoreLabel,
+                emptyDeathScoreLabel,
                 challengeDenEjectionLabel,
                 arenaImportExportLabel,
                 arenaSettingsImportExportLabel
@@ -368,9 +372,9 @@ namespace RainMeadow.UI.Components
             new PatchedUIelementWrapper(tabWrapper, spearHitScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, killScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denEntryRule);
-            new PatchedUIelementWrapper(tabWrapper, aliveScoreTextBox);
+            new PatchedUIelementWrapper(tabWrapper, survivalScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, denScoreTextBox);
-            new PatchedUIelementWrapper(tabWrapper, emptyKillTagScore);
+            new PatchedUIelementWrapper(tabWrapper, emptyDeathScoreTextBox);
             new PatchedUIelementWrapper(tabWrapper, challengeDenEjectionCheckbox);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistExportButton);
             new PatchedUIelementWrapper(tabWrapper, arenaPlaylistImportButton);
@@ -412,10 +416,10 @@ namespace RainMeadow.UI.Components
             RainMeadow.rainMeadowOptions.ArenaFoodScore.Value = arena.foodScore;
             RainMeadow.rainMeadowOptions.ArenaSpearHitScore.Value = arena.spearHitScore;
             RainMeadow.rainMeadowOptions.ArenaKillScore.Value = arena.killScore;
-            RainMeadow.rainMeadowOptions.ArenaAliveScore.Value = arena.aliveScore;
+            RainMeadow.rainMeadowOptions.ArenaSurvivalScore.Value = arena.survivalScore;
             RainMeadow.rainMeadowOptions.ArenaDenType.Value = arena.denEntryRule;
             RainMeadow.rainMeadowOptions.ArenaDenScore.Value = arena.denScore;
-            RainMeadow.rainMeadowOptions.ArenaEmptyKillTagScore.Value = arena.emptyKillTagScore;
+            RainMeadow.rainMeadowOptions.ArenaEmptyDeathScore.Value = arena.emptyDeathScore;
             RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value = arena.challengeDenEjection;
 
             RainMeadow.rainMeadowOptions.config.Save();
@@ -476,13 +480,13 @@ namespace RainMeadow.UI.Components
 
                 killScoreTextBox.greyedOut = OwnerSettingsDisabled;
             }
-            if (aliveScoreTextBox != null)
+            if (survivalScoreTextBox != null)
             {
-                aliveScoreTextBox.greyedOut = OwnerSettingsDisabled;
-                aliveScoreTextBox.held = aliveScoreTextBox._KeyboardOn;
-                if (!aliveScoreTextBox.held)
+                survivalScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                survivalScoreTextBox.held = survivalScoreTextBox._KeyboardOn;
+                if (!survivalScoreTextBox.held)
                 {
-                    aliveScoreTextBox.valueInt = arena.aliveScore;
+                    survivalScoreTextBox.valueInt = arena.survivalScore;
 
                 }
 
@@ -504,13 +508,13 @@ namespace RainMeadow.UI.Components
                 }
             }
 
-            if (emptyKillTagScore != null)
+            if (emptyDeathScoreTextBox != null)
             {
-                emptyKillTagScore.greyedOut = OwnerSettingsDisabled;
-                emptyKillTagScore.held = emptyKillTagScore._KeyboardOn;
-                if (!emptyKillTagScore.held)
+                emptyDeathScoreTextBox.greyedOut = OwnerSettingsDisabled;
+                emptyDeathScoreTextBox.held = emptyDeathScoreTextBox._KeyboardOn;
+                if (!emptyDeathScoreTextBox.held)
                 {
-                    emptyKillTagScore.valueInt = arena.emptyKillTagScore;
+                    emptyDeathScoreTextBox.valueInt = arena.emptyDeathScore;
 
                 }
 

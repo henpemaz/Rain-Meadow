@@ -35,7 +35,7 @@ namespace RainMeadow
 
                 if (friend is not null)
                 {
-                    if (TeamBattleMode.isTeamBattleMode(arena, out _))
+                    if (TeamBattleMode.IsTeamBattleMode(out _))
                     {
                         return ArenaHelpers.CheckSameTeam(
                             arena,

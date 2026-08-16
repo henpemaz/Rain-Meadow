@@ -682,9 +682,9 @@ public static class MeadowExtEnumSync
         return compressedExtEnum.Split([compressionSeparator], StringSplitOptions.RemoveEmptyEntries);
     }
 
-    public static bool IsSyncedExtEnum(Type enumType, out CompressedExtEnumBase? compressedExtEnum)
+    public static bool IsSyncedExtEnum(Type enumType, out CompressedExtEnumBase compressedExtEnum)
     {
-        compressedExtEnum = null;
+        compressedExtEnum = null!;
         int i = SyncedExtEnumList.FindIndex(x => x.enumType == enumType);
         if (i > -1)
         {
@@ -820,14 +820,14 @@ public static class MeadowExtEnumSync
                 for (int j = 0; j < resultErrors.MissingExtEnum.Length; j++)
                 {
                     clarifiedMissingExtEnum[j] = new(
-                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.MissingExtEnum[j].position), 
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.MissingExtEnum[j].position)!, 
                         resultErrors.MissingExtEnum[j].position
                     );
                 }
                 for (int j = 0; j < resultErrors.AmbiguousExtEnum.Length; j++)
                 {
                     clarifiedAmbiguousExtEnum[j] = new(
-                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.AmbiguousExtEnum[j].position), 
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.AmbiguousExtEnum[j].position)!, 
                         resultErrors.AmbiguousExtEnum[j].position
                     );
                 }            

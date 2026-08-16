@@ -569,7 +569,7 @@ namespace RainMeadow
                 {
                     if (self.followAbstractCreature.Room.realizedRoom is null)
                     {
-                        self.followAbstractCreature.Room.world.ActivateRoom(self.followAbstractCreature.Room);
+                        self.followAbstractCreature.world.game.roomRealizer.MeadowRealizeAndTrackRoom(self.followAbstractCreature.Room, true);
                     }
 
                     if (self.room?.abstractRoom != self.followAbstractCreature.Room && self.followAbstractCreature.Room.realizedRoom is not null)
