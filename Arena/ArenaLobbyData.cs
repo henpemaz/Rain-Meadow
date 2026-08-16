@@ -170,7 +170,7 @@ namespace RainMeadow
 
             [OnlineFieldHalf(group = "arenaSetup")]
             public float artiParryDistance;
-            
+
             [OnlineField(group = "arenaSetup")]
             public bool artiParryLeniency;
 
@@ -226,7 +226,7 @@ namespace RainMeadow
                 playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
-                // snapshot the keys, building an entry can fill in missing stat entries
+                // take a snapshot, we'll fill it in when building
                 playerStats = arenaOnline.WinsByOPlayer.Keys.ToList()
                     .Select(player => new ArenaPlayerStats(arenaOnline, player))
                     .ToList();
