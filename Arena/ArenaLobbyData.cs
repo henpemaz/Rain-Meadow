@@ -307,8 +307,8 @@ namespace RainMeadow
                 arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
-                Dictionary<ushort, ArenaPlayerStats> statsByInLobbyId = new(playerStats.Count);
-                foreach (ArenaPlayerStats stats in playerStats)
+                Dictionary<ushort, ArenaPlayerStats> statsByInLobbyId = new(playerStats.list.Count);
+                foreach (ArenaPlayerStats stats in playerStats.list)
                 {
                     statsByInLobbyId[stats.inLobbyId] = stats;
                 }
