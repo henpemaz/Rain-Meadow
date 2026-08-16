@@ -20,7 +20,6 @@
 - Prevent the abstraction of rooms that contain player avatars or other non-transferable objects.
 - Added new `OnlinePearlString` entity. Synchronized Pearl Creation.
 - Fixed objects marked as destroyOnAbstraction not being destroyed.
-- Improved the Russian translation
 - Added the ability to enable or disable cheats when creating a lobby.
   - When cheats are disabled most Dev Tool cheats that affect gameplay will be disabled.
   - The host will still be allowed to use cheats but no other players can.
@@ -32,7 +31,6 @@
 - Cape Fetching now runs asynchronously, which will improve startup times on slow internet connections.
 - Added scarfs
 - Fixed the exit button on the main menu getting pushed over to the second column if Expedition is enabled
-- Fixed nametags visibly moving towards the correct position over a few frames when the nametag's on screen position instantly changes
 - Added French translation, updated Japenese, Spanish, and Russian
 - Brand new lobby select menu!
   - lobby metadata is now shown directly in the menu. This includes the previous data shown on cards, in addition to:
