@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Linq;
 using Menu;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class FFA : ExternalArenaGameMode
     {
-        public static ArenaSetup.GameTypeID FFAMode = new ArenaSetup.GameTypeID(
-            "Free For All",
-            register: false
-        );
+        public static ArenaSetup.GameTypeID FFAMode = new("Free For All");
 
+        public override ArenaSetup.GameTypeID GetGameModeId => FFAMode;
         private int _timerDuration;
-        public override ArenaSetup.GameTypeID GetGameModeId => FFA.FFAMode;
+        public override int TimerDuration
+        {
+            get { return _timerDuration; }
+            set { _timerDuration = value; }
+        }
 
         public static bool IsFfaMode(out FFA ffa)
         {
@@ -33,11 +34,10 @@ namespace RainMeadow
             return false;
         }
 
-        public override bool IsExitsOpen(
-            ArenaOnlineGameMode arena,
+        public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
+            ArenaOnlineGameMode arenaOnline,
             On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
-            ArenaBehaviors.ExitManager self
-        )
+            ArenaBehaviors.ExitManager self)
         {
             if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Always)
             {
@@ -47,7 +47,7 @@ namespace RainMeadow
 
             if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score)
             {
-                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= arena.denScore) ?? false);
+                return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= self.gameSession.GameTypeSetup.ScoreToEnterDen) ?? false);
             }
 
             int playersStillStanding =
@@ -55,7 +55,7 @@ namespace RainMeadow
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
                 ) ?? 0;
 
-            if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1 && !arena.countdownInitiatedHoldFire)
+            if (playersStillStanding == 1 && arenaOnline.arenaSittingOnlineOrder.Count > 1 && !arenaOnline.countdownInitiatedHoldFire)
             {
                 return true;
             }
@@ -68,53 +68,41 @@ namespace RainMeadow
             return orig(self);
         }
 
-        public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
-        {
-            return false;
-        }
-
         public override string TimerText()
         {
             return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());
         }
 
-        public override int SetTimer(ArenaOnlineGameMode arena)
+        public override int SetTimer(ArenaOnlineGameMode arenaOnline)
         {
-            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            return arenaOnline.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
-        public override int TimerDuration
+        public override int TimerDirection(ArenaOnlineGameMode arenaOnline, int timer)
         {
-            get { return _timerDuration; }
-            set { _timerDuration = value; }
+            return --arenaOnline.setupTime;
         }
 
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arenaOnline)
         {
-            return --arena.setupTime;
-        }
-
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
-        {
-            if (arena.setupTime > 0)
+            if (arenaOnline.setupTime > 0)
             {
-                return arena.countdownInitiatedHoldFire = true;
+                return arenaOnline.countdownInitiatedHoldFire = true;
             }
             else
             {
-                return arena.countdownInitiatedHoldFire = false;
+                return arenaOnline.countdownInitiatedHoldFire = false;
             }
         }
 
         public override string AddIcon(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
-            OnlinePlayer player
-        )
+            OnlinePlayer player)
         {
-            string arenaIcon = base.AddIcon(arena, display, owner, customization, player);
+            string arenaIcon = base.AddIcon(arenaOnline, display, owner, customization, player);
             if (arenaIcon != "")
                 return arenaIcon;
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
@@ -123,30 +111,29 @@ namespace RainMeadow
         }
 
         public override Color IconColor(
-            ArenaOnlineGameMode arena,
+            ArenaOnlineGameMode arenaOnline,
             OnlinePlayerDisplay display,
             PlayerSpecificOnlineHud owner,
             SlugcatCustomization customization,
-            OnlinePlayer player
-        )
+            OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
                 return Color.grey;
             }
             if (
-                arena.reigningChamps != null
-                && arena.reigningChamps.list != null
-                && arena.reigningChamps.list.Contains(player.id)
+                arenaOnline.reigningChamps != null
+                && arenaOnline.reigningChamps.list != null
+                && arenaOnline.reigningChamps.list.Contains(player.id)
             )
             {
                 return Color.yellow;
             }
 
-            return base.IconColor(arena, display, owner, customization, player);
+            return base.IconColor(arenaOnline, display, owner, customization, player);
         }
 
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
         {
             return new DialogNotify(
                 menu.LongTranslate("Trust no one. Last scug standing wins"),

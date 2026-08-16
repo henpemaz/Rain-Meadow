@@ -1,13 +1,12 @@
-using HarmonyLib;
-using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
-using Newtonsoft.Json.Linq;
-using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HarmonyLib;
+using Menu.Remix.MixedUI;
+using RWCustom;
 using UnityEngine;
+
 namespace RainMeadow;
 
 public class RainMeadowOptions : OptionInterface
@@ -100,18 +99,16 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<int> CountdownSafetyCatchTimer;
 
+
+    public readonly Configurable<int> ArenaSurvivalScore;
+    public readonly Configurable<int> ArenaKillScore;
+    public readonly Configurable<int> ArenaEmptyDeathScore;
+    public readonly Configurable<int> ArenaSpearHitScore;
     public readonly Configurable<int> ArenaFoodScore;
 
-    public readonly Configurable<int> ArenaSpearHitScore;
-    public readonly Configurable<int> ArenaKillScore;
-
-    public readonly Configurable<int> ArenaAliveScore;
     public readonly Configurable<int> ArenaDenScore;
 
     public readonly Configurable<bool> ChallengeDenEjection;
-
-
-    public readonly Configurable<int> ArenaEmptyKillTagScore;
 
     public readonly Configurable<ArenaSetup.GameTypeSetup.DenEntryRule> ArenaDenType;
     public Configurable<RainMeadow.LogLevel> CurrentLogLevel;
@@ -284,17 +281,17 @@ public class RainMeadowOptions : OptionInterface
         currentlyActiveCosmeticSkin = config.Bind("CurrentlyActiveCosmeticSkin", "solid");
         currentlyActiveCustomCosmeticColor = config.Bind("currentlyActiveCustomCosmeticColor", Color.red);
 
+        ArenaSurvivalScore = config.Bind("ArenaAliveScore", 1);
+        ArenaKillScore = config.Bind("ArenaKillScore", 1);
+        ArenaEmptyDeathScore = config.Bind("ArenaEmptyKillTagScore", 1);
+        ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 1);
         ArenaFoodScore = config.Bind("ArenaFoodScore", 1);
-        ArenaSpearHitScore = config.Bind("ArenaSpearHitScore", 0);
-        ArenaKillScore = config.Bind("ArenaKillScore", 0);
-        ArenaAliveScore = config.Bind("ArenaAliveScore", 0);
-        ArenaDenScore = config.Bind("ArenaDenScore", 0);
 
+        ArenaDenScore = config.Bind("ArenaDenScore", 0);
         ArenaDenType = config.Bind("ArenaDenType", ArenaSetup.GameTypeSetup.DenEntryRule.Standard);
         ChallengeID = config.Bind("ChallengeID", 1);
         CurrentLogLevel = config.Bind("logLevelSetting", RainMeadow.LogLevel.Info);
         ArenaUnhandledOptimizations = config.Bind("ArenaUnhandledOptimizations", false);
-        ArenaEmptyKillTagScore = config.Bind("ArenaEmptyKillTagScore", 0);
         ChallengeDenEjection = config.Bind("ChallengeDenEjection", true);
         GlobalMute = config.Bind("GlobalMute", false);
         ArenaFlairActive = config.Bind("ArenaFlairActive", 0);
@@ -655,7 +652,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpCheckBox(EnableMeadowCosmetics, new Vector2(10f, 315f)),
 
                 new OpLabel(210f, 340, Translate("Toggle Show Score")),
-                new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f)),
+                new OpKeyBinder(ArenaToggleShowScoreKey, new Vector2(210f, 310f), new Vector2(150f, 30f), false),
 
                 new OpLabel(10f, 280, Translate("Countdown Safety Time (ticks)")),
                 new OpTextBox(CountdownSafetyCatchTimer, new Vector2(10f, 250), 160f)

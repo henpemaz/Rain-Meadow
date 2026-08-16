@@ -88,7 +88,7 @@ public override ArenaSetup.GameTypeID GetGameModeId => Id;
 
 public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom) => throw new NotImplementedException();
 
-public override bool IsExitsOpen(
+public override bool On_ArenaBehaviors_ExitManager_ExitsOpen(
     ArenaOnlineGameMode arena,
     ExitManager.orig_ExitsOpen orig,
     ArenaBehaviors.ExitManager self)

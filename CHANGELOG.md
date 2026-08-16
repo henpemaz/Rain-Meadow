@@ -50,7 +50,12 @@
 ## Arena
 
 - Added new gamemode: Drown! Kill and survive to buy your escape. Cooperative or Competitive
-- Scoring update: Empty kills and friendly fire now subtract from the user (in Teams, the killer loses the points). Points are no longer granted to everyone else.
+- Arena stats update:
+    - Empty deaths and friendly fire now subtract from the dying player/teammate killer instead of adding points to everyone else.
+    - In Team Battle, teams now have per-player stats.
+    - Improved round and session end result text.
+    - Fixed bugs where leaving to the lobby early and restarting would not clear all stats sometimes.
+    - Fixed various other small bugs.
 - Fixed winning conditions on that hidden thing
 - Added Import/Export game settings as code with support for FFA, Team Battle, and Drown
 - Slightly improved Void Amoeba's swim speed
@@ -100,6 +105,8 @@
   - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
 - ⚠️ Simplified active external arena mode checks by removing the `ArenaOnlineGameMode` parameter and renaming them to PascalCase.
   - Example: `isTeamBattleMode(ArenaOnlineGameMode, out TeamBattleMode)` -> `IsTeamBattleMode(out TeamBattleMode)`
+- ⚠️ Arena stats have been significantly refactored and fixed. `ExternalArenaGameMode`'s API has changed.
+  - High-level documentation for arena stats will be added soon.
 - Added `ExportLocalSettings` and `ImportLocalSettings` virtual functions into `ExternalGameMode` for managing Arena settings
 
 ## Meadow
