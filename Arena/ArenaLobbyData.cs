@@ -194,26 +194,35 @@ namespace RainMeadow
             public bool leaveForNextLevel;
 
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> winsByInLobbyId;
+            // Delta-aware dictionaries rather than plain ones. A plain Dictionary field is
+            // compared by reference (OnlineState.OnlineFieldAttribute.ComparisonMethod), and this
+            // state is rebuilt every tick, so the "arenaScore" group used to register as changed
+            // and be re-serialized on every single tick even when nobody had scored. These types
+            // return null from Delta() when nothing changed, which clears the group's value flag
+            // and skips both the serialization and the send.
+            // They must be nullable: if any one field in the group changes, the whole group is
+            // serialized, and the unchanged fields are null deltas at that point.
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> deathsByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToIntDict winsByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> roundDeathsByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToIntDict deathsByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> totalScoreByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToIntDict roundDeathsByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> scoreByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToIntDict totalScoreByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> allKillsByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToIntDict scoreByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> roundKillsByInLobbyId;
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToKillListDict allKillsByInLobbyId;
+
+            [OnlineField(nullable = true, group = "arenaScore")]
+            public UshortToKillListDict roundKillsByInLobbyId;
 
 
             [OnlineField]
@@ -244,38 +253,13 @@ namespace RainMeadow
                 playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
-                winsByInLobbyId = arenaOnline.WinsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                deathsByInLobbyId = arenaOnline.DeathsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                roundDeathsByInLobbyId = arenaOnline.RoundDeathsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                totalScoreByInLobbyId = arenaOnline.TotalScoreByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                scoreByInLobbyId = arenaOnline.ScoreByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                allKillsByInLobbyId = arenaOnline.AllKillsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                        .Select(trophy => trophy.ToString())
-                        .ToList()
-                );
-                roundKillsByInLobbyId = arenaOnline.RoundKillsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                        .Select(trophy => trophy.ToString())
-                        .ToList()
-                );
+                winsByInLobbyId = SnapshotScores(arenaOnline.WinsByOPlayer);
+                deathsByInLobbyId = SnapshotScores(arenaOnline.DeathsByOPlayer);
+                roundDeathsByInLobbyId = SnapshotScores(arenaOnline.RoundDeathsByOPlayer);
+                totalScoreByInLobbyId = SnapshotScores(arenaOnline.TotalScoreByOPlayer);
+                scoreByInLobbyId = SnapshotScores(arenaOnline.ScoreByOPlayer);
+                allKillsByInLobbyId = SnapshotKills(arenaOnline.AllKillsByOPlayer);
+                roundKillsByInLobbyId = SnapshotKills(arenaOnline.RoundKillsByOPlayer);
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
@@ -353,48 +337,16 @@ namespace RainMeadow
                 arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
-                arenaOnline.WinsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => winsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.DeathsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => deathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.RoundDeathsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => roundDeathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.TotalScoreByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => totalScoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.ScoreByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => scoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.AllKillsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => allKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
-                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
-                        : []
-                );
-                arenaOnline.RoundKillsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => roundKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
-                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
-                        : []
-                );
+                // Updated in place rather than rebuilt: ReadTo runs for every state that arrives,
+                // so allocating seven fresh dictionaries here was per-tick garbage on every
+                // client. Clear() keeps the buckets, so re-adding the same players costs nothing.
+                ApplyScores(arenaOnline.WinsByOPlayer, winsByInLobbyId);
+                ApplyScores(arenaOnline.DeathsByOPlayer, deathsByInLobbyId);
+                ApplyScores(arenaOnline.RoundDeathsByOPlayer, roundDeathsByInLobbyId);
+                ApplyScores(arenaOnline.TotalScoreByOPlayer, totalScoreByInLobbyId);
+                ApplyScores(arenaOnline.ScoreByOPlayer, scoreByInLobbyId);
+                ApplyKills(arenaOnline.AllKillsByOPlayer, allKillsByInLobbyId);
+                ApplyKills(arenaOnline.RoundKillsByOPlayer, roundKillsByInLobbyId);
 
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
@@ -457,6 +409,83 @@ namespace RainMeadow
                 arenaOnline.artiParryDistanceMult = artiParryDistance;
                 arenaOnline.artiParryLeniency = artiParryLeniency;
                 arenaOnline.enableMeadowCosmetics = enableMeadowCosmetics;
+            }
+
+            /// <summary>
+            /// Snapshots a per-player score dictionary into its delta-aware wire form.
+            /// </summary>
+            private static UshortToIntDict SnapshotScores(Dictionary<OnlinePlayer, int> scores)
+            {
+                List<KeyValuePair<ushort, int>> entries = new(scores.Count);
+
+                foreach (KeyValuePair<OnlinePlayer, int> score in scores)
+                    entries.Add(new KeyValuePair<ushort, int>(score.Key.inLobbyId, score.Value));
+
+                return new UshortToIntDict(entries);
+            }
+
+            /// <summary>
+            /// Snapshots a per-player trophy dictionary into its delta-aware wire form.
+            /// </summary>
+            /// <remarks>
+            /// The trophy lists are wrapped by reference, not copied, and no
+            /// <see cref="IconSymbol.IconSymbolData"/> is converted to a string here. Both of
+            /// those only happen if <see cref="ArenaKillList"/> reports a change, which keeps a
+            /// long sitting's accumulated kills from being re-serialized every tick. See
+            /// <see cref="ArenaKillList(List{IconSymbol.IconSymbolData})"/> for why the caller
+            /// must replace these lists rather than mutate them.
+            /// </remarks>
+            private static UshortToKillListDict SnapshotKills(
+                Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> kills)
+            {
+                List<KeyValuePair<ushort, ArenaKillList>> entries = new(kills.Count);
+
+                foreach (KeyValuePair<OnlinePlayer, List<IconSymbol.IconSymbolData>> kill in kills)
+                {
+                    entries.Add(
+                        new KeyValuePair<ushort, ArenaKillList>(
+                            kill.Key.inLobbyId,
+                            new ArenaKillList(kill.Value)
+                        )
+                    );
+                }
+
+                return new UshortToKillListDict(entries);
+            }
+
+            private static void ApplyScores(
+                Dictionary<OnlinePlayer, int> target,
+                UshortToIntDict source)
+            {
+                target.Clear();
+
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    target[player] = source.lookup.TryGetValue(player.inLobbyId, out int score)
+                        ? score
+                        : 0;
+                }
+            }
+
+            /// <remarks>
+            /// The parsed trophy lists are handed over by reference. When the "arenaScore" group
+            /// is unchanged the incoming state keeps the baseline's already-parsed lists, so
+            /// nothing is re-parsed and nothing is allocated. Clients only ever read these
+            /// dictionaries - only the lobby owner writes them, and it writes fresh lists.
+            /// </remarks>
+            private static void ApplyKills(
+                Dictionary<OnlinePlayer, List<IconSymbol.IconSymbolData>> target,
+                UshortToKillListDict source)
+            {
+                target.Clear();
+
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    target[player] =
+                        source.lookup.TryGetValue(player.inLobbyId, out ArenaKillList kills)
+                            ? kills.kills
+                            : [];
+                }
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

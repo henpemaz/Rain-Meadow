@@ -1650,6 +1650,36 @@ namespace RainMeadow
 #endif
         }
 
+        public void Serialize(ref List<KeyValuePair<ushort, int>> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new List<KeyValuePair<ushort, int>>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadUInt16();
+                    var value = reader.ReadInt32();
+                    data.Add(new KeyValuePair<ushort, int>(key, value));
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void Serialize(ref Counter counter)
         {
 #if TRACING

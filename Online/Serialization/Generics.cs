@@ -683,4 +683,17 @@ namespace RainMeadow.Generics
                 serializer.Serialize(ref removed);
         }
     }
+
+    public class UshortToIntDict : DynamicKVPList<ushort, int, UshortToIntDict>
+    {
+        public UshortToIntDict() { }
+        public UshortToIntDict(List<KeyValuePair<ushort, int>> list) : base(list) { }
+
+        public override void SerializeImpl(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+                serializer.Serialize(ref removed);
+        }
+    }
 }

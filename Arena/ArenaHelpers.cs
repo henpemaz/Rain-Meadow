@@ -155,8 +155,14 @@ namespace RainMeadow
             if (onlinePlayer is null)
                 return null;
 
-            return arenaSession.Players
-                .Find(playerAC => playerAC.GetOnlineCreature()?.owner == onlinePlayer);
+            List<AbstractCreature> playerACs = arenaSession.Players;
+            for (int i = 0; i < playerACs.Count; i++)
+            {
+                if (playerACs[i].GetOnlineCreature()?.owner == onlinePlayer)
+                    return playerACs[i];
+            }
+
+            return null;
         }
 
         public static ArenaSitting.ArenaPlayer? FindArenaPlayerByOnlinePlayer(
