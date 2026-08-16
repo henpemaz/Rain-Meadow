@@ -19,6 +19,8 @@ namespace RainMeadow
         public List<IconSymbol.IconSymbolData> allKills = [];
         public List<IconSymbol.IconSymbolData> roundKills = [];
 
+public ushort ID => inLobbyId;
+
         public ArenaPlayerStats() { }
 
         /// <summary>
