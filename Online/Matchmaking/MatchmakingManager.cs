@@ -96,7 +96,7 @@ namespace RainMeadow
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
-        public abstract void JoinLobby(bool success);
+        public abstract void JoinLobby(bool success, string failReason = "");
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
         public static void JoinLobbyUsingCode(string code) {

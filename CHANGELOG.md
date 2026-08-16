@@ -2,6 +2,7 @@
 
 ## Engine
 
+- Added more failsafes to lobby joining (including a configurable timeout)
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
 - Improved Stowaway sync
@@ -11,6 +12,8 @@
 - Mods containing changes to the levels/ directory are now considered high-impact
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event.
+- ⚠️ `MatchmakingManager.JoinLobby` has a new argument `failReason` to handle more joining errors
+
 ## General
 
 - Fixed irrelevant rooms not being unloaded while spectating other players that led to higher network throughput
@@ -39,7 +42,6 @@
 - Slugcat icon in player HUD now reflects the target player's chosen slugcat and colours in use
   - An additional remix option has been added to use the old icon if players find the new icons too distracting
 ### Modders
-
 - Added `SlugIcon`. Modded slugcats may provide their own assets and colours by adding entries to the static properties in SlugIcon, please take a look at `Menu/Components/SlugIcon.cs` for more information.
   - Lobby cards and in-game slugcat icons will automatically use the sprites and layerings if they are set, and a fallback icon will be used if they are not.
 - `activeTimeline` is now part of `LobbyInfo`
@@ -72,6 +74,7 @@
 - Synced the players' ready state on the overlay results screen
 - Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
 - Made players wait in the starting pipe until everyone joined. The maximum waiting time is configurable in the Remix menu.
+
 ### Watcher
 
 - Disabling Ripple Trail in online arena
@@ -92,7 +95,6 @@
 - Watcher camo VFX-aura has been reduced for all ripple levels
 - Player nametag interacts as expectanted with ripple layer change
 - Added arena option to make ripple 9 Watcher actually fully invisible for everyone
-
 ### Modders
 - ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property. Renamed to `ArenaOnlineGameMode.ArenaSession`.
   - `ArenaSession` will no longer reference `ArenaGameSession`s that aren't active.
@@ -126,6 +128,7 @@
 - Added text downscroll as a Remix option
 
 ## New Contributors
+
 Thank you to all of our first-time contributors and welcome EdEnStonne to the Meadow Dev team!
 - Wonky
 - Ombekende
@@ -134,6 +137,7 @@ Thank you to all of our first-time contributors and welcome EdEnStonne to the Me
 - OneLetterShor
 - iiul
 - solo snuggles
+
 # Release 1.14.1
 
 ## Engine
