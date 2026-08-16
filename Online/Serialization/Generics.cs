@@ -293,36 +293,106 @@ namespace RainMeadow.Generics
             BuildLookup();
         }
 
+        // Deliberately loop-based rather than LINQ throughout. Delta runs once per subscriber per
+        // tick for every field of this type, so the iterators, closures and delegates a LINQ
+        // chain allocates add up to real per-frame garbage on a busy host.
+
         private void BuildLookup()
         {
-            this.lookup = list.ToDictionary();
+            lookup = new Dictionary<TKey, TValue>(list.Count);
+            for (int i = 0; i < list.Count; i++)
+                lookup.Add(list[i].Key, list[i].Value); // throws on duplicate keys, as ToDictionary did
+
             removedLookup = removed == null ? null : new HashSet<TKey>(removed);
+        }
+
+        /// <summary>
+        /// Whether anything differs from <paramref name="baseline"/>, answered without allocating.
+        /// </summary>
+        /// <remarks>
+        /// Equal counts plus every one of our keys present in the baseline with an equal value
+        /// means the key sets match, so there is nothing removed either. Keys are unique within
+        /// <see cref="list"/> - <see cref="BuildLookup"/> enforces that.
+        /// </remarks>
+        private bool HasChangesFrom(Imp baseline)
+        {
+            if (list.Count != baseline.list.Count) return true;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                KeyValuePair<TKey, TValue> entry = list[i];
+                if (!baseline.lookup.TryGetValue(entry.Key, out TValue baselineValue)
+                    || !EqualityComparer<TValue>.Default.Equals(baselineValue, entry.Value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public Imp Delta(Imp baseline)
         {
             if (baseline == null) { return (Imp)this; }
+
+            // The steady state is "nothing changed", and taking that path without allocating is
+            // what lets a caller run Delta every tick for free while values are static.
+            if (!HasChangesFrom(baseline)) return null;
+
             Imp delta = new();
-            delta.list = list.Where(sl=>!baseline.lookup.TryGetValue(sl.Key, out var val) || !val.Equals(sl.Value)).ToList(); // new or changed
-            delta.removed = baseline.list.Select(e => e.Key).Where(e => !lookup.ContainsKey(e)).ToList();
+
+            delta.list = new List<KeyValuePair<TKey, TValue>>(); // new or changed
+            for (int i = 0; i < list.Count; i++)
+            {
+                KeyValuePair<TKey, TValue> entry = list[i];
+                if (!baseline.lookup.TryGetValue(entry.Key, out TValue baselineValue)
+                    || !EqualityComparer<TValue>.Default.Equals(baselineValue, entry.Value))
+                {
+                    delta.list.Add(entry);
+                }
+            }
+
+            delta.removed = new List<TKey>();
+            for (int i = 0; i < baseline.list.Count; i++)
+            {
+                TKey key = baseline.list[i].Key;
+                if (!lookup.ContainsKey(key))
+                    delta.removed.Add(key);
+            }
+
             delta.BuildLookup();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public Imp ApplyDelta(Imp baseline)
+        /// <param name="incoming">
+        /// The delta to apply on top of this value. Null when the sender had nothing to report.
+        /// </param>
+        public Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            if (baseline == null)
+            if (incoming == null)
             {
                 result.list = list;
             }
             else
             {
-                result.list =
-                list.Where(e => !baseline.removedLookup.Contains(e.Key)) // remove
-                    .Select(e => baseline.lookup.TryGetValue(e.Key, out var o) ? new KeyValuePair<TKey, TValue>(e.Key, o) : e) // keep or update
-                    .Concat(baseline.list.Where(o => !lookup.ContainsKey(o.Key))) // add new
-                    .ToList();
+                result.list = new List<KeyValuePair<TKey, TValue>>(list.Count + incoming.list.Count);
+
+                for (int i = 0; i < list.Count; i++) // keep or update, minus the removed
+                {
+                    KeyValuePair<TKey, TValue> entry = list[i];
+                    if (incoming.removedLookup.Contains(entry.Key)) continue;
+
+                    result.list.Add(incoming.lookup.TryGetValue(entry.Key, out TValue updated)
+                        ? new KeyValuePair<TKey, TValue>(entry.Key, updated)
+                        : entry);
+                }
+
+                for (int i = 0; i < incoming.list.Count; i++) // add new
+                {
+                    if (!lookup.ContainsKey(incoming.list[i].Key))
+                        result.list.Add(incoming.list[i]);
+                }
             }
             result.BuildLookup();
             return result;
