@@ -195,7 +195,7 @@ namespace RainMeadow
 
 
             [OnlineField(group = "arenaScore")]
-            public List<ArenaPlayerStats> playerStats;
+            public DynamicIdentifiablesICustomSerializables<ArenaPlayerStats, ushort> playerStats;
 
 
             [OnlineField]
