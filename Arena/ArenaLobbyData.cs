@@ -13,23 +13,6 @@ namespace RainMeadow
             return new State(this, resource);
         }
 
-        /// <summary>
-        /// this is a dynamic list,
-        /// matched up by <see cref="ArenaPlayerStats.inLobbyId"/>.
-        /// </summary>
-        public class ArenaPlayerStatsList : DynamicIdentifiablesList<ArenaPlayerStats, ushort, ArenaPlayerStatsList>
-        {
-            public ArenaPlayerStatsList() { }
-
-            public ArenaPlayerStatsList(List<ArenaPlayerStats> list) : base(list) { }
-
-            public override void SerializeImpl(Serializer serializer)
-            {
-                serializer.SerializeShort(ref list);
-                if (serializer.IsDelta) serializer.Serialize(ref removed);
-            }
-        }
-
         internal class State : ResourceDataState
         {
             [OnlineField(group = "arenaLobby")]
@@ -212,7 +195,7 @@ namespace RainMeadow
 
 
             [OnlineField(group = "arenaScore")]
-            public ArenaPlayerStatsList playerStats;
+            public DynamicIdentifiablesICustomSerializables<ArenaPlayerStats, InLobbyId> playerStats;
 
 
             [OnlineField]
@@ -244,7 +227,7 @@ namespace RainMeadow
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
                 // take a snapshot, we'll fill it in when building
-                playerStats = new ArenaPlayerStatsList(arenaOnline.WinsByOPlayer.Keys.ToList()
+                playerStats = new DynamicIdentifiablesICustomSerializables<ArenaPlayerStats, InLobbyId>(arenaOnline.WinsByOPlayer.Keys.ToList()
                     .Select(player => new ArenaPlayerStats(arenaOnline, player))
                     .ToList());
 

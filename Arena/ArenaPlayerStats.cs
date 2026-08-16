@@ -1,14 +1,41 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
 {
     /// <summary>
+    /// An <see cref="OnlinePlayer.inLobbyId"/> as an element id for the generic delta lists,
+    /// which require ids to be <see cref="Serializer.ICustomSerializable"/> so removals can travel
+    /// as a bare list of ids. used a struct lookups don't allocate. kind of silly to need this InLobbyId delta awarenes but we're here now
+    /// </summary>
+    public struct InLobbyId : Serializer.ICustomSerializable, IEquatable<InLobbyId>
+    {
+        public ushort id;
+
+        public InLobbyId(ushort id)
+        {
+            this.id = id;
+        }
+
+        public void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref id);
+        }
+
+        public bool Equals(InLobbyId other) => id == other.id;
+
+        public override bool Equals(object obj) => obj is InLobbyId other && Equals(other);
+
+        public override int GetHashCode() => id;
+    }
+
+    /// <summary>
     /// A single player's arena stats, keyed by <see cref="OnlinePlayer.inLobbyId"/>.
     /// <para>Serialized as one entry of <see cref="ArenaLobbyData.State.playerStats"/>,
     /// so the player key is only sent once for all of their stats.</para>
     /// </summary>
-    public class ArenaPlayerStats : Serializer.ICustomSerializable, Generics.IIdentifiable<ushort>
+    public class ArenaPlayerStats : Serializer.ICustomSerializable, Generics.IIdentifiable<InLobbyId>
     {
         public ushort inLobbyId;
         public int wins;
@@ -19,7 +46,7 @@ namespace RainMeadow
         public List<IconSymbol.IconSymbolData> allKills = [];
         public List<IconSymbol.IconSymbolData> roundKills = [];
 
-        public ushort ID => inLobbyId;
+        public InLobbyId ID => new(inLobbyId);
 
         public ArenaPlayerStats() { }
 
@@ -34,14 +61,14 @@ namespace RainMeadow
         {
             arenaOnline.AddMissingStatEntries(player);
 
-            inLobbyId   = player.inLobbyId;
-            wins        = arenaOnline.WinsByOPlayer[player];
-            deaths      = arenaOnline.DeathsByOPlayer[player];
+            inLobbyId = player.inLobbyId;
+            wins = arenaOnline.WinsByOPlayer[player];
+            deaths = arenaOnline.DeathsByOPlayer[player];
             roundDeaths = arenaOnline.RoundDeathsByOPlayer[player];
-            totalScore  = arenaOnline.TotalScoreByOPlayer[player];
-            score       = arenaOnline.ScoreByOPlayer[player];
-            allKills    = arenaOnline.AllKillsByOPlayer[player].ToList();
-            roundKills  = arenaOnline.RoundKillsByOPlayer[player].ToList();
+            totalScore = arenaOnline.TotalScoreByOPlayer[player];
+            score = arenaOnline.ScoreByOPlayer[player];
+            allKills = arenaOnline.AllKillsByOPlayer[player].ToList();
+            roundKills = arenaOnline.RoundKillsByOPlayer[player].ToList();
         }
 
         /// <summary>
@@ -50,13 +77,13 @@ namespace RainMeadow
         /// </summary>
         public void CopyTo(ArenaOnlineGameMode arenaOnline, OnlinePlayer player)
         {
-            arenaOnline.WinsByOPlayer[player]        = wins;
-            arenaOnline.DeathsByOPlayer[player]      = deaths;
+            arenaOnline.WinsByOPlayer[player] = wins;
+            arenaOnline.DeathsByOPlayer[player] = deaths;
             arenaOnline.RoundDeathsByOPlayer[player] = roundDeaths;
-            arenaOnline.TotalScoreByOPlayer[player]  = totalScore;
-            arenaOnline.ScoreByOPlayer[player]       = score;
-            arenaOnline.AllKillsByOPlayer[player]    = allKills.ToList();
-            arenaOnline.RoundKillsByOPlayer[player]  = roundKills.ToList();
+            arenaOnline.TotalScoreByOPlayer[player] = totalScore;
+            arenaOnline.ScoreByOPlayer[player] = score;
+            arenaOnline.AllKillsByOPlayer[player] = allKills.ToList();
+            arenaOnline.RoundKillsByOPlayer[player] = roundKills.ToList();
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -76,7 +103,7 @@ namespace RainMeadow
         {
             List<string> trophiesAsStrings = serializer.IsWriting
                 ? trophies.Select(trophy => trophy.ToString()).ToList()
-                : null;
+                : null!; // this will be filled before it's read
 
             serializer.Serialize(ref trophiesAsStrings);
 
