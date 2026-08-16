@@ -227,9 +227,9 @@ namespace RainMeadow
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
                 // take a snapshot, we'll fill it in when building
-                playerStats = arenaOnline.WinsByOPlayer.Keys.ToList()
+                playerStats = new DynamicIdentifiablesICustomSerializables(arenaOnline.WinsByOPlayer.Keys.ToList()
                     .Select(player => new ArenaPlayerStats(arenaOnline, player))
-                    .ToList();
+                    .ToList());
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
