@@ -1513,8 +1513,7 @@ namespace RainMeadow
 
         public void ArenaOverlay_Update(
             On.Menu.ArenaOverlay.orig_Update orig,
-            Menu.ArenaOverlay self
-        )
+            ArenaOverlay self)
         {
             orig(self);
             if (isArenaMode(out var arena))
@@ -1522,9 +1521,8 @@ namespace RainMeadow
                 if (self.allResultBoxesInPlaceCounter > 10 && !arena.clientSettings.isInteracting)
                 {
                     int myPlayerNumber = ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer);
-                    ArenaSitting.ArenaPlayer myArenaPlayer = self.ArenaSitting.players[myPlayerNumber];
 
-                    if (myPlayerNumber != -1 && !myArenaPlayer.readyForNextRound)
+                    if (myPlayerNumber != -1 && !self.ArenaSitting.players[myPlayerNumber].readyForNextRound)
                     {
                         Player.InputPackage myInputPackage = RWInput.PlayerInput(0);
                         if (myInputPackage.jmp || myInputPackage.thrw || myInputPackage.pckp || myInputPackage.mp)
