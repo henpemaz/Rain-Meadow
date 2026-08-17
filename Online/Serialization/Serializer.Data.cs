@@ -753,6 +753,7 @@ namespace RainMeadow
 #endif
             if (IsWriting)
             {
+                if (data.Count > ushort.MaxValue) throw new OverflowException("too many elements");
                 writer.Write((ushort)data.Count);
                 for (int i = 0; i < data.Count; i++)
                 {
