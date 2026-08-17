@@ -144,6 +144,8 @@ namespace RainMeadow
             RainMeadow.Info($"Adding {scoreChange} to {onlinePlayer}'s score.");
             arenaPlayer.score += scoreChange;
 
+            RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};SCORE;{arenaPlayer.score}");
+
             if (OnlineManager.lobby.isOwner)
                 arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
         }

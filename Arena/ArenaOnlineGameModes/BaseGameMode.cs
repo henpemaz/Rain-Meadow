@@ -85,11 +85,11 @@ namespace RainMeadow
             ArenaOnlineGameMode arenaOnline,
             ArenaSetup.GameTypeSetup self)
         {
-            self.survivalScore   = arenaOnline.survivalScore;
-            self.KillScore       = arenaOnline.killScore;
+            self.survivalScore = arenaOnline.survivalScore;
+            self.KillScore = arenaOnline.killScore;
             self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore   = arenaOnline.spearHitScore;
-            self.foodScore       = arenaOnline.foodScore;
+            self.spearHitScore = arenaOnline.spearHitScore;
+            self.foodScore = arenaOnline.foodScore;
 
             self.repeatSingleLevelForever = false;
             self.savingAndLoadingSession = true;
@@ -468,7 +468,7 @@ namespace RainMeadow
             // Handle Trophies
             if (CreatureSymbol.DoesCreatureEarnATrophy(target.Template.type))
             {
-                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [ trophy.ToString() ]);
+                ArenaRPCs.AddArenaPlayerRoundKills(attackerArenaPlayer.playerNumber, [trophy.ToString()]);
 
                 attackerOCreature.BroadcastRPCInRoom(
                     ArenaRPCs.AddArenaPlayerRoundKills,
@@ -481,6 +481,11 @@ namespace RainMeadow
             // Handle Meadow Coins
             if (target.Template.type == CreatureTemplate.Type.Slugcat)
             {
+                RainMeadow.Info(
+                    $"RMEL;{attackerOCreature.owner.id.DisplayName};KILLED;"
+                    + $"{targetOCreature.owner.id.DisplayName};SCORE;{attackerArenaPlayer.score}"
+                );
+
                 // Cash Money Slugs
                 ArenaClientSettings? attackerClientData = ArenaHelpers.GetArenaClientSettings(attackerOCreature.owner);
                 if (attackerClientData?.gotSlugcat == true
@@ -1094,6 +1099,20 @@ namespace RainMeadow
                 arenaOnline.hasPermissionToRejoin = false;
             }
 
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in self.arenaSitting.players)
+            {
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arenaOnline,
+                    arenaPlayer.playerNumber
+                );
+                if (onlinePlayer is null) continue;
+
+                RainMeadow.Info(
+                    $"RMEL;{onlinePlayer.id.DisplayName};CLASS;"
+                    + $"{ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.playingAs}"
+                );
+            }
+
             if (
                 OnlineManager.lobby.isOwner
                 && ModManager.MSC
@@ -1452,6 +1471,21 @@ namespace RainMeadow
                     arenaPlayer.wins++;
                     arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);
                 }
+            }
+
+            // For the Arena tournament
+            foreach (ArenaSitting.ArenaPlayer arenaPlayer in arenaSitting.players)
+            {
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arenaOnline,
+                    arenaPlayer.playerNumber
+                );
+                if (onlinePlayer is null) continue;
+
+                RainMeadow.Info(
+                    $"RMEL;{onlinePlayer.id.DisplayName};{arenaPlayer.wins};"
+                    + $"{arenaPlayer.allKills.Count};{arenaPlayer.deaths};{arenaPlayer.totScore}"
+                );
             }
         }
 
