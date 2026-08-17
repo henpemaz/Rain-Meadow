@@ -418,6 +418,26 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arenaOnline.playersLateWaitingInLobbyForNextRound.Clear();
                     arenaOnline.hasPermissionToRejoin = false;
                 }
+
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in self.arenaSitting.players)
+                {
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arenaOnline,
+                        arenaPlayer.playerNumber
+                    );
+                    if (onlinePlayer is null) continue;
+
+                    RainMeadow.Info(
+                        $"RMEL;{onlinePlayer.id.DisplayName};CLASS;"
+                        + $"{ArenaHelpers.GetArenaClientSettings(onlinePlayer)?.playingAs}"
+                    );
+
+                    if (ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(onlinePlayer) is ArenaTeamClientSettings playerTeamSettings
+                        && teamNames.TryGetValue(playerTeamSettings.team, out string? teamName))
+                    {
+                        RainMeadow.Info($"RMEL;{onlinePlayer.id.DisplayName};TEAM;{teamName}");
+                    }
+                }
             }
         }
 
