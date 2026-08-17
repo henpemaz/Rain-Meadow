@@ -1,7 +1,7 @@
 # Release 1.15.0
 
 ## Engine
-- Fixed a serialization issue that would break lobbies when Watcher was enabled
+- Fixed a serialization issue that would break lobbies when The Watcher was enabled
 - Added more failsafes to lobby joining, including a configurable timeout
 - Improved some sources of desync (enums)
 - Improved Noodle Fly sync
@@ -9,7 +9,7 @@
 - The Debug Overlay can now track non-physical object entities
 - Added an Ownership view to the Debug Overlay in Dev Tools
   - Pressing '-' shows a list of players along with which objects they own and how many
-- Mods containing changes to the levels/ directory are now considered high-impact
+- Mods containing changes to the `levels/` directory are now considered high-impact
 
 ### Modders
 - Added `MatchmakingManager.OnLobbyLeaving` event
@@ -19,24 +19,24 @@
 - Fixed irrelevant rooms not being unloaded while spectating other players, which was causing higher network throughput
 - Prevented the abstraction of rooms that contain player avatars or other non-transferable objects
 - Added a new `OnlinePearlString` entity and synchronized pearl creation
-- Fixed objects marked as destroyOnAbstraction not being destroyed
+- Fixed objects marked as `destroyOnAbstraction` not being destroyed
 - Added the ability to enable or disable cheats when creating a lobby
-  - When cheats are disabled, most Dev Tool cheats that affect gameplay are disabled
   - The host can still use cheats, but no other players can
-  - A select few functions, such as viewing logs (K), reloading rooms (Q), and debug/profiler information, continue to work
+  - When cheats are disabled, most Dev Tool cheats that affect gameplay are disabled
+  - A selection of few functions, such as viewing logs (K), reloading rooms (Q), and debug/profiler information, will continue to work for other players
   - This update completely disables cycle restarting via Dev Tools (R) while online
-  - This update also restricts Dev Tools item spawning to the player who spawned the item, and restricts teleporting to exits so it only teleports the local player instead of everyone
-- Replaced the Cape Colors dropdown menu with a textbox that accepts a hex code for any color
-- Added a checkbox for Rainbow Cape, active only during events
+  - This update also restricts Dev Tools item spawning (numbers) to the player who spawned the item, and restricts teleporting to exits (numpad) so it only teleports the local player
+- Replaced the Cape Colors dropdown menu with a textbox that accepts any hex color code
+- Added a checkbox for Rainbow Cape, which is active only during events
 - Cape fetching now runs asynchronously, improving startup times on slow internet connections
 - Added scarves
-- Fixed the exit button on the main menu getting pushed into the second column when Expedition is enabled
+- Fixed the Exit button on the main menu getting pushed into the second column when Expedition is enabled
 - Added French translation; updated Japanese, Spanish, and Russian translations
 - Added a redesigned lobby select menu
+  - Lobby cards now show icons for the active lobby timeline and required DLCs
   - Lobby metadata is now shown directly in the menu, including the data previously shown on cards plus:
     - Active lobby timeline (always shown in Meadow mode; Story mode requires the game to be in progress)
-    - Mods needed to join the selected lobby
-  - Lobby cards now show icons for the active lobby timeline and required DLCs
+    - Mods required to join the selected lobby
 - The slugcat icon in the player HUD now reflects the target player's chosen slugcat and colors in use
   - An additional remix option lets players use the old icon if they find the new icons too distracting
 
@@ -47,7 +47,7 @@
 - Added `ScrollableConfirmDialog` menu objects
 
 ## Arena
-- Added a new gamemode, Drown: kill and survive to buy your escape, available in Cooperative and Competitive modes
+- Added a new gamemode, Drown: kill and survive to purchase your escape, available in Cooperative and Competitive modes
 - Arena stats update:
   - Empty deaths and friendly fire now subtract from the dying player/teammate's killer instead of adding points to everyone else
   - In Team Battle, teams now have per-player stats
@@ -71,7 +71,7 @@
 - Slightly improved timer accuracy
 - Fixed the result box bump sound effect playing per player on the final results screen instead of once
 - Synced players' ready state on the overlay results screen
-- Fixed the "TO LOBBY" button on the final results screen drawing behind result boxes
+- Fixed the TO LOBBY button on the final results screen drawing behind result boxes
 - Players now wait in the starting pipe until everyone has joined; the maximum wait time is configurable in the Remix menu
 
 ### Watcher
@@ -80,7 +80,7 @@
 - Added a debuff icon for players affected by an Amoeba's visual distortion
 - Watcher now has normal camo transition tick time at ripple 5+, enabling levitation tech
 - Disabled Ripple Trail in online arena
-- Gave summoned Amoebas the Watcher's body color
+- Gave summoned Amoebas Watcher's body color
 - Fixed summoned Amoebas being destroyed under various unintended conditions
 - Fixed summoned Amoebas spawning on the wrong layer
 - Summoned Amoebas now have idle behaviors
@@ -89,14 +89,13 @@
 - Amoebas no longer slow down for dead players or teammates
 - The distortion effect now fades on player death
 - Watcher now shows the same effect as a failed portal opening when attempting to summon an Amoeba during countdown or without enough charge
-- Ripple 9 now makes Watcher fully invisible, leaving only a faint glow behind
+- Ripple 9 now makes Watcher fully invisible to everyone, leaving only a faint glow behind; can be disabled in the Meadow Arena Remix page
 - Watcher now always has white eyes while camouflaged
 - Watcher now sees only the eyes of other Watchers in ripple space, instead of their full bodies
 - The dev skin no longer shows in ripple space
 - Hands and mud no longer show in ripple space
 - Reduced Watcher's camo VFX aura at all ripple levels
 - Player nametags now interact as expected with ripple layer changes
-- Added an arena option to make ripple 9 Watcher fully invisible to everyone
 
 ### Modders
 - ⚠️ Changed `ArenaOnlineGameMode.session` from a field to a getter property, renamed to `ArenaOnlineGameMode.ArenaSession`
@@ -112,12 +111,12 @@
 
 ## Story
 - Players can now spectate their own corpses as long as they still exist
-- Fixed players readied on the sleep screen hearing the continue sound repeatedly after the host continues
+- Fixed readied players from hearing the continue sound repeatedly on the sleep screen after the host continues
 
 ### Watcher
 - Fixed Watcher warp not working when warping from a world for the second time in a cycle
-- Fixed the Prince's duplication
-- Synced the Prince's position and look point
+- Fixed The Prince's duplication
+- Synced The Prince's position and look point
 - Synced lightning storms
 
 ## Chat
