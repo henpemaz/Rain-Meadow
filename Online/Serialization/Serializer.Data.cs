@@ -753,7 +753,7 @@ namespace RainMeadow
 #endif
             if (IsWriting)
             {
-                writer.Write((byte)data.Count);
+                writer.Write((ushort)data.Count);
                 for (int i = 0; i < data.Count; i++)
                 {
                     writer.Write(data[i]);
@@ -761,7 +761,7 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                var count = reader.ReadByte();
+                var count = reader.ReadUInt16();
                 data = new(count);
                 for (int i = 0; i < count; i++)
                 {
@@ -1401,26 +1401,27 @@ namespace RainMeadow
             {
                 if (data is null)
                 {
-                    writer.Write((byte)0);
+                    writer.Write((ushort)0);
                 }
                 else
                 {
-                    writer.Write((byte)data.Count);
+                    if (data.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)data.Count);
                     foreach (var kvp in data)
                     {
                         writer.Write(kvp.Key);
-                        writer.Write((byte)kvp.Value.Count);
+                        if (kvp.Value.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                        writer.Write((ushort)kvp.Value.Count);
                         for (int i = 0; i < kvp.Value.Count; i++)
                         {
-
-                            writer.Write(kvp.Value[i].ToString());
+                            writer.Write(kvp.Value[i]);
                         }
                     }
                 }
             }
             if (IsReading)
             {
-                var dictCount = reader.ReadByte();
+                var dictCount = reader.ReadUInt16();
                 if (dictCount == 0)
                 {
                     data = new Dictionary<int, List<string>>();
@@ -1431,20 +1432,21 @@ namespace RainMeadow
                     for (int i = 0; i < dictCount; i++)
                     {
                         var key = reader.ReadInt32();
-                        var listCount = reader.ReadByte();
+                        var listCount = reader.ReadUInt16();
                         var value = new List<string>(listCount);
-
                         for (int j = 0; j < listCount; j++)
                         {
                             value.Add(reader.ReadString());
-
                         }
-                        data.Add(key, new List<string>(value));
+                        data.Add(key, value);
                     }
                 }
             }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
-         public void Serialize(ref Dictionary<int, int> data)
+        public void Serialize(ref Dictionary<int, int> data)
         {
 #if TRACING
             long wasPos = this.Position;
@@ -1453,11 +1455,12 @@ namespace RainMeadow
             {
                 if (data is null)
                 {
-                    writer.Write((byte)0);
+                    writer.Write((ushort)0);
                 }
                 else
                 {
-                    writer.Write((byte)data.Count);
+                    if (data.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)data.Count);
                     foreach (var kvp in data)
                     {
                         writer.Write(kvp.Key);
@@ -1467,7 +1470,7 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                var count = reader.ReadByte();
+                var count = reader.ReadUInt16();
                 data = new Dictionary<int, int>(count);
                 for (int i = 0; i < count; i++)
                 {
