@@ -56,7 +56,7 @@
   - Fixed various other minor bugs
 - Fixed winning conditions for a hidden minigame
 - Added the ability to import/export game settings as code, with support for FFA, Team Battle, and Drown
-- Added scoring in-game UI for Challenge, Drown, or when scoring logic is enabled; default keybind is "S" and can be changed in the Meadow Arena Remix page
+- Added scoring in-game UI for Challenge, Drown, or when scoring logic is enabled; the default keybind is "T" and can be changed in the Rain Meadow Remix Menu
 - Added an Arena Remix tab toggle for disabling Meadow Cosmetics in the lobby
 - Changed the input for banning slugcats from pickup to Shift+Click when using the mouse
 - Made Artificer's and Gourmand's parries defender-sided
