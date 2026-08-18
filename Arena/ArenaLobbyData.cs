@@ -46,7 +46,7 @@ namespace RainMeadow
             public List<int> bannedSlugs;
 
 
-            [OnlineField(group = "arenaSetup")]
+            [OnlineField(group = "arenaSetup", longList = true)]
             public List<string> playList;
 
             [OnlineField(group = "arenaSetup")]
@@ -175,7 +175,7 @@ namespace RainMeadow
             public bool artiParryLeniency;
 
 
-            [OnlineField(group = "arenaGameplay")]
+            [OnlineField(group = "arenaGameplay", longList = true)]
             public List<ushort> arenaSittingOnlineOrder;
 
             [OnlineField(group = "arenaGameplay")]
@@ -209,7 +209,7 @@ namespace RainMeadow
             [OnlineField(group = "arenaScore")]
             public Dictionary<int, int> scoreByInLobbyId;
 
-            [OnlineField(group = "arenaScore")]
+            [OnlineField(group = "arenaScore")] // TODO make it's inner-list serialize as long-list
             public Dictionary<int, List<string>> allKillsByInLobbyId;
 
             [OnlineField(group = "arenaScore")]
