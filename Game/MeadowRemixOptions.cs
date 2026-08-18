@@ -201,7 +201,7 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
-        ArenaToggleShowScoreKey = config.Bind("ArenaToggleShowScoreKey", KeyCode.S);
+        ArenaToggleShowScoreKey = config.Bind("ArenaToggleShowScoreKey", KeyCode.T);
         ArenaShowScore = config.Bind("ArenaShowScore", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
