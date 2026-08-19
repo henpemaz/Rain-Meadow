@@ -1,3 +1,11 @@
+# Release 1.16.0 / 1.15.1
+
+## General
+
+### Modders
+
+- Added constants for Rain Meadow's guids, name, and version.
+
 # Release 1.15.0
 
 ## Engine
@@ -46,7 +54,6 @@
   - Lobby cards and in-game slugcat icons automatically use the provided sprites and layering, falling back to a default icon if none are set
 - `activeTimeline` is now part of `LobbyInfo`
 - Added `ScrollableConfirmDialog` menu objects
-- Added constants for Rain Meadow's guids, name, and version.
 
 ## Arena
 - Added a new gamemode, Drown: kill and survive to buy your escape, available in Cooperative and Competitive modes
