@@ -656,6 +656,66 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
 
 public static class MeadowExtEnumSync
 {
+    // ------------------- Hooks
+    internal static void EnumHooks()
+    {
+        On.RainWorld.PostModsInit += RainWorld_PostModsInit_InitAllExtEnums;
+    }
+
+    private static void RainWorld_PostModsInit_InitAllExtEnums(On.RainWorld.orig_PostModsInit orig, RainWorld self)
+    {
+        orig(self);
+        // Initialization done after every mod had a chance to initialize their ExtEnums by their own
+        InitAllExtEnums();
+    }
+
+    // --------------------- Methods and Attributes
+
+    private static void InitAllExtEnums()
+    {
+        RainMeadow.Debug($"Running all cctors with ExtEnums");
+        List<string> assembliesWithEnums = [];
+        // Runs all types with staticly initialzed enum, so they don't get run unpredictably
+        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            bool isMain = assembly == Assembly.GetExecutingAssembly();
+            bool hasEnums = false;
+            try
+            {
+                foreach (Type type in assembly?.GetTypesSafely() ?? [])
+                {
+                    try
+                    {
+                        if (type
+                                .GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                                .Any(x => x.IsStatic && ExtEnumBase.valueDictionary.ContainsKey(x.FieldType))
+                            || type
+                                .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                                .Any(x => x.CanRead && x.GetMethod.IsStatic && ExtEnumBase.valueDictionary.ContainsKey(x.PropertyType))
+                        )
+                        {
+                            // run the cctor (if it wasn't already run)
+                            hasEnums = true;
+                            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error("Error while trying to find ExtEnum in " + assembly?.FullName + ":" + type?.FullName);
+                        if (isMain) throw e;
+                        RainMeadow.Error(e);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                if (isMain) throw e;
+                RainMeadow.Error(e);
+            }
+            if (hasEnums) assembliesWithEnums.Add(assembly!.GetName().Name);
+        }
+        RainMeadow.Debug($"Loaded {assembliesWithEnums.Count} assemblies with enums : {string.Join(", ", assembliesWithEnums)}");
+    }
     public static void ResetEnumEntriesMapping()
     {
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
@@ -672,14 +732,14 @@ public static class MeadowExtEnumSync
     // I don't want to assume that the order of SyncedExtEnumList is the same. I'll leave it public if some mods want to sync more enums here.
     // Also, having it static initialized is no biggies ! We'll assign the values later.
     public static SeparatorCompressedExtEnum OnlineStateTypeMap {get;}
-    public static List<CompressedExtEnumBase> SyncedExtEnumList = new()
-    {
+    public static List<CompressedExtEnumBase> SyncedExtEnumList =
+    [
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Name)),
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Timeline)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(AbstractPhysicalObject.AbstractObjectType)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(CreatureTemplate.Type)),
         (OnlineStateTypeMap = new SeparatorCompressedExtEnum(typeof(OnlineState.StateType), '.')),
-    };
+    ];
 
     // We need a double special character for the trim since the compressed value can have ANY character in it
     public const string compressionSeparator = ";;";
