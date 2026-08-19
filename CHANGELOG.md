@@ -39,6 +39,7 @@
   - Lobby cards now show icons for the active lobby timeline and required DLCs
 - The slugcat icon in the player HUD now reflects the target player's chosen slugcat and colors in use
   - An additional remix option lets players use the old icon if they find the new icons too distracting
+- Added Korean translation by Karnellon
 
 ### Modders
 - Added `SlugIcon`. Modded slugcats may provide their own assets and colors by adding entries to the static properties in `SlugIcon`; see `Menu/Components/SlugIcon.cs` for details
