@@ -22,7 +22,7 @@ namespace RainMeadow
             GuidRainWorld = "henpemaz_rainmeadow",
             GuidBepInEx = "henpemaz.rainmeadow",
             Name = "Rain Meadow",
-            Version = "0.1.14.1",
+            Version = "0.1.15.0",
             ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
 
         public static string NewVersionAvailable = "";
