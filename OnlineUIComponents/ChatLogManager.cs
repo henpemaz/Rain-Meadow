@@ -26,12 +26,13 @@ namespace RainMeadow
             EndOfSession = 'S',
         }
 
+        public static event Action<string, string>? MessageLogged;
+
         // HACK: put this somewhere better
         public static bool shownChatTutorial = false;
         public static bool logErrorsInChat = false;
         // Shared dictionary for chats, reset each time a new lobby is entered
         public static List<(string, string)> chatLog = [];
-        private static List<IChatSubscriber> subscribers = [];
 
         private static Dictionary<string, Color> colorDict = [];
 
@@ -107,15 +108,10 @@ namespace RainMeadow
             }
         }
 
-        public static void Subscribe(IChatSubscriber e) => subscribers.Add(e);
-
-        public static void Unsubscribe(IChatSubscriber e) => subscribers.Remove(e);
-
         public static void LogMessage(string user, string message)
         {
-            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             AddMessageToChatLog(user, message);
-            subscribers.ForEach(e => e.AddMessage(user, message));
+            MessageLogged?.Invoke(user, message);
         }
 
         public static void LogSystemMessage(string message, SystemMessageType systemMessageType = SystemMessageType.System)
@@ -141,10 +137,9 @@ namespace RainMeadow
                 && !RainMeadow.rainMeadowOptions.EnableChatRoundNotification.Value)
                     return;
 
-            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             string signature = TypeToSysMesSignature(systemMessageType);
             AddMessageToChatLog(signature, message);
-            subscribers.ForEach(e => e.AddMessage(signature, message));
+            MessageLogged?.Invoke(signature, message);
         }
 
         /// <summary>
@@ -214,11 +209,5 @@ namespace RainMeadow
 
         public static bool IsUserSystemSignature(string user)
             => SysMesSignatureToType(user) is not null;
-    }
-
-    public interface IChatSubscriber
-    {
-        public bool Active { get; }
-        public void AddMessage(string user, string text);
     }
 }
