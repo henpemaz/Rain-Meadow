@@ -115,7 +115,7 @@ public abstract class CompressedExtEnumBase
     }
     public int GetIndex(string value) => entriesMap[value];
     public int GetIndex<T>(T extEnum) where T : ExtEnum<T> => GetIndex(extEnum.value);
-    public string? GetValueFromIndex(int index) 
+    public string? GetValueFromIndex(int index)
     {
         try
         {
@@ -143,7 +143,7 @@ public abstract class CompressedExtEnumBase
     public string[] GetAndCacheCompressedEntries()
     {
         if (this.cachedCompressedMap.Length <= 0)
-        {                
+        {
             RainMeadow.Debug($"Cached compressed entries of enum {this.enumType.FullName} !");
             this.cachedCompressedMap = this.GetCompressedEntries();
         }
@@ -222,11 +222,11 @@ public abstract class CompressedExtEnumBase
             {
                 RainMeadow.Debug($"   >{result.AmbiguousExtEnum[i].value}");
             }
-        }        
+        }
     }
-    
-    /* 
-        Match compressed strings and returns the decompression result. 
+
+    /*
+        Match compressed strings and returns the decompression result.
         "matchingAlgorithm" and "ambiguousAlgorithm" both take a candidate (a string that may bethe value) and a compressed value. They return true if it match.
         "matchingAlgorithm" should match any string that could be compressed into the string given as second argument.
         "ambiguousAlgorithm" should be able to get ONE result from a bunch of candidate from "matchingAlgorithm". Mainly used from edge case or exact matching.
@@ -237,6 +237,7 @@ public abstract class CompressedExtEnumBase
         List<string> oldEntries = this.entriesMap.Keys.ToList();
         List<ExtEnumEntry> missingExtEnum = [], ambiguousExtEnum = [], additionnalEnum = [];
         Dictionary<string, int> newEntries = [];
+        List<string> ambiguousEnumsEntries = [];
 
         for (int i = 0; i < compressedEntries.Length; i++)
         {
@@ -247,8 +248,16 @@ public abstract class CompressedExtEnumBase
             }
             else if (search.Count == 0)
             {
-                RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
-                missingExtEnum.Add(new(compressedEntries[i], i));
+                int exactFindIndex = oldEntries.FindIndex(x => x == compressedEntries[i]);
+                if (exactFindIndex > -1)
+                {
+                    newEntries.Add(oldEntries[exactFindIndex], i);
+                }
+                else
+                {
+                    RainMeadow.Debug($"Found missing enum of {enumType.FullName} : {compressedEntries[i]}");
+                    missingExtEnum.Add(new(compressedEntries[i], i));
+                }
             }
             else
             {
@@ -258,7 +267,7 @@ public abstract class CompressedExtEnumBase
                     newEntries.Add(search[exactFindIndex], i);
                 }
                 else
-                {   
+                {
                     int compressedExactFindIndex = ambiguousAlgorithm is not null ? search.FindIndex(x => ambiguousAlgorithm(x, compressedEntries[i])) : -1;
                     if (compressedExactFindIndex > -1)
                     {
@@ -266,7 +275,8 @@ public abstract class CompressedExtEnumBase
                     }
                     else
                     {
-                        RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}");
+                        RainMeadow.Debug($"Found {search.Count} ambiguous enum of {enumType.FullName} : {compressedEntries[i]}  (could be {string.Join(", ", search)})");
+                        ambiguousEnumsEntries.AddRange(search);
                         ambiguousExtEnum.Add(new(compressedEntries[i], i));
                     }
                 }
@@ -275,7 +285,7 @@ public abstract class CompressedExtEnumBase
 
         for (int i = 0; i < oldEntries.Count; i++)
         {
-            if (!newEntries.Keys.Contains(oldEntries[i]))
+            if (!newEntries.Keys.Contains(oldEntries[i]) && !ambiguousEnumsEntries.Contains(oldEntries[i]))
             {
                 RainMeadow.Debug($"Found additionnal enum of {enumType.FullName} : {oldEntries[i]}. Assigning it place {newEntries.Count}.");
                 additionnalEnum.Add(new(oldEntries[i], newEntries.Count));
@@ -293,16 +303,16 @@ public abstract class CompressedExtEnumBase
              : this([], new ExtEnumEntry[0], "wawa") {}
         public DecompressionResult(ExtEnumEntry[] missingExtEnum, ExtEnumEntry[] ambiguousExtEnum, string typeFullName)
              : this(missingExtEnum, ambiguousExtEnum, [], typeFullName) {}
-        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, List<ExtEnumEntry> additionnalExtEnum, string typeFullName) 
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, List<ExtEnumEntry> additionnalExtEnum, string typeFullName)
             : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), additionnalExtEnum.ToArray(), typeFullName) {}
-        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, string typeFullName) 
+        public DecompressionResult(List<ExtEnumEntry> missingExtEnum, List<ExtEnumEntry> ambiguousExtEnum, string typeFullName)
             : this(missingExtEnum.ToArray(), ambiguousExtEnum.ToArray(), typeFullName) {}
 
         // This part need to be synced for clarification
         public string TypeFullName = typeFullName;
         public ExtEnumEntry[] MissingExtEnum { get; private set; } = missingExtEnum;
         public ExtEnumEntry[] AmbiguousExtEnum { get; private set; } = ambiguousExtEnum;
-        
+
         // This part doesn't need to be synced at all
         public ExtEnumEntry[] AdditionnalExtEnum { get; private set; } = additionnalExtEnum;
         public bool IsOK { get; private set; } = missingExtEnum.Length == 0 && ambiguousExtEnum.Length == 0;
@@ -311,7 +321,7 @@ public abstract class CompressedExtEnumBase
         {
             serializer.Serialize(ref this.TypeFullName);
             if (serializer.IsWriting)
-            {  
+            {
                 byte tabSize = (byte)this.MissingExtEnum.Length;
                 serializer.Serialize(ref tabSize);
                 for (int i = 0; i < tabSize; i++)
@@ -319,7 +329,7 @@ public abstract class CompressedExtEnumBase
                     serializer.Serialize(ref this.MissingExtEnum[i].position);
                     serializer.Serialize(ref this.MissingExtEnum[i].value);
                 }
-                
+
                 tabSize = (byte)this.AmbiguousExtEnum.Length;
                 serializer.Serialize(ref tabSize);
                 for (int i = 0; i < tabSize; i++)
@@ -340,7 +350,7 @@ public abstract class CompressedExtEnumBase
                     serializer.Serialize(ref data.value);
                     MissingExtEnum[i] = data;
                 }
-                
+
                 serializer.Serialize(ref tabSize);
                 AmbiguousExtEnum = new ExtEnumEntry[tabSize];
                 for (int i = 0; i < tabSize; i++)
@@ -366,12 +376,12 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
         if (sortedValues.Count == 0) return [];
 
         // cutting the list by 1st letter
-        List<List<ExtEnumEntry>> cuttedList = []; 
+        List<List<ExtEnumEntry>> cuttedList = [];
         for (int i = 0; i < sortedValues.Count; i++)
         {
-            if (i == 0 
-                || sortedValues[i].value.Length == 0 
-                || cuttedList[cuttedList.Count - 1][0].value.Length == 0 
+            if (i == 0
+                || sortedValues[i].value.Length == 0
+                || cuttedList[cuttedList.Count - 1][0].value.Length == 0
                 || cuttedList[cuttedList.Count - 1][0].value[0] != sortedValues[i].value[0])
             {
                 cuttedList.Add([sortedValues[i]]);
@@ -389,7 +399,7 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
             {
                 cuttedList[i][0].value = cuttedList[i][0].value.Length == 0 ? "" : cuttedList[i][0].value[0].ToString();
             }
-            else 
+            else
             {
                 // removing the first letter, call a recursive loop, then add it back
                 List<ExtEnumEntry> withoutFirstLetterCut = [];
@@ -397,9 +407,9 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
                 {
                     // making a new object to not modify our old table rigth away
                     withoutFirstLetterCut.Add(new ExtEnumEntry(
-                        cuttedList[i][j].position, cuttedList[i][j].value.Length <= 1 ? "" : cuttedList[i][j].value.Substring(1))); 
+                        cuttedList[i][j].position, cuttedList[i][j].value.Length <= 1 ? "" : cuttedList[i][j].value.Substring(1)));
                 }
-                
+
                 withoutFirstLetterCut = Compression(withoutFirstLetterCut);
 
                 for (int j = 0; j < cuttedList[i].Count; j++)
@@ -412,7 +422,7 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
         // merging things together- actually nevermind ! Classes are passed by reference, you just return here.
         return sortedValues;
     }
-    public static bool DoesStringMatchCompressed(string value, string compressedValue) 
+    public static bool DoesStringMatchCompressed(string value, string compressedValue)
         => value.Length >= compressedValue.Length && value.Substring(0, compressedValue.Length) == compressedValue;
     protected override string[] GetCompressedEntries()
     {
@@ -420,12 +430,12 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
         if (sortedValues.Count == 0) return [];
 
         sortedValues.Sort((x, y) => x.value.CompareTo(y.value));
-        
+
         return ExtEnumEntry.ExtEnumEntryToArray(Compression(sortedValues));
     }
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        return ProcessCompression(compressedEntries, 
+        return ProcessCompression(compressedEntries,
             (x,y) => DoesStringMatchCompressed(x, y));
     }
 }
@@ -436,7 +446,7 @@ public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtE
     {
         // Sorting and cutting the list by size
         arrangedValues.Sort((x, y) => x.value.Length - y.value.Length);
-        List<List<ExtEnumEntry>> cuttedList = []; 
+        List<List<ExtEnumEntry>> cuttedList = [];
         for (int i = 0; i < arrangedValues.Count; i++)
         {
             if (i == 0 || cuttedList[cuttedList.Count - 1][0].value.Length != arrangedValues[i].value.Length)
@@ -482,9 +492,9 @@ public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtE
     public static bool DoesStringMatchCompressed(string value, string compressedValueNSize)
     {
         string compressedValue = SplitCompressedSizeAndValue(compressedValueNSize, out var size);
-        
+
         if (value.Length != size) return false;
-        
+
         // if (FirstLetterCompressedExtEnum.DoesStringMatchCompressed(value, compressedValue)) { RainMeadow.Debug($"Matching {value} and <{size}> {compressedValue} ({compressedValueNSize})"); }
         return FirstLetterCompressedExtEnum.DoesStringMatchCompressed(value, compressedValue);
     }
@@ -495,8 +505,8 @@ public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtE
 
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        return ProcessCompression(compressedEntries, 
-            (x,y) => DoesStringMatchCompressed(x, y), 
+        return ProcessCompression(compressedEntries,
+            (x,y) => DoesStringMatchCompressed(x, y),
             (x,y) => x == y.Substring(1));
     }
 }
@@ -527,11 +537,11 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
         else
         {
             arrangedValues.Sort((x, y) => x.value.Split(separator).First().CompareTo(y.value.Split(separator).First()));
-            List<List<ExtEnumEntry>> cuttedList = []; 
+            List<List<ExtEnumEntry>> cuttedList = [];
             List<ExtEnumEntry> uniquePrefix = []; // ExtEnumEntry to pass it into the blender- uh the compresser
             for (int i = 0; i < arrangedValues.Count; i++)
             {
-                if (i == 0 
+                if (i == 0
                     || cuttedList[cuttedList.Count - 1].First().value.Split(separator).First() != arrangedValues[i].value.Split(separator).First())
                 {
                     uniquePrefix.Add(new(arrangedValues[i].value.Split(separator).First(), 0));
@@ -549,18 +559,18 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
             {
                 if (!FirstLetterCompressedExtEnum.DoesStringMatchCompressed(
                         cuttedList[i][0].value.Split(separator).First(),
-                        uniquePrefix[currentUniquePrefixIndex].value)) 
+                        uniquePrefix[currentUniquePrefixIndex].value))
                 { currentUniquePrefixIndex++; }
 
                 List<ExtEnumEntry> withoutPrefixCut = [];
                 for (int j = 0; j < cuttedList[i].Count; j++)
                 {
                     withoutPrefixCut.Add(new ExtEnumEntry(
-                        cuttedList[i][j].position, 
+                        cuttedList[i][j].position,
                         string.Join(separator.ToString(), cuttedList[i][j].value.Split(separator).Skip(1))
-                    )); 
+                    ));
                 }
-                
+
                 withoutPrefixCut = RecursiveCut(withoutPrefixCut, separator);
 
                 for (int j = 0; j < cuttedList[i].Count; j++)
@@ -582,13 +592,13 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
     public static List<ExtEnumEntry> Compression(List<ExtEnumEntry> arrangedValues, char separator)
     {
         if (arrangedValues.Count == 0) return [];
-        
+
         // sorting and cutting the list by amount of separator
         arrangedValues.Sort((x, y) => x.value.Count(x => separator == x) - y.value.Count(x => separator == x));
-        List<List<ExtEnumEntry>> cuttedList = []; 
+        List<List<ExtEnumEntry>> cuttedList = [];
         for (int i = 0; i < arrangedValues.Count; i++)
         {
-            if (i == 0 
+            if (i == 0
                 || cuttedList[cuttedList.Count - 1][0].value.Count(x => separator == x) != arrangedValues[i].value.Count(x => separator == x))
             {
                 cuttedList.Add([arrangedValues[i]]);
@@ -617,7 +627,7 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
             if (i == cutValue.Length - 1)
             {
                if (SizeAndFirstLetterCompressedExtEnum.DoesStringMatchCompressed(
-                    cutValue[i], 
+                    cutValue[i],
                     (char)(cutCompressedValue[i].First() - separator) + cutCompressedValue[i].Substring(1)))
                 {
                     return true;
@@ -631,15 +641,15 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
         }
         return false;
     }
-    
+
     protected override string[] GetCompressedEntries()
     {
         return ExtEnumEntry.ExtEnumEntryToArray(Compression(ExtEnumEntry.ToExtEnumEntryList(this.entriesMap), separator));
     }
     public override DecompressionResult ReadAndSyncCompressedEntries(string[] compressedEntries)
     {
-        return ProcessCompression(compressedEntries, 
-            (x,y) => DoesStringMatchCompressed(x, y, separator), 
+        return ProcessCompression(compressedEntries,
+            (x,y) => DoesStringMatchCompressed(x, y, separator),
             (x,y) => x.Split(separator).Last() == y.Split(separator).Last().Substring(1));
     }
 }
@@ -651,7 +661,7 @@ public static class MeadowExtEnumSync
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
         {
             // ordering them alphabetically to reduce order mismatch chances
-            SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true); 
+            SyncedExtEnumList[i].SetEnumEntriesFromCurrentExtEnum(true);
             if (OnlineManager.lobby.isOwner) {SyncedExtEnumList[i].LogMappedExtEnum();}
         }
         RainMeadow.Info($"Enum entries map reset for <{SyncedExtEnumList.Count}> enums : [{string.Join(", ", SyncedExtEnumList.Select(x => x.enumType.FullName))}]");
@@ -719,7 +729,7 @@ public static class MeadowExtEnumSync
     }
 
     // --------------------- Tests and logs
-    
+
     internal static void LogTestCompression()
     {
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
@@ -727,7 +737,7 @@ public static class MeadowExtEnumSync
             SyncedExtEnumList[i].LogCompressionTest(i == 0);
         }
     }
-    
+
     // --------------------- RPCS
 
     // Quite heavy RPCs, even with the compression, I hope this isn't too much of an issue.
@@ -736,20 +746,20 @@ public static class MeadowExtEnumSync
     [RPCMethod(security = RPCSecurity.NoSecurity)] // Asking the owner for the compressed list of the enums. Client -> Owner
     public static void RequestCompressedExtEnums(RPCEvent request)
     {
-        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) 
-        { 
+        if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner)
+        {
             RainMeadow.Error($"False request of enums : {(OnlineManager.lobby is null ? "Lobby is null" : "I am not the owner")} !");
             request.from.QueueEvent(new GenericResult.Fail(request));
-            return; 
+            return;
         }
 
         Dictionary<string, string> compressedExtEnumTable = [];
         try
         {
             for (int i = 0; i < SyncedExtEnumList.Count; i++)
-            {                
+            {
                 compressedExtEnumTable.Add(
-                    SyncedExtEnumList[i].enumType.FullName, 
+                    SyncedExtEnumList[i].enumType.FullName,
                     CompressedExtEnumArrayToString(SyncedExtEnumList[i].GetAndCacheCompressedEntries())
                 );
             }
@@ -820,18 +830,18 @@ public static class MeadowExtEnumSync
                 for (int j = 0; j < resultErrors.MissingExtEnum.Length; j++)
                 {
                     clarifiedMissingExtEnum[j] = new(
-                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.MissingExtEnum[j].position)!, 
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.MissingExtEnum[j].position)!,
                         resultErrors.MissingExtEnum[j].position
                     );
                 }
                 for (int j = 0; j < resultErrors.AmbiguousExtEnum.Length; j++)
                 {
                     clarifiedAmbiguousExtEnum[j] = new(
-                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.AmbiguousExtEnum[j].position)!, 
+                        SyncedExtEnumList[i].GetValueFromIndex(resultErrors.AmbiguousExtEnum[j].position)!,
                         resultErrors.AmbiguousExtEnum[j].position
                     );
-                }            
-                
+                }
+
                 CompressedExtEnumBase.DecompressionResult result = new(clarifiedMissingExtEnum, clarifiedAmbiguousExtEnum, resultErrors.TypeFullName);
                 thingsThatShoubldBeClearerTable.Add(result);
             }
@@ -855,11 +865,18 @@ public static class MeadowExtEnumSync
             if (i > -1)
             {
                 if (SyncedExtEnumList[i].storedCompressedValues.Length == 0) { return; } // you never asked for clarification, cmon, you know what you were doing !
-                
+
                 for (int j = 0; j < resultClarification.MissingExtEnum.Length; j++)
                 {
                     // This is technically creating enums if some are missings ? That's such a rare case, I don't think it'd cause error anyway.
-                    SyncedExtEnumList[i].entriesMap.Add(resultClarification.MissingExtEnum[j].value, SyncedExtEnumList[i].entriesMap.Count);
+                    if (SyncedExtEnumList[i].entriesMap.ContainsKey(resultClarification.MissingExtEnum[j].value))
+                    {
+                        RainMeadow.Warn($"Tried to assign missing enum {resultClarification.MissingExtEnum[j].value} of {resultClarification.TypeFullName} but it's already here!");
+                    }
+                    else
+                    {
+                        SyncedExtEnumList[i].entriesMap.Add(resultClarification.MissingExtEnum[j].value, SyncedExtEnumList[i].entriesMap.Count);
+                    }
                 }
                 for (int j = 0; j < resultClarification.AmbiguousExtEnum.Length; j++)
                 {
