@@ -10,10 +10,14 @@ namespace RainMeadow
         {
             [OnlineFieldColorRgb(nullable = true)]
             public Color? chatUsernameColor;
+
+            [OnlineField]
+            public MeadowProgression.Character? chatEmoteCharacter;
             public Definition() : base() { }
             public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource)
             {
                 this.chatUsernameColor = clientSettings.chatUsernameColor;
+                this.chatEmoteCharacter = clientSettings.chatEmoteCharacter;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
@@ -25,6 +29,7 @@ namespace RainMeadow
         public bool inGame;
         public bool isInteracting;
         public Color? chatUsernameColor;
+        public MeadowProgression.Character? chatEmoteCharacter;
 
         public bool isThinking; // no need to sync this one
         public List<OnlineEntity.EntityId> avatars = new();
@@ -32,6 +37,7 @@ namespace RainMeadow
         public ClientSettings(Definition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
         {
             this.chatUsernameColor = entityDefinition.chatUsernameColor;
+            this.chatEmoteCharacter = entityDefinition.chatEmoteCharacter;
         }
 
         public ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
@@ -39,6 +45,8 @@ namespace RainMeadow
             this.chatUsernameColor = RainMeadow.rainMeadowOptions.UseCustomChatUsernameColor.Value
                 ? Utils.SafeHexToColor(RainMeadow.rainMeadowOptions.CurrentlyActiveChatUsernameColor.Value)
                 : null;
+
+            this.chatEmoteCharacter = RainMeadow.rainMeadowOptions.EmoteCharacter.Value;
         }
 
         public override EntityDefinition MakeDefinition(OnlineResource onlineResource)

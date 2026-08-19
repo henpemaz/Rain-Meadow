@@ -159,6 +159,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> UseCustomChatUsernameColor;
     public readonly Configurable<bool> ChatTextDownscroll;
     public readonly Configurable<string> CurrentlyActiveChatUsernameColor;
+    public readonly Configurable<MeadowProgression.Character> EmoteCharacter;
 
 
     public enum IntroRoll
@@ -351,6 +352,8 @@ public class RainMeadowOptions : OptionInterface
         UseCustomChatUsernameColor = config.Bind("UseCustomChatUsernameColor", false);
         ChatTextDownscroll = config.Bind("ChatTextDownscroll", false);
         CurrentlyActiveChatUsernameColor = config.Bind("CurrentlyActiveChatUsernameColor", "FFFFFF");
+
+        EmoteCharacter = config.Bind("EmoteCharacter", MeadowProgression.Character.Slugcat);
     }
 
     List<ListItem> arenaFlairList = new List<ListItem>
@@ -793,6 +796,10 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(210, 70, Translate("Text Downscroll")),
                 new OpCheckBox(ChatTextDownscroll, new Vector2(210, 40)),
+
+                new OpLabel(410, 70, Translate("Emote Character")),
+                new OpComboBox2(EmoteCharacter, new Vector2(410, 40), 160f, OpResourceSelector.GetEnumNames(null, typeof(MeadowProgression.Character)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
             ];
             useCustomChatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) =>
             {

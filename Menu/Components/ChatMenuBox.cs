@@ -39,7 +39,7 @@ namespace RainMeadow.UI.Components
                 AddNewMessageToScroller(ChatLogManager.chatLog[i].Item1, ChatLogManager.chatLog[i].Item2);
             }
         }
-        public AlignedMenuLabel GetMessageLabel(string? user, string stg, ChatLogManager.SystemMessageType? systemMessageType, bool withUser, Vector2 pos, Vector2 size)
+        public AlignedMenuLabel CreateMessageLabel(string? user, string stg, ChatLogManager.SystemMessageType? systemMessageType, bool withUser, Vector2 pos, Vector2 size)
         {
             if (systemMessageType is not null)
             {
@@ -68,17 +68,58 @@ namespace RainMeadow.UI.Components
             messageLabel.label.alignment = FLabelAlignment.Left;
             return messageLabel;
         }
+
+        public List<ButtonScroller.IPartOfButtonScroller> AddEmoteItems(string? user, MeadowProgression.Emote emote, Vector2 pos)
+        {
+            List<ButtonScroller.IPartOfButtonScroller> messageLabels = [];
+            if (user is not null)
+            {
+                UsernameMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
+                { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
+                userLabel.label.alignment = FLabelAlignment.Left;
+                userLabel.label.color = ChatLogManager.GetDisplayPlayerColor(user!, MenuColorEffect.rgbMediumGrey);
+                pos.y += userLabel.Size.y;
+                messageLabels.Add(userLabel);
+            }
+
+            var emoteLabel = new ChatEmote(emote, menu, messageScroller, pos);
+            messageLabels.Add(emoteLabel);
+            int amount = Mathf.FloorToInt((emoteLabel.Size.y - emoteLabel.Margin.y)/messageScroller.ButtonHeightAndSpacing);
+            // HACK for differently sized items;
+            for (int i = 0; i < amount; i++)
+            {
+                messageLabels.Add(new ChatSpace(menu, messageScroller, Vector2.zero, Vector2.zero));
+            }
+            return messageLabels;
+
+        }
+
         public void AddNewMessageToScroller(string user, string message)
         {
             bool setNewScrollPosToLatest = messageScroller.IsAtBottom();
-            messageScroller.AddScrollObjects(GetMessageLabels(user, message));
+            messageScroller.AddScrollObjects(CreateMessageLabels(user, message));
             if (setNewScrollPosToLatest) messageScroller.MoveAtBottom();
         }
-        public AlignedMenuLabel[] GetMessageLabels(string user, string message)
+        public ButtonScroller.IPartOfButtonScroller[] CreateMessageLabels(string user, string message)
         {
+            RainMeadow.DebugMe();
             List<AlignedMenuLabel> messageLabels = [];
             ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(user);
             bool isSystemMessage = systemMessageType is not null;
+
+            if (message.StartsWith(":"))
+            {
+                string emoteMessage =  "emote" + message.TrimStart(':').ToLowerInvariant();
+                string symbolMessage =  "symbol" + message.TrimStart(':').ToLowerInvariant();
+                RainMeadow.Debug(emoteMessage);
+                RainMeadow.Debug(symbolMessage);
+                MeadowProgression.Emote? emote = MeadowProgression.emoteEmotes.Find(x => x.value.ToLowerInvariant() == emoteMessage) ?? MeadowProgression.symbolEmotes.Find(x => x.value.ToLowerInvariant() == symbolMessage);
+                if (!isSystemMessage && emote is not null)
+                {
+                    return [.. AddEmoteItems(user, emote, new(5, messageScroller.GetIdealPosWithScrollForButton(messageScroller.buttons.Count).y))];
+                }
+            }
+
             float desiredXWidth = messageScroller.size.x - 5;
             Vector2 desiredSize = new(desiredXWidth, messageScroller.buttonHeight);
 
@@ -86,7 +127,7 @@ namespace RainMeadow.UI.Components
             List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false) + (host ? 14f : 0)), 1, out string remainingMessage)];
             splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
             for (int i = 0; i < splitMessages.Count; i++)
-                messageLabels.Add(GetMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
+                messageLabels.Add(CreateMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
             return [.. messageLabels];
         }
         public void AddMessage(string user, string message)
