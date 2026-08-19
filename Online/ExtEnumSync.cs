@@ -248,10 +248,10 @@ public abstract class CompressedExtEnumBase
             }
             else if (search.Count == 0)
             {
-                int exactFindIndex = search.FindIndex(x => x  == compressedEntries[i]);
+                int exactFindIndex = oldEntries.FindIndex(x => x == compressedEntries[i]);
                 if (exactFindIndex > -1)
                 {
-                    newEntries.Add(search[exactFindIndex], i);
+                    newEntries.Add(oldEntries[exactFindIndex], i);
                 }
                 else
                 {
