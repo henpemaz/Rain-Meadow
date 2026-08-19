@@ -1,18 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
-using MoreSlugcats;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
-using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI;
 
@@ -608,13 +601,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (selectedObject is ButtonScroller.SideButton sideBtn)
         {
             string id = sideBtn.signalText;
-            if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)
+            if (id == "THUMBS" && sideBtn.owner is ArenaLevelSelector.PlaylistSelector playSelector)
                 return Translate(
                     playSelector.ShowThumbsStatus
                         ? "Showing level thumbnails"
                         : "Showing level names"
                 );
-            if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
+            if (id == "SHUFFLE" && sideBtn.owner is ArenaLevelSelector.PlaylistHolder playHolder)
                 return Translate(
                     playHolder.ShuffleStatus
                         ? "Playing levels in random order"
