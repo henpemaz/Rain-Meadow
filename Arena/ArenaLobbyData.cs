@@ -170,7 +170,7 @@ namespace RainMeadow
 
             [OnlineFieldHalf(group = "arenaSetup")]
             public float artiParryDistance;
-            
+
             [OnlineField(group = "arenaSetup")]
             public bool artiParryLeniency;
 
@@ -195,25 +195,7 @@ namespace RainMeadow
 
 
             [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> winsByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> deathsByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> roundDeathsByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> totalScoreByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, int> scoreByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> allKillsByInLobbyId;
-
-            [OnlineField(group = "arenaScore")]
-            public Dictionary<int, List<string>> roundKillsByInLobbyId;
+            public DynamicIdentifiablesICustomSerializables<ArenaPlayerStats, InLobbyId> playerStats;
 
 
             [OnlineField]
@@ -244,38 +226,10 @@ namespace RainMeadow
                 playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
-                winsByInLobbyId = arenaOnline.WinsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                deathsByInLobbyId = arenaOnline.DeathsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                roundDeathsByInLobbyId = arenaOnline.RoundDeathsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                totalScoreByInLobbyId = arenaOnline.TotalScoreByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                scoreByInLobbyId = arenaOnline.ScoreByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                );
-                allKillsByInLobbyId = arenaOnline.AllKillsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                        .Select(trophy => trophy.ToString())
-                        .ToList()
-                );
-                roundKillsByInLobbyId = arenaOnline.RoundKillsByOPlayer.ToDictionary(
-                    kvp => (int)kvp.Key.inLobbyId,
-                    kvp => kvp.Value
-                        .Select(trophy => trophy.ToString())
-                        .ToList()
-                );
+                // take a snapshot, we'll fill it in when building
+                playerStats = new DynamicIdentifiablesICustomSerializables<ArenaPlayerStats, InLobbyId>(arenaOnline.WinsByOPlayer.Keys.ToList()
+                    .Select(player => new ArenaPlayerStats(arenaOnline, player))
+                    .ToList());
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
 
@@ -353,48 +307,22 @@ namespace RainMeadow
                 arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
-                arenaOnline.WinsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => winsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.DeathsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => deathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.RoundDeathsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => roundDeathsByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.TotalScoreByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => totalScoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.ScoreByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => scoreByInLobbyId.TryGetValue(player.inLobbyId, out int value)
-                        ? value
-                        : 0
-                );
-                arenaOnline.AllKillsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => allKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
-                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
-                        : []
-                );
-                arenaOnline.RoundKillsByOPlayer = OnlineManager.players.ToDictionary(
-                    player => player,
-                    player => roundKillsByInLobbyId.TryGetValue(player.inLobbyId, out List<string>? value)
-                        ? value.Select(IconSymbol.IconSymbolData.IconSymbolDataFromString).ToList()
-                        : []
-                );
+                Dictionary<ushort, ArenaPlayerStats> statsByInLobbyId = new(playerStats.list.Count);
+                foreach (ArenaPlayerStats stats in playerStats.list)
+                {
+                    statsByInLobbyId[stats.inLobbyId] = stats;
+                }
+
+                // players without an entry keep default stats rather than being dropped
+                arenaOnline.ClearAllLobbyDataStats();
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    arenaOnline.AddMissingStatEntries(player);
+                    if (statsByInLobbyId.TryGetValue(player.inLobbyId, out ArenaPlayerStats stats))
+                    {
+                        stats.CopyTo(arenaOnline, player);
+                    }
+                }
 
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
