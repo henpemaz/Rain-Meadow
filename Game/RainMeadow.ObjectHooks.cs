@@ -24,8 +24,14 @@ namespace RainMeadow
         private void Room_Update_FreezeDeactivatedWorld(On.Room.orig_Update orig, Room self)
         {
             if (OnlineManager.lobby != null
-                && self.abstractRoom.GetResource() is RoomSession rs
-                && !rs.worldSession.isActive) return;
+                && self.abstractRoom.GetResource() is RoomSession rs)
+            {
+                if (!rs.worldSession.isActive)
+                {
+                    RainMeadow.Error($"froze room update for its world, it's never coming back");
+                    return;
+                }
+            }
             orig(self);
         }
 
