@@ -287,7 +287,7 @@ New emote unlocked|Разблокирована новая эмоция
 New skin unlocked|Разблокирован новый скин
 UNLOCKS|РАЗБЛОКИРОВКИ
 
-///история
+///Режим Истории
  - New Game| — Новая игра
 Unknonw Region|Неизвестный регион
 Current Campaign: |Текущая кампания: 
@@ -308,7 +308,7 @@ Wait for others to shelter or rescue you, press |Жди, пока другие �
 READY|ГОТОВ
 Press on the button to open/close the slugcat selection list|Нажми на кнопку, чтобы открыть/закрыть список выбора слизнекота.
 
-///арена
+///Режим Арены
 ME|Я
 Got All<LINE>ScugSlots!!|Получил все<LINE>СлизнеСлоты!!
 Joining<LINE>soon!|Скоро<LINE>присоединится!
@@ -398,7 +398,7 @@ Thrown weapons are corrected to prevent no-clips|Брошенные оружия
 Thrown weapons follow vanilla behaviour|Брошенные оружия соблюдают ванильное поведение
 Countdown Timer:|Таймер отсчёта:
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Длительность обратного отсчёта в начале раунда. По умолчанию: 5 сек.
-Arena Game Mode:|Игровой арена:
+Arena Game Mode:|Игровой режим арены:
 The game mode for this match|Игровой режим для этого матча
 This game mode doesnt have any info to give|У этого игрового режима нет информации о себе
 Showing players in thumbnail view|Отображение игроков в виде миниатюр
