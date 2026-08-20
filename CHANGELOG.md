@@ -1,3 +1,10 @@
+# Release 1.15.1
+
+## Chat
+
+- Added a remix option to clear certain chat messages on every session.
+
+
 # Release 1.15.0
 
 ## Engine
