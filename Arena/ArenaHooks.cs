@@ -1019,12 +1019,12 @@ namespace RainMeadow
             }
             if (arena.countdownInitiatedHoldFire)
             {
-                //self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
             if (!arena.voidMasterEnabled)
             {
-                //self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
             if (!self.IsLocal()) return;
@@ -1033,7 +1033,7 @@ namespace RainMeadow
 
             if (self.camoCharge >= requiredCharge)
             {
-                //self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
                 
