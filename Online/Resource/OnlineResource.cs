@@ -228,7 +228,9 @@ namespace RainMeadow
 
         protected void SubresourcesUnloaded() // callback-ish for resources freeing up
         {
-            if (!isNeeded && canRelease)
+            // super can already be unavailable here. an inactive resource is allowed to
+            // release while children are still available, so Release() would throw
+            if (!isNeeded && isAvailable && canRelease)
             {
                 Release();
             }
@@ -383,15 +385,18 @@ namespace RainMeadow
                 if (isWaitingForState) isWaitingForState = false;
                 PerformRequests();
             }
-            else if (!isNeeded && isAvailable && canRelease)
-            {
-                // If  NotNeeded was  turned down because a
-                // participant was still here or hasn't ackd the latest lease nothing ever tries
-                // again and whoever is waiting for this resource to empty out waits forever. Truly doom
-                Release();
-            }
             ParticipantLeftImpl(participant);
             OnParticipantLeft?.Invoke(this, participant);
+
+            // If NotNeeded was  turned down because a
+            // participant was still here or hasn't ackd the latest lease nothing ever tries
+            // again and whoever is waiting for this resource to empty out waits forever. Truly doom
+            // Runs after so nobody gets handed an already-unavailable resource
+            // with no supervisor (during wait loops)
+            if (!participant.isMe && !isNeeded && isAvailable && canRelease)
+            {
+                Release();
+            }
         }
 
         protected void SanitizeSubresources()

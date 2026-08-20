@@ -75,7 +75,9 @@ namespace RainMeadow
         protected void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (canBeRequested && isSupervisor && !super.isReleasing)
+            // we release the moment the last participant leaves now, so a client
+            // requesting in that same tick might get a lease we're letting go of
+            if (canBeRequested && isSupervisor && !isReleasing && !super.isReleasing)
             {
                 if (owner == null)
                 {

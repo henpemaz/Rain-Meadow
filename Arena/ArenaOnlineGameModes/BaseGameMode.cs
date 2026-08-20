@@ -186,8 +186,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Unsubscribing from old world");
                 if (roomSession.worldSession.isActive)
                 {
-                    roomSession.worldSession.Deactivate();
+                    // NotNeeded BEFORE Deactivate, otherwise the room sessions never get released
                     roomSession.worldSession.NotNeeded();
+                    roomSession.worldSession.Deactivate();
                 }
 
                 if (roomSession.worldSession.participants.Count > 0)
