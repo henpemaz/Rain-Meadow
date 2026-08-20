@@ -385,9 +385,9 @@ namespace RainMeadow
             }
             else if (!isNeeded && isAvailable && canRelease)
             {
-                // NotNeeded only gets one shot at releasing. If it was turned down because a
-                // participant was still here or hadn't ackd the latest lease nothing ever tries
-                // again and whoever is waiting for this resource to empty out waits forever.
+                // If  NotNeeded was  turned down because a
+                // participant was still here or hasn't ackd the latest lease nothing ever tries
+                // again and whoever is waiting for this resource to empty out waits forever. Truly doom
                 Release();
             }
             ParticipantLeftImpl(participant);
