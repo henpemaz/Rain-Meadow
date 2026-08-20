@@ -1,4 +1,5 @@
 henpemaz_rainmeadow-description|Мультиплеерный движок; кастомный игровой режим, вдохновленный игрой «Meadow» от Might & Delight, а также онлайн история и арена.<LINE><LINE>Полный список создателей можно найти в мастерской или в отдельном окне меню «Meadow».
+Henpemaz - Lead Developer<LINE><LINE>Wolfycatt(Ana) - Lead Artist<LINE><LINE>Intikus - Lead Audio Designer<LINE><LINE>Noircatto - Programming, engine<LINE><LINE>HelloThere - Programming, sound<LINE><LINE>A1iex - UI Design<LINE><LINE>FranklyGD - Programming, engine<LINE><LINE>MC41Games - Programming, menus<LINE><LINE>Silvyger - Programming, arena<LINE><LINE>Vigaro - Programming, menus<LINE><LINE>BitiLope - Programming, story<LINE><LINE>Pudgy Turtle - Programming, story<LINE><LINE>ddemile - Programming, modsync<LINE><LINE>UO - Programming, story, arena<LINE><LINE>Saddest - Programming, UI, chat<LINE><LINE>notchoc - Programming, story<LINE><LINE>phanie_ - Illustration<LINE><LINE>Timbits - Programming, UI, menus<LINE><LINE>Zedreus - Programming, UI, story<LINE><LINE>Persondotexe - Programming, modsync<LINE><LINE>invalidunits - Programming, UI, LAN<LINE><LINE>forthfora - Programming, modsync<LINE><LINE> WillowWisp - Programming, story<LINE><LINE>@None - Programming, gameplay<LINE><LINE>DustyLemmy - Arena, story, UI<LINE><LINE>Elizabeth - Programming, story, UI<LINE><LINE>niacdoial - LAN<LINE><LINE>Capt. Redstone - Meadow, story<LINE><LINE>EdEnStonne - Arena|Henpemaz - Главный разработчик<LINE><LINE>Wolfycatt(Ana) - Главный художник<LINE><LINE>Intikus - Главный аудио дизайнер<LINE><LINE>Noircatto - Программирование, движок<LINE><LINE>HelloThere - Программирование, движок<LINE><LINE>A1iex - Дизайн пользовательского интерфейса<LINE><LINE>FranklyGD - Программирование, движок<LINE><LINE>MC41Games - Программирование, меню<LINE><LINE>Silvyger - Программирование, арена<LINE><LINE>Vigaro - Программирование, меню<LINE><LINE>BitiLope - Программирование, история<LINE><LINE>Pudgy Turtle - Программирование, история<LINE><LINE>ddemile - Программирование, синхронизация модов<LINE><LINE>UO - Программирование, история и арена<LINE><LINE>Saddest - Программирование, пользовательский интерфейс, чат<LINE><LINE>notchoc - Программирование, история<LINE><LINE>phanie_ - Иллюстрации<LINE><LINE>Timbits - Программирование, пользовательский интерфейс, меню<LINE><LINE>Zedreus - Программирование, пользовательский интерфейс, история<LINE><LINE>Persondotexe - Программирование, синхронизация модов<LINE><LINE>invalidunits - Программирование, пользовательский интерфейс, LAN<LINE><LINE>forthfora - Программирование, синхронизация модов<LINE><LINE> WillowWisp - Программирование, история<LINE><LINE>@None - Программирование, игровой процесс<LINE><LINE>DustyLemmy - Арена, история, пользовательский интерфейс<LINE><LINE>Элизабет - Программирование, история, пользовательский интерфейс<LINE><LINE>niacdoial - Локальная сеть<LINE><LINE>Capt. Redstone - Meadow, история<LINE><LINE>EdEnStonne - Арена
 
 ///Меню
 Rain Meadow failed to start|Rain Meadow не смог запуститься
@@ -24,6 +25,7 @@ Failed to join lobby.<LINE>|Не удалось присоединиться к 
 Password Required|Пароль:
 Wrong password!|Неверный пароль!
 Joining lobby...|Присоединение к лобби...
+(Attempt <NUM>)|(Попытка: <NUM>)
 Pinned:|Закреплено:
 Online:|Онлайн:
 Lobbies:|Лобби:
@@ -122,18 +124,18 @@ Programming, engine|Программирование, движок
 Programming, sound|Программирование, звук
 UI Design|Дизайн пользовательского интерфейса
 Programming, menus|Программирование, меню
-Programming, arena|Программирование, режим арены
-Programming, story|Программирование, режим истории
+Programming, arena|Программирование, арена
+Programming, story|Программирование, история
 Programming, modsync|Программирование, синхронизация модов
-Programming, story, arena|Программирование, режим истории и арены
+Programming, story, arena|Программирование, история и арена
 Programming, UI, chat|Программирование, пользовательский интерфейс, чат
 Illustration|Иллюстрации
 Programming, UI, menus|Программирование, пользовательский интерфейс, меню
-Programming, UI, story|Программирование, пользовательский интерфейс, режим истории
+Programming, UI, story|Программирование, пользовательский интерфейс, история
 Programming, UI, LAN|Программирование, пользовательский интерфейс, LAN
 Programming, gameplay|Программирование, игровой процесс
 Arena, story, UI|Арена, история, пользовательский интерфейс
-Programming, story, UI|Программирование, история, пользовательский интервейс
+Programming, story, UI|Программирование, история, пользовательский интерфейс
 Meadow, story|Meadow, история
 Thank you playtesters from the Rain Meadow discord as well.|Также спасибо тестировщикам с Discord сервера Rain Meadow.
 
@@ -162,6 +164,7 @@ How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
 Stop Inputs While Spectating|Отключить управление во время наблюдения
+Use simpler slugcat indicator icons above usernames|Более простые иконки слизнекотов над именами
 Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Можно изменить список разрешённых/запрещённых модов в твоем лобби.<LINE>Он находится в файлах ниже; прилагается инструкция на английском.
 Edit High-Impact Mods|Разрешённые моды
 Edit Banned Mods|Запрещённые моды
@@ -234,6 +237,11 @@ Greedy|Жадный
 Flair|Стиль
 Enable Meadow Cosmetics|Включить косметику Meadow
 Log Level|Уровень записи логов
+Debug|Отладка
+Warn|Предупреждение
+Error|Ошибка
+Lobby Joining Timeout (seconds)|Тайм-аут входа в Лобби (сек)
+Lobby Joining Extra Info|Время ожидания входа в Лобби
 Global Mute|Глобальное отключение звука
 solid|солидный
 
@@ -279,7 +287,7 @@ New emote unlocked|Разблокирована новая эмоция
 New skin unlocked|Разблокирован новый скин
 UNLOCKS|РАЗБЛОКИРОВКИ
 
-///Режим Истории
+///история
  - New Game| — Новая игра
 Unknonw Region|Неизвестный регион
 Current Campaign: |Текущая кампания: 
@@ -300,7 +308,7 @@ Wait for others to shelter or rescue you, press |Жди, пока другие �
 READY|ГОТОВ
 Press on the button to open/close the slugcat selection list|Нажми на кнопку, чтобы открыть/закрыть список выбора слизнекота.
 
-///Режим Арены
+///арена
 ME|Я
 Got All<LINE>ScugSlots!!|Получил все<LINE>СлизнеСлоты!!
 Joining<LINE>soon!|Скоро<LINE>присоединится!
@@ -390,7 +398,7 @@ Thrown weapons are corrected to prevent no-clips|Брошенные оружия
 Thrown weapons follow vanilla behaviour|Брошенные оружия соблюдают ванильное поведение
 Countdown Timer:|Таймер отсчёта:
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Длительность обратного отсчёта в начале раунда. По умолчанию: 5 сек.
-Arena Game Mode:|Игровой режим арены:
+Arena Game Mode:|Игровой арена:
 The game mode for this match|Игровой режим для этого матча
 This game mode doesnt have any info to give|У этого игрового режима нет информации о себе
 Showing players in thumbnail view|Отображение игроков в виде миниатюр
