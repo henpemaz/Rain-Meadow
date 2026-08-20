@@ -393,7 +393,7 @@ namespace RainMeadow
             // again and whoever is waiting for this resource to empty out waits forever. Truly doom
             // Runs after so nobody gets handed an already-unavailable resource
             // with no supervisor (during wait loops)
-            if (!participant.isMe && !isNeeded && isAvailable && canRelease)
+            if (!participant.isMe && !isNeeded && !isPending && isAvailable && canRelease)
             {
                 Release();
             }
