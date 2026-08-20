@@ -107,9 +107,8 @@ namespace RainMeadow
             }
         }
 
-        public override void Update()
+        private void UpdateParts()
         {
-            base.Update();
             for (int i = this.parts.Count - 1; i >= 0; i--)
             {
                 if (this.parts[i].slatedForDeletion)
@@ -136,7 +135,10 @@ namespace RainMeadow
                     this.parts[i].Update();
                 }
             }
+        }
 
+        private void UpdatePlayer()
+        {
             this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
@@ -314,6 +316,13 @@ namespace RainMeadow
             //    this.nightcatCounter = -1;
             //}
 
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            UpdatePlayer();
+            UpdateParts();
         }
 
         public override void Draw(float timeStacker)
