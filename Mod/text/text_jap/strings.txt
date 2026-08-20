@@ -732,6 +732,10 @@ Rain Timer:|雨タイマー:
 General|一般
 Greedy|欲深い
 solid|ソリッド
+cape|マント
+scarf|スカーフ
+Lobby Joining Extra Info|ロビー追加情報に参加
+Lobby Joining Timeout (seconds)|ロビー参加タイムアウト(秒)
 
 ///lobby menu
 Fight against unforgiving creatures and foes where only the strong survive.|容赦のない生物や敵と戦い,強者だけが生き残る世界だ.
@@ -763,8 +767,12 @@ Filter for only public lobbies|パブリックロビーのみ
 Filter for a maximum lobby size|ロビーの最大プレイヤー数を指定するフィルター
 Filter for a specific lobby gamemode|特定のゲームモードをフィルター
 Filter lobbies for specific mods|特定のMODをフィルタする
-Click to view|クリックして表示
+Click to view <LOBBY>|<LOBBY>をクリックして表示
+Click to join <LOBBY>|<LOBBY>をクリックして参加
+Create a new lobby|新しいロビーを作成する
+Join selected lobby|選択したロビーに参加
 MSC + Watcher|MSC + ウォッチャー
+
 
 //meadow
 Eye Color|眼の色
@@ -806,7 +814,7 @@ This user is the lobby host|このユーザーはホストです
 GAME IN SESSION|セッションが進行中
 Amoeba Lethality Factor:|アメーバ致死因子
 Multiplier for amoeba lethality|アメーバ致死の乗数
-Starting match in|マッチスタート! あと:
+Starting match in|マッチスタート! なか:
 SESSION RESULTS|セッション結果
 SESSION ENDED!|セッションエンド!
 IT'S A DRAW!|引き分けだ!
