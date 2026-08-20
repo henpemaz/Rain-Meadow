@@ -20,7 +20,7 @@ namespace RainMeadow
     {
         public static bool isArenaMode(out ArenaOnlineGameMode gameMode)
         {
-            gameMode = null;
+            gameMode = null!;
             if (
                 OnlineManager.lobby != null
                 && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena
@@ -187,7 +187,7 @@ namespace RainMeadow
                 this.VoidSpawnGraphics_EffectShader_ChangeToColoredShader
             );
             On.VoidSpawnGraphics.UpdateGlowSpriteColor += VoidSpawnGraphics_UpdateGlowSpriteColor_ColorTheAmoeba;
-            
+
             IL.PlayerGraphics.RippleTrailUpdate += PlayerGraphics_RippleTrailUpdate_DisableTrailInArenaMode;
             IL.RippleCreatureTracker.RippleCreatureSprite.DrawSprites += RippleCreatureSprite_DrawSprites_ShowWatchersInRippleSpace;
             On.Room.Loaded += Room_Loaded_AddRippleCreatureTracker;
@@ -217,12 +217,10 @@ namespace RainMeadow
                 {
                     // Don't trigger the bump till everyone is ready
                     cursor.Emit(OpCodes.Ldarg_0);
-                    cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) => 
+                    cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) =>
                         {
-                            bool isArenaOnlineWaitingForPlayers = isArenaMode(out var arenaOnline) 
-                                && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
-                                && (arenaOnline.arenaPrepTimer is null 
-                                    || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+                            bool isArenaOnlineWaitingForPlayers = isArenaMode(out var arenaOnline)
+                                && arenaOnline.isWaitingForPlayersToLoad;
                             if (isArenaOnlineWaitingForPlayers)
                             {
                                 startBump.startGameCounter = 10;
@@ -235,7 +233,7 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                RainMeadow.Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : "+ ex);
             }
         }
 
@@ -252,23 +250,31 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                RainMeadow.Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : "+ ex);
             }
         }
         private void RainWorldGame_Update_ShortcutWaitForAllPlayers(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
-            if (isArenaMode(out var arena) 
-                && arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)
-                && (arena.arenaPrepTimer is null || arena.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting))
+            if (isArenaMode(out var arenaOnline))
             {
-                // Debug($"Holding the players [{string.Join(", ", self.shortcuts.transportVessels.FindAll(x => x.creature is Player).Select(x => x.creature))}] in place ! <{arena.setupTime}><{arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)}><{arena.arenaPrepTimer?.showMode}>");
-                for (int i = 0; i < self.shortcuts.transportVessels.Count; i++)
+                if (arenaOnline.lobby.isOwner)
                 {
-                    if (self.shortcuts.transportVessels[i].creature is Player player
-                        && player.IsLocal()) // only affect us
+                    arenaOnline.isWaitingForPlayersToLoad = arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
+                        && (arenaOnline.arenaPrepTimer is null
+                            || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+                }
+
+                if (arenaOnline.isWaitingForPlayersToLoad)
+                {
+                    for (int i = 0; i < self.shortcuts.transportVessels.Count; i++)
                     {
-                        self.shortcuts.transportVessels[i].wait = 1; // wait in there till everyone is ready.
-                        // Debug($"Player {self.shortcuts.transportVessels[i].creature}<{self.shortcuts.transportVessels[i].creature.inShortcut}><{self.shortcuts.transportVessels[i].creature.inShortcutVessel}> is at [{self.shortcuts.transportVessels[i].creature.mainBodyChunk.pos}][{self.shortcuts.OnScreenPositionOfInShortCutCreature(self.cameras[0].room, self.shortcuts.transportVessels[i].creature)}]");
+                        if (self.shortcuts.transportVessels[i].creature is Player player)
+                        {
+                            player.inShortcut = true; // necessary for sync
+
+                            // wait in there till everyone is ready.
+                            if (player.IsLocal()) self.shortcuts.transportVessels[i].wait = 1;
+                        }
                     }
                 }
             }
@@ -287,7 +293,7 @@ namespace RainMeadow
                 // stun creatures from the summoned Amoeba
                 for (int i = 0; i < self.room.voidSpawns.Count; i++)
                 {
-                    if (self.room.voidSpawns[i].variant == VoidSpawn.SpawnType.RippleAmoeba 
+                    if (self.room.voidSpawns[i].variant == VoidSpawn.SpawnType.RippleAmoeba
                         && Vector2.Distance(self.mainBodyChunk.pos, self.room.voidSpawns[i].firstChunk.pos) <= AmoebaSummonBehavior.stunDistance
                         && self.room.voidSpawns[i].abstractPhysicalObject.rippleLayer == self.abstractCreature.rippleLayer)
                     {
@@ -302,8 +308,8 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(il);
-                
-                while (cursor.TryGotoNext(MoveType.After, 
+
+                while (cursor.TryGotoNext(MoveType.After,
                     x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod())))
                 {
                     // Set the level artificially to 0.5 when in arena, no matter the real level... unless it's max ripple.
@@ -326,7 +332,7 @@ namespace RainMeadow
                 ILCursor cursor = new(il);
                 ILLabel label = cursor.DefineLabel();
 
-                if (cursor.TryGotoNext(MoveType.After, 
+                if (cursor.TryGotoNext(MoveType.After,
                     x => x.MatchLdarg(0),
                     x => x.MatchCall(typeof(Player).GetProperty(nameof(Player.rippleLevel)).GetGetMethod()),
                     x => x.MatchLdcR4(4),
@@ -366,7 +372,7 @@ namespace RainMeadow
 
                     VoidSpawn spawn = self.room.voidSpawns[i];
                     if (!self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers
-                            || (TeamBattleMode.IsTeamBattleMode(out _) 
+                            || (TeamBattleMode.IsTeamBattleMode(out _)
                                 && ArenaHelpers.CheckSameTeam(self.abstractCreature.GetOnlineCreature()?.owner, spawn.abstractPhysicalObject.GetOnlineObject()?.owner)
                                 && !arena.friendlyFire))
                         return false; // don't attack friendlies !
@@ -387,7 +393,7 @@ namespace RainMeadow
                 if (cursor.TryGotoNext(MoveType.Before,
                         x => x.MatchLdloc(0),
                         x => x.MatchBrtrue(out _))
-                    && cursor.TryGotoNext(MoveType.Before, 
+                    && cursor.TryGotoNext(MoveType.Before,
                         x => x.MatchBr(out skipDeathEffect))
                 )
                 {
@@ -463,7 +469,7 @@ namespace RainMeadow
                 ILCursor cursor = new(il);
                 ILLabel label = cursor.DefineLabel();
 
-                if (cursor.TryGotoNext(MoveType.After, 
+                if (cursor.TryGotoNext(MoveType.After,
                     x => x.MatchCallvirt(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.ActiveRippleLayer)).GetGetMethod()),
                     x => x.MatchLdcI4(1),
                     x => x.MatchBeq(out label)
@@ -499,7 +505,7 @@ namespace RainMeadow
             try
             {
                 var cursor = new ILCursor(il);
-                    
+
                 if (cursor.TryGotoNext(MoveType.After, x => x.MatchLdfld<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.rippleBothSides))))
                 {
                     cursor.Emit(OpCodes.Ldarg_0);
@@ -512,7 +518,7 @@ namespace RainMeadow
                             && self.creature?.realizedCreature is Player
                             && self.creature.rippleLayer != 0)
                         {
-                            return true; 
+                            return true;
                         }
                         return orig;
                     });
@@ -560,7 +566,7 @@ namespace RainMeadow
                     cursor.EmitDelegate((bool orig, PlayerGraphics self) =>
                     {
                         // If it's Meadow Arena mode, also disable trail
-                        return orig || RainMeadow.isArenaMode(out _); 
+                        return orig || RainMeadow.isArenaMode(out _);
                     });
                 }
                 else
@@ -688,8 +694,8 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Brtrue, toParryLoop);
 
                 // Change the light explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<Explosion.ExplosionLight>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(160)))
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) )
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -704,8 +710,8 @@ namespace RainMeadow
                 }
 
                 // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<ShockWave>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(200)))
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) )
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -985,7 +991,7 @@ namespace RainMeadow
             bool slowDownCharge = false;
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
-                if (!voidSpawn.IsLocal() || !self.IsLocal()) 
+                if (!voidSpawn.IsLocal() || !self.IsLocal())
                     continue;
                 if (voidSpawn.behavior != null) //player actually created it
                     slowDownCharge = true;
@@ -1036,7 +1042,7 @@ namespace RainMeadow
                 self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
-                
+
             var room = self.room;
 
             RainMeadow.sSpawningNonTransferable = true;
@@ -1294,7 +1300,7 @@ namespace RainMeadow
                 && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
             )
                 self.player.watcherMorph = 0.51f;
-            
+
             orig(self, sLeaser, rCam, timeStacker, camPos);
 
             if (isArenaMode(out var arena)
@@ -1307,15 +1313,15 @@ namespace RainMeadow
                 int otherRippleLayer = self.player.abstractCreature.rippleLayer;
                 bool isMeWatcher = ModManager.Watcher && arena.avatarSettings.playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
                 bool isSameRippleLevel = meRippleLayer == otherRippleLayer;
-                float rippleSpaceAlpha = meRippleLayer == 0 
+                float rippleSpaceAlpha = meRippleLayer == 0
                     ? (isMeWatcher && !arena.fullInvisInRippleSpace
-                        ? 1f - self.player.camoProgress * 0.25f 
+                        ? 1f - self.player.camoProgress * 0.25f
                         : 1f - self.player.camoProgress)
                     : (isMeWatcher && !arena.fullInvisInRippleSpace
                         ? 1f
                         : self.player.camoProgress); // Show other Watchers if you are yourself in camo
                 float handAlpha = isSameRippleLevel ? rippleSpaceAlpha : 0;
-                
+
                 sLeaser.sprites[7].alpha = handAlpha; // hand 1
                 sLeaser.sprites[8].alpha = handAlpha; // hand 2
                 sLeaser.sprites[9].alpha = rippleSpaceAlpha; // eyes
