@@ -36,6 +36,11 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
             label.x = DrawX(timeStacker) + (labelPosAlignment == FLabelAlignment.Left ? 0 : labelPosAlignment == FLabelAlignment.Right ? size.x : size.x / 2);
             label.y = DrawY(timeStacker) + (verticalLabelPosAlignment == OpLabel.LabelVAlignment.Bottom ? 0 : verticalLabelPosAlignment == OpLabel.LabelVAlignment.Top ? size.y : size.y / 2);
+            label.alpha = Alpha;
+            foreach(var subObj in subObjects)
+            {
+                if (subObj is AlignedMenuLabel sub) sub.label.alpha = Alpha;
+            }
         }
         public FLabelAlignment labelPosAlignment = FLabelAlignment.Center;
         public OpLabel.LabelVAlignment verticalLabelPosAlignment = OpLabel.LabelVAlignment.Center;

@@ -11,6 +11,7 @@ namespace RainMeadow
         public static bool shownChatTutorial = false;
         // Shared dictionary for chats, reset each time a new lobby is entered
         private static Dictionary<string, Color> colorDict = new();
+        public static Dictionary<string, MeadowProgression.Character> emoteDict = new();
         // UI, colour of system messages
         public static Color defaultSystemColor = new(1f, 1f, 0.3333333f);
         public static Color orangeSystemColor = new(1f, 0.55f, 0.25f);
@@ -111,6 +112,7 @@ namespace RainMeadow
         public static void ResetPlayerColors()
         {
             colorDict.Clear();
+            emoteDict.Clear();
         }
 
         /// <summary>
@@ -120,9 +122,11 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer onlinePlayer in OnlineManager.lobby.participants)
             {
-                if (OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs) && cs.chatUsernameColor is Color color)
+                if (OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs))
                 {
-                    colorDict[onlinePlayer.id.DisplayName] = color;
+                    if (cs.chatUsernameColor is Color color) colorDict[onlinePlayer.id.DisplayName] = color;
+                    if (cs.chatEmoteCharacter is MeadowProgression.Character chara)  emoteDict[onlinePlayer.id.DisplayName]= chara;
+                    
                 }
                 else if (OnlineManager.lobby.playerAvatars.Exists(kv => kv.Key == onlinePlayer)
                     && OnlineManager.lobby.playerAvatars.First(kv => kv.Key == onlinePlayer).Value?.FindEntity(true) is OnlinePhysicalObject opo)

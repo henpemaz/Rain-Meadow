@@ -115,8 +115,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         );
         
         RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
-
-        ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         Arena.ResetOnReturnMenu(manager);
@@ -364,8 +362,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out _))
             Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
-        ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
-
         bool owner = OnlineManager.lobby?.isOwner == true;
         if (owner)
             GetArenaSetup.SaveToFile();

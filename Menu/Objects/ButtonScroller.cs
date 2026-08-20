@@ -44,9 +44,13 @@ namespace RainMeadow
         public float ScrollOffsetPos => (textAnchor == TextAnchor.Top ? 1 : -1) * scrollOffset * ButtonHeightAndSpacing;
         public bool CanScrollUp => DownScrollOffset > 0;
         public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
-        public bool CanScroll => !menu.FreezeMenuFunctions;
+        public virtual bool CanScroll => !menu.FreezeMenuFunctions;
+        public virtual bool ShouldMouseScroll => menu.manager.menuesMouseMode && MouseOver;
+        public virtual bool InputScrollEnabled { get; set; } = false;
         public bool IsHidden { get; set; }
         public TextAnchor textAnchor = TextAnchor.Top;
+        public float Opacity = 1.0f;
+        public float lastOpacity;
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, (float, float) buttonHeightSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0, bool startEndWithSpacing = false) : 
             this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, buttonHeightSpacing.Item1, buttonHeightSpacing.Item2, startEndWithSpacing)), sliderOnRight, sliderPosOffset, sliderSizeYOffset)
         {
@@ -92,13 +96,33 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (!IsHidden && CanScroll && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
+            if ( menu.manager.menuesMouseMode)
+            {
+                if (!IsHidden && CanScroll) 
+                {
+                    if (ShouldMouseScroll) ScrollingUpdate(menu.mouseScrollWheelMovement);
+                    
+                    if (InputScrollEnabled) 
+                    {
+                        
+                        if (Input.GetKey(KeyCode.UpArrow))
+                        {
+                            ScrollingUpdate(-1.0f);
+                        }
+                        else if (Input.GetKey(KeyCode.DownArrow))
+                        {
+                            ScrollingUpdate(1.0f);
+                        }
+                    }
+                }
+            }
+             
             
             for (int i = 0; i < buttons.Count; i++)
             {
                 buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
                 buttons[i].Pos = new(buttons[i].Pos.x, GetIdealYPosWithScroll(i));
-                buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos);
+                buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos)*lastOpacity;
             }
             float currentScrollOffset = GetCurrentScrollOffset();
             scrollOffset = Custom.LerpAndTick(scrollOffset, currentScrollOffset, 0.01f, 0.01f);
@@ -130,6 +154,8 @@ namespace RainMeadow
                 sideButtonLines[i].scaleY = topY - bottomY;
                 sideButtonLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
             }
+
+            lastOpacity = Opacity;
         }
         public virtual float GetBoundSizeOffset() => startEndWithSpacing ? buttonSpacing : -buttonSpacing; //difference in how size would follow if its just index * (buttonHeight + spacing)
         public virtual float GetCurrentScrollOffset() => DownScrollOffset;

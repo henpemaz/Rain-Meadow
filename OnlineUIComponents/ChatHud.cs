@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using HUD;
+using RainMeadow.UI.Components;
 using Rewired;
 using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatHud : HudPart, IChatSubscriber
+    public class ChatHud : HudPart
     {
         private TextPrompt textPrompt;
         public RoomCamera camera;
@@ -34,7 +35,6 @@ namespace RainMeadow
             this.camera = camera;
             this.game = camera.game;
 
-            ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
             {
                 this.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
@@ -56,34 +56,6 @@ namespace RainMeadow
             this.camera = camera;
             this.game = camera.game;
             this.textPrompt = camera.hud.textPrompt;
-        }
-
-        public void AddMessage(string user, string message)
-        {
-            if (!Active) return;
-            if (OnlineManager.lobby == null) return;
-            if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
-
-            MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (ChatLogManager.ShouldPingFromMessage(user, message))
-            {
-                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1.2f);
-            }
-            if (chatLogOverlay != null)
-            {
-                if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
-                {
-                    camera.virtualMicrophone.PlaySound(
-                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
-                        0, 
-                        quiet ? 0.7f : 1.5f, 
-                        quiet ? 0.7f : 0.6f
-                    );
-                }
-                bool shouldGoDown = chatLogOverlay.scroller.IsAtBottom();
-                chatLogOverlay.UpdateLogDisplay();
-                if (shouldGoDown) chatLogOverlay.scroller.MoveAtBottom();
-            }
         }
 
         public override void Draw(float timeStacker)
@@ -174,7 +146,6 @@ namespace RainMeadow
             if (chatInputOverlay != null) ShutDownChatInput();
             if (chatLogOverlay != null) ShutDownChatLog();
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
-            ChatLogManager.Unsubscribe(this);
         }
         public override void ClearSprites()
         {

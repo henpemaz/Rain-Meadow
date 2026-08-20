@@ -5,29 +5,27 @@ namespace RainMeadow.UI.Components
 {
     class ChatEmote : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
     {
-        public MeadowProgression.Emote emote; 
         public float Alpha { get; set; }
         public Vector2 sourceSize = Vector2.zero;
         public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set {}  }
+        public Vector2 Size { get => size + Margin; set {}  }
         public Vector2 Margin = new Vector2(40, 10);
-
+        
         private FSprite[] sprites;
 
-        public ChatEmote(MeadowProgression.Emote emote, Menu.Menu menu, MenuObject owner, Vector2 pos) : 
+        public ChatEmote(MeadowProgression.Character character, MeadowProgression.Emote emote, Menu.Menu menu, MenuObject owner, Vector2 pos) : 
             base(menu, owner, pos, Vector2.zero)
         {
             if (!Futile.atlasManager.DoesContainAtlas("emotes_common"))
             {
                 HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/emotes_common").name);
             }
-            var chardata = MeadowProgression.characterData[MeadowProgression.Character.Slugcat];
+            var chardata = MeadowProgression.characterData[character];
             if (!Futile.atlasManager.DoesContainAtlas(chardata.emoteAtlas))
             {
                 HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/" + chardata.emoteAtlas).name);
             }
 
-            this.emote = emote;
             this.sprites = new FSprite[2];
             string emote_sprite = (emote.value.StartsWith("emote") ? chardata.emotePrefix + emote.value : emote.value).ToLowerInvariant();
             string background_string = emote.value.StartsWith("emote") ? "emote_background" : "symbols_background";
@@ -66,14 +64,16 @@ namespace RainMeadow.UI.Components
     
     }
 
-    class ChatSpace : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
+    class ChatEmoteSpace : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
     {
-        public ChatSpace(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+        public ChatEmote origin;
+        public ChatEmoteSpace(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, ChatEmote origin) : base(menu, owner, pos, size)
         {
+            this.origin = origin;
         }
 
         public float Alpha { get; set; }
         public Vector2 Pos { get; set; }
-        public Vector2 Size { get; set; }
+        public Vector2 Size { get => new Vector2(origin.Size.x, size.y); set => size = value; }
     }
 }
