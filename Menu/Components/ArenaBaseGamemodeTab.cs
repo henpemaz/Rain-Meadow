@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using UnityEngine;
-using System.Collections.Generic;
-using RainMeadow.UI.Components.Patched;
-using System.Linq;
 using Menu.Remix.MixedUI.ValueTypes;
-using System;
-using System.Text;
+using RainMeadow.UI.Components.Patched;
+using UnityEngine;
 
 namespace RainMeadow.UI.Components
 {
@@ -66,13 +66,13 @@ namespace RainMeadow.UI.Components
             tabWrapper = new(menu, this);
             InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float leftMargin = 10f;
-            float labelWidth = 100f;
+            float labelWidth = 140f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
             float boxMargin = leftMargin + labelWidth // The X-position for all boxes
                 + (lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Spanish
-                    ? 125f // Add more space for some languages
-                    : 50f); 
+                    ? 85f // Add more space for some languages
+                    : 50f);
 
 
             foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),
@@ -144,13 +144,13 @@ namespace RainMeadow.UI.Components
                 arena.survivalScore = survivalScoreTextBox.valueInt;
             };
 
-            emptyDeathScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
+            emptyDeathScoreLabel = new(menu, this, menu.Translate("Empty Death Score:"),
                 new(leftMargin, topOffset - rowHeight * 4), new(labelWidth, 20f), false);
             emptyDeathScoreLabel.label.alignment = FLabelAlignment.Left;
 
             emptyDeathScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaEmptyDeathScore,
             new(boxMargin, topOffset - (rowHeight * 4)), 60)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Points for other players if someone dies without a killer"), accept = OpTextBox.Accept.Int };
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points lost from self-inflicted death"), accept = OpTextBox.Accept.Int };
 
             emptyDeathScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
