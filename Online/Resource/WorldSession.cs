@@ -29,7 +29,7 @@ namespace RainMeadow
             bool cleanupTriggered = false;
 
             session.transitionInProgress = true;
-            bool canSkipWaitLoop = OnlineManager.lobby.gameMode is MeadowGameMode;
+            bool canSkipWaitLoop = OnlineManager.lobby.gameMode is MeadowGameMode || RainMeadow.isStoryMode(out var story) && story.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
 
             while (true)
             {
