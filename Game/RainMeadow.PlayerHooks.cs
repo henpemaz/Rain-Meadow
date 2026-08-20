@@ -2088,7 +2088,12 @@ public partial class RainMeadow
 
         OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
         if (onlineCreature is null)
-            throw new InvalidProgrammerException("Player doesn't have an OnlineCreature counterpart!!");
+        {
+            if (isArenaMode(out _))
+                Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier"); // TODO: Find the underlying issue.
+            else
+                throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        }
 
         // Remote avatars die when their owner's state says so, not from our local
         // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
