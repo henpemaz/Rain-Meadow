@@ -531,7 +531,7 @@ Vanilla|バニラ
 Downpour|さらにﾅﾒｸｼﾞﾈｺの拡張
 Downpour DLC is not activated, vanilla intro will be used instead|「さらにﾅﾒｸｼﾞﾈｺの拡張」が無効です。バニラのタイトル画面に置き換えます
 Watcher DLC is not activated, vanilla intro will be used instead|「ウォッチャー」が無効です。バニラのタイトル画面に置き換えます
-Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 10|観戦モード、ストーリー、アリーナメニューのクロール速度。デフォルト:10
+Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: <SCROLLSPEED>|観戦モード、ストーリー、アリーナメニューのクロール速度。デフォルト:<SCROLLSPEED>
 Disable Pause Menu Animation|ポーズ中のアニメーションを無効化
 If selected, disables the sway animation in the pause menu|有効にすると、ポーズ中の波アニメーションがなくなります
 Input “cheats” to access cheats|チートにアクセスするには「cheats」と入力してください
@@ -641,7 +641,6 @@ Flair|フレア
 Global Mute|チャットミュート
 Profanity Filter|チャットフィルター
 Sound on Mention|メンション音
-Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|プレイヤーリストのスクロール速度。標準:10
 Chat Inactivity Opacity|チャット不活性状態の混濁
 Chat Inactivity Timer|チャット不活性状態のタイマー
 Streamer Mode|配信モード
@@ -736,7 +735,7 @@ cape|マント
 scarf|スカーフ
 Lobby Joining Extra Info|ロビー追加情報に参加
 Lobby Joining Timeout (seconds)|ロビー参加タイムアウト(秒)
-Use simpler slugcat indicator icons above usernames|通常のナメクジ猫ユーザーアイコンを使用する
+Use simpler slugcat indicator icons above usernames|通常のナメクジ猫ユーザーアイコンを使用
 
 ///lobby menu
 Fight against unforgiving creatures and foes where only the strong survive.|容赦のない生物や敵と戦い,強者だけが生き残る世界だ.
