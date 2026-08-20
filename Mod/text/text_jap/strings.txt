@@ -722,6 +722,8 @@ Session Notification|セッションメッセージ
 Enable Chat Logging Toggle|チャットログ保持
 Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|チャットログ保持. シフト+「チャットキー」 チャットでの表示エラー
 Clear On New Session|新しいセッションチャットクリア
+Death|デス
+System|システム
 Text Downscroll|テキストスクロール
 Sound On New Message|メッセージ音
 Everyone|みんあ
