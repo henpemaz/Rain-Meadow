@@ -1,3 +1,9 @@
+# Release 1.15.1
+
+## Arena
+
+- Fixed a bug where lobbies would freeze at the end of the round.
+
 # Release 1.15.0
 
 ## Engine
