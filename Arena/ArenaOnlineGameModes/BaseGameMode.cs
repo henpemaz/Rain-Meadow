@@ -75,8 +75,8 @@ namespace RainMeadow
         public virtual bool ShouldWinByScore(ArenaSetup.GameTypeSetup gameTypeSetup)
         {
             return gameTypeSetup.survivalScore > 0
-                || gameTypeSetup.KillScore > 0
-                || gameTypeSetup.EmptyDeathScore > 0
+                || gameTypeSetup.GetKillScore() > 0
+                || gameTypeSetup.GetEmptyDeathScore() > 0
                 || gameTypeSetup.spearHitScore > 0
                 || gameTypeSetup.foodScore > 0;
         }
@@ -86,8 +86,8 @@ namespace RainMeadow
             ArenaSetup.GameTypeSetup self)
         {
             self.survivalScore = arenaOnline.survivalScore;
-            self.KillScore = arenaOnline.killScore;
-            self.EmptyDeathScore = arenaOnline.emptyDeathScore;
+            self.SetKillScore(arenaOnline.killScore);
+            self.SetEmptyDeathScore(arenaOnline.emptyDeathScore);
             self.spearHitScore = arenaOnline.spearHitScore;
             self.foodScore = arenaOnline.foodScore;
 
@@ -437,7 +437,7 @@ namespace RainMeadow
 
             if (targetOCreature.isAvatar)
             {
-                scoreChange = self.GameTypeSetup.KillScore;
+                scoreChange = self.GameTypeSetup.GetKillScore();
             }
             else
             {
@@ -1184,7 +1184,7 @@ namespace RainMeadow
 
             if (self.killTag is null)
             {
-                int scoreChange = -arenaSitting.gameTypeSetup.EmptyDeathScore;
+                int scoreChange = -arenaSitting.gameTypeSetup.GetEmptyDeathScore();
 
                 if (scoreChange != 0)
                 {
@@ -1444,7 +1444,7 @@ namespace RainMeadow
                     }
 
                     arenaPlayer.totScore += arenaPlayer.score;
-                    arenaPlayer.deaths += arenaPlayer.RoundDeaths;
+                    arenaPlayer.deaths += arenaPlayer.GetRoundDeaths();
                     arenaPlayer.allKills.AddRange(arenaPlayer.roundKills);
 
                     arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);

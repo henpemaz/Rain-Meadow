@@ -4,19 +4,24 @@ public static class GameTypeSetupExtensions
 {
     private static readonly ConditionalWeakTable<ArenaSetup.GameTypeSetup, Data> _dataByInstance = new();
 
-    extension (ArenaSetup.GameTypeSetup self)
+    public static int GetKillScore(this ArenaSetup.GameTypeSetup self)
     {
-        public int KillScore
-        {
-            get => _dataByInstance.GetOrCreateValue(self).killScore;
-            set => _dataByInstance.GetOrCreateValue(self).killScore = value;
-        }
+        return _dataByInstance.GetOrCreateValue(self).killScore;
+    }
 
-        public int EmptyDeathScore
-        {
-            get => _dataByInstance.GetOrCreateValue(self).emptyDeathScore;
-            set => _dataByInstance.GetOrCreateValue(self).emptyDeathScore = value;
-        }
+    public static void SetKillScore(this ArenaSetup.GameTypeSetup self, int value)
+    {
+        _dataByInstance.GetOrCreateValue(self).killScore = value;
+    }
+
+    public static int GetEmptyDeathScore(this ArenaSetup.GameTypeSetup self)
+    {
+        return _dataByInstance.GetOrCreateValue(self).emptyDeathScore;
+    }
+
+    public static void SetEmptyDeathScore(this ArenaSetup.GameTypeSetup self, int value)
+    {
+        _dataByInstance.GetOrCreateValue(self).emptyDeathScore = value;
     }
 
     private record Data

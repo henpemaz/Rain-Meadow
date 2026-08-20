@@ -465,7 +465,7 @@ namespace RainMeadow
         {
             arenaPlayer.wins = 0;
             arenaPlayer.deaths = 0;
-            arenaPlayer.RoundDeaths = 0;
+            arenaPlayer.SetRoundDeaths(0);
             arenaPlayer.totScore = 0;
             arenaPlayer.score = 0;
             arenaPlayer.allKills = [];
@@ -482,13 +482,13 @@ namespace RainMeadow
             {
                 if (arenaPlayer.winner)
                     arenaPlayer.wins--;
-                arenaPlayer.deaths -= arenaPlayer.RoundDeaths;
+                arenaPlayer.deaths -= arenaPlayer.GetRoundDeaths();
                 arenaPlayer.totScore -= arenaPlayer.score;
 
                 arenaPlayer.roundKills.ForEach(roundTrophy => arenaPlayer.allKills.Remove(roundTrophy));
             }
 
-            arenaPlayer.RoundDeaths = 0;
+            arenaPlayer.SetRoundDeaths(0);
             arenaPlayer.score = 0;
             arenaPlayer.roundKills.Clear();
             arenaPlayer.winner = false;
@@ -533,7 +533,7 @@ namespace RainMeadow
         {
             WinsByOPlayer[onlinePlayer]        = arenaPlayer.wins;
             DeathsByOPlayer[onlinePlayer]      = arenaPlayer.deaths;
-            RoundDeathsByOPlayer[onlinePlayer] = arenaPlayer.RoundDeaths;
+            RoundDeathsByOPlayer[onlinePlayer] = arenaPlayer.GetRoundDeaths();
             TotalScoreByOPlayer[onlinePlayer]  = arenaPlayer.totScore;
             ScoreByOPlayer[onlinePlayer]       = arenaPlayer.score;
             AllKillsByOPlayer[onlinePlayer]    = arenaPlayer.allKills.ToList();
@@ -556,7 +556,7 @@ namespace RainMeadow
 
             arenaPlayer.wins        = WinsByOPlayer[onlinePlayer];
             arenaPlayer.deaths      = DeathsByOPlayer[onlinePlayer];
-            arenaPlayer.RoundDeaths = RoundDeathsByOPlayer[onlinePlayer];
+            arenaPlayer.SetRoundDeaths(RoundDeathsByOPlayer[onlinePlayer]);
             arenaPlayer.totScore    = TotalScoreByOPlayer[onlinePlayer];
             arenaPlayer.score       = ScoreByOPlayer[onlinePlayer];
             arenaPlayer.allKills    = AllKillsByOPlayer[onlinePlayer].ToList();

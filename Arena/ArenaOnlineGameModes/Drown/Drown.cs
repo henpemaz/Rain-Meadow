@@ -87,7 +87,7 @@ namespace RainMeadow
             base.InitAsCustomGameType(arenaOnline, self);
 
             self.survivalScore = 0;
-            self.EmptyDeathScore = 0;
+            self.SetEmptyDeathScore(0);
 
             self.rainWhenOnePlayerLeft = false;
             self.fliesSpawn = true;

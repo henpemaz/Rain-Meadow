@@ -303,7 +303,8 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
                     false
                 )
                 : null;
-            privateLabel?.label.alignment = FLabelAlignment.Right;
+            if (privateLabel != null)
+                privateLabel.label.alignment = FLabelAlignment.Right;
 
             ProperlyAlignedMenuLabel playerCountLabel = new(
                 menu,

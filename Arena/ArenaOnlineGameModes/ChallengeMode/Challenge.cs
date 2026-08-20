@@ -48,8 +48,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             base.InitAsCustomGameType(arenaOnline, self);
 
             self.survivalScore   = 0;
-            self.KillScore       = 0;
-            self.EmptyDeathScore = 0;
+            self.SetKillScore(0);
+            self.SetEmptyDeathScore(0);
             self.spearHitScore   = 0;
             self.foodScore       = 1;
 

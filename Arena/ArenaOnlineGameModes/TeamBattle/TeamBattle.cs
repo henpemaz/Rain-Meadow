@@ -252,7 +252,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (isTeamKill)
             {
-                int scoreChange = -self.GameTypeSetup.KillScore;
+                int scoreChange = -self.GameTypeSetup.GetKillScore();
 
                 if (scoreChange != 0)
                 {

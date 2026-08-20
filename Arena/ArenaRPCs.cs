@@ -85,7 +85,7 @@ namespace RainMeadow
 
 
             RainMeadow.Info($"Adding {roundDeathsChange} to {onlinePlayer}'s round deaths.");
-            arenaPlayer.RoundDeaths += roundDeathsChange;
+            arenaPlayer.SetRoundDeaths(arenaPlayer.GetRoundDeaths() + roundDeathsChange);
 
             if (OnlineManager.lobby.isOwner)
                 arenaOnline.CopyStatsToLobbyData(arenaPlayer, onlinePlayer);

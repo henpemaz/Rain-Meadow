@@ -4,13 +4,14 @@ public static class ArenaPlayerExtensions
 {
     private static readonly ConditionalWeakTable<ArenaSitting.ArenaPlayer, Data> _dataByInstance = new();
 
-    extension (ArenaSitting.ArenaPlayer self)
+    public static int GetRoundDeaths(this ArenaSitting.ArenaPlayer self)
     {
-        public int RoundDeaths
-        {
-            get => _dataByInstance.GetOrCreateValue(self).roundDeaths;
-            set => _dataByInstance.GetOrCreateValue(self).roundDeaths = value;
-        }
+        return _dataByInstance.GetOrCreateValue(self).roundDeaths;
+    }
+
+    public static void SetRoundDeaths(this ArenaSitting.ArenaPlayer self, int value)
+    {
+        _dataByInstance.GetOrCreateValue(self).roundDeaths = value;
     }
 
     private record Data
