@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -2086,53 +2086,23 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
+        if (onlineCreature is null)
+            throw new InvalidProgrammerException("Player doesn't have an OnlineCreature counterpart!!");
+
+        // Remote avatars die when their owner's state says so, not from our local
+        // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
+        // too) would get corrected by the next state and fake a revive on the HUD.
+        if (!onlineCreature.isMine)
+            return;
+
+        if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
         {
-            if (isArenaMode(out var _))
-            {
-                RainMeadow.Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier");
-            }
-            else
-            {
-                throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            }
-        }
-        if (onlineEntity != null && !onlineEntity.isMine) return;
-        RainMeadow.Debug($"%%% DIE {onlineEntity}");
-        // Inside player_die hook
-
-        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
-        {
-            OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
-
-            if (self.room?.game?.session != null && self.room.game.session is ArenaGameSession s)
-            {
-                int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
-                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
-
-                if (deadPlayerNumber != -1)
-                {
-                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
-                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
-                    for (int i = 0; i < s.arenaSitting.players.Count; i++)
-                    {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
-                        if (onlinePlayer == null) continue;
-
-                        if (onlinePlayer.isMe)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, newScore);
-                        }
-                    }
-                }
-            }
+            arenaOnline.externalArenaGameMode.On_Player_Die(arenaOnline, orig, self);
+            return;
         }
 
+        Debug($"%%% DIE {onlineCreature}");
         orig(self);
     }
 

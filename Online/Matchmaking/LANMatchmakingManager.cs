@@ -299,7 +299,7 @@ namespace RainMeadow {
             }
         }
 
-        public override void JoinLobby(bool success) {
+        public override void JoinLobby(bool success, string failReason = "") {
             if (success)
             {
                 RainMeadow.Debug("Joining lobby");
@@ -308,8 +308,8 @@ namespace RainMeadow {
             else
             {
                 OnlineManager.LeaveLobby();
-                RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
+                RainMeadow.Debug($"Failed to join local game. {failReason}");
+                OnLobbyJoinedEvent(false, Utils.Translate(failReason));
             }
         }
 

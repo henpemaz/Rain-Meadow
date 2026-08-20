@@ -34,11 +34,12 @@ public class InputDialog : Dialog
 
         tabWrapper = new MenuTabWrapper(this, dialogPage);
 
-        OpTextBox textBox = new(new Configurable<string>(""), center - new Vector2(80f, 15f), 160f)
+        textBox = new(new Configurable<string>(""), center - new Vector2(80f, 15f), 160f)
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
         };
+        textBox.OnKeyDown = (Action<char>)Delegate.Combine(new Action<char>(HasPressedEnter), textBox.OnKeyDown);
 
         SimplerButton continueButton = new(
             this,
@@ -47,11 +48,7 @@ public class InputDialog : Dialog
             center - new Vector2(55, 140),
             new Vector2(110f, 30f)
         );
-        continueButton.OnClick += (btn) =>
-        {
-            manager.StopSideProcess(this);
-            OnConfirm?.Invoke(textBox.value);
-        };
+        continueButton.OnClick += (btn) => Enter();
 
         SimplerSymbolButton cancelButton = new(
             this,
@@ -67,4 +64,17 @@ public class InputDialog : Dialog
 
         OnConfirm += onConfirm;
     }
+    private void HasPressedEnter(char input)
+    {
+        if (textBox._keyboardOn 
+            && !string.IsNullOrWhiteSpace(textBox.value) 
+            && (input == '\n' || input == '\r')) 
+                Enter();
+    }
+    private void Enter()
+    {
+        manager.StopSideProcess(this);
+        OnConfirm?.Invoke(textBox.value);
+    }
+    private readonly OpTextBox textBox;
 }
