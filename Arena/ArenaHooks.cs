@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -259,9 +260,23 @@ namespace RainMeadow
             {
                 if (arenaOnline.lobby.isOwner)
                 {
+                    bool wasWaiting = arenaOnline.isWaitingForPlayersToLoad;
                     arenaOnline.isWaitingForPlayersToLoad = arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
                         && (arenaOnline.arenaPrepTimer is null
                             || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+
+                    if (wasWaiting && !arenaOnline.isWaitingForPlayersToLoad)
+                    {
+                        arenaOnline.ArenaSession?.room?.abstractRoom?.GetResource()?.participants?.Do(
+                            onlinePlayer =>
+                            {
+                                if (!onlinePlayer.isMe)
+                                {
+                                    onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_StopWaitingForPlayersToLoad);
+                                }
+                            }
+                        );
+                    }
                 }
 
                 if (arenaOnline.isWaitingForPlayersToLoad)

@@ -425,8 +425,8 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 arena.setupTime = setupTime;
-                // I don't think this is used so I'm not sure if the param here is 
-                // retrieved from host's meadow remix settings or host's actual 
+                // I don't think this is used so I'm not sure if the param here is
+                // retrieved from host's meadow remix settings or host's actual
                 // Player.maxGodTime. I'll leave it be but if this is causing issues
                 // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
@@ -556,6 +556,18 @@ namespace RainMeadow
                 game.levelSelector.levelsPlaylist.ConstrainScroll();
             }
 
+        }
+
+        [RPCMethod]
+        public static void Arena_StopWaitingForPlayersToLoad(RPCEvent rpc)
+        {
+            if (RainMeadow.isArenaMode(out var arenaOnline)
+                && rpc.from == arenaOnline.lobby?.owner
+                && arenaOnline.ArenaSession?.game?.shortcuts is ShortcutHandler shortcutHandler)
+            {
+                arenaOnline.isWaitingForPlayersToLoad = false;
+                shortcutHandler.Update(); // wait should be 0, the player should exit the shortcut immediatly
+            }
         }
     }
 }
