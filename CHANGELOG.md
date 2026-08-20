@@ -1,3 +1,8 @@
+# Release 1.15.1
+
+## General
+- Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
+
 # Release 1.15.0
 
 ## Engine
