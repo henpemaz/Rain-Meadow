@@ -60,11 +60,7 @@ namespace RainMeadow
                         var remainingPlayers = session
                             .participants.Where(x => x != player)
                             .ToList();
-                        if (session.overworldSession != null)
-                        {
-                            session.overworldSession.UpdateParticipants(remainingPlayers);
-                            OnlineManager.RemoveSubscription(session.overworldSession, player);
-                        }
+                        // Only the transitioning session: dropping ourselves from the overworld leaves it ownerless.
                         session.UpdateParticipants(remainingPlayers);
                         OnlineManager.RemoveSubscription(session, player);
                     }

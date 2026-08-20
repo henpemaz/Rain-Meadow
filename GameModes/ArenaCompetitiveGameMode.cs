@@ -710,10 +710,6 @@ namespace RainMeadow
 
             AbstractRoom absRoom = game.world.abstractRooms[0];
             Room room = absRoom.realizedRoom;
-            WorldSession worldSession = WorldSession.map.GetValue(
-                game.world,
-                (w) => throw new KeyNotFoundException()
-            );
 
             if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
             {

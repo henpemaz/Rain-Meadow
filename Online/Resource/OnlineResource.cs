@@ -383,6 +383,13 @@ namespace RainMeadow
                 if (isWaitingForState) isWaitingForState = false;
                 PerformRequests();
             }
+            else if (!isNeeded && isAvailable && canRelease)
+            {
+                // NotNeeded only gets one shot at releasing. If it was turned down because a
+                // participant was still here or hadn't ackd the latest lease nothing ever tries
+                // again and whoever is waiting for this resource to empty out waits forever.
+                Release();
+            }
             ParticipantLeftImpl(participant);
             OnParticipantLeft?.Invoke(this, participant);
         }
