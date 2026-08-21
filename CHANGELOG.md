@@ -4,7 +4,7 @@
 - Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
 
 ## Arena
-- Fixed Den not opening when someone left
+- Fixed dens not opening when someone left
 
 # Release 1.15.0
 
