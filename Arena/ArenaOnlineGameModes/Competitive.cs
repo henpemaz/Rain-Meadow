@@ -55,7 +55,7 @@ namespace RainMeadow
                     player.realizedCreature != null && (player.realizedCreature.State.alive)
                 ) ?? 0;
 
-            if (playersStillStanding == 1 && arenaOnline.arenaSittingOnlineOrder.Count > 1 && !arenaOnline.countdownInitiatedHoldFire)
+            if (playersStillStanding == 1 && arenaOnline.arenaSittingOnlineOrder.Count >= 1 && !arenaOnline.countdownInitiatedHoldFire)
             {
                 return true;
             }
