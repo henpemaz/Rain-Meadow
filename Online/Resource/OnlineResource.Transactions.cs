@@ -105,7 +105,8 @@ namespace RainMeadow
         private void Released(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isSupervisor && !super.isReleasing)
+            // dropping a participant is always safe
+            // and refusing it on the basis that super.isReleasing just makes them retry forever
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 ParticipantLeft(request.from);
@@ -140,7 +141,7 @@ namespace RainMeadow
             else if (requestResult is GenericResult.Error) // I should retry
             {
                 RainMeadow.Error("Request failed for " + this);
-                PerformRequests();
+                RetryTransaction();
             }
         }
 
@@ -155,8 +156,15 @@ namespace RainMeadow
             else if (releaseResult is GenericResult.Error) // I should retry
             {
                 RainMeadow.Error("Release failed for " + this);
-                PerformRequests();
+                RetryTransaction();
             }
+        }
+
+        // if we're caught in a scenario where world is releasing and we're being refused by our own handler, we need to deal with that
+        // a refusal from my own handler would feed the ProcessSelfEvents loop that's still trying to clear out!
+        private void RetryTransaction()
+        {
+            OnlineManager.RunDeferred(PerformRequests);
         }
 
         // A pending transfer was asnwered to

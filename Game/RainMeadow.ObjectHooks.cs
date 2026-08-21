@@ -28,7 +28,7 @@ namespace RainMeadow
             {
                 if (!rs.worldSession.isActive)
                 {
-                    RainMeadow.Error($"froze room update for its world, it's never coming back");
+                    RainMeadow.Debug($"froze room update for its world, it's never coming back");
                     return;
                 }
             }
