@@ -2,6 +2,8 @@
 
 ## Arena
 - The pipe release is more reliable, and should look more natural.
+## General
+- Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
 
 # Release 1.15.0
 
