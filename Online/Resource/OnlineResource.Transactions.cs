@@ -107,6 +107,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             // dropping a participant is always safe
             // and refusing it on the basis that super.isReleasing just makes them retry forever
+            if (isSupervisor)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 ParticipantLeft(request.from);
