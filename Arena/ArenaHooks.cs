@@ -2244,12 +2244,18 @@ namespace RainMeadow
                         }
                     }
 
-                    self.manager.RequestMainProcessSwitch(
-                        ProcessManager.ProcessID.MultiplayerResults
-                    );
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        self.manager.RequestMainProcessSwitch(
+                            ProcessManager.ProcessID.MultiplayerResults
+                        );
+                    }
+                    else
+                    {
+                        arena.clientWantsToLeaveGame = true;
+                    }
 
                     arena.returnToLobby = true;
-                    if (!OnlineManager.lobby.isOwner) arena.clientWantsToLeaveGame = true;
                 }
             }
             orig(self, sender, message);
