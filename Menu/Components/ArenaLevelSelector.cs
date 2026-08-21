@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -10,9 +6,14 @@ using Newtonsoft.Json.Linq;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using static Menu.Menu;
 using static MultiplayerUnlocks;
+using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI.Components;
 
@@ -197,6 +198,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             float desiredSquashFactor = 1;
             if (fadeAway > 0)
             {
+                MyPlaylistSelector?.buttonsDirty = true;
                 fadeAway += 0.1f;
                 if (fadeAway >= 1)
                 {
