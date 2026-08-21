@@ -566,17 +566,20 @@ namespace RainMeadow
 
         private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
         {
-            System.Func<bool> waitCondition = null;
+            System.Func<bool>? waitCondition = null;
 
             if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner))
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
+            // orig already ran  so there is nothing left to execute here.
+            // This only holds transitionInProgress until the old world's participants clear
+            // used to throw an exception literally every warp
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
                 waitCondition,
-                () => self.WorldLoaded(warpUsed)
+                null
             );
         }
 
