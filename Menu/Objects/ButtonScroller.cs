@@ -167,6 +167,7 @@ namespace RainMeadow
             {
                 scrollSliderValue = textAnchor == TextAnchor.Top ? 1 - f : f;
                 DownScrollOffset = scrollOffset = Mathf.Lerp(0f, scrollSliderValueCap, scrollSliderValue);
+                buttonsDirty = true;
             }
         }
         public float ValueOfSlider(Slider slider)

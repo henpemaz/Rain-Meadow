@@ -373,7 +373,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             lastShowThumbsTransitionState = showThumbsTransitionState;
             showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, ShowThumbsStatus ? 1f : 0f, 0.015f, 1f / 30f);
 
-            if (showThumbsTransitionState > 0 && showThumbsTransitionState < 1) ConstrainScroll();
+            if (showThumbsTransitionState != lastShowThumbsTransitionState) ConstrainScroll();
 
             buttonHeight = Mathf.Lerp(20, 30 + ThumbHeight, ShowThumbsTransitionState(1f));
             buttonSpacing = (buttonHeight - 20) / 6;
