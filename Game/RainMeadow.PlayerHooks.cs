@@ -2087,6 +2087,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
         OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
+        // player quit while a death event was running, or wait loop is processing
         if (onlineCreature is null)
         {
             orig(self);
