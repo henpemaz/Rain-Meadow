@@ -130,9 +130,10 @@ namespace RainMeadow
             EntityID id = EntityID.FromString(array[1]);
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, pos, id);
 
-            foreach (var item in abstractCreature.stuckObjects.ToArray()) // Some (dropbug) creatures spawn with random items attached
+            var stuckObjects = abstractCreature.stuckObjects.ToArray();
+            for (int i = stuckObjects.Length - 1; i >= 0 ; i--)
             {
-                item.Deactivate();
+                stuckObjects[i].Deactivate(); // Some (dropbug) creatures spawn with random items attached
             }
 
             abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
@@ -305,7 +306,7 @@ namespace RainMeadow
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
-            
+
             if (this.realizedCreature is null) {
                 this.creature.Realize();
             }

@@ -211,7 +211,7 @@ namespace RainMeadow
                 creatingRemoteObject = oldCreatingRemoteObject;
                 throw;
             }
-            creatingRemoteObject = oldCreatingRemoteObject; 
+            creatingRemoteObject = oldCreatingRemoteObject;
 
 
             realized = initialState.realized;
@@ -228,7 +228,7 @@ namespace RainMeadow
             base.NewOwner(newOwner);
             if (newOwner.isMe)
             {
-            
+
                 if (realized && apo.realizedObject is null && apo.destroyOnAbstraction)
                 {
                     realized = false;
@@ -428,15 +428,16 @@ namespace RainMeadow
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
             }
         }
-        
+
         public void RemoveEntityFromGame(bool onlineaware = true)
         {
             RainMeadow.Debug("Removing entity from game: " + this);
             if (apo.stuckObjects != null)
             {
-                foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                var stuckObjects = apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>().ToArray();
+                for (int i = stuckObjects.Length - 1; i >= 0; i--)
                 {
-                    if (stick.A.realizedObject is Weapon weapon)
+                    if (stuckObjects[i].A.realizedObject is Weapon weapon)
                     {
                         weapon.ChangeMode(Weapon.Mode.Free);
                     }
@@ -446,18 +447,19 @@ namespace RainMeadow
             if (apo.realizedObject is PhysicalObject po)
             {
                 // Release removes the grasp from grabbedBy list, so we can't directly enumerate the list
-                foreach (Creature.Grasp grabbedBy in po.grabbedBy.ToList())
+                for (int i = po.grabbedBy.Count - 1; i >= 0; i--)
                 {
-                    grabbedBy.Release();
+                    po.grabbedBy[i].Release();
                 }
 
                 if (po is Creature creature)
                 {
                     if (creature.grasps != null)
                     {
-                        foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                        var grabbedObjects = creature.grasps.OfType<Creature.Grasp>().ToArray();
+                        for (int i = grabbedObjects.Length - 1; i >= 0; i--)
                         {
-                            grabbing.Release();
+                            grabbedObjects[i].Release();
                         }
                     }
                 }
@@ -499,7 +501,7 @@ namespace RainMeadow
                 }
                 if (inResource is RoomSession rs)
                 {
-                    if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);                    
+                    if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);
                 }
                 AllMoving(false);
             }
@@ -597,8 +599,8 @@ namespace RainMeadow
                     return;
                 }
 
-                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
-                    chunk?.ToBodyChunk(), 
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject,
+                    chunk?.ToBodyChunk(),
                     onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
@@ -608,12 +610,12 @@ namespace RainMeadow
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             if (this.IsLocked("parry")) return;
-            if (this.apo.realizedObject != null) 
+            if (this.apo.realizedObject != null)
             {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) 
+                if (result.HasValue)
                 {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
