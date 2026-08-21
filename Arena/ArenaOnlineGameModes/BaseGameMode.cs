@@ -817,21 +817,19 @@ namespace RainMeadow
             //{
             //a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
             //}
-            if (abstractCreature.realizedCreature is not Player)
+            if (abstractCreature.realizedCreature is not Player player)
             {
                 return;
             }
-            if (
-                (abstractCreature.realizedCreature as Player).SlugCatClass
+            if (player.SlugCatClass
                 == SlugcatStats.Name.Night
             )
             {
-                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                player.slugcatStats.throwingSkill = 1;
             }
             if (ModManager.MSC)
             {
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == SlugcatStats.Name.Red
                 )
                 {
@@ -849,8 +847,7 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == SlugcatStats.Name.Yellow
                 )
                 {
@@ -868,8 +865,7 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer
                 )
                 {
@@ -887,29 +883,27 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup
                 )
                 {
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                    player.slugcatStats.throwingSkill = 1;
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel
                 )
                 {
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                    player.slugcatStats.throwingSkill =
                         arenaOnline.painCatThrowingSkill;
                     RainMeadow.Debug(
                         "ENOT THROWING SKILL "
-                            + (abstractCreature.realizedCreature as Player)
+                            + player
                                 .slugcatStats
                                 .throwingSkill
                     );
                     if (
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill
+                        player.slugcatStats.throwingSkill
                             == 0
                         && arenaOnline.painCatEgg
                     )
@@ -954,37 +948,35 @@ namespace RainMeadow
                     }
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint
                 )
                 {
                     if (!arenaOnline.sainot) // ascendance saint
                     {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                        player.slugcatStats.throwingSkill =
                             0;
                     }
                     else
                     {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                        player.slugcatStats.throwingSkill =
                             1;
                     }
                 }
             }
 
-            if (
-                ModManager.Watcher
-                && (abstractCreature.realizedCreature as Player).SlugCatClass
+            if (ModManager.Watcher
+                && player.SlugCatClass
                     == Watcher.WatcherEnums.SlugcatStatsName.Watcher
             )
             {
-                if ((abstractCreature.realizedCreature as Player).rippleLevel >= 3f)
+                if (player.rippleLevel >= 3f)
                 {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 80;
+                    player.enterIntoCamoDuration = 80;
                 }
                 else
                 {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+                    player.enterIntoCamoDuration = 40;
                 }
             }
         }
@@ -1245,7 +1237,7 @@ namespace RainMeadow
                 .Select(player => ArenaHelpers.GetArenaClientSettings(player)) // Get settings
                 .Where(settings => settings != null) // Ensure settings exist
                 .Count(settings =>
-                    settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+                    settings!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
                 );
             if (
                 self.Players.Count + activePlayerCountWithOverseers
@@ -1572,6 +1564,74 @@ namespace RainMeadow
                 return a.deaths > b.deaths;
 
             return a.allKills.Count > b.allKills.Count;
+        }
+
+        public virtual List<AbstractCreature> GetPlayerStillActive(
+            ArenaGameSession self,
+            bool dontCountSandboxLosers = false
+        )
+        {
+            List<AbstractCreature> activePlayers = [];
+
+            for (int i = 0; i < self.Players.Count; i++)
+            {
+                bool countPlayerAsActive = true;
+
+                if (!self.Players[i].state.alive)
+                {
+                    countPlayerAsActive = false;
+                }
+                else if (self.Players[i].GetOnlineCreature()?.owner is null)
+                {
+                    countPlayerAsActive = false;
+                }
+
+                else if (self.exitManager != null
+                    && self.exitManager.IsPlayerInDen(self.Players[i])
+                )
+                {
+                    countPlayerAsActive = false;
+                }
+
+                else if (self.Players[i].realizedCreature != null
+                    && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
+                )
+                {
+                    countPlayerAsActive = false;
+                }
+
+                else
+                {
+                    for (int j = 0; j < self.arenaSitting.players.Count; j++)
+                    {
+                        if ((self.Players[i].state as PlayerState)!.playerNumber == self.arenaSitting.players[j].playerNumber)
+                        {
+                            if (self.Players[i].Room == self.game.world.offScreenDen
+                                && self.arenaSitting.players[j].hasEnteredGameArea
+                            )
+                            {
+                                countPlayerAsActive = false;
+                            }
+
+                            if (dontCountSandboxLosers
+                                && self.arenaSitting.players[j].sandboxWin < 0
+                            )
+                            {
+                                countPlayerAsActive = false;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                if (countPlayerAsActive)
+                {
+                    activePlayers.Add(self.Players[i]);
+                }
+            }
+
+            return activePlayers;
         }
 
         /// <remarks>

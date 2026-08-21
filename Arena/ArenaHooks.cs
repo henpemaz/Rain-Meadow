@@ -2369,70 +2369,9 @@ namespace RainMeadow
             bool dontCountSandboxLosers
         )
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out var arenaOnline))
             {
-                int num = 0;
-                for (int i = 0; i < self.Players.Count; i++)
-                {
-                    bool countPlayers = true;
-
-                    if (!self.Players[i].state.alive)
-                    {
-                        countPlayers = false;
-                    }
-                    if (countPlayers
-                        && self.Players[i].GetOnlineCreature()?.owner is null)
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.exitManager != null
-                        && self.exitManager.IsPlayerInDen(self.Players[i])
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.Players[i].realizedCreature != null
-                        && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers)
-                    {
-                        for (int j = 0; j < self.arenaSitting.players.Count; j++)
-                        {
-                            if (
-                                self.Players[i].Room == self.game.world.offScreenDen
-                                && self.arenaSitting.players[j].hasEnteredGameArea
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            if (
-                                dontCountSandboxLosers
-                                && self.arenaSitting.players[j].sandboxWin < 0
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            break;
-                        }
-                    }
-
-                    if (countPlayers)
-                    {
-                        num++;
-                    }
-                }
-
-                return num;
+                return arenaOnline.externalArenaGameMode.GetPlayerStillActive(self, false).Count;
             }
             else
             {
