@@ -216,10 +216,9 @@ namespace RainMeadow
         public void AddScrollObjects(IPartOfButtonScroller[]? scrollBoxButtons, bool addToSubobjects, bool bindToSlider)
         {
             if (scrollBoxButtons == null) return;
-            List<IPartOfButtonScroller> newButtons = [.. scrollBoxButtons.Where(x => x != null)];
-            for (int i = 0; i < newButtons.Count; i++)
+            for (int i = 0; i < scrollBoxButtons.Length; i++)
             {
-                var btn = newButtons[i];
+                var btn = scrollBoxButtons[i];
                 if (btn == null) return;
                 if (btn is MenuObject menuObj)
                 {

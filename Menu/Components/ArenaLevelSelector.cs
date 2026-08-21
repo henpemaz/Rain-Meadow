@@ -1,19 +1,17 @@
-using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using MoreSlugcats;
-using Newtonsoft.Json.Linq;
-using RainMeadow.UI.Components.Patched;
-using RainMeadow.UI.Interfaces;
-using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using MoreSlugcats;
+using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
+using RWCustom;
 using UnityEngine;
 using static Menu.Menu;
 using static MultiplayerUnlocks;
-using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI.Components;
 
