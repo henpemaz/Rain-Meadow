@@ -1,3 +1,8 @@
+# Release 1.15.1
+
+## Arena
+- The pipe release is more reliable, and should look more natural.
+
 # Release 1.15.0
 
 ## Engine
