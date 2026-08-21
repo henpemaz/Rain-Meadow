@@ -305,9 +305,9 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void Arena_EndSessionEarly()
+        public static void Arena_EndSessionEarly(RPCEvent rpc)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena) && rpc.from == arena.lobby?.owner)
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null)
@@ -316,9 +316,6 @@ namespace RainMeadow
                     return;
                 }
                 game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-
-
             }
         }
 
@@ -425,8 +422,8 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 arena.setupTime = setupTime;
-                // I don't think this is used so I'm not sure if the param here is 
-                // retrieved from host's meadow remix settings or host's actual 
+                // I don't think this is used so I'm not sure if the param here is
+                // retrieved from host's meadow remix settings or host's actual
                 // Player.maxGodTime. I'll leave it be but if this is causing issues
                 // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
