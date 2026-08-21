@@ -46,7 +46,7 @@ namespace RainMeadow
             public List<WeakReference> shaderApplied = new();
             public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
             {
-                if (shaderApplied.Any(x => x.Target == mesh))
+                if (!shaderApplied.Any(x => x.Target == mesh))
                 {
                     var nightsky = rCam?.game.rainWorld.Shaders["RM_NightSkySkin"];
                     mesh.shader = nightsky;
