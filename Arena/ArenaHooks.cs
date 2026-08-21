@@ -2221,32 +2221,35 @@ namespace RainMeadow
                     {
                         return;
                     }
-                    if (OnlineManager.lobby.isOwner)
+
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            arena.arenaSittingOnlineOrder[i]
+                        );
+
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
-                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                                arena.arenaSittingOnlineOrder[i]
-                            );
-                            if (onlinePlayer != null && !onlinePlayer.isMe)
+                            if (OnlineManager.lobby.isOwner)
                             {
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
+                            else
+                            {
+                                onlinePlayer.InvokeOnceRPC(
+                                    ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                                    OnlineManager.mePlayer
+                                );
+                            }
                         }
-                        self.manager.RequestMainProcessSwitch(
-                            ProcessManager.ProcessID.MultiplayerResults
-                        );
                     }
-                    arena.returnToLobby = true;
 
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        arena.clientWantsToLeaveGame = true;
-                        OnlineManager.lobby.owner.InvokeOnceRPC(
-                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                            OnlineManager.mePlayer
-                        );
-                    }
+                    self.manager.RequestMainProcessSwitch(
+                        ProcessManager.ProcessID.MultiplayerResults
+                    );
+
+                    arena.returnToLobby = true;
+                    if (!OnlineManager.lobby.isOwner) arena.clientWantsToLeaveGame = true;
                 }
             }
             orig(self, sender, message);
