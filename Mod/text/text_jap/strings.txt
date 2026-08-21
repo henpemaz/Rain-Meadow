@@ -531,7 +531,7 @@ Vanilla|バニラ
 Downpour|さらにﾅﾒｸｼﾞﾈｺの拡張
 Downpour DLC is not activated, vanilla intro will be used instead|「さらにﾅﾒｸｼﾞﾈｺの拡張」が無効です。バニラのタイトル画面に置き換えます
 Watcher DLC is not activated, vanilla intro will be used instead|「ウォッチャー」が無効です。バニラのタイトル画面に置き換えます
-Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|観戦モード、ストーリー、アリーナメニューのクロール速度。デフォルト:5
+Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: <SCROLLSPEED>|観戦モード、ストーリー、アリーナメニューのクロール速度。デフォルト:<SCROLLSPEED>
 Disable Pause Menu Animation|ポーズ中のアニメーションを無効化
 If selected, disables the sway animation in the pause menu|有効にすると、ポーズ中の波アニメーションがなくなります
 Input “cheats” to access cheats|チートにアクセスするには「cheats」と入力してください
@@ -641,7 +641,6 @@ Flair|フレア
 Global Mute|チャットミュート
 Profanity Filter|チャットフィルター
 Sound on Mention|メンション音
-Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|プレイヤーリストのスクロール速度。標準:10
 Chat Inactivity Opacity|チャット不活性状態の混濁
 Chat Inactivity Timer|チャット不活性状態のタイマー
 Streamer Mode|配信モード
@@ -722,6 +721,9 @@ Round Notification|ラウンドメッセージ
 Session Notification|セッションメッセージ
 Enable Chat Logging Toggle|チャットログ保持
 Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|チャットログ保持. シフト+「チャットキー」 チャットでの表示エラー
+Clear On New Session|新しいセッションチャットクリア
+Death|デス
+System|システム
 Text Downscroll|テキストスクロール
 Sound On New Message|メッセージ音
 Everyone|みんあ
@@ -732,6 +734,11 @@ Rain Timer:|雨タイマー:
 General|一般
 Greedy|欲深い
 solid|ソリッド
+cape|マント
+scarf|スカーフ
+Lobby Joining Extra Info|ロビー追加情報に参加
+Lobby Joining Timeout (seconds)|ロビー参加タイムアウト(秒)
+Use simpler slugcat indicator icons above usernames|通常のナメクジ猫ユーザーアイコンを使用
 
 ///lobby menu
 Fight against unforgiving creatures and foes where only the strong survive.|容赦のない生物や敵と戦い,強者だけが生き残る世界だ.
@@ -763,8 +770,16 @@ Filter for only public lobbies|パブリックロビーのみ
 Filter for a maximum lobby size|ロビーの最大プレイヤー数を指定するフィルター
 Filter for a specific lobby gamemode|特定のゲームモードをフィルター
 Filter lobbies for specific mods|特定のMODをフィルタする
-Click to view|クリックして表示
+Click to view <LOBBY>|<LOBBY>をクリックして表示
+Click to join <LOBBY>|<LOBBY>をクリックして参加
+Create a new lobby|新しいロビーを作成する
+Join selected lobby|選択したロビーに参加
 MSC + Watcher|MSC + ウォッチャー
+Mute player|プレイヤーミュート
+Unmute player|プレイヤーミュート解除
+Countdown Safety Time (ticks)|安全カウントダウンタイマー (チック)
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|カウントダウンが待つ時間 デフォルト:300チック (7.5秒)
+
 
 //meadow
 Eye Color|眼の色
@@ -806,7 +821,7 @@ This user is the lobby host|このユーザーはホストです
 GAME IN SESSION|セッションが進行中
 Amoeba Lethality Factor:|アメーバ致死因子
 Multiplier for amoeba lethality|アメーバ致死の乗数
-Starting match in|マッチスタート! あと:
+Starting match in|マッチスタート! なか:
 SESSION RESULTS|セッション結果
 SESSION ENDED!|セッションエンド!
 IT'S A DRAW!|引き分けだ!
