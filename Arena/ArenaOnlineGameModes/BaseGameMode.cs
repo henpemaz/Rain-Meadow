@@ -1581,22 +1581,24 @@ namespace RainMeadow
 
                 if (!playerAC.state.alive
                     || arenaSession.exitManager?.IsPlayerInDen(playerAC) == true
-                    || ((Player)playerAC.realizedCreature)?.dangerGrasp is not null)
+                    || ((Player?)playerAC.realizedCreature)?.dangerGrasp is not null)
                 {
                     continue;
                 }
 
-                ArenaSitting.ArenaPlayer arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                ArenaSitting.ArenaPlayer? arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
                     arenaOnline,
                     arenaSession.arenaSitting,
                     onlinePlayer
-                )!;
+                );
 
-                if (playerAC.Room == arenaSession.game.world.offScreenDen
-                    && arenaPlayer.hasEnteredGameArea
-                    && !includeSandboxLosers && arenaPlayer.sandboxWin < 0)
+                if (arenaPlayer is not null)
                 {
-                    continue;
+                    if ((playerAC.Room == arenaSession.game.world.offScreenDen && arenaPlayer.hasEnteredGameArea)
+                        || (!includeSandboxLosers && arenaPlayer.sandboxWin < 0))
+                    {
+                        continue;
+                    }
                 }
 
                 activePlayers.Add(playerAC);

@@ -2371,7 +2371,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arenaOnline))
             {
-                return arenaOnline.externalArenaGameMode.GetPlayerStillActive(self, false).Count;
+                return arenaOnline.externalArenaGameMode.GetActivePlayerACs(arenaOnline, self).Count;
             }
             else
             {
