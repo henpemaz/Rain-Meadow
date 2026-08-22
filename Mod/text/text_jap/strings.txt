@@ -676,8 +676,8 @@ Kill Score:|キルスコア:
 Points a kill is worth|キル価値のあるポイントの量
 Survival Score:|生存スコア:
 Points for surviving inside the shelter|避難所で生き残ったポイントの量は価値があります
-Empty Kill Score:|空キルスコア:
-Points for other players if someone dies without a killer|プレイヤーが不明な手段で殺されたときに獲得したポイント
+Empty Death Score:|空デススコア:
+Points lost from self-inflicted death|自殺から失われたポイント
 Unlock Dens:|雨宿オープン
 Points required to unlock dens|雨宿の入力に必要なポイント
 Den Entry:|雨宿エントリ

@@ -110,7 +110,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (
                 playersStillStanding == 1
-                && arenaOnline.arenaSittingOnlineOrder.Count > 1
+                && arenaOnline.arenaSittingOnlineOrder.Count >= 1
                 && !arenaOnline.countdownInitiatedHoldFire
             )
             {
@@ -727,7 +727,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             )
             {
                 if (player.isMe // Custom color only for me in team battles
-                    && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                    && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs)
                     && cs.chatUsernameColor is Color color)
                 {
                     return color;

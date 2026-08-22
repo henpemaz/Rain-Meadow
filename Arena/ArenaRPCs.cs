@@ -270,6 +270,9 @@ namespace RainMeadow
                 {
                     arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
                 }
+                int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
+                    x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
+                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer}");
             }
         }
 
@@ -425,8 +428,8 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 arena.setupTime = setupTime;
-                // I don't think this is used so I'm not sure if the param here is 
-                // retrieved from host's meadow remix settings or host's actual 
+                // I don't think this is used so I'm not sure if the param here is
+                // retrieved from host's meadow remix settings or host's actual
                 // Player.maxGodTime. I'll leave it be but if this is causing issues
                 // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
