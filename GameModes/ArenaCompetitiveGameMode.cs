@@ -27,6 +27,7 @@ namespace RainMeadow
         public bool registeredNewGameModes = false;
 
         public bool isInGame;
+        public bool isWaitingForPlayersToLoad;
         public int playerLeftGame;
         public int currentLevel;
         public int totalLevelCount;
@@ -179,7 +180,7 @@ namespace RainMeadow
                 character = MeadowProgression.Character.Overseer,
                 skin = MeadowProgression.Skin.Overseer_Moon,
                 tint = Color.white,
-                tintAmount = 1f,  
+                tintAmount = 1f,
             };
             meadowOverseerData.Updated();
 
@@ -1250,7 +1251,7 @@ namespace RainMeadow
                 onlineCreature.AddData(new MeadowCreatureData());
                 onlineCreature.AddData(meadowOverseerData);
             }
-            
+
             onlineCreature.AddData(avatarSettings);
             avatarSettings.overlaySkin = AvatarData.ConfigureOverlay(onlineCreature);
         }
@@ -1260,7 +1261,7 @@ namespace RainMeadow
             if (oc.TryGetData<SlugcatCustomization>(out var data))
             {
                 RainMeadow.Debug(oc);
-                
+
                 if (creature is Overseer overseer)
                 {
                     new OverseerController(overseer, oc, data.playerIndex);
@@ -1269,7 +1270,7 @@ namespace RainMeadow
                     creature.abstractCreature.HypothermiaImmune = true;
 
                     if (oc.TryGetData<MeadowCreatureData>(out var mcd) && oc.TryGetData<MeadowAvatarData>(out var mcc))
-                    {   
+                    {
                         EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
                     }
                     RainMeadow.creatureCustomizations.GetValue(creature, (c) => oc.GetData<MeadowAvatarData>());

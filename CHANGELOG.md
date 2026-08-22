@@ -1,5 +1,7 @@
 # Release 1.15.1
 
+## Arena
+- The pipe release is more reliable, and should look more natural.
 ## Chat
 - Added a remix option to clear certain chat messages on every session.
 

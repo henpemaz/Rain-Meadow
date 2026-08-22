@@ -561,5 +561,17 @@ namespace RainMeadow
             }
 
         }
+
+        [RPCMethod]
+        public static void Arena_StopWaitingForPlayersToLoad(RPCEvent rpc)
+        {
+            if (RainMeadow.isArenaMode(out var arenaOnline)
+                && rpc.from == arenaOnline.lobby?.owner
+                && arenaOnline.ArenaSession?.game?.shortcuts is ShortcutHandler shortcutHandler)
+            {
+                arenaOnline.isWaitingForPlayersToLoad = false;
+                shortcutHandler.Update(); // wait should be 0, the player should exit the shortcut immediatly
+            }
+        }
     }
 }

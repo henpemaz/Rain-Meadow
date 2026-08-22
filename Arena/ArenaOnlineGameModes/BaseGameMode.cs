@@ -808,6 +808,7 @@ namespace RainMeadow
                 0
             );
 
+            abstractCreature.realizedCreature.inShortcut = true;
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
             shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
 
