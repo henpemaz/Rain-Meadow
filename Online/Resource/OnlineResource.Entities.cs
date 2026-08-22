@@ -115,10 +115,10 @@ namespace RainMeadow
             }
             if (oe.primaryResource == this)
             {
-                    RainMeadow.Error($"ID {oe.id} is already taken. Purging old {oe.GetType().Name} for new");
-                    // Try again
-                    oe = entityDefinition.MakeEntity(this, initialState);
-                    return;
+                RainMeadow.Error($"ID {oe.id} is already taken. Purging old {oe.GetType().Name} for new");
+                // Try again
+                oe = entityDefinition.MakeEntity(this, initialState);
+                return;
             }
 
             if (oe.primaryResource is OnlineResource otherResource && otherResource != this && EventMath.IsNewer(otherResource.registeredEntities[oe.id].version, entityDefinition.version))
@@ -282,12 +282,12 @@ namespace RainMeadow
         public void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug($"{oe} : {this}");
-            
+
             if (oe.primaryResource == this && !registeredEntities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't registered in resource");
             if (!joinedEntities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't joined in resource");
             registeredEntities.Remove(oe.id);
             joinedEntities.Remove(oe.id);
-            activeEntities.Remove(oe); 
+            activeEntities.Remove(oe);
 
             EntitiesModified();
 
@@ -320,7 +320,7 @@ namespace RainMeadow
         public void RequestEntityTransfer(OnlineEntity oe, OnlinePlayer to)
         {
             RainMeadow.Debug($"{oe} : {this} : to {to}");
-            if (oe.isPending) throw new InvalidOperationException("can't trandfer if pending");
+            if (oe.isPending) throw new InvalidOperationException("can't transfer if pending");
             oe.pendingRequest = owner.InvokeRPC(this.OnEntityTransferRequest, oe, to).Then(this.OnEntityTransferResolve);
         }
 
@@ -330,7 +330,8 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this} : to {newOwner}");
             if (oe != null && entityTransferRequest.from == oe.owner && isOwner && isActive && !isReleasing)
             {
-                 OnlineManager.RunDeferred(() => { // deferred so we receive the incoming state first
+                OnlineManager.RunDeferred(() =>
+                { // deferred so we receive the incoming state first
                     EntityTransfered(oe, newOwner);
                 });
                 entityTransferRequest.from.QueueEvent(new GenericResult.Ok(entityTransferRequest));
