@@ -55,18 +55,18 @@ namespace RainMeadow
         {
             if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.Death)
             {
-                ClearMessages(x => x.Item1 == ChatLogManager.TypeToSysMesSignature(ChatLogManager.SystemMessageType.CreatureDeath));
+                ClearMessages(x => x.user == ChatLogManager.TypeToSysMesSignature(ChatLogManager.SystemMessageType.CreatureDeath));
             }
             else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.System)
             {
-                ClearMessages(x => ChatLogManager.IsUserSystemSignature(x.Item1));
+                ClearMessages(x => ChatLogManager.IsUserSystemSignature(x.user));
             }
             else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.All)
             {
                 ClearMessages(x => true);
             }
         }
-        public void ClearMessages(Predicate<(string, string)> match)
+        public void ClearMessages(Predicate<(string user, string message)> match)
         {
             ChatLogManager.chatLog.RemoveAll(match);
             if (chatLogOverlay is not null) ShutDownChatLog(); // clear the UI
