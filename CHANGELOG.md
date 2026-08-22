@@ -1,3 +1,10 @@
+# Release 1.16.0
+
+## General
+
+### Modders
+- Added constants for Rain Meadow's guids, name, and version.
+
 # Release 1.15.1
 
 ## General

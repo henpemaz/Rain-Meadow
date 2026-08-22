@@ -131,7 +131,7 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
     {
         highImpactModsTextScroller.RemoveAllButtons();
 
-        if (requiredMods.Length == 1 && requiredMods.Contains("henpemaz_rainmeadow"))
+        if (requiredMods.Length == 1 && requiredMods.Contains(RainMeadow.GuidRainWorld))
         {
             highImpactModsTextScroller.Container.isVisible = false;
             return;
