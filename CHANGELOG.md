@@ -6,6 +6,9 @@
 ## Arena
 - Fixed dens not opening when someone left
 
+### Modders
+- Added virtual `ExternalArenaGameMode.GetPlayerStillActive` method.
+
 # Release 1.15.0
 
 ## Engine

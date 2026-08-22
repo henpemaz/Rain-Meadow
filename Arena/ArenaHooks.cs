@@ -2221,32 +2221,41 @@ namespace RainMeadow
                     {
                         return;
                     }
-                    if (OnlineManager.lobby.isOwner)
+
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            arena.arenaSittingOnlineOrder[i]
+                        );
+
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
-                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                                arena.arenaSittingOnlineOrder[i]
-                            );
-                            if (onlinePlayer != null && !onlinePlayer.isMe)
+                            if (OnlineManager.lobby.isOwner)
                             {
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
+                            else
+                            {
+                                onlinePlayer.InvokeOnceRPC(
+                                    ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                                    OnlineManager.mePlayer
+                                );
+                            }
                         }
+                    }
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
                         self.manager.RequestMainProcessSwitch(
                             ProcessManager.ProcessID.MultiplayerResults
                         );
                     }
-                    arena.returnToLobby = true;
-
-                    if (!OnlineManager.lobby.isOwner)
+                    else
                     {
                         arena.clientWantsToLeaveGame = true;
-                        OnlineManager.lobby.owner.InvokeOnceRPC(
-                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                            OnlineManager.mePlayer
-                        );
                     }
+
+                    arena.returnToLobby = true;
                 }
             }
             orig(self, sender, message);
@@ -2360,70 +2369,9 @@ namespace RainMeadow
             bool dontCountSandboxLosers
         )
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out var arenaOnline))
             {
-                int num = 0;
-                for (int i = 0; i < self.Players.Count; i++)
-                {
-                    bool countPlayers = true;
-
-                    if (!self.Players[i].state.alive)
-                    {
-                        countPlayers = false;
-                    }
-                    if (countPlayers
-                        && self.Players[i].GetOnlineCreature()?.owner is null)
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.exitManager != null
-                        && self.exitManager.IsPlayerInDen(self.Players[i])
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.Players[i].realizedCreature != null
-                        && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers)
-                    {
-                        for (int j = 0; j < self.arenaSitting.players.Count; j++)
-                        {
-                            if (
-                                self.Players[i].Room == self.game.world.offScreenDen
-                                && self.arenaSitting.players[j].hasEnteredGameArea
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            if (
-                                dontCountSandboxLosers
-                                && self.arenaSitting.players[j].sandboxWin < 0
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            break;
-                        }
-                    }
-
-                    if (countPlayers)
-                    {
-                        num++;
-                    }
-                }
-
-                return num;
+                return arenaOnline.externalArenaGameMode.GetActivePlayerACs(arenaOnline, self).Count;
             }
             else
             {
