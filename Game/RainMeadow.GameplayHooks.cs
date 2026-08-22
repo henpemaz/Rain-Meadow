@@ -111,14 +111,14 @@ namespace RainMeadow
                     if (!cs.isThinking) cs.isThinking = true;
                     self.LookAtPoint(self.player.mainBodyChunk.pos + Vector2.up * 25f, 100);
                     self.player.Blink(10);
-                    if ((self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame 
+                    if ((self.player.abstractCreature.world.game.GetStorySession is not StoryGameSession storyGame
                         || storyGame.saveState.deathPersistentSaveData.theMark)
                         && self.player.abstractCreature.world.game.ActiveRippleLayer == self.player.abstractCreature.rippleLayer)
                     {
                         self.markAlpha = Custom.LerpAndTick(
-                            self.lastMarkAlpha, 
-                            Mathf.Clamp01(1f - UnityEngine.Random.value * Mathf.InverseLerp(80f, 30f, self.player.touchedNoInputCounter)), 
-                            0.1f, 
+                            self.lastMarkAlpha,
+                            Mathf.Clamp01(1f - UnityEngine.Random.value * Mathf.InverseLerp(80f, 30f, self.player.touchedNoInputCounter)),
+                            0.1f,
                             0.033333335f
                         );
                         // RainMeadow.Debug($"Mark at alpha {self.markAlpha}<{self.player.touchedNoInputCounter}>");
@@ -223,12 +223,12 @@ namespace RainMeadow
                 {
                     cursor.MoveAfterLabels();
                     cursor.EmitDelegate(() => OnlineManager.lobby is not null && RPCEvent.currentRPCEvent is not null);
-                    cursor.Emit(OpCodes.Brtrue, label); 
+                    cursor.Emit(OpCodes.Brtrue, label);
                     // If we are in an RPC, move it directly to parrying, even if the weapons are going in the same directions
 
                     cursor.GotoLabel(label, MoveType.Before);
                     cursor.MoveAfterLabels();
-                    cursor.Emit(OpCodes.Ldarg_0);            
+                    cursor.Emit(OpCodes.Ldarg_0);
                     cursor.Emit(OpCodes.Ldarg_1);
                     cursor.EmitDelegate((Weapon w1, Weapon w2) =>
                         {
@@ -243,7 +243,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Error("Could not find IL hook :<");
                 }
-                    
+
             }
             catch (Exception ex)
             {
@@ -257,22 +257,22 @@ namespace RainMeadow
             OnlinePhysicalObject? wep2 = B.abstractPhysicalObject.GetOnlineObject();
             if (wep1 == null || wep2 == null || !(wep1.isMine || wep2.isMine)) return;
             RainMeadow.Debug($"Parry {wep1}, {wep1.owner}, {wep2}, {wep2.owner}");
-            
+
             RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
             if (realizedstatewep1 is null)
             {
                 RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
                 return;
-            } 
+            }
 
-            
+
             RealizedWeaponState? realizedstatewep2 = GetAppropriateWeaponState(wep2);
             if (realizedstatewep2 is null)
             {
                 RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
                 return;
-            } 
-            
+            }
+
 
             if (!wep1.isMine)
             {
@@ -283,7 +283,7 @@ namespace RainMeadow
             {
                 wep2.Lock("parry", wep2.owner.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, A.firstChunk.lastPos, B.firstChunk.lastPos, UnityEngine.Random.state));
             }
-            
+
 
             foreach (OnlinePlayer p in wep1.roomSession?.participants ?? [])
             {
@@ -473,7 +473,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null)
                     {
-                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo) || opo?.roomSession is null)
                         {
                             Error($"Entity {self} doesn't exist in online space!");
                             return true;
@@ -1090,7 +1090,7 @@ namespace RainMeadow
                         orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
                         return;
                     }
-                    if (!(trueVillain is Weapon)) // handled Weapon_HitSomething 
+                    if (!(trueVillain is Weapon)) // handled Weapon_HitSomething
                     {
                         if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineApo.owner.isMe) // I'm violencing a remote entity
                         {
