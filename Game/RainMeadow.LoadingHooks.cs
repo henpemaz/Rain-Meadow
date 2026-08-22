@@ -106,6 +106,10 @@ namespace RainMeadow
 
                     if (!self.shortcutsOnly && self.room.game != null)
                     {
+                        // world was deactivated for a transition, but the room session outlives it in the rs map
+                        // requesting it gets refused by the supervisor since its ALSO releasing and
+                        // letting it prepare realizes entities into a world nobody owns which gets really dicey in watcher warps
+                        if (!rs.worldSession.isActive) return;
                         RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
                         rs.Needed();
                         if (!rs.isAvailable || rs.isPending) return;
@@ -123,6 +127,7 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
             if (!shortcutsOnly && room.game != null && OnlineManager.lobby != null && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
             {
+                if (!rs.worldSession.isActive) return; // world is being torn down, see RoomPreparer_Update
                 rs.Needed();
             }
         }
