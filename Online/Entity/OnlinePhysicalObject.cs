@@ -540,12 +540,12 @@ namespace RainMeadow
             }
             if (requestResult is GenericResult.Error && apo.realizedObject is not null)
             {
-                foreach (var grasp in apo.realizedObject.grabbedBy)
+                for (int i = apo.realizedObject.grabbedBy.Count - 1; i >= 0; i--)
                 {
+                    Creature.Grasp grasp = apo.realizedObject.grabbedBy[i];
+
                     if (grasp.grabber.IsLocal())
-                    {
                         grasp.grabber.ReleaseGrasp(grasp.graspUsed);
-                    }
                 }
             }
         }
