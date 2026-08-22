@@ -270,6 +270,9 @@ namespace RainMeadow
                 {
                     arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
                 }
+                int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
+                    x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
+                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer}");
             }
         }
 

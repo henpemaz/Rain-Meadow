@@ -2386,31 +2386,35 @@ namespace RainMeadow
                 int num = 0;
                 for (int i = 0; i < self.Players.Count; i++)
                 {
-                    bool flag = true;
+                    bool countPlayers = true;
+
                     if (!self.Players[i].state.alive)
                     {
-                        flag = false;
+                        countPlayers = false;
+                    }
+                    if (countPlayers
+                        && self.Players[i].GetOnlineCreature()?.owner is null)
+                    {
+                        countPlayers = false;
                     }
 
-                    if (
-                        flag
+                    if (countPlayers
                         && self.exitManager != null
                         && self.exitManager.IsPlayerInDen(self.Players[i])
                     )
                     {
-                        flag = false;
+                        countPlayers = false;
                     }
 
-                    if (
-                        flag
+                    if (countPlayers
                         && self.Players[i].realizedCreature != null
-                        && (self.Players[i].realizedCreature as Player).dangerGrasp != null
+                        && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
                     )
                     {
-                        flag = false;
+                        countPlayers = false;
                     }
 
-                    if (flag)
+                    if (countPlayers)
                     {
                         for (int j = 0; j < self.arenaSitting.players.Count; j++)
                         {
@@ -2419,7 +2423,7 @@ namespace RainMeadow
                                 && self.arenaSitting.players[j].hasEnteredGameArea
                             )
                             {
-                                flag = false;
+                                countPlayers = false;
                             }
 
                             if (
@@ -2427,14 +2431,14 @@ namespace RainMeadow
                                 && self.arenaSitting.players[j].sandboxWin < 0
                             )
                             {
-                                flag = false;
+                                countPlayers = false;
                             }
 
                             break;
                         }
                     }
 
-                    if (flag)
+                    if (countPlayers)
                     {
                         num++;
                     }
