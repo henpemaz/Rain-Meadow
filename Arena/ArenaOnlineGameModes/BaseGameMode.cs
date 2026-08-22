@@ -1566,69 +1566,40 @@ namespace RainMeadow
             return a.allKills.Count > b.allKills.Count;
         }
 
-        public virtual List<AbstractCreature> GetPlayerStillActive(
-            ArenaGameSession self,
-            bool dontCountSandboxLosers = false
-        )
+        public virtual List<AbstractCreature> GetActivePlayerACs(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaGameSession arenaSession,
+            bool includeSandboxLosers = true)
         {
             List<AbstractCreature> activePlayers = [];
 
-            for (int i = 0; i < self.Players.Count; i++)
+            foreach (AbstractCreature playerAC in arenaSession.Players)
             {
-                bool countPlayerAsActive = true;
+                OnlinePlayer? onlinePlayer = playerAC.GetOnlineCreature()?.owner;
+                if (onlinePlayer is null)
+                    continue;
 
-                if (!self.Players[i].state.alive)
+                if (!playerAC.state.alive
+                    || arenaSession.exitManager?.IsPlayerInDen(playerAC) == true
+                    || ((Player)playerAC.realizedCreature)?.dangerGrasp is not null)
                 {
-                    countPlayerAsActive = false;
-                }
-                else if (self.Players[i].GetOnlineCreature()?.owner is null)
-                {
-                    countPlayerAsActive = false;
-                }
-
-                else if (self.exitManager != null
-                    && self.exitManager.IsPlayerInDen(self.Players[i])
-                )
-                {
-                    countPlayerAsActive = false;
+                    continue;
                 }
 
-                else if (self.Players[i].realizedCreature != null
-                    && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
-                )
+                ArenaSitting.ArenaPlayer arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arenaOnline,
+                    arenaSession.arenaSitting,
+                    onlinePlayer
+                )!;
+
+                if (playerAC.Room == arenaSession.game.world.offScreenDen
+                    && arenaPlayer.hasEnteredGameArea
+                    && !includeSandboxLosers && arenaPlayer.sandboxWin < 0)
                 {
-                    countPlayerAsActive = false;
+                    continue;
                 }
 
-                else
-                {
-                    for (int j = 0; j < self.arenaSitting.players.Count; j++)
-                    {
-                        if ((self.Players[i].state as PlayerState)!.playerNumber == self.arenaSitting.players[j].playerNumber)
-                        {
-                            if (self.Players[i].Room == self.game.world.offScreenDen
-                                && self.arenaSitting.players[j].hasEnteredGameArea
-                            )
-                            {
-                                countPlayerAsActive = false;
-                            }
-
-                            if (dontCountSandboxLosers
-                                && self.arenaSitting.players[j].sandboxWin < 0
-                            )
-                            {
-                                countPlayerAsActive = false;
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-                if (countPlayerAsActive)
-                {
-                    activePlayers.Add(self.Players[i]);
-                }
+                activePlayers.Add(playerAC);
             }
 
             return activePlayers;
