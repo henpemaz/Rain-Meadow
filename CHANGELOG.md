@@ -2,11 +2,17 @@
 
 ## Arena
 - The pipe release is more reliable, and should look more natural.
+## Chat
+- Added a remix option to clear certain chat messages on every session.
+
 ## General
 - Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
 
 ## Arena
 - Fixed dens not opening when someone left
+
+### Modders
+- Added virtual `ExternalArenaGameMode.GetPlayerStillActive` method.
 
 # Release 1.15.0
 
