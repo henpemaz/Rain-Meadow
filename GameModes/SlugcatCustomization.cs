@@ -81,8 +81,8 @@ namespace RainMeadow
             [OnlineField(group: "cosmetic", nullable: true)]   
             public string? cosmeticSkin;
 
-            [OnlineField(group: "cosmetic_color", nullable: true)]
-            public string customCosmeticColor;
+            [OnlineFieldColorRgb(group: "cosmetic_color")]
+            public Color customCosmeticColor;
 
             [OnlineField]
             public int playerIndex;
@@ -101,7 +101,7 @@ namespace RainMeadow
                 nickname = slugcatCustomization.nickname;
                 cosmetic = slugcatCustomization.cosmetic;
                 cosmeticSkin = slugcatCustomization.cosmeticSkin;
-                customCosmeticColor = ColorUtility.ToHtmlStringRGB(slugcatCustomization.customCosmeticColor);
+                customCosmeticColor = slugcatCustomization.customCosmeticColor;
                 playerIndex = slugcatCustomization.playerIndex;
                 fakePup = slugcatCustomization.fakePup;
                 globalMute = slugcatCustomization.globalMute;
@@ -134,14 +134,8 @@ namespace RainMeadow
                         needsGraphicRefresh = true;
                     }
                 }
-                if (ColorUtility.TryParseHtmlString(customCosmeticColor, out var newColor))
-                {   
-                    if (((Vector4)newColor - (Vector4)slugcatCustomization.customCosmeticColor).sqrMagnitude > 0.01)
-                    {
-                        slugcatCustomization.customCosmeticColor = newColor;
-                        needsGraphicRefresh = true;
-                    }
-                }
+
+                slugcatCustomization.customCosmeticColor = customCosmeticColor;
 
                 if (needsGraphicRefresh && onlineEntity is OnlineCreature critter && critter.abstractCreature.realizedCreature is Creature s)
                 {
