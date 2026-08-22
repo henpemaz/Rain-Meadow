@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using System.Linq;
 using HUD;
 using UnityEngine;
@@ -14,6 +15,9 @@ namespace RainMeadow
         private AbstractCreature? spectatee;
         public bool isActive;
 
+
+        private readonly List<AbstractRoom> pendingRoomKills = new();
+
         public bool isSpectating
         {
             get => spectatee is not null;
@@ -22,11 +26,11 @@ namespace RainMeadow
         public AbstractCreature? Spectatee
         {
             get => spectatee;
-            set 
+            set
             {
                 if (value == null)
                 {
-                    ClearSpectatee();    
+                    ClearSpectatee();
                 }
                 else
                 {
@@ -145,7 +149,7 @@ namespace RainMeadow
                 {
                     var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
-                    oldRoom?.TryKillRoom();
+                    QueueRoomKill(oldRoom);
                 }
             }
         }
@@ -153,6 +157,8 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            UpdatePendingRoomKills(); // drains even when we've stopped spectating
+
             if (spectatorOverlay != null)
             {
                 if (RainMeadow.isStoryMode(out _) || RainMeadow.isArenaMode(out _))
@@ -211,32 +217,41 @@ namespace RainMeadow
                     {
                         var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
-                        oldRoom?.TryKillRoom();
+                        QueueRoomKill(oldRoom);
                     }
                 }
             }
         }
-        // Todo: still not safe
-        // Unloads a room left behind by the spectator camera if no local players remain in it.
-        // private void AbstractizeIfSafe(AbstractRoom oldRoom)
-        // {
-        //     if (oldRoom == null || oldRoom.realizedRoom == null) return;
+        private void QueueRoomKill(AbstractRoom? oldRoom)
+        {
+            if (oldRoom is null || oldRoom.realizedRoom is null) return;
+            if (!pendingRoomKills.Contains(oldRoom)) pendingRoomKills.Add(oldRoom);
+        }
 
-        //     bool keepLoaded = false;
-        //     for (int i = 0; i < game.Players.Count; i++)
-        //     {
-        //         if (game.Players[i].Room == oldRoom && game.Players[i].IsLocal())
-        //         {
-        //             keepLoaded = true;
-        //             break;
-        //         }
-        //     }
+        private void UpdatePendingRoomKills()
+        {
+            for (int i = pendingRoomKills.Count - 1; i >= 0; i--)
+            {
+                AbstractRoom room = pendingRoomKills[i];
 
-        //     if (!keepLoaded)
-        //     {
-        //         RainMeadow.Debug($"Spectator leaving room {oldRoom.name}, abstractizing it to prevent leaks.");
-        //         oldRoom.Abstractize();
-        //     }
-        // }
+                if (room.realizedRoom is null || room.world != game.world)
+                {
+                    pendingRoomKills.RemoveAt(i); // already gone or we changed regions
+                    continue;
+                }
+
+                // the camera is showing it or is midway through loading into it
+                if (camera.room?.abstractRoom == room || camera.loadingRoom?.abstractRoom == room) continue;
+
+                // our own room can never be killed so don't keep retrying it forever
+                if (game.roomRealizer?.followCreature?.Room == room)
+                {
+                    pendingRoomKills.RemoveAt(i);
+                    continue;
+                }
+
+                if (room.TryKillRoom()) pendingRoomKills.RemoveAt(i);
+            }
+        }
     }
 }

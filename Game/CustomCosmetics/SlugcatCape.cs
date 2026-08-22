@@ -48,10 +48,6 @@ namespace RainMeadow
         {
             sLeaser.sprites[this.firstSpriteIndex] = TriangleMesh.MakeGridMesh("Futile_White", SlugcatCape.size);
             sLeaser.sprites[this.firstSpriteIndex].shader = rCam.game.rainWorld.Shaders["TemplarCloak"];
-            if (cloakColor is CosmeticManager.CosmicCapeColor ccc)
-            {
-                ccc.shaderApplied = false;
-            }
         }
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)

@@ -1,10 +1,17 @@
-# Release 1.16.0 / 1.15.1
+# Release 1.16.0
 
 ## General
 
 ### Modders
-
 - Added constants for Rain Meadow's guids, name, and version.
+
+# Release 1.15.1
+
+## General
+- Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
+
+## Arena
+- Fixed dens not opening when someone left
 
 # Release 1.15.0
 
