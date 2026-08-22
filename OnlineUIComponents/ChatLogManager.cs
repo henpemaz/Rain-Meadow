@@ -16,50 +16,50 @@ namespace RainMeadow
         public static Color orangeSystemColor = new(1f, 0.55f, 0.25f);
         public static Color redSystemColor = new(1f, 0.35f, 0.35f);
         private static List<IChatSubscriber> subscribers = new();
-        public static List<(string, string)> chatLog = new();
+        public static List<(string user, string message)> chatLog = new();
         public static bool logErrorsInChat = false;
-        
+
         public static bool ShouldMuteMessageFromUser(string user)
             => !IsUserSystemSignature(user)
                 && (RainMeadow.rainMeadowOptions.GlobalMute.Value
                     || OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(user) is true);
         public static bool ShouldPingFromMessage(string user, string message)
-            => RainMeadow.rainMeadowOptions.ChatPing.Value 
+            => RainMeadow.rainMeadowOptions.ChatPing.Value
                 && !IsUserSystemSignature(user)
-                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+                && user != OnlineManager.mePlayer.id.GetPersonaName()
                 && !string.IsNullOrEmpty(message)
                 && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0;
         public static bool ShouldMakeSoundFromMessage(string user, string message, out bool quiet)
         {
             quiet = !IsUserSystemSignature(user);
-            return RainMeadow.rainMeadowOptions.ChatSound.Value 
-                && user != OnlineManager.mePlayer.id.GetPersonaName() 
+            return RainMeadow.rainMeadowOptions.ChatSound.Value
+                && user != OnlineManager.mePlayer.id.GetPersonaName()
                 && !string.IsNullOrEmpty(message)
                 && !ShouldPingFromMessage(user, message);
         }
-                
-        public static void ClearChatLog() 
-        { 
-            chatLog.Clear(); 
-            RainMeadow.Debug("Chat log cleared"); 
+
+        public static void ClearChatLog()
+        {
+            chatLog.Clear();
+            RainMeadow.Debug("Chat log cleared");
         }
-        public static void AddMessageToChatLog((string, string) userMessagePair) 
-            => AddMessageToChatLog(userMessagePair.Item1, userMessagePair.Item2);
-        public static void AddMessageToChatLog(string user, string message) 
+        public static void AddMessageToChatLog((string user, string message) userMessagePair)
+            => AddMessageToChatLog(userMessagePair.user, userMessagePair.message);
+        public static void AddMessageToChatLog(string user, string message)
         {
             if (!ShouldMuteMessageFromUser(user))
             {
                 chatLog.Add((user, message));
-                // RainMeadow.Debug($"Adding message in log from {user} : {message}"); 
+                // RainMeadow.Debug($"Adding message in log from {user} : {message}");
             }
         }
-        public static void ToggleLogErrorInChat() 
-        { 
+        public static void ToggleLogErrorInChat()
+        {
             logErrorsInChat = !logErrorsInChat;
             if (logErrorsInChat)
             {
                 LogSystemMessage(Utils.Translate("Enabled Error Logging in chat."), SystemMessageType.LogNotify);
-                // RainMeadow.Error("Hi I'm an Error :D"); 
+                // RainMeadow.Error("Hi I'm an Error :D");
             }
             else
             {
@@ -78,27 +78,27 @@ namespace RainMeadow
         }
         public static void LogSystemMessage(string message, SystemMessageType systemMessageType = SystemMessageType.System)
         {
-            if (systemMessageType == SystemMessageType.CreatureDeath 
-                && (RainMeadow.isArenaMode(out _) 
+            if (systemMessageType == SystemMessageType.CreatureDeath
+                && (RainMeadow.isArenaMode(out _)
                     ? !RainMeadow.rainMeadowOptions.EnableChatArenaDeathNotification.Value
-                    : RainMeadow.isStoryMode(out _) 
+                    : RainMeadow.isStoryMode(out _)
                         ? !RainMeadow.rainMeadowOptions.EnableChatStoryDeathNotification.Value
                         : true))
                     return;
-            if ((systemMessageType == SystemMessageType.PlayerJoin || systemMessageType == SystemMessageType.PlayerJoinFail) 
-                && (RainMeadow.isArenaMode(out _) 
+            if ((systemMessageType == SystemMessageType.PlayerJoin || systemMessageType == SystemMessageType.PlayerJoinFail)
+                && (RainMeadow.isArenaMode(out _)
                     ? !RainMeadow.rainMeadowOptions.EnableChatArenaJoinNotification.Value
-                    : RainMeadow.isStoryMode(out _) 
+                    : RainMeadow.isStoryMode(out _)
                         ? !RainMeadow.rainMeadowOptions.EnableChatStoryJoinNotification.Value
                         : true))
                     return;
-            if (systemMessageType == SystemMessageType.EndOfSession 
-                && !RainMeadow.rainMeadowOptions.EnableChatSessionNotification.Value) 
+            if (systemMessageType == SystemMessageType.EndOfSession
+                && !RainMeadow.rainMeadowOptions.EnableChatSessionNotification.Value)
                     return;
-            if ((systemMessageType == SystemMessageType.EndOfRound || systemMessageType == SystemMessageType.StartOfRound) 
-                && !RainMeadow.rainMeadowOptions.EnableChatRoundNotification.Value) 
+            if ((systemMessageType == SystemMessageType.EndOfRound || systemMessageType == SystemMessageType.StartOfRound)
+                && !RainMeadow.rainMeadowOptions.EnableChatRoundNotification.Value)
                     return;
-            
+
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             string signature = TypeToSysMesSignature(systemMessageType);
             AddMessageToChatLog(signature, message);
@@ -170,7 +170,7 @@ namespace RainMeadow
 
         public static readonly Dictionary<SystemMessageType, Color> SystemMessageTypeColor = new(){
             [SystemMessageType.System] = defaultSystemColor,
-            [SystemMessageType.PlayerJoin] = defaultSystemColor,   
+            [SystemMessageType.PlayerJoin] = defaultSystemColor,
             [SystemMessageType.CreatureDeath] = defaultSystemColor,
             [SystemMessageType.PlayerJoinFail] = Color.Lerp(defaultSystemColor, Color.black, 0.5f),
 

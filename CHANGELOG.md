@@ -1,5 +1,8 @@
 # Release 1.15.1
 
+## Chat
+- Added a remix option to clear certain chat messages on every session.
+
 ## General
 - Removed nightcat's stylish hat in SlugIcon (now uses watcher sprites)
 

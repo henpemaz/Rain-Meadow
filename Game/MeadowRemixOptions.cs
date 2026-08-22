@@ -155,7 +155,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableChatRoundNotification;
     public readonly Configurable<bool> EnableChatSessionNotification;
     public readonly Configurable<bool> EnableChatLogErrorToggle;
-    public readonly Configurable<bool> ClearChatEveryRound;
+    public readonly Configurable<ChatClear> ClearChatEveryRound;
     public readonly Configurable<bool> UseCustomChatUsernameColor;
     public readonly Configurable<bool> ChatTextDownscroll;
     public readonly Configurable<string> CurrentlyActiveChatUsernameColor;
@@ -168,6 +168,14 @@ public class RainMeadowOptions : OptionInterface
         Downpour,
         Watcher
     }
+    public enum ChatClear
+    {
+        None,
+        Death,
+        System,
+        All
+    }
+
 
 
     public enum StreamMode
@@ -331,8 +339,6 @@ public class RainMeadowOptions : OptionInterface
 
         ProfanityFilter = config.Bind("ProfanityFilter", true);
 
-        ClearChatEveryRound = config.Bind("ClearChatEveryRound", false);
-
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
         ChatInactivityOpacity = config.Bind("ChatInactivityOpacity", 0.35f);
         ChatInactivityTimer = config.Bind("ChatInactivityTimer", 30);
@@ -347,6 +353,7 @@ public class RainMeadowOptions : OptionInterface
         EnableChatLogErrorToggle = config.Bind("EnableChatLogErrorToggle", false);
         EnableChatRoundNotification = config.Bind("EnableChatRoundNotification", false);
         EnableChatSessionNotification = config.Bind("EnableChatSessionNotification", false);
+        ClearChatEveryRound = config.Bind("ClearChatEveryRoundEnum", ChatClear.None);
 
         UseCustomChatUsernameColor = config.Bind("UseCustomChatUsernameColor", false);
         ChatTextDownscroll = config.Bind("ChatTextDownscroll", false);
@@ -494,7 +501,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410f, 250f, Translate("Cosmetic Color")),
 
                 cosmeticColor = new OpColorPicker(currentlyActiveCustomCosmeticColor, new Vector2(410f, 90f)),
-                
+
                 new OpLabel(10f, 50f, Translate("Log Level")),
                 new OpComboBox2(
                 CurrentLogLevel,
@@ -505,13 +512,13 @@ public class RainMeadowOptions : OptionInterface
                 {
                     colorEdge = Menu.MenuColorEffect.rgbWhite
                 },
-                
+
                 new OpLabel(210f, 50f, Translate($"Lobby Joining Timeout (seconds)")),
                 new OpTextBox(JoiningTimeout, new Vector2(210, 20f), 160f)
                 {
                     accept = OpTextBox.Accept.Int
                 },
-                
+
                 new OpLabel(410, 50, Translate("Lobby Joining Extra Info")),
                 new OpCheckBox(JoiningExtraInfo, new Vector2(410, 20)),
             };
@@ -793,6 +800,17 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(210, 70, Translate("Text Downscroll")),
                 new OpCheckBox(ChatTextDownscroll, new Vector2(210, 40)),
+
+                new OpLabel(410, 70, Translate("Clear On New Session")),
+                new OpComboBox2(
+                    ClearChatEveryRound,
+                    new Vector2(410, 40),
+                    160f,
+                    OpResourceSelector.GetEnumNames(null, typeof(ChatClear)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()
+                )
+                {
+                    colorEdge = Menu.MenuColorEffect.rgbWhite
+                },
             ];
             useCustomChatColor.OnValueUpdate += (UIconfig config, string value, string oldValue) =>
             {
