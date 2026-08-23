@@ -19,7 +19,7 @@
 - Added `ExternalArenaGameMode.GetActivePlayerACs` method
 
 ## Chat
-- Added a remix option to clear specific system messages each time a new arena round starts
+- Added a remix option to clear specific system messages each time a new arena round or cycle starts
 - Fixed textbox not working after loading the arena menu
 
 # Release 1.15.0
