@@ -1,20 +1,25 @@
 # Release 1.15.1
+
 ## Engine
 - Improved room/world transfer logic
-- Corrected Popcorn death state. 
-## General 
+- Corrected Popcorn death state
+
+## General
 - Fixed Rivulet being bald & other sprite issues
 - Fixed cape coloring
 - Fixed spectating bugs
 - Swapped Nightcat's stylish hat icon with the Watcher sprite
+
 ## Arena
-- The pipe release is more reliable and should look more natural.
+- The pipe release is more reliable and should look more natural
 - Fixed dens not opening when someone left
 - Fixed quitting to menu not ending the match
-### Modders 
-- Added `ExternalGameMode.GetPlayersStillActive` method
+
+### Modders
+- Added `ExternalArenaGameMode.GetActivePlayerACs` method
+
 ## Chat
-- Added a remix option to clear certain chat messages on every session.
+- Added a remix option to clear specific system messages each time a new arena round starts
 - Fixed textbox not working after loading the arena menu
 
 # Release 1.15.0
