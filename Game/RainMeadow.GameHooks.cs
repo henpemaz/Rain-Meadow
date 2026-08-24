@@ -164,8 +164,9 @@ namespace RainMeadow
             {
                 isOwner = rs.isOwner;
             }
-            if (isOwner) {
-            self.inHive.Add(fly); // only the owner of the room or lobby gets to manage this. Stop the massive batfly migrations!
+            if (isOwner)
+            {
+                self.inHive.Add(fly); // only the owner of the room or lobby gets to manage this. Stop the massive batfly migrations!
             }
             fly.RemoveFromRoom();
         }
@@ -182,7 +183,7 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
             {
-                foreach(var player in OnlineManager.players)
+                foreach (var player in OnlineManager.players)
                 {
                     if (player.isMe) continue;
                     player.InvokeRPC(RPCs.DeathRain, self.deathRain.deathRainMode, self.deathRain.timeInThisMode, self.deathRain.calmBeforeStormSunlight);
@@ -652,9 +653,11 @@ namespace RainMeadow
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 
-
-                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
                 OnlineManager.lobby.overworld.NotNeeded();
+                if (OnlineManager.lobby.overworld.isActive)
+                {
+                    OnlineManager.lobby.overworld.Deactivate();
+                }
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
                     while (OnlineManager.lobby.overworld.isAvailable)

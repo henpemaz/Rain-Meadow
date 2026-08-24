@@ -10,13 +10,34 @@ namespace RainMeadow
         [RPCMethod]
         public static void ForceSaveNewDenLocation(string shelter, bool saveWorldStates)
         {
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out var story)) return;
+
+            // Adopt the den even with no game running. SaveStateHandler reads myLastDenPos on the next load.
+            story.myLastDenPos = shelter;
+            story.denForcedThisCycle = true;
+
+            var sender = RPCEvent.currentRPCEvent?.from;
+            if (OnlineManager.lobby.isOwner)
             {
-                if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
-                RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
-                story.myLastDenPos = shelter;
+                story.defaultDenPos = shelter;
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe && player != sender) player.InvokeOnceRPC(ForceSaveNewDenLocation, shelter, saveWorldStates);
+                }
             }
 
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+
+            bool wasApplying = RainMeadow.applyingRemoteDenLocation;
+            RainMeadow.applyingRemoteDenLocation = true;
+            try
+            {
+                RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
+            }
+            finally
+            {
+                RainMeadow.applyingRemoteDenLocation = wasApplying;
+            }
         }
 
         [RPCMethod]
@@ -68,7 +89,9 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
+            // denForcedThisCycle: an echo already relocated us, and the sender's Win() ran before its own
+            // relocation, so denPos here is stale. Keep the forced den.
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered && !storyGameMode.denForcedThisCycle)
             {
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
@@ -88,7 +111,7 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered && !storyGameMode.denForcedThisCycle)
             {
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
@@ -170,29 +193,54 @@ namespace RainMeadow
         public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
         {
 
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out var story)) return;
+            if (story.rippleLevel >= vector.y) return;
+
+            RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
+
+
+            story.rippleLevel = vector.y;
+            story.minimumRippleLevel = UnityEngine.Mathf.Max(story.minimumRippleLevel, vector.x);
+            story.maximumRippleLevel = UnityEngine.Mathf.Max(story.maximumRippleLevel, vector.y);
+
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession)
             {
-                if (story.rippleLevel < vector.y)
-                {
-                    RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
-                    if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-                    story.rippleLevel = vector.y;
-                    storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-                    storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-                    storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
-                }
+                ApplyRippleLevelToSaveState(storyGameSession, vector);
             }
         }
 
         [RPCMethod]
         public static void PlayRaiseRippleLevelAnimation(UnityEngine.Vector2 vector)
         {
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-            storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-            storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-            storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
-            game.cameras[0].hud.karmaMeter.UpdateGraphic();
-            game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+            // apply the data even mid-transition, only the HUD part needs a live game.
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession)) return;
+            ApplyRippleLevelToSaveState(storyGameSession, vector);
+
+            if (RainMeadow.isStoryMode(out var story) && OnlineManager.lobby.isOwner)
+            {
+                story.rippleLevel = UnityEngine.Mathf.Max(story.rippleLevel, vector.y);
+                story.minimumRippleLevel = UnityEngine.Mathf.Max(story.minimumRippleLevel, vector.x);
+                story.maximumRippleLevel = UnityEngine.Mathf.Max(story.maximumRippleLevel, vector.y);
+            }
+
+            var karmaMeter = game.cameras?.FirstOrDefault()?.hud?.karmaMeter;
+            if (karmaMeter == null) return; // no hud yet (loading / mid warp), the data above still landed
+            karmaMeter.UpdateGraphic();
+            karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+        }
+        private static void ApplyRippleLevelToSaveState(StoryGameSession storyGameSession, UnityEngine.Vector2 vector)
+        {
+            var deathPersistentSaveData = storyGameSession.saveState.deathPersistentSaveData;
+            deathPersistentSaveData.minimumRippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.minimumRippleLevel, vector.x);
+            deathPersistentSaveData.maximumRippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.maximumRippleLevel, vector.y);
+            deathPersistentSaveData.rippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.rippleLevel, vector.y);
+        }
+
+        [RPCMethod]
+        public static void AddSpinningTopEncounter(int spinningTopID)
+        {
+            if (!RainMeadow.isStoryMode(out var story)) return;
+            StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
         }
 
         // Perform a warp (precast, host needs to "finish" to activate)
@@ -207,14 +255,15 @@ namespace RainMeadow
         [RPCMethod]
         public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, int spinningTopID, UnityEngine.Vector2 pos)
         {
+            // Record the encounter before attempting the warp. warp is allowed to fail, but losing
+            // the encounter desyncs which echo everyone is on for the rest of the campaign.
+            if (RainMeadow.isStoryMode(out var story)) StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+
             Watcher.WarpPoint? warpPoint = StoryHelpers.PerformWarpHelper(sourceRoomName, warpData, false, true);
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                 warpPoint.placedObject.pos = pos;
-                var storySession = game.GetStorySession;
-                if (!storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Contains(spinningTopID))
-                    storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Add(spinningTopID);
                 StoryHelpers.SaveEchoWarp(game, warpPoint, true, true); //save string incase
             }
             else

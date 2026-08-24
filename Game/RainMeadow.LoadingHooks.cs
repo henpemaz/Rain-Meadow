@@ -70,8 +70,8 @@ namespace RainMeadow
             {
                 if (RoomSession.map.TryGetValue(self, out RoomSession rs))
                 {
-                    if (rs.isActive) rs.Deactivate();
                     rs.NotNeeded();
+                    if (rs.isActive) rs.Deactivate();
                     Debug("Room released: " + self.name);
                     // room release needs to be instant, because the game just checks room != null in realizer logic
                     foreach (AbstractWorldEntity? item in self.entities.Concat(self.entitiesInDens))
