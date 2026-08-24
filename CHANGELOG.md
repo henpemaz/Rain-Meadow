@@ -1,3 +1,8 @@
+# Release 1.15.2
+
+## Arena 
+- Fixed a source of crashing on round transitions 
+
 # Release 1.15.1
 
 ## Engine
