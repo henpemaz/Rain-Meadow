@@ -26,6 +26,8 @@
 - Fixed the menu erroring for clients when selecting a campaign
 ### Watcher
 - Fixes echo encounters desyncing ripple levels and shelter locations
+
+
 # Release 1.15.0
 
 ## Engine
