@@ -392,15 +392,18 @@ namespace RainMeadow
             Color rawColor = RainWorld.RippleColor;
             if (RainMeadow.isArenaMode(out _))
             {
-                bool hasTeamColor =
+                Color? teamColor = null;
+                if (
                     TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
                     && OnlineManager.lobby.clientSettings.TryGetValue(owner, out var ownerSettings)
                     && ownerSettings.TryGetData<ArenaTeamClientSettings>(out var tcs)
-                    && tcs.team >= 0 && tcs.team < teamBattle.teamColors.Count;
+                    && tcs.team >= 0 && tcs.team < teamBattle.teamColors.Count
+                )
+                {
+                    teamColor = teamBattle.teamColors[tcs.team];
+                }
 
-                rawColor = hasTeamColor
-                    ? teamBattle.teamColors[tcs.team]
-                    : GetArenaClientSettings(owner)?.slugcatColor ?? RainWorld.RippleColor;
+                rawColor = teamColor ?? GetArenaClientSettings(owner)?.slugcatColor ?? RainWorld.RippleColor;
             }
             HSLColor hSLColor = rawColor.ToHSL();
             hSLColor.lightness = inOtherRipple ? RainWorld.RippleGold.ToHSL().lightness / 2 : RainWorld.RippleColor.ToHSL().lightness;
