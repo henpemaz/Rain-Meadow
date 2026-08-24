@@ -165,7 +165,8 @@ namespace RainMeadow
             OnlinePlayer onlinePlayer)
         {
             int playerNumber = FindOnlinePlayerNumber(arenaOnline, onlinePlayer);
-            return arenaSitting.players.Find(arenaPlayer => arenaPlayer != null && arenaPlayer.playerNumber == playerNumber);
+            // When the round transitions the online list keeps all player numbers but the local list of arena players is cleared. These leaves some niche cases where the player number is out of bounds of the local list.
+            return arenaSitting.players.Find(arenaPlayer => arenaPlayer.playerNumber == playerNumber);
         }
 
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
