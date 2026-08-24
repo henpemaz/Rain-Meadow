@@ -168,7 +168,7 @@ namespace RainMeadow
 
             return playerNumber == -1
                 ? null
-                : arenaSitting.players[playerNumber];
+                : arenaSitting.players.Find(arenaPlayer => arenaPlayer != null && arenaPlayer.playerNumber == playerNumber);
         }
 
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
@@ -362,15 +362,13 @@ namespace RainMeadow
             if (A is not null && B is not null)
             {
                 if (
-                    OnlineManager
-                        .lobby.clientSettings[A]
-                        .TryGetData<ArenaTeamClientSettings>(out var tb1)
+                    OnlineManager.lobby.clientSettings.TryGetValue(A, out var cA)
+                        && cA.TryGetData<ArenaTeamClientSettings>(out var tb1)
                 )
                 {
                     if (
-                        OnlineManager
-                            .lobby.clientSettings[B]
-                            .TryGetData<ArenaTeamClientSettings>(out var tb2)
+                        OnlineManager.lobby.clientSettings.TryGetValue(B, out var cB)
+                            && cB.TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
                         return tb1.team == tb2.team
@@ -391,12 +389,19 @@ namespace RainMeadow
         // Adding that function to hook for other mods
         public static Color GetAmoebaColor(OnlinePlayer owner, bool inOtherRipple = false)
         {
-            Color rawColor = (RainMeadow.isArenaMode(out _)
-                ? (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
-                        && OnlineManager.lobby.clientSettings[owner]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
-                            ? teamBattle.teamColors[tcs.team]
-                            : GetArenaClientSettings(owner)?.slugcatColor)
-                : null) ?? RainWorld.RippleColor;
+            Color rawColor = RainWorld.RippleColor;
+            if (RainMeadow.isArenaMode(out _))
+            {
+                bool hasTeamColor =
+                    TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
+                    && OnlineManager.lobby.clientSettings.TryGetValue(owner, out var ownerSettings)
+                    && ownerSettings.TryGetData<ArenaTeamClientSettings>(out var tcs)
+                    && tcs.team >= 0 && tcs.team < teamBattle.teamColors.Count;
+
+                rawColor = hasTeamColor
+                    ? teamBattle.teamColors[tcs.team]
+                    : GetArenaClientSettings(owner)?.slugcatColor ?? RainWorld.RippleColor;
+            }
             HSLColor hSLColor = rawColor.ToHSL();
             hSLColor.lightness = inOtherRipple ? RainWorld.RippleGold.ToHSL().lightness / 2 : RainWorld.RippleColor.ToHSL().lightness;
             return hSLColor.rgb;
