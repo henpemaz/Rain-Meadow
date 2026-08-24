@@ -165,10 +165,7 @@ namespace RainMeadow
             OnlinePlayer onlinePlayer)
         {
             int playerNumber = FindOnlinePlayerNumber(arenaOnline, onlinePlayer);
-
-            return playerNumber == -1
-                ? null
-                : arenaSitting.players.Find(arenaPlayer => arenaPlayer != null && arenaPlayer.playerNumber == playerNumber);
+            return arenaSitting.players.Find(arenaPlayer => arenaPlayer != null && arenaPlayer.playerNumber == playerNumber);
         }
 
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
