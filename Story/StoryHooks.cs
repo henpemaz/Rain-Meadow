@@ -194,11 +194,6 @@ namespace RainMeadow
         }
 
 
-        // Set while StoryRPCs.ForceSaveNewDenLocation applies a remote relocation. That RPC calls the
-        // vanilla static which comes thru the hook below and without this the den would be echoed
-        // straight back out and ping-pong between users
-        public static bool applyingRemoteDenLocation = false;
-
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
         {
             orig(game, roomName, saveWorldStates);
@@ -209,7 +204,7 @@ namespace RainMeadow
                 story.myLastDenPos = roomName;
                 story.denForcedThisCycle = true;
 
-                if (applyingRemoteDenLocation) return;
+                if (story.applyingRemoteDenLocation) return;
 
                 if (OnlineManager.lobby.isOwner)
                 {

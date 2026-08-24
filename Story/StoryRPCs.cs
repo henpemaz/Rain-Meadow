@@ -28,15 +28,15 @@ namespace RainMeadow
 
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
 
-            bool wasApplying = RainMeadow.applyingRemoteDenLocation;
-            RainMeadow.applyingRemoteDenLocation = true;
+            bool wasApplying = story.applyingRemoteDenLocation;
+            story.applyingRemoteDenLocation = true;
             try
             {
                 RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
             }
             finally
             {
-                RainMeadow.applyingRemoteDenLocation = wasApplying;
+                story.applyingRemoteDenLocation = wasApplying;
             }
         }
 

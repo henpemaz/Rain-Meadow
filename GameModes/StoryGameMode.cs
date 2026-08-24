@@ -45,6 +45,8 @@ namespace RainMeadow
         // Set when ForceSaveNewDenLocation relocates us (echo / warp save). Without this
         // it lands after and puts the stale den straight back over the one the echo just set. STOP DOING THAT
         public bool denForcedThisCycle = false;
+        // Just used to manage watcher crap when invoking RainWorldGame_ForceSaveNewDenLocation
+        public bool applyingRemoteDenLocation = false;
         public bool hasSheltered = false;
         public float rippleLevel;
         public float minimumRippleLevel;
