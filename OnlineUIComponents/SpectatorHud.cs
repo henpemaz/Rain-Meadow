@@ -162,7 +162,6 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null)
             {
-                // kicked or disconnected while the session is still running, there's nothing left to spectate
                 if (spectatorOverlay != null)
                 {
                     RainMeadow.Debug("Shutting down spectator overlay, no lobby");

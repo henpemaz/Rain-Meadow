@@ -23,7 +23,7 @@ namespace RainMeadow
         }
         private bool UpdateList()
         {
-            if (OnlineManager.lobby == null) return false; // left/kicked from the lobby, nothing to list
+            if (OnlineManager.lobby == null) return false;
 
             List<PlayerButton> playerButtons = PlayerButtons;
             List<OnlinePlayer> newPlayers = [.. OnlineManager.players.OrderBy(onlineP => onlineP.isMe ? 0 : 1)]; // will keep this logic for LAN
