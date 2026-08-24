@@ -50,7 +50,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
+            if (OnlineManager.lobby != null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
             {
                 if (spectatorOverlay == null)
                 {
@@ -108,6 +108,7 @@ namespace RainMeadow
         public void ReturnCameraToPlayer()
         {
             RainMeadow.DebugMe();
+            if (OnlineManager.lobby == null) return; // no lobby, no avatars to look up
             AbstractCreature? return_to_player = null;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
@@ -158,6 +159,23 @@ namespace RainMeadow
         {
             base.Update();
             UpdatePendingRoomKills(); // drains even when we've stopped spectating
+
+            if (OnlineManager.lobby == null)
+            {
+                // kicked or disconnected while the session is still running, there's nothing left to spectate
+                if (spectatorOverlay != null)
+                {
+                    RainMeadow.Debug("Shutting down spectator overlay, no lobby");
+                    spectatorOverlay.ShutDownProcess();
+                    spectatorOverlay = null;
+                }
+                holidayStoreOverlay?.ShutDownProcess();
+                holidayStoreOverlay = null;
+                spectatee = null;
+                isActive = false;
+                OnlineManager.mePlayer.isActuallySpectating = false;
+                return;
+            }
 
             if (spectatorOverlay != null)
             {
