@@ -118,6 +118,8 @@ namespace RainMeadow
         /// </summary>
         public static void UpdatePlayerColors()
         {
+            if (OnlineManager.lobby == null) return; // no lobby to query, keep the colors we already have
+
             foreach (OnlinePlayer onlinePlayer in OnlineManager.lobby.participants)
             {
                 if (OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs) && cs.chatUsernameColor is Color color)
