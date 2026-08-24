@@ -1006,7 +1006,6 @@ namespace RainMeadow
             }
 
             lobby.manager.rainWorld.options.DeleteArenaSitting();
-            //Nightcat.ResetNightcat();
         }
 
         public void AllowJoinOrRejoin()
