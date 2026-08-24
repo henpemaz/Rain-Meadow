@@ -222,7 +222,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // host relays to everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates);
                 }
             }
         }
