@@ -9,7 +9,7 @@
 - Fixed cape coloring
 - Fixed spectating bugs
 - Swapped Nightcat's stylish hat icon with the Watcher sprite
-
+- Fixed players crashing after being kicked when spectator overlay was active  
 ## Arena
 - The pipe release is more reliable and should look more natural
 - Fixed dens not opening when someone left
@@ -23,6 +23,8 @@
 - Fixed textbox not working after loading the arena menu
 
 ## Story
+- Fixed the menu erroring for clients when selecting a campaign
+### Watcher
 - Fixes echo encounters desyncing ripple levels and shelter locations
 # Release 1.15.0
 
