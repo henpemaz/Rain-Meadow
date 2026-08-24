@@ -37,7 +37,7 @@ namespace RainMeadow
         public static void Weapon_CreatureDeflect(OnlinePhysicalObject onlineWeapon, RealizedWeaponState realizedWeaponState, bool artificerParry, bool isSilent)
         {
             if (onlineWeapon.IsLocked("parry")) return;
-            
+
             try
             {
                 if (onlineWeapon.apo.realizedObject is Weapon weapon)
@@ -50,7 +50,7 @@ namespace RainMeadow
                     realizedWeaponState.ReadTo(onlineWeapon);  // actually, let everyone enjoy the spectacle.
                     if (!isSilent)
                     {
-                        if (artificerParry) 
+                        if (artificerParry)
                         {
                             RainMeadow.PlayArtiParryCustomSound(weapon);
                         }
@@ -70,15 +70,15 @@ namespace RainMeadow
 
         [RPCMethod]
         public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc,
-            OnlinePhysicalObject onlineWeapon1, OnlinePhysicalObject onlineWeapon2, 
-            RealizedWeaponState realizedWeaponState1, RealizedWeaponState realizedWeaponState2, 
+            OnlinePhysicalObject onlineWeapon1, OnlinePhysicalObject onlineWeapon2,
+            RealizedWeaponState realizedWeaponState1, RealizedWeaponState realizedWeaponState2,
             Vector2 weapon1LastPos, Vector2 weapon2LastPos, // To get the right sound/visual effect
             UnityEngine.Random.State rng)
         {
             if (onlineWeapon1.IsLocked("parry") || onlineWeapon2.IsLocked("parry")) return;
             if (rpc.from != onlineWeapon1.owner && rpc.from != onlineWeapon2.owner) throw new InvalidOperationException("Not owner of either weapon");
             var state = UnityEngine.Random.state;
-            
+
             try
             {
                 UnityEngine.Random.state = rng;
@@ -86,7 +86,7 @@ namespace RainMeadow
                 {
                     realizedWeaponState1.ReadTo(onlineWeapon1);
                     weapon1.firstChunk.lastPos = weapon1LastPos;
-                    
+
                     realizedWeaponState2.ReadTo(onlineWeapon2);
                     weapon2.firstChunk.lastPos = weapon2LastPos;
 
@@ -171,9 +171,11 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void ExitToGameModeMenu()
+        public static void ExitToGameModeMenu(RPCEvent rpc)
         {
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            if (rpc.from != OnlineManager.lobby?.owner
+                || !(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game
+                    && game.manager.upcomingProcess is null)) return;
 
             game.manager.RequestMainProcessSwitch(OnlineManager.lobby.gameMode.MenuProcessId());
         }

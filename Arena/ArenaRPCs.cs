@@ -309,9 +309,9 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void Arena_EndSessionEarly()
+        public static void Arena_EndSessionEarly(RPCEvent rpc)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena) && rpc.from == arena.lobby?.owner)
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null)
@@ -320,9 +320,6 @@ namespace RainMeadow
                     return;
                 }
                 game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-
-
             }
         }
 
