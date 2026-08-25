@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -1853,6 +1854,7 @@ namespace RainMeadow
                     return false; // NO MAPS
                 }
                 string[] pairs = decoded.Split('|');
+                int applied = 0;
 
                 foreach (string pair in pairs)
                 {
@@ -1867,9 +1869,10 @@ namespace RainMeadow
                     if (index >= 0)
                     {
                         savedSettings[index].SetValueFromString(val, arenaOnline);
+                        applied++;
                     }
                 }
-                return true;
+                return applied > 0;
             }
             catch (Exception e)
             {
@@ -1906,7 +1909,8 @@ namespace RainMeadow
         {
             try
             {
-                result = Convert.ChangeType(value, type);
+                // Invariant so a blob copied on a comma-decimal locale still reads back elsewhere.
+                result = Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
                 return true;
             }
             catch
@@ -1973,12 +1977,20 @@ namespace RainMeadow
         public override string GetSaveString(ArenaOnlineGameMode arenaOnline)
         {
             var value = GetValueFromArenaMode(arenaOnline);
+            if (value is null) return "";
 
             if (value is IEnumerable enumerable && value is not string)
             {
-                return string.Join(SEPARATOR.ToString(), enumerable.Cast<object>());
+                return string.Join(SEPARATOR.ToString(), enumerable.Cast<object>().Select(ToInvariantString));
             }
-            return settingField.GetValue(arenaOnline).ToString();
+            return ToInvariantString(value);
+        }
+
+        protected static string ToInvariantString(object value)
+        {
+            return value is IConvertible convertible
+                ? convertible.ToString(CultureInfo.InvariantCulture)
+                : value.ToString();
         }
     }
 
@@ -1987,7 +1999,9 @@ namespace RainMeadow
     {
         public override object GetValueFromArenaMode(ArenaOnlineGameMode arenaOnline)
         {
-            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice[settingID];
+            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice.TryGetValue(settingID, out int value)
+                ? value
+                : 0;
         }
 
         public override object GetValueFromString(string value)
@@ -2009,7 +2023,7 @@ namespace RainMeadow
 
         public override string GetSaveString(ArenaOnlineGameMode arenaOnline)
         {
-            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice[settingID].ToString();
+            return GetValueFromArenaMode(arenaOnline).ToString();
         }
     }
 }
