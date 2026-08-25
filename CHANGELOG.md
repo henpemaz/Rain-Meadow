@@ -1,3 +1,10 @@
+# Release 1.16.0
+
+## Chat
+
+### Modders
+- Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
+
 # Release 1.15.2
 
 ## Arena 
