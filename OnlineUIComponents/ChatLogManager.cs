@@ -32,7 +32,7 @@ namespace RainMeadow
         public static bool shownChatTutorial = false;
         public static bool logErrorsInChat = false;
         // Shared dictionary for chats, reset each time a new lobby is entered
-        public static List<(string user, string message)> chatLog = [];
+        public static List<(string User, string Message)> chatLog = [];
 
         private static Dictionary<string, Color> colorDict = [];
 
@@ -82,8 +82,8 @@ namespace RainMeadow
             RainMeadow.Debug("Chat log cleared");
         }
 
-        public static void AddMessageToChatLog((string user, string message) userMessagePair)
-            => AddMessageToChatLog(userMessagePair.user, userMessagePair.message);
+        public static void AddMessageToChatLog((string User, string Message) userMessagePair)
+            => AddMessageToChatLog(userMessagePair.User, userMessagePair.Message);
 
         public static void AddMessageToChatLog(string user, string message)
         {
