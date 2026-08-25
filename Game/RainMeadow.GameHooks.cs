@@ -24,7 +24,7 @@ namespace RainMeadow
             On.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor2;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
-            IL.OverWorld.ctor += Overworld_ctor; 
+            IL.OverWorld.ctor += Overworld_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             IL.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate1;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
@@ -77,6 +77,17 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+
+            On.GameSession.ctor += GameSession_ctor_ClearChatOnNewSession;
+        }
+
+        private void GameSession_ctor_ClearChatOnNewSession(On.GameSession.orig_ctor orig, GameSession self, RainWorldGame game)
+        {
+            orig(self, game);
+            if (OnlineManager.lobby is not null)
+            {
+                RMOverlayHUD.GetOverlay()?.chatHud?.ClearMessageFromClientOptions();
+            }
         }
 
         private void RainWorldGame_RawUpdate1(ILContext il)
@@ -153,15 +164,16 @@ namespace RainMeadow
             {
                 isOwner = rs.isOwner;
             }
-            if (isOwner) { 
-            self.inHive.Add(fly); // only the owner of the room or lobby gets to manage this. Stop the massive batfly migrations!
+            if (isOwner)
+            {
+                self.inHive.Add(fly); // only the owner of the room or lobby gets to manage this. Stop the massive batfly migrations!
             }
             fly.RemoveFromRoom();
         }
 
         private void GlobalRain_InitDeathRain(On.GlobalRain.orig_InitDeathRain orig, GlobalRain self)
         {
-            
+
             if (OnlineManager.lobby == null)
             {
                 orig(self);
@@ -171,14 +183,14 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
             {
-                foreach(var player in OnlineManager.players)
+                foreach (var player in OnlineManager.players)
                 {
                     if (player.isMe) continue;
                     player.InvokeRPC(RPCs.DeathRain, self.deathRain.deathRainMode, self.deathRain.timeInThisMode, self.deathRain.calmBeforeStormSunlight);
                 }
             }
         }
-        
+
         private void Overworld_ctor(ILContext context)
         {
             try
@@ -192,7 +204,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null)
                     {
                         if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
-                        
+
                         OnlineManager.lobby.overworld.BindOverworld(self);
                         OnlineManager.lobby.overworld.Needed();
                         while (!OnlineManager.lobby.overworld.isAvailable)
@@ -641,9 +653,11 @@ namespace RainMeadow
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 
-
-                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
                 OnlineManager.lobby.overworld.NotNeeded();
+                if (OnlineManager.lobby.overworld.isActive)
+                {
+                    OnlineManager.lobby.overworld.Deactivate();
+                }
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
                     while (OnlineManager.lobby.overworld.isAvailable)
@@ -831,7 +845,7 @@ namespace RainMeadow
 
                 var bulbskip = il.DefineLabel();
 
-              
+
                 c.GotoNext(MoveType.After,
                     i => i.MatchLdarg(0),
                     i => i.MatchLdarg(0),
@@ -839,7 +853,7 @@ namespace RainMeadow
                     i => i.MatchLdfld<RoomSettings>(nameof(RoomSettings.placedObjects)),
                     i => i.MatchLdloc(29),
                     i => i.MatchCallvirt(typeof(List<PlacedObject>).GetMethod("get_Item")),
-                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))                    
+                    i => i.MatchCall<Room>(nameof(Room.SpawnPrinceBulb))
                     );
                 c.MarkLabel(bulbskip);
 
@@ -850,14 +864,14 @@ namespace RainMeadow
                 );
                 c.Remove();
                 c.EmitDelegate((Room room, PlacedObject p) =>
-                {                    
+                {
                     if (OnlineManager.lobby == null)
                     {
                         room.SpawnPrinceBulb(p);
                     }
                     else
-                    {                        
-                        StartCoroutine(SpawnPrinceBulb(room, () => room.SpawnPrinceBulb(p)));                       
+                    {
+                        StartCoroutine(SpawnPrinceBulb(room, () => room.SpawnPrinceBulb(p)));
                     }
                 });
             }
@@ -872,7 +886,7 @@ namespace RainMeadow
         {
             var c = new ILCursor(il);
             var bulbskip = c.DefineLabel();
-            
+
             c.GotoNext(MoveType.After,
                 i => i.MatchLdarg(0),
                 i => i.MatchLdloc(11),
@@ -882,7 +896,7 @@ namespace RainMeadow
             c.MarkLabel(bulbskip);
 
             c = new ILCursor(il);
-            
+
             c.GotoNext(MoveType.After,
                  i => i.MatchLdloc(7),
                  i => i.MatchLdfld<DaddyCorruption>(nameof(DaddyCorruption.places)),
@@ -893,7 +907,7 @@ namespace RainMeadow
 
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Room room) =>
-            {                
+            {
                 return (OnlineManager.lobby != null) && RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && !rs.isOwner;
             });
             c.Emit(OpCodes.Brtrue, bulbskip);
@@ -904,7 +918,7 @@ namespace RainMeadow
             {
                 yield return null;
             }
-            spb();            
+            spb();
         }
         // only changing lookpos directly if owner
         private void PrinceBehavior_Update(ILContext il)
@@ -913,7 +927,7 @@ namespace RainMeadow
             var skip1 = il.DefineLabel();
             var skip2 = il.DefineLabel();
 
-            //if (this.paralyzed)            
+            //if (this.paralyzed)
             // - this.lookPoint = new Vector2(this.GetToPos.x, this.GetToPos.y + 500f);
             c.GotoNext(MoveType.After,
                 i => i.MatchStfld<PrinceBehavior>(nameof(Watcher.PrinceBehavior.lastDialogBoxMessage)),
@@ -927,7 +941,7 @@ namespace RainMeadow
             });
             c.Emit(OpCodes.Brtrue, skip1);
 
-            // if (this.bestPlayer != null)            
+            // if (this.bestPlayer != null)
             // - this.lookPoint = this.bestPlayer.firstChunk.pos;
             c.GotoNext(MoveType.After,
                 i => i.MatchBrfalse(out _),

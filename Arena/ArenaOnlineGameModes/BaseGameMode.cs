@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -186,8 +187,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Unsubscribing from old world");
                 if (roomSession.worldSession.isActive)
                 {
-                    roomSession.worldSession.Deactivate();
+                    // NotNeeded BEFORE Deactivate, otherwise the room sessions never get released
                     roomSession.worldSession.NotNeeded();
+                    roomSession.worldSession.Deactivate();
                 }
 
                 if (roomSession.worldSession.participants.Count > 0)
@@ -808,6 +810,7 @@ namespace RainMeadow
                 0
             );
 
+            abstractCreature.realizedCreature.inShortcut = true;
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
             shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
 
@@ -817,21 +820,19 @@ namespace RainMeadow
             //{
             //a.SpawnSnails(shortCutVessel.room.realizedRoom, shortCutVessel);
             //}
-            if (abstractCreature.realizedCreature is not Player)
+            if (abstractCreature.realizedCreature is not Player player)
             {
                 return;
             }
-            if (
-                (abstractCreature.realizedCreature as Player).SlugCatClass
+            if (player.SlugCatClass
                 == SlugcatStats.Name.Night
             )
             {
-                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                player.slugcatStats.throwingSkill = 1;
             }
             if (ModManager.MSC)
             {
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == SlugcatStats.Name.Red
                 )
                 {
@@ -849,8 +850,7 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == SlugcatStats.Name.Yellow
                 )
                 {
@@ -868,8 +868,7 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer
                 )
                 {
@@ -887,29 +886,27 @@ namespace RainMeadow
                     );
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup
                 )
                 {
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                    player.slugcatStats.throwingSkill = 1;
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel
                 )
                 {
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                    player.slugcatStats.throwingSkill =
                         arenaOnline.painCatThrowingSkill;
                     RainMeadow.Debug(
                         "ENOT THROWING SKILL "
-                            + (abstractCreature.realizedCreature as Player)
+                            + player
                                 .slugcatStats
                                 .throwingSkill
                     );
                     if (
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill
+                        player.slugcatStats.throwingSkill
                             == 0
                         && arenaOnline.painCatEgg
                     )
@@ -954,37 +951,35 @@ namespace RainMeadow
                     }
                 }
 
-                if (
-                    (abstractCreature.realizedCreature as Player).SlugCatClass
+                if (player.SlugCatClass
                     == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint
                 )
                 {
                     if (!arenaOnline.sainot) // ascendance saint
                     {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                        player.slugcatStats.throwingSkill =
                             0;
                     }
                     else
                     {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill =
+                        player.slugcatStats.throwingSkill =
                             1;
                     }
                 }
             }
 
-            if (
-                ModManager.Watcher
-                && (abstractCreature.realizedCreature as Player).SlugCatClass
+            if (ModManager.Watcher
+                && player.SlugCatClass
                     == Watcher.WatcherEnums.SlugcatStatsName.Watcher
             )
             {
-                if ((abstractCreature.realizedCreature as Player).rippleLevel >= 3f)
+                if (player.rippleLevel >= 3f)
                 {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 80;
+                    player.enterIntoCamoDuration = 80;
                 }
                 else
                 {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+                    player.enterIntoCamoDuration = 40;
                 }
             }
         }
@@ -1245,7 +1240,7 @@ namespace RainMeadow
                 .Select(player => ArenaHelpers.GetArenaClientSettings(player)) // Get settings
                 .Where(settings => settings != null) // Ensure settings exist
                 .Count(settings =>
-                    settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+                    settings!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
                 );
             if (
                 self.Players.Count + activePlayerCountWithOverseers
@@ -1574,6 +1569,47 @@ namespace RainMeadow
             return a.allKills.Count > b.allKills.Count;
         }
 
+        public virtual List<AbstractCreature> GetActivePlayerACs(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaGameSession arenaSession,
+            bool includeSandboxLosers = true)
+        {
+            List<AbstractCreature> activePlayers = [];
+
+            foreach (AbstractCreature playerAC in arenaSession.Players)
+            {
+                OnlinePlayer? onlinePlayer = playerAC.GetOnlineCreature()?.owner;
+                if (onlinePlayer is null)
+                    continue;
+
+                if (!playerAC.state.alive
+                    || arenaSession.exitManager?.IsPlayerInDen(playerAC) == true
+                    || ((Player?)playerAC.realizedCreature)?.dangerGrasp is not null)
+                {
+                    continue;
+                }
+
+                ArenaSitting.ArenaPlayer? arenaPlayer = ArenaHelpers.FindArenaPlayerByOnlinePlayer(
+                    arenaOnline,
+                    arenaSession.arenaSitting,
+                    onlinePlayer
+                );
+
+                if (arenaPlayer is not null)
+                {
+                    if ((playerAC.Room == arenaSession.game.world.offScreenDen && arenaPlayer.hasEnteredGameArea)
+                        || (!includeSandboxLosers && arenaPlayer.sandboxWin < 0))
+                    {
+                        continue;
+                    }
+                }
+
+                activePlayers.Add(playerAC);
+            }
+
+            return activePlayers;
+        }
+
         /// <remarks>
         /// Expects all <see cref="ArenaSitting.ArenaPlayer"/>
         /// stats to be fully updated.
@@ -1818,6 +1854,7 @@ namespace RainMeadow
                     return false; // NO MAPS
                 }
                 string[] pairs = decoded.Split('|');
+                int applied = 0;
 
                 foreach (string pair in pairs)
                 {
@@ -1832,9 +1869,10 @@ namespace RainMeadow
                     if (index >= 0)
                     {
                         savedSettings[index].SetValueFromString(val, arenaOnline);
+                        applied++;
                     }
                 }
-                return true;
+                return applied > 0;
             }
             catch (Exception e)
             {
@@ -1871,7 +1909,8 @@ namespace RainMeadow
         {
             try
             {
-                result = Convert.ChangeType(value, type);
+                // Invariant so a blob copied on a comma-decimal locale still reads back elsewhere.
+                result = Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
                 return true;
             }
             catch
@@ -1938,12 +1977,20 @@ namespace RainMeadow
         public override string GetSaveString(ArenaOnlineGameMode arenaOnline)
         {
             var value = GetValueFromArenaMode(arenaOnline);
+            if (value is null) return "";
 
             if (value is IEnumerable enumerable && value is not string)
             {
-                return string.Join(SEPARATOR.ToString(), enumerable.Cast<object>());
+                return string.Join(SEPARATOR.ToString(), enumerable.Cast<object>().Select(ToInvariantString));
             }
-            return settingField.GetValue(arenaOnline).ToString();
+            return ToInvariantString(value);
+        }
+
+        protected static string ToInvariantString(object value)
+        {
+            return value is IConvertible convertible
+                ? convertible.ToString(CultureInfo.InvariantCulture)
+                : value.ToString();
         }
     }
 
@@ -1952,7 +1999,9 @@ namespace RainMeadow
     {
         public override object GetValueFromArenaMode(ArenaOnlineGameMode arenaOnline)
         {
-            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice[settingID];
+            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice.TryGetValue(settingID, out int value)
+                ? value
+                : 0;
         }
 
         public override object GetValueFromString(string value)
@@ -1974,7 +2023,7 @@ namespace RainMeadow
 
         public override string GetSaveString(ArenaOnlineGameMode arenaOnline)
         {
-            return arenaOnline.onlineArenaSettingsInterfaceMultiChoice[settingID].ToString();
+            return GetValueFromArenaMode(arenaOnline).ToString();
         }
     }
 }

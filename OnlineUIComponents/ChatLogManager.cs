@@ -32,7 +32,7 @@ namespace RainMeadow
         public static bool shownChatTutorial = false;
         public static bool logErrorsInChat = false;
         // Shared dictionary for chats, reset each time a new lobby is entered
-        public static List<(string, string)> chatLog = [];
+        public static List<(string user, string message)> chatLog = [];
 
         private static Dictionary<string, Color> colorDict = [];
 
@@ -82,15 +82,15 @@ namespace RainMeadow
             RainMeadow.Debug("Chat log cleared");
         }
 
-        public static void AddMessageToChatLog((string, string) userMessagePair)
-            => AddMessageToChatLog(userMessagePair.Item1, userMessagePair.Item2);
+        public static void AddMessageToChatLog((string user, string message) userMessagePair)
+            => AddMessageToChatLog(userMessagePair.user, userMessagePair.message);
 
         public static void AddMessageToChatLog(string user, string message)
         {
             if (!ShouldMuteMessageFromUser(user))
             {
                 chatLog.Add((user, message));
-                // RainMeadow.Debug($"Adding message in log from {user} : {message}"); 
+                // RainMeadow.Debug($"Adding message in log from {user} : {message}");
             }
         }
 
@@ -155,6 +155,8 @@ namespace RainMeadow
         /// </summary>
         public static void UpdatePlayerColors()
         {
+            if (OnlineManager.lobby == null) return; // no lobby to query, keep the colors we already have
+
             foreach (OnlinePlayer onlinePlayer in OnlineManager.lobby.participants)
             {
                 if (OnlineManager.lobby.clientSettings.TryGetValue(onlinePlayer, out var cs) && cs.chatUsernameColor is Color color)

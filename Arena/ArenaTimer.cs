@@ -67,13 +67,16 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arenaOnline))
             {
                 if (showMode == TimerMode.Waiting)
                 {
                     safetyCatchTimer++;
                 }
-                if (!arena.playersEqualToOnlineSitting)
+                if ((arenaOnline.lobby.isOwner
+                        ? !arenaOnline.playersEqualToOnlineSitting
+                        : arenaOnline.isWaitingForPlayersToLoad)
+                    && safetyCatchTimer <= arenaOnline.countdownSafetyCatchTimer) // Something went wrong with the timer. Let's move on
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
@@ -84,27 +87,22 @@ namespace RainMeadow
                     showMode = TimerMode.Countdown;
                 }
 
-                if (safetyCatchTimer > arena.countdownSafetyCatchTimer) // Something went wrong with the timer. Let's move on
-                {
-                    showMode = TimerMode.Countdown;
-                }
-
-                arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
+                arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline);
 
 
-                if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
+                if (arenaOnline.setupTime > 0 && showMode == TimerMode.Countdown)
                 {
                     matchMode = TimerMode.Countdown;
-                    modeLabel.text = arena.externalArenaGameMode.TimerText();
+                    modeLabel.text = arenaOnline.externalArenaGameMode.TimerText();
                 }
 
-                if (arena.setupTime <= 0 && !countdownInitiated)
+                if (arenaOnline.setupTime <= 0 && !countdownInitiated)
                 {
                     countdownInitiated = true;
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                 }
-                timerLabel.text = FormatTime(arena.setupTime);
+                timerLabel.text = FormatTime(arenaOnline.setupTime);
             }
 
         }
@@ -125,7 +123,7 @@ namespace RainMeadow
             timerLabel.RemoveFromContainer();
             modeLabel.RemoveFromContainer();
 
-            arena.arenaPrepTimer = null;
+            arena.arenaPrepTimer = null!;
         }
     }
 }

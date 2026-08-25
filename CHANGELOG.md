@@ -1,3 +1,40 @@
+# Release 1.15.2
+
+## Arena 
+- Fixed a source of crashing on round transitions
+- Fixed the playlist search not accepting inputs
+- Fixed import/export maps & settings not working
+
+# Release 1.15.1
+
+## Engine
+- Improved room/world transfer logic
+- Corrected Popcorn death state
+
+## General
+- Fixed Rivulet being bald & other sprite issues
+- Fixed cape coloring
+- Fixed spectating bugs
+- Swapped Nightcat's stylish hat icon with the Watcher sprite
+- Fixed players crashing after being kicked when spectator overlay was active  
+## Arena
+- The pipe release is more reliable and should look more natural
+- Fixed dens not opening when someone left
+- Fixed quitting to menu not ending the match
+
+### Modders
+- Added `ExternalArenaGameMode.GetActivePlayerACs` method
+
+## Chat
+- Added a remix option to clear specific system messages each time a new arena round or cycle starts
+- Fixed textbox not working after loading the arena menu
+
+## Story
+- Fixed the menu erroring for clients when selecting a campaign
+### Watcher
+- Fixes echo encounters desyncing ripple levels and shelter locations
+
+
 # Release 1.15.0
 
 ## Engine
@@ -39,6 +76,7 @@
   - Lobby cards now show icons for the active lobby timeline and required DLCs
 - The slugcat icon in the player HUD now reflects the target player's chosen slugcat and colors in use
   - An additional remix option lets players use the old icon if they find the new icons too distracting
+- Added Korean translation by Karnellon
 
 ### Modders
 - Added `SlugIcon`. Modded slugcats may provide their own assets and colors by adding entries to the static properties in `SlugIcon`; see `Menu/Components/SlugIcon.cs` for details
