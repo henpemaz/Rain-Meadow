@@ -1,7 +1,9 @@
 # Release 1.15.2
 
 ## Arena 
-- Fixed a source of crashing on round transitions 
+- Fixed a source of crashing on round transitions
+- Fixed the playlist search not accepting inputs
+- Fixed import/export maps & settings not working
 
 # Release 1.15.1
 
