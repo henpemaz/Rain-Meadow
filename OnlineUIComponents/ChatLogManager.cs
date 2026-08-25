@@ -26,7 +26,8 @@ namespace RainMeadow
             EndOfSession = 'S',
         }
 
-        public static event Action<string, string>? MessageLogged;
+        public delegate void MessageLoggedEventHandler(string user, string message);
+        public static event MessageLoggedEventHandler? MessageLogged;
 
         // HACK: put this somewhere better
         public static bool shownChatTutorial = false;
