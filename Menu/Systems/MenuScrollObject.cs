@@ -17,10 +17,33 @@ namespace RainMeadow.UI.Systems
         public bool isValidForScroller;
         public FContainer objectContainer; //default is myContainer, you can change this
         public float desiredAlpha = 1;
-        public Vector2 desiredSize, desiredPosition;
         public override float LocalAlpha { get => desiredAlpha; set => desiredAlpha = value; }
-        public override Vector2 LocalPos { get => desiredPosition; set => desiredPosition = value; }
-        public override Vector2 Size { get => desiredSize; set => desiredSize = value;  }
+        public override Vector2 LocalPos 
+        {
+            get
+            {
+                if (menuObject is not PositionedMenuObject posObj) return Vector2.zero;
+                    return posObj.pos;
+            }
+            set
+            {
+                if (menuObject is PositionedMenuObject posObj)
+                    posObj.pos = value;
+            }
+        }
+        public override Vector2 Size
+        {
+            get
+            {
+                if (menuObject is not RectangularMenuObject rectMenuObj) return Vector2.zero;
+                return rectMenuObj.size;
+            }
+            set
+            {
+                if (menuObject is RectangularMenuObject rectMenuObj)
+                    rectMenuObj.size = value;
+            }
+        }
         public MenuScrollObject(MenuObject menuObject, bool validForScroller)
         {
             this.menuObject = menuObject;
@@ -69,15 +92,6 @@ namespace RainMeadow.UI.Systems
                 return;
             }
             objectContainer = menuObject.Container;
-        }
-        public override void UpdateInObject()
-        {
-            base.UpdateInObject();
-            if (scroller == null || parentInScroller != null) return;
-            if (menuObject is not PositionedMenuObject posMenuObj) return;
-            posMenuObj.pos = LocalPos;
-            if (posMenuObj is not RectangularMenuObject rectMenuObj) return;
-            rectMenuObj.size = Size;
         }
         public override void GrafUpdateInObject(float timeStacker)
         {

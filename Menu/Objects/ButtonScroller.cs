@@ -94,10 +94,6 @@ namespace RainMeadow
             }
             else if (args.Action == NotifyCollectionChangedAction.Move || args.Action == NotifyCollectionChangedAction.Add)
             {
-                for (int i = 0; i < args.NewItems.Count; i++)
-                {
-                    ((MenuObject)args.NewItems[i]).GetScrollObject().UpdateIndexFromScroller(this, args.NewStartingIndex + i);
-                }
                 if (args.NewStartingIndex != scrollObjects.Count - args.NewItems.Count)
                 {
                     for (int i = args.NewStartingIndex + args.NewItems.Count; i < scrollObjects.Count; i++)
@@ -215,7 +211,7 @@ namespace RainMeadow
         {
             return [.. scrollObjects.OfType<T>()];
         }
-        public void RemoveButton(int index, bool constrainScroll = true) => RemoveScrollObject(scrollObjects.GetValueOrDefault(index), constrainScroll);
+        public void RemoveScrollObject(int index, bool constrainScroll = true) => RemoveScrollObject(scrollObjects.GetValueOrDefault(index), constrainScroll);
         public void RemoveScrollObject(MenuObject? scrollObj, bool constrainScroll = true)
         {
             if (scrollObjects.Contains(scrollObj)) return;
@@ -243,8 +239,8 @@ namespace RainMeadow
             if (scrollBoxButtons == null) return;
             AddScrollObjects([..scrollBoxButtons.Where(x => x is MenuObject).Cast<MenuObject>()]);
         }
-        public void AddScrollObjects(params MenuObject[]? scrollObjects) => AddScrollObjects(scrollObjects);
-        public void AddScrollObjects(MenuObject[]? scrollObjects, int startingIndex = -1, bool bindToSlider = true)
+        public void AddScrollObjects(params MenuObject[]? scrollObjects) => AddScrollObjects(-1, scrollObjects);
+        public void AddScrollObjects(int startingIndex, MenuObject[]? scrollObjects)
         {
             if (scrollObjects == null) return;
             int actualStartingIndex = startingIndex == -1? this.scrollObjects.Count : startingIndex;
@@ -252,15 +248,14 @@ namespace RainMeadow
             {
                 var obj = scrollObjects[i];
                 int indexInsert = actualStartingIndex + i;
-                OnAddMenuScrollObject(obj, indexInsert, bindToSlider);
+                OnAddMenuScrollObject(obj, indexInsert);
                 this.scrollObjects.Insert(actualStartingIndex + i, obj);
             }
         }
-        protected virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt, bool bindToSlider)
+        public virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt)
         {
             scrollObject.GetScrollObject().AddedIntoScroller(this, indexAt);
             subObjects.Add(scrollObject);
-            if (bindToSlider)
                 scrollObject.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
 
         }
