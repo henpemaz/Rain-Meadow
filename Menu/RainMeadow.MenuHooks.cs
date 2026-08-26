@@ -31,7 +31,7 @@ namespace RainMeadow
             IntroRollReplacement.OnEnable();
             IL.Menu.Menu.Update += IL_Menu_Update;
             On.Menu.Menu.SelectNewObject += On_Menu_SelectNewObject;
-            
+
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
             On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
@@ -54,6 +54,8 @@ namespace RainMeadow
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
 
             On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
@@ -72,7 +74,7 @@ namespace RainMeadow
             try
             {
                 var cursor = new ILCursor(il);
-                cursor.GotoNext(MoveType.After,x => x.MatchLdcR4(100.2f));
+                cursor.GotoNext(MoveType.After, x => x.MatchLdcR4(100.2f));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(
                     (float orig, ProcessManager self) =>
@@ -718,7 +720,7 @@ namespace RainMeadow
                 self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
-            
+
             SpecialEvents.GetActiveEvent()?.UpdateLoginMessage(self);
 
             // we might get here from quitting out of game
@@ -739,6 +741,15 @@ namespace RainMeadow
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
                 self.PlaySound(SoundID.MENU_Switch_Page_In);
             }, self.mainMenuButtons.Count - 2);
+        }
+
+        // while the host scrolls  campaigns (or someone joins mid-scroll) 
+        // SlugcatPageContinue can Update itself for a frame
+        // after its data is gone and nullref.
+        private bool SlugcatPageContinue_SaveDataFlag(Func<SlugcatSelectMenu.SlugcatPageContinue, bool> orig, SlugcatSelectMenu.SlugcatPageContinue self)
+        {
+            if (OnlineManager.lobby != null && self.saveGameData == null) return false;
+            return orig(self);
         }
 
         private Menu.SlugcatSelectMenu.SaveGameData? SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)

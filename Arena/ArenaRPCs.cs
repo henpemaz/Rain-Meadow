@@ -266,13 +266,14 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                if (arena.lobby.isOwner
+                    && arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
                 {
                     arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
                 }
                 int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
                     x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
-                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer}");
+                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer} who quitted!");
             }
         }
 
@@ -308,9 +309,9 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void Arena_EndSessionEarly()
+        public static void Arena_EndSessionEarly(RPCEvent rpc)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena) && rpc.from == arena.lobby?.owner)
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null)
@@ -319,9 +320,6 @@ namespace RainMeadow
                     return;
                 }
                 game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-
-
             }
         }
 
@@ -559,6 +557,18 @@ namespace RainMeadow
                 game.levelSelector.levelsPlaylist.ConstrainScroll();
             }
 
+        }
+
+        [RPCMethod]
+        public static void Arena_StopWaitingForPlayersToLoad(RPCEvent rpc)
+        {
+            if (RainMeadow.isArenaMode(out var arenaOnline)
+                && rpc.from == arenaOnline.lobby?.owner
+                && arenaOnline.ArenaSession?.game?.shortcuts is ShortcutHandler shortcutHandler)
+            {
+                arenaOnline.isWaitingForPlayersToLoad = false;
+                shortcutHandler.Update(); // wait should be 0, the player should exit the shortcut immediatly
+            }
         }
     }
 }

@@ -167,7 +167,7 @@ namespace RainMeadow
             {
                 fade = true;
             }
-            else
+            else if (OnlineManager.lobby != null) // no lobby, no avatars left for the chat to obscure
             {
                 foreach (var avatar in OnlineManager.lobby.playerAvatars)
                 {

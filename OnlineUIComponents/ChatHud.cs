@@ -51,6 +51,30 @@ namespace RainMeadow
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
         }
 
+        public void ClearMessageFromClientOptions()
+        {
+            if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.Death)
+            {
+                ClearMessages(x => x.user == ChatLogManager.TypeToSysMesSignature(ChatLogManager.SystemMessageType.CreatureDeath));
+            }
+            else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.System)
+            {
+                ClearMessages(x => ChatLogManager.IsUserSystemSignature(x.user));
+            }
+            else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.All)
+            {
+                ClearMessages(x => true);
+            }
+        }
+        public void ClearMessages(Predicate<(string user, string message)> match)
+        {
+            ChatLogManager.chatLog.RemoveAll(match);
+            if (chatLogOverlay is not null) ShutDownChatLog(); // clear the UI
+            if (showChatLog && chatLogOverlay == null && !ShouldForceCloseChat)
+            {
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+            }
+        }
         public void UpdateCamera(RoomCamera camera)
         {
             this.camera = camera;
@@ -74,9 +98,9 @@ namespace RainMeadow
                 if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
                 {
                     camera.virtualMicrophone.PlaySound(
-                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
-                        0, 
-                        quiet ? 0.7f : 1.5f, 
+                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick,
+                        0,
+                        quiet ? 0.7f : 1.5f,
                         quiet ? 0.7f : 0.6f
                     );
                 }

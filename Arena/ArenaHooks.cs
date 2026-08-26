@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -20,7 +21,7 @@ namespace RainMeadow
     {
         public static bool isArenaMode(out ArenaOnlineGameMode gameMode)
         {
-            gameMode = null;
+            gameMode = null!;
             if (
                 OnlineManager.lobby != null
                 && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena
@@ -220,9 +221,7 @@ namespace RainMeadow
                     cursor.EmitDelegate((ArenaBehaviors.StartBump startBump) =>
                         {
                             bool isArenaOnlineWaitingForPlayers = isArenaMode(out var arenaOnline)
-                                && arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
-                                && (arenaOnline.arenaPrepTimer is null
-                                    || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+                                && arenaOnline.isWaitingForPlayersToLoad;
                             if (isArenaOnlineWaitingForPlayers)
                             {
                                 startBump.startGameCounter = 10;
@@ -235,7 +234,7 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                RainMeadow.Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : "+ ex);
             }
         }
 
@@ -252,23 +251,45 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                RainMeadow.Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : "+ ex);
             }
         }
         private void RainWorldGame_Update_ShortcutWaitForAllPlayers(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
-            if (isArenaMode(out var arena)
-                && arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)
-                && (arena.arenaPrepTimer is null || arena.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting))
+            if (isArenaMode(out var arenaOnline))
             {
-                // Debug($"Holding the players [{string.Join(", ", self.shortcuts.transportVessels.FindAll(x => x.creature is Player).Select(x => x.creature))}] in place ! <{arena.setupTime}><{arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena)}><{arena.arenaPrepTimer?.showMode}>");
-                for (int i = 0; i < self.shortcuts.transportVessels.Count; i++)
+                if (arenaOnline.lobby.isOwner)
                 {
-                    if (self.shortcuts.transportVessels[i].creature is Player player
-                        && player.IsLocal()) // only affect us
+                    bool wasWaiting = arenaOnline.isWaitingForPlayersToLoad;
+                    arenaOnline.isWaitingForPlayersToLoad = arenaOnline.externalArenaGameMode.HoldFireWhileTimerIsActive(arenaOnline)
+                        && (arenaOnline.arenaPrepTimer is null
+                            || arenaOnline.arenaPrepTimer.showMode == ArenaPrepTimer.TimerMode.Waiting);
+
+                    if (wasWaiting && !arenaOnline.isWaitingForPlayersToLoad)
                     {
-                        self.shortcuts.transportVessels[i].wait = 1; // wait in there till everyone is ready.
-                        // Debug($"Player {self.shortcuts.transportVessels[i].creature}<{self.shortcuts.transportVessels[i].creature.inShortcut}><{self.shortcuts.transportVessels[i].creature.inShortcutVessel}> is at [{self.shortcuts.transportVessels[i].creature.mainBodyChunk.pos}][{self.shortcuts.OnScreenPositionOfInShortCutCreature(self.cameras[0].room, self.shortcuts.transportVessels[i].creature)}]");
+                        arenaOnline.ArenaSession?.room?.abstractRoom?.GetResource()?.participants?.Do(
+                            onlinePlayer =>
+                            {
+                                if (!onlinePlayer.isMe)
+                                {
+                                    onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_StopWaitingForPlayersToLoad);
+                                }
+                            }
+                        );
+                    }
+                }
+
+                if (arenaOnline.isWaitingForPlayersToLoad)
+                {
+                    for (int i = 0; i < self.shortcuts.transportVessels.Count; i++)
+                    {
+                        if (self.shortcuts.transportVessels[i].creature is Player player)
+                        {
+                            player.inShortcut = true; // necessary for sync
+
+                            // wait in there till everyone is ready.
+                            if (player.IsLocal()) self.shortcuts.transportVessels[i].wait = 1;
+                        }
                     }
                 }
             }
@@ -688,8 +709,8 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Brtrue, toParryLoop);
 
                 // Change the light explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<Explosion.ExplosionLight>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(160)))
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) )
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -704,8 +725,8 @@ namespace RainMeadow
                 }
 
                 // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<ShockWave>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(200)))
+                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) )
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -2221,32 +2242,41 @@ namespace RainMeadow
                     {
                         return;
                     }
-                    if (OnlineManager.lobby.isOwner)
+
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            arena.arenaSittingOnlineOrder[i]
+                        );
+
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
-                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                                arena.arenaSittingOnlineOrder[i]
-                            );
-                            if (onlinePlayer != null && !onlinePlayer.isMe)
+                            if (OnlineManager.lobby.isOwner)
                             {
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
+                            else
+                            {
+                                onlinePlayer.InvokeOnceRPC(
+                                    ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                                    OnlineManager.mePlayer
+                                );
+                            }
                         }
+                    }
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
                         self.manager.RequestMainProcessSwitch(
                             ProcessManager.ProcessID.MultiplayerResults
                         );
                     }
-                    arena.returnToLobby = true;
-
-                    if (!OnlineManager.lobby.isOwner)
+                    else
                     {
                         arena.clientWantsToLeaveGame = true;
-                        OnlineManager.lobby.owner.InvokeOnceRPC(
-                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                            OnlineManager.mePlayer
-                        );
                     }
+
+                    arena.returnToLobby = true;
                 }
             }
             orig(self, sender, message);
@@ -2360,70 +2390,9 @@ namespace RainMeadow
             bool dontCountSandboxLosers
         )
         {
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out var arenaOnline))
             {
-                int num = 0;
-                for (int i = 0; i < self.Players.Count; i++)
-                {
-                    bool countPlayers = true;
-
-                    if (!self.Players[i].state.alive)
-                    {
-                        countPlayers = false;
-                    }
-                    if (countPlayers
-                        && self.Players[i].GetOnlineCreature()?.owner is null)
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.exitManager != null
-                        && self.exitManager.IsPlayerInDen(self.Players[i])
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers
-                        && self.Players[i].realizedCreature != null
-                        && (self.Players[i].realizedCreature as Player)!.dangerGrasp != null
-                    )
-                    {
-                        countPlayers = false;
-                    }
-
-                    if (countPlayers)
-                    {
-                        for (int j = 0; j < self.arenaSitting.players.Count; j++)
-                        {
-                            if (
-                                self.Players[i].Room == self.game.world.offScreenDen
-                                && self.arenaSitting.players[j].hasEnteredGameArea
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            if (
-                                dontCountSandboxLosers
-                                && self.arenaSitting.players[j].sandboxWin < 0
-                            )
-                            {
-                                countPlayers = false;
-                            }
-
-                            break;
-                        }
-                    }
-
-                    if (countPlayers)
-                    {
-                        num++;
-                    }
-                }
-
-                return num;
+                return arenaOnline.externalArenaGameMode.GetActivePlayerACs(arenaOnline, self).Count;
             }
             else
             {
@@ -2901,11 +2870,22 @@ namespace RainMeadow
         }
         public void ShortcutHelper_Update(ILContext il) //Use challenge mode style den pushback (if available) in online arena.
         {
-            //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
-            //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
             try
             {
                 ILCursor cursor = new(il);
+
+                // Don't push remove player as it's quite buggy visually
+                ILLabel afterPush = cursor.DefineLabel();
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchCall<ShortcutHelper>(nameof(ShortcutHelper.CanBePulledIntoShortcut)),
+                    x => x.MatchBrtrue(out afterPush));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_0);
+                cursor.EmitDelegate((ShortcutHelper self, int i) => self.room.game.Players[i].IsLocal());
+                cursor.Emit(OpCodes.Brfalse, afterPush);
+
+                //Old: if (ModManager.ChallengeModule && room.world.game.IsArenaSession &&  room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge                 && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
+                //New: if (ModManager.ChallengeModule && room.world.game.IsArenaSession && (room.world.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge || isArenaMode) && !room.world.game.GetArenaGameSession.exitManager.ExitsOpen())
                 cursor.GotoNext(MoveType.After,
                     x => x.MatchLdsfld(typeof(DLCSharedEnums.GameTypeID), nameof(DLCSharedEnums.GameTypeID.Challenge)),
                     x => x.MatchCall(typeof(ExtEnum<ArenaSetup.GameTypeID>).GetMethod("op_Equality")));

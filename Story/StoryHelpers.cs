@@ -12,6 +12,31 @@ namespace RainMeadow
 {
     public static class StoryHelpers
     {
+
+        public static bool RecordSpinningTopEncounter(StoryGameMode story, int spinningTopID)
+        {
+            bool added = false;
+            if (!story.spinningTopEncounters.Contains(spinningTopID))
+            {
+                story.spinningTopEncounters.Add(spinningTopID);
+                added = true;
+            }
+
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game
+                && game.session is StoryGameSession storySession)
+            {
+                var encounters = storySession.saveState.deathPersistentSaveData.spinningTopEncounters;
+                if (!encounters.Contains(spinningTopID))
+                {
+                    encounters.Add(spinningTopID);
+                    added = true;
+                }
+            }
+
+            if (added) RainMeadow.Debug($"recorded spinning top encounter {spinningTopID}");
+            return added;
+        }
+
         public static void SaveEchoWarp(RainWorldGame game, WarpPoint warpPoint, bool saveRoomWarp = false, bool saveString = false)
         {
             var warpData = warpPoint.overrideData ?? warpPoint.Data;

@@ -53,6 +53,9 @@ namespace RainMeadow
             public bool shufflePlayList;
 
             [OnlineField(group = "arenaSetup")]
+            public bool isWaitingForPlayersToLoad;
+
+            [OnlineField(group = "arenaSetup")]
             public int totalLevels;
 
             [OnlineField(group = "arenaSetup")]
@@ -170,7 +173,7 @@ namespace RainMeadow
 
             [OnlineFieldHalf(group = "arenaSetup")]
             public float artiParryDistance;
-            
+
             [OnlineField(group = "arenaSetup")]
             public bool artiParryLeniency;
 
@@ -234,6 +237,7 @@ namespace RainMeadow
                 ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)lobby.gameMode;
 
                 isInGame = Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+                isWaitingForPlayersToLoad = arenaOnline.isWaitingForPlayersToLoad;
                 playList = new List<string>(arenaOnline.playList);
                 shufflePlayList = arenaOnline.shufflePlayList;
                 arenaSittingOnlineOrder = new List<ushort>(arenaOnline.arenaSittingOnlineOrder);
@@ -342,6 +346,7 @@ namespace RainMeadow
                 ArenaOnlineGameMode arenaOnline = (ArenaOnlineGameMode)lobby.gameMode;
 
                 arenaOnline.isInGame = isInGame;
+                arenaOnline.isWaitingForPlayersToLoad = isWaitingForPlayersToLoad;
                 arenaOnline.playList = playList;
                 arenaOnline.shufflePlayList = shufflePlayList;
                 arenaOnline.arenaSittingOnlineOrder = arenaSittingOnlineOrder;

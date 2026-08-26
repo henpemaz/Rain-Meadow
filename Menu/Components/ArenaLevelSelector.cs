@@ -469,7 +469,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 searchBox.OnChange += () => { FilterLevelsList(searchBox.value); };
                 size.y -= decreaseSizeY;
                 new PatchedUIelementWrapper(tabWrapper, searchBox);
-
+                searchBox._KeyboardOn = true;
+                searchBox._cursor.isVisible = true;
+                searchBox._cursorAlpha = 1f;
+                menu.selectedObject = searchBox.wrapper;
             };
         }
         public void AddLevelItem(LevelItem item) => AddScrollObjects(item);

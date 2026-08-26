@@ -74,9 +74,11 @@ namespace RainMeadow
             public float minimumRippleLevel;
             [OnlineFieldHalf]
             public float maximumRippleLevel;
+            [OnlineField]
+            public List<int> spinningTopEncounters;
 
             [OnlineField(nullable = true)]
-            public MenuSaveStateState? currentMenuSaveState;  
+            public MenuSaveStateState? currentMenuSaveState;
 
             public State() { }
 
@@ -88,7 +90,6 @@ namespace RainMeadow
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
-                rippleLevel = storyGameMode.rippleLevel;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
@@ -101,8 +102,12 @@ namespace RainMeadow
                     cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
-                    minimumRippleLevel = storySession.saveState.deathPersistentSaveData.minimumRippleLevel;
-                    maximumRippleLevel = storySession.saveState.deathPersistentSaveData.maximumRippleLevel;
+                    storyGameMode.minimumRippleLevel = storySession.saveState.deathPersistentSaveData.minimumRippleLevel;
+                    storyGameMode.maximumRippleLevel = storySession.saveState.deathPersistentSaveData.maximumRippleLevel;
+                    foreach (int encounter in storySession.saveState.deathPersistentSaveData.spinningTopEncounters)
+                    {
+                        if (!storyGameMode.spinningTopEncounters.Contains(encounter)) storyGameMode.spinningTopEncounters.Add(encounter);
+                    }
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                     malnourished = storySession.saveState.malnourished;
@@ -114,6 +119,10 @@ namespace RainMeadow
                 {
                     currentMenuSaveState = storyGameMode.menuSaveState;
                 }
+                rippleLevel = storyGameMode.rippleLevel;
+                minimumRippleLevel = storyGameMode.minimumRippleLevel;
+                maximumRippleLevel = storyGameMode.maximumRippleLevel;
+                spinningTopEncounters = new(storyGameMode.spinningTopEncounters); // copy, the state outlives this tick
 
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -140,7 +149,10 @@ namespace RainMeadow
                 var lobby = (resource as Lobby);
                 var story = (StoryGameMode)lobby.gameMode;
 
-                (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
+                story.rippleLevel = rippleLevel;
+                story.minimumRippleLevel = minimumRippleLevel;
+                story.maximumRippleLevel = maximumRippleLevel;
+                story.spinningTopEncounters = new(spinningTopEncounters);
 
                 if (currentGameState is not null)
                 {
@@ -170,8 +182,8 @@ namespace RainMeadow
                     story.menuSaveGameData = story.menuSaveState?.CreateSaveData();
                     story.needMenuSaveUpdate = true;
                 }
-                
-                
+
+
 
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -182,6 +194,19 @@ namespace RainMeadow
 
                     storySession.saveState.deathPersistentSaveData.minimumRippleLevel = minimumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
+
+                    var localEncounters = storySession.saveState.deathPersistentSaveData.spinningTopEncounters;
+                    foreach (int encounter in spinningTopEncounters)
+                    {
+                        if (!localEncounters.Contains(encounter)) localEncounters.Add(encounter);
+                    }
+                    foreach (int encounter in localEncounters)
+                    {
+                        if (spinningTopEncounters.Contains(encounter)) continue;
+                        if (!story.spinningTopEncounters.Contains(encounter)) story.spinningTopEncounters.Add(encounter);
+                        lobby.owner.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, encounter);
+                    }
+
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
                     storySession.saveState.lastMalnourished = lastMalnourished;
@@ -280,7 +305,7 @@ namespace RainMeadow
                 saveGameData.shelterName = shelterName;
                 saveGameData.gameTimeAlive = gameTimeAlive;
                 saveGameData.gameTimeDead = gameTimeDead;
-                
+
                 return saveGameData;
             }
 
