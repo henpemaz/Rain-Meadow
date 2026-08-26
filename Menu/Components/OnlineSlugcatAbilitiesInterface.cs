@@ -3,6 +3,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using RWCustom;
 using System.Collections.Generic;
 using System.Linq;
@@ -578,12 +579,12 @@ namespace RainMeadow.UI.Components
                 titleDivider.x = titleLabel.x;
                 titleDivider.y = titleLabel.y - titleLabel.textRect.height - 3;
             }
-            public class SettingsButton : BigSimpleButton, ButtonScroller.IPartOfButtonScroller
+            public class SettingsButton : BigSimpleButton, IOwnMenuScrollObject
             {
                 public float Alpha { get; set; } = 1;
                 public Vector2 Pos { get => pos; set => pos = value; }
                 public Vector2 Size { get => size; set => size = value; }
-                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(scroller.buttons.IndexOf(this) - 1)?.Alpha ?? 0 : 0;
+                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.scrollObjects.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
                 public FSprite? topDivSprite;
                 public FSprite arrowSprite;
                 public SettingsPage settingsPage;

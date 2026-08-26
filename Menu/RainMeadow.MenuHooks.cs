@@ -4,7 +4,9 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
+using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Menus;
+using RainMeadow.UI.Systems;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -216,29 +218,25 @@ namespace RainMeadow
         void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
         {
             orig(self, menu, owner);
-            if (self is ButtonScroller.IPartOfButtonScroller && self.myContainer == null)
-            {
-                self.myContainer = new();
-                (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
-            }
+            if (MenuScrollObject.TryGetScrollObjectFromMenuObject(self, out var scrollObject))
+                MenuScrollObject.menuScrollObjects.Add(self, scrollObject!);
         }
         void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
         {
             orig(self);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                foreach (ButtonScroller.IPartOfButtonScroller subObj in self.subObjects.OfType<ButtonScroller.IPartOfButtonScroller>())
-                    subObj.Alpha = buttonScroll.Alpha;
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObj))
+                scrollObj.UpdateInObject();
 
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                self.myContainer.alpha = self.owner is not ButtonScroller.IPartOfButtonScroller ? buttonScroll.Alpha : 1;
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObj))
+                scrollObj.GrafUpdateInObject(timestacker);
         }
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
-            return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1);
+            return orig(self) && !(MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObject) && scrollObject.ContainedAlpha < 1);
         }
         private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
         {

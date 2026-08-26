@@ -57,7 +57,7 @@ namespace RainMeadow
             foreach (Line line in lines)
             {
                 var label = new AlignedMenuLabel(this, scroller, line.text,
-                    scroller.GetIdealPosWithScrollForButton(scroller.buttons.Count), new Vector2(scrollWidth, LineHeight), false)
+                    scroller.PositionOfObject(scroller.scrollObjects.Count), new Vector2(scrollWidth, LineHeight), false)
                 {
                     labelPosAlignment = line.header ? FLabelAlignment.Center : FLabelAlignment.Left
                 };

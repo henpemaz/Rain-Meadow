@@ -86,7 +86,7 @@ namespace RainMeadow.UI.Components
             List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false) + (host ? 14f : 0)), 1, out string remainingMessage)];
             splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
             for (int i = 0; i < splitMessages.Count; i++)
-                messageLabels.Add(GetMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
+                messageLabels.Add(GetMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.PositionOfObject(i + messageScroller.scrollObjects.Count).y), desiredSize));
             return [.. messageLabels];
         }
         public void AddMessage(string user, string message)

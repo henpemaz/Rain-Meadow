@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace RainMeadow.UI.Interfaces
+{
+    public interface IScrollObjectHolder
+    {
+        public bool ScrollObjectsDirty { get; }
+        public FContainer ItemContainer { get; }
+        public float AlphaOfObject(Vector2 position);
+        public Vector2 PositionOfObject(int index, Vector2 origPosition);
+        public Vector2 SizeOfObject(Vector2 origSize);
+    }
+}

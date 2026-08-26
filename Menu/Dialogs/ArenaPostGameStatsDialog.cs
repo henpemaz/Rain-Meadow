@@ -86,7 +86,7 @@ namespace RainMeadow.UI
             {
                 if (strings.Length <= i)
                 {
-                    storedResults.scroller.RemoveButton(menulabels[i], true);
+                    storedResults.scroller.RemoveScrollObject(menulabels[i], true);
                     continue;
                 }
                 menulabels[i].text = strings[i];
@@ -96,7 +96,7 @@ namespace RainMeadow.UI
             IEnumerable<string> newStrings = strings.Skip(count);
             foreach (string s in newStrings)
             {
-                AlignedMenuLabel label = new(this, storedResults.scroller, s, storedResults.scroller.GetIdealPosWithScrollForButton(storedResults.scroller.buttons.Count), new(storedResults.scroller.size.x, 30), false);
+                AlignedMenuLabel label = new(this, storedResults.scroller, s, storedResults.scroller.PositionOfObject(storedResults.scroller.scrollObjects.Count), new(storedResults.scroller.size.x, 30), false);
                 label.label.color = MenuColorEffect.rgbMediumGrey;
                 storedResults.scroller.AddScrollObjects(label);
             }

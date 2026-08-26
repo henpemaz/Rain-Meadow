@@ -44,7 +44,7 @@ public class TextScroller : ButtonScroller
                 menu,
                 this,
                 textLines[i],
-                GetIdealPosWithScrollForButton(i + buttons.Count),
+                PositionOfObject(i + scrollObjects.Count),
                 new Vector2(size.x, buttonHeight),
                 false
             )
@@ -69,7 +69,7 @@ public class TextScroller : ButtonScroller
                 menu,
                 this,
                 "",
-                GetIdealPosWithScrollForButton(buttons.Count),
+                PositionOfObject(scrollObjects.Count),
                 new Vector2(0, buttonHeight),
                 false
             )

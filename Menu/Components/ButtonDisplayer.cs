@@ -52,6 +52,6 @@ namespace RainMeadow.UI.Components
         public virtual string DescriptionOfDisplayButton() => "";
         protected bool isCurrentlyLargeDisplay = true;
         public SideButton displayToggleButton;
-        public Func<ButtonDisplayer, bool, IPartOfButtonScroller[]>? refreshDisplayButtons; //you can call height change here
+        public Func<ButtonDisplayer, bool, MenuObject[]>? refreshDisplayButtons; //you can call height change here
     }
 }

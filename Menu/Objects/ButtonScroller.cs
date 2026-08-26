@@ -3,17 +3,19 @@ using Menu;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Systems;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
     //a scroller just for predetermined buttons, intended for buttons' owner to be ButtonScroller, rn has predetermined height and spacing
-    public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME
+    public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME, IScrollObjectHolder
     {
         public enum TextAnchor
         {
@@ -28,7 +30,7 @@ namespace RainMeadow
             return startEndSpacing ? amtOfButtonsView * (buttonHeight + spacing) + spacing : buttonHeight + Mathf.Max(amtOfButtonsView - 1, 0) * (buttonHeight + spacing);
         }
         public virtual float MaxVisibleItemsShown => (UpperBound - LowerBound - GetBoundSizeOffset()) / ButtonHeightAndSpacing;
-        public virtual float MaxDownScroll => Mathf.Max(0, (buttons.Count - MaxVisibleItemsShown));
+        public virtual float MaxDownScroll => Mathf.Max(0, (scrollObjects.Count - MaxVisibleItemsShown));
         public virtual float DownScrollOffset
         {
             get => desiredScrollOffset;
@@ -61,6 +63,8 @@ namespace RainMeadow
         public bool CanScrollUp => DownScrollOffset > 0;
         public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
         public bool CanScroll => !menu.FreezeMenuFunctions;
+        public bool ScrollObjectsDirty => buttonsDirty;
+        public virtual FContainer ItemContainer => itemContainer;
         public bool IsHidden { get; set; }
         public TextAnchor textAnchor = TextAnchor.Top;
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, (float, float) buttonHeightSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0, bool startEndWithSpacing = false) : 
@@ -73,15 +77,33 @@ namespace RainMeadow
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0) : base(menu, owner, pos, size)
         {
             (owner?.Container ?? menu.container).AddChild(myContainer = new());
+            myContainer.AddChild(itemContainer = new());
             sliderIsOnRightSide = sliderOnRight;
             //slider sprite xoffset is 15
             scrollSlider = new(menu, this, "Scroller", sliderPosOffset + new Vector2(sliderOnRight? size.x : -32, 0), new Vector2(30, size.y + sliderSizeYOffset), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
             subObjects.Add(scrollSlider);
-            buttons.CollectionChanged += (_, _) => OnButtonListChanged();
+            scrollObjects.CollectionChanged += (_, collectionChangedArgs) => OnButtonListChanged(collectionChangedArgs);
         }
-        public void OnButtonListChanged()
+        public virtual void OnButtonListChanged(NotifyCollectionChangedEventArgs args)
         {
             buttonsDirty = true;
+            if (args.Action == NotifyCollectionChangedAction.Remove)
+            {
+                for (int i = args.OldStartingIndex; i < scrollObjects.Count; i++)
+                    scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Move || args.Action == NotifyCollectionChangedAction.Add)
+            {
+                for (int i = 0; i < args.NewItems.Count; i++)
+                {
+                    ((MenuObject)args.NewItems[i]).GetScrollObject().UpdateIndexFromScroller(this, args.NewStartingIndex + i);
+                }
+                if (args.NewStartingIndex != scrollObjects.Count - args.NewItems.Count)
+                {
+                    for (int i = args.NewStartingIndex + args.NewItems.Count; i < scrollObjects.Count; i++)
+                        scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
+                }
+            }
         }
         public void MoveAtBottom()
         {
@@ -107,6 +129,7 @@ namespace RainMeadow
         }
         public override void RemoveSprites()
         {
+            itemContainer.RemoveFromContainer();
             myContainer.RemoveFromContainer();
             base.RemoveSprites();
         }
@@ -114,16 +137,14 @@ namespace RainMeadow
         {
             base.Update();
             if (!IsHidden && CanScroll && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
-            if (buttonsDirty)
-            {
-                buttonsDirty = false;
-                for (int i = 0; i < buttons.Count; i++)
+            buttonsDirty = false; //menuobj with scroll function would have checked if this is dirty
+                /*for (int i = 0; i < buttons.Count; i++)
                 {
                     buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
                     buttons[i].Pos = new(buttons[i].Pos.x, GetIdealYPosWithScroll(i));
-                    buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos);
-                }
-            }
+                    buttons[i].Alpha = AlphaOfObject(buttons[i].Pos);
+                }*/
+            
             prevScrollOffset = scrollOffset;
             float currentScrollOffset = GetCurrentScrollOffset();
             scrollOffset = Custom.LerpAndTick(scrollOffset, currentScrollOffset, 0.01f, 0.01f);
@@ -132,7 +153,7 @@ namespace RainMeadow
             floatScrollSpeed = Mathf.Clamp(floatScrollSpeed, -maxScrollSpeed, maxScrollSpeed);
             scrollOffset += floatScrollSpeed;
 
-            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, buttons.Count / 40f);
+            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, scrollObjects.Count / 40f);
 
             if (MaxDownScroll == 0) scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, sliderDefaultIsDown? 1 : 0, scrollSliderCapLerp, scrollSliderCapTick);
             else scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, Mathf.InverseLerp(0f, scrollSliderValueCap, scrollOffset), isScrolling?  Mathf.Max(0.9f, scrollSliderCapLerp) : scrollSliderCapLerp, scrollSliderCapTick);
@@ -190,58 +211,73 @@ namespace RainMeadow
             DownScrollOffset += addDir;
         }
         public void ConstrainScroll() => DownScrollOffset = Mathf.Clamp(DownScrollOffset, 0, MaxDownScroll);
-        public List<T> GetSpecificButtons<T>() => [.. buttons.OfType<T>()];
-        public void RemoveButton(int index, bool constrainScroll = true) => RemoveButton(buttons.GetValueOrDefault(index), constrainScroll);
-        public void RemoveButton(IPartOfButtonScroller? button, bool constrainScroll = true)
+        public List<T> GetSpecificButtons<T>() where T : MenuObject
         {
-            if (button != null)
-            {
-                if (button is MenuObject menuObj) this.ClearMenuObject(menuObj);
-                buttons.Remove(button);
-            }
+            return [.. scrollObjects.OfType<T>()];
+        }
+        public void RemoveButton(int index, bool constrainScroll = true) => RemoveScrollObject(scrollObjects.GetValueOrDefault(index), constrainScroll);
+        public void RemoveScrollObject(MenuObject? scrollObj, bool constrainScroll = true)
+        {
+            if (scrollObjects.Contains(scrollObj)) return;
+            scrollObj.GetScrollObject().OnRemovedFromScroller();
+            this.ClearMenuObject(scrollObj);
+
+            scrollObjects.Remove(scrollObj);
+
             if (constrainScroll) ConstrainScroll();
         }
         public void RemoveAllButtons(bool constrainScroll = true)
         {
-            this.ClearMenuObjectIList(buttons.Where(x => x is MenuObject).Cast<MenuObject>());
-            buttons.Clear();
+            this.ClearMenuObjectIList(scrollObjects);
+            scrollObjects.Clear();
             if (constrainScroll) ConstrainScroll();
         }
 
+        [Obsolete]
         /// <summary>
         /// Add scrollButtons first before adding scroll objects when wanted. Slider won't be accessible if scroll buttons were added.
         /// </summary>
         /// <param name="scrollBoxButtons"></param>
-        public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons) => AddScrollObjects(scrollBoxButtons, true, scrollUpButton == null);
-        public void AddScrollObjects(IPartOfButtonScroller[]? scrollBoxButtons, bool addToSubobjects, bool bindToSlider)
+        public void AddButtons(params IPartOfButtonScroller[]? scrollBoxButtons)
         {
             if (scrollBoxButtons == null) return;
-            for (int i = 0; i < scrollBoxButtons.Length; i++)
+            AddScrollObjects([..scrollBoxButtons.Where(x => x is MenuObject).Cast<MenuObject>()]);
+        }
+        public void AddScrollObjects(params MenuObject[]? scrollObjects) => AddScrollObjects(scrollObjects);
+        public void AddScrollObjects(MenuObject[]? scrollObjects, int startingIndex = -1, bool bindToSlider = true)
+        {
+            if (scrollObjects == null) return;
+            int actualStartingIndex = startingIndex == -1? this.scrollObjects.Count : startingIndex;
+            for (int i = 0; i < scrollObjects.Length; i++)
             {
-                var btn = scrollBoxButtons[i];
-                if (btn == null) return;
-                if (btn is MenuObject menuObj)
-                {
-                    if (addToSubobjects)
-                        subObjects.Add(menuObj);
-                    if (bindToSlider) menuObj.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
-                }
-                buttons.Add(btn);
+                var obj = scrollObjects[i];
+                int indexInsert = actualStartingIndex + i;
+                OnAddMenuScrollObject(obj, indexInsert, bindToSlider);
+                this.scrollObjects.Insert(actualStartingIndex + i, obj);
             }
+        }
+        protected virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt, bool bindToSlider)
+        {
+            scrollObject.GetScrollObject().AddedIntoScroller(this, indexAt);
+            subObjects.Add(scrollObject);
+            if (bindToSlider)
+                scrollObject.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
+
         }
         public Vector2 GetIdealNormalPosForButton(int index)
         {
             if (this.textAnchor == TextAnchor.Top)
                 return new(0, UpperBound - GetBoundSizeOffset() - ((index + 1) * ButtonHeightAndSpacing));
             else
-                return new(0, LowerBound - GetBoundSizeOffset() + ((this.buttons.Count - index - 1) * ButtonHeightAndSpacing));
+                return new(0, LowerBound - GetBoundSizeOffset() + ((this.scrollObjects.Count - index - 1) * ButtonHeightAndSpacing));
         }
-        public Vector2 GetIdealPosWithScrollForButton(int index) => new(GetIdealNormalPosForButton(index).x, GetIdealYPosWithScroll(index));
+        public Vector2 SizeOfObject(Vector2 origSize) => new(origSize.x, buttonHeight);
+        public Vector2 PositionOfObject(int index, Vector2 origPosition = default) => new(origPosition.x, GetIdealYPosWithScroll(index));
         public virtual float GetIdealYPosWithScroll(int index) 
             => this.textAnchor == TextAnchor.Top 
                 ? Math.Min(UpperBound + (ButtonHeightAndSpacing / 3), Mathf.Max(LowerBound - (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos))
                 : Math.Max(LowerBound - (ButtonHeightAndSpacing / 3), Mathf.Min(UpperBound + (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos));
-        public virtual float GetAmountOfAlphaByCrossingBounds(Vector2 combinedPos)
+        public virtual float AlphaOfObject(Vector2 combinedPos)
         {
             //if button starts crossing the bound, calculate the alpha else alpha = 1
             float combinedPosY = combinedPos.y;
@@ -292,7 +328,8 @@ namespace RainMeadow
             _buttonSpacing, _buttonHeight = 30, maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
         public PatchedVerticalSlider scrollSlider;
         public EventfulScrollButton? scrollUpButton, scrollDownButton;
-        public ObservableCollection<IPartOfButtonScroller> buttons = [];
+        public ObservableCollection<MenuObject> scrollObjects = [];
+        public FContainer itemContainer;
         public List<SideButton> sideButtons = [];
         public FSprite[] sideButtonLines = [];
         public class SideButton : SimplerSymbolButton
@@ -329,6 +366,8 @@ namespace RainMeadow
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
         }
+
+        [Obsolete]
         public interface IPartOfButtonScroller //allows other derived objects to be part of the button scroller
         {
             public float Alpha { get; set; }
