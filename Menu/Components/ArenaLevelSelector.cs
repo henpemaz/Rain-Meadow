@@ -294,6 +294,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public class PlaylistSelector : ButtonScroller
     {
         public const string AddOnClick = "Add level to playlist", RemoveOnClick = "Remove level from playlist";
+        public bool searchBarRequestedRemoved;
         public FContainer dividerContainer;
         public MenuTabWrapper tabWrapper;
         public OpTextBox? searchBox;
@@ -365,6 +366,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             buttonHeight = Mathf.Lerp(20, 30 + ThumbHeight, ShowThumbsTransitionState(1f));
             buttonSpacing = (buttonHeight - 20) / 6;
+
+            if (searchBarRequestedRemoved)
+                buttonsDirty = true;
         }
         public override float GetIdealYPosWithScroll(int elementIndex)
         {
@@ -402,8 +406,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public virtual void LoadLevelsInit()
         {
             if (MyLevelSelector == null) return;
-            for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
-                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], menu.Translate(AddOnClick)));
+            AddScrollObjects([..MyLevelSelector.allLevels.Select(CreateLevelItem)]);
             for (int i = 0; i < scrollObjects.Count - 1; i++)
             {
                 if (scrollObjects[i] is not LevelItem levelItem || scrollObjects[i + 1] is not LevelItem nextLevelItem)
@@ -417,12 +420,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector == null) return;
             bool isSearchEmpty = string.IsNullOrEmpty(search);
             IEnumerable<string> searchList = MyLevelSelector.allLevels.Where(x => isSearchEmpty || LevelDisplayName(x).StartsWith(search, StringComparison.CurrentCultureIgnoreCase)),
-                currentList = scrollObjects.Where(x => x is LevelItem).Select(x => ((LevelItem)x).name);
+                currentList = scrollObjects.OfType<LevelItem>().Select(x => x.name);
             if (searchList.Count() == currentList.Count() && searchList.SequenceEqual(currentList)) return;
             RemoveAllButtons(false);
-            for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
-                if (searchList.Contains(MyLevelSelector.allLevels[i]))
-                    AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], menu.Translate(AddOnClick)));
+            AddScrollObjects([.. searchList.Select(CreateLevelItem)]);
             for (int i = 0; i < scrollObjects.Count - 1; i++)
             {
                 if (scrollObjects[i] is not LevelItem levelItem || scrollObjects[i + 1] is not LevelItem nextLevelItem)
@@ -446,6 +447,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             searchButton = AddSideButton("modSearch", "", menu.Translate("Search for levels"), "SEARCHLEVEL");
             searchButton.OnClick += (btn) =>
             {
+                searchBarRequestedRemoved = true; //we cant trust buttondirty to be set true earlier than the levelitems being called to update
                 if (searchBox != null)
                 {
                     FilterLevelsList("");
@@ -469,14 +471,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 searchBox.OnChange += () => { FilterLevelsList(searchBox.value); };
                 size.y -= decreaseSizeY;
                 new PatchedUIelementWrapper(tabWrapper, searchBox);
-                searchBox._KeyboardOn = true;
-                searchBox._cursor.isVisible = true;
-                searchBox._cursorAlpha = 1f;
                 menu.selectedObject = searchBox.wrapper;
             };
         }
-        public void AddLevelItem(LevelItem item) => AddScrollObjects(item);
-        public void RemoveLevelItem(LevelItem item, bool constrainScroll = true) => RemoveScrollObject(item, constrainScroll);
+        public virtual LevelItem CreateLevelItem(string levelName) => new(menu, this, levelName, menu.Translate(AddOnClick));
         public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
     }
     public class PlaylistHolder : PlaylistSelector
@@ -586,12 +584,15 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             }
             lvlItem.StartFadeAway();
         }
-        public override void HandleLevelItemFade(LevelItem item) => RemoveLevelItem(item, true);
+        public override void HandleLevelItemFade(LevelItem item) => RemoveScrollObject(item, true);
         public override void LoadLevelsInit()
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
-            for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
+            AddScrollObjects([.. MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
+        }
+        public override LevelItem CreateLevelItem(string levelName)
+        {
+            return new(menu, this, levelName, menu.Translate(RemoveOnClick));
         }
         public void UpdatePlaylist()
         {
@@ -631,9 +632,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector?.SelectedPlayList == null) return;
             for (int i = scrollObjects.Count - 1; i >= 0; i--)
                 if (scrollObjects[i] is LevelItem item)
-                RemoveLevelItem(item, false);
-            for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
+                RemoveScrollObject(item, false);
+            MyLevelSelector.SelectedPlayList.Select(CreateLevelItem);
             ConstrainScroll();
             mismatchCounter = 0;
 
@@ -737,7 +737,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     {
         SelectedPlayList.Add(name);
         LevelItem item = new(menu, selectedLevelsPlaylist, name, menu.Translate("Remove level from playlist"));
-        selectedLevelsPlaylist.AddLevelItem(item);
+        selectedLevelsPlaylist.AddScrollObjects(item);
         selectedLevelsPlaylist.DownScrollOffset = selectedLevelsPlaylist.MaxDownScroll;
         selectedLevelsPlaylist.ConstrainScroll();
         menu.PlaySound(SoundID.MENU_Add_Level);
