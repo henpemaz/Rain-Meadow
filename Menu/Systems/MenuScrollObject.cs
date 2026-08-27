@@ -53,10 +53,10 @@ namespace RainMeadow.UI.Systems
         public static bool TryGetScrollObjectFromMenuObject(MenuObject menuObject, out MenuScrollObject? menuScrollObj)
         {
             menuScrollObj = null;
-            if (menuObject is IOwnMenuScrollObject)
-                menuScrollObj = new MenuScrollObject(menuObject, true);
-            else if (menuObject is ButtonScroller.IPartOfButtonScroller scrollerObj)
+            if (menuObject is ButtonScroller.IPartOfButtonScroller scrollerObj)
                 menuScrollObj = new ButtonScrollerPartObject(scrollerObj);
+            else if (menuObject is IOwnMenuScrollObject)
+                menuScrollObj = new MenuScrollObject(menuObject, true);
             return menuScrollObj != null;
         }
         public static MenuScrollObject GetScrollObjectFromMenuObject(MenuObject menuObject)
@@ -91,7 +91,7 @@ namespace RainMeadow.UI.Systems
                 }
                 return;
             }
-            objectContainer = menuObject.Container;
+            else objectContainer = menuObject.Container;
         }
         public override void GrafUpdateInObject(float timeStacker)
         {
@@ -100,6 +100,11 @@ namespace RainMeadow.UI.Systems
         }
         public override void OnRemovedFromScroller() //assuming this gets destroyed immediately
         {
+            if (scroller != null)
+            {
+                objectContainer.container.AddChild(menuObject.myContainer);
+                objectContainer.RemoveFromContainer();
+            }
             base.OnRemovedFromScroller();
         }
         public override void AddedIntoScroller(IScrollObjectHolder scroller, int index)
@@ -108,6 +113,7 @@ namespace RainMeadow.UI.Systems
             {
                 throw new InvalidOperationException("This menuobject is invalid for scroller, please check if its IOwnMenuObject else if your item is fully compatible, set isValidForScroller as true");
             }
+            TryInitiateContainer();
             base.AddedIntoScroller(scroller, index);
             scroller.ItemContainer.AddChild(objectContainer);
             AddSubobjectsToScroller(menuObject, this);

@@ -238,7 +238,8 @@ namespace RainMeadow
         }
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
-            return orig(self) && !(MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObject) && scrollObject.ContainedAlpha < 1);
+            return orig(self) && 
+                !(MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObject) && ((scrollObject.ContainedAlpha < 1) || (scrollObject.scroller != null && !scrollObject.scroller.MouseOver)));
         }
         private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
         {

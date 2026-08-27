@@ -41,7 +41,7 @@ namespace RainMeadow
             if (scroller != null)
             {
                 scroller.RemoveAllButtons(false);
-                scroller.AddButtons(populateList?.Invoke(this, scroller));
+                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
                 scroller.ConstrainScroll();
             }
         }
@@ -65,7 +65,7 @@ namespace RainMeadow
             if (scroller == null)
             {
                 scroller = new(menu, this, new(0, StartingYPoint), NumberOfButtonsToShow - 1, size.x, new(size.y, buttonSpacing));
-                scroller.AddButtons(populateList?.Invoke(this, scroller));
+                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
                 subObjects.Add(scroller);
                 if (playSound)
                 {
@@ -93,6 +93,6 @@ namespace RainMeadow
         public float listDownUpYOffset, buttonSpacing;
         private int amtOfButtonsToShow;
         public ButtonScroller? scroller;
-        public Func<ButtonSelector,ButtonScroller, ButtonScroller.IPartOfButtonScroller[]>? populateList;
+        public Func<ButtonSelector,ButtonScroller, MenuObject[]>? populateList;
     }
 }

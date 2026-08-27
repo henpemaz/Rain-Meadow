@@ -355,11 +355,8 @@ namespace RainMeadow
             public float labelFade, lastLabelFade;
             public new event Action<SideButton>? OnClick;
         }
-        public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : SimplerButton(menu, owner, displayText, pos, size, description), IPartOfButtonScroller
+        public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : SimplerButton(menu, owner, displayText, pos, size, description), IOwnMenuScrollObject
         {
-            public float Alpha { get; set; } = 1;
-            public Vector2 Pos { get => pos; set => pos = value; }
-            public Vector2 Size { get => size; set => size = value; }
         }
 
         [Obsolete]
