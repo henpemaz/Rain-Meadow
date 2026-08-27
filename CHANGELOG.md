@@ -1,3 +1,14 @@
+# Release 1.16.0
+
+## General
+- Improved name tag positioning
+  - Fixed name tag position being behind by an extra tick
+  - Fixed name tag being offset incorrectly when pointing at a player in a neighboring room
+  - Fixed incorrect lerping logic
+  - Fixed an edge case in positioning logic that would sometimes cause it to go closer to the edge of the screen than intended
+  - Fixed positioning logic for far away players
+  - Improved positioning for players really close to edges of the screen
+
 # Release 1.15.2
 
 ## Arena 
