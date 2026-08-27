@@ -186,10 +186,12 @@ namespace RainMeadow
                     if (abstractPlayer.pos.room != connections[i])
                         continue;
                     WorldCoordinate shortcutPos = camera.room.LocalCoordinateOfNode(i);
+                    Vector2 dir = camera.room.ShorcutEntranceHoleDirection(shortcutPos.Tile).ToVector2();
+                    Vector2 pos = camera.ApplyDepth(camera.room.MiddleOfTile(shortcutPos) + dir * 15f, -5f);
                     _targetState = new PositionState(
-                        Position: _cameraRoomWorldPosInPixels + camera.room.MiddleOfTile(shortcutPos),
-                        Direction: camera.room.ShorcutEntranceHoleDirection(shortcutPos.Tile).ToVector2(),
-                        VisibilityOffset: 10f,
+                        Position: _cameraRoomWorldPosInPixels + pos,
+                        Direction: dir,
+                        VisibilityOffset: 20f,
                         InvertArrow: true, // Point away from the shortcut entrance
                         PointTowardsDirection: false
                     );
