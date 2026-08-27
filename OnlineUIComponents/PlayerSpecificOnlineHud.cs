@@ -329,12 +329,15 @@ namespace RainMeadow
 
             bool isTargetOnScreen = positionBounds.Contains(targetPos);
 
-            Vector2 clampedPos = positionBounds.GetClosestInteriorPoint(targetPos);
-            Vector2 clampedDir = (targetPos - clampedPos).normalized;
+            Vector2 dir = isTargetOnScreen
+                ? state.Direction
+                : (targetPos - positionBounds.GetClosestInteriorPoint(targetPos)).normalized;
+
+            targetPos -= dir * state.VisibilityOffset;
 
             return (
-                pos: isTargetOnScreen ? targetPos - state.Direction * state.VisibilityOffset : clampedPos,
-                dir: isTargetOnScreen ? state.Direction * (state.InvertArrow ? -1 : 1) : clampedDir
+                pos: positionBounds.GetClosestInteriorPoint(targetPos),
+                dir: isTargetOnScreen ? dir * (state.InvertArrow ? -1 : 1) : dir
             );
         }
 
