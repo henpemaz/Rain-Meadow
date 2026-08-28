@@ -41,9 +41,7 @@ namespace RainMeadow
 
         public void SetPosToPlayer()
         {
-            this.pos = owner.drawpos + new Vector2(0, 30f);
-            this.pos.x = Mathf.Clamp(this.pos.x, 30f, this.owner.camera.sSize.x - 30f);
-            this.pos.y = Mathf.Clamp(this.pos.y, 30f, this.owner.camera.sSize.y - 30f);
+            this.pos = owner.GetTargetDrawPos(1f)?.pos ?? new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
         }
 
