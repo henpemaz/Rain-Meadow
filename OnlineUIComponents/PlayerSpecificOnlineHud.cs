@@ -40,8 +40,8 @@ namespace RainMeadow
         internal bool needed;
         private Vector2 _cameraRoomWorldPosInPixels;
         private Vector2 _targetRoomWorldPosInPixels;
-        private int _prevCameraRoomIndex = -1;
-        private int _prevTargetRoomIndex = -1;
+        private AbstractRoom? _prevCameraRoom;
+        private AbstractRoom? _prevTargetRoom;
         private static readonly IntVector2 outsideArenaDenPos = new IntVector2(-1, -1);
 
         public float DeadFade
@@ -160,21 +160,21 @@ namespace RainMeadow
                 this.parts.Add(this.playerDisplay);
             }
 
-            if (abstractPlayer.pos.room != _prevTargetRoomIndex)
+            if (abstractPlayer.Room != _prevTargetRoom)
             {
-                AbstractRoom? abstractRoom = camera.game.world.GetAbstractRoom(abstractPlayer.pos.room);
+                AbstractRoom? abstractRoom = abstractPlayer.Room;
                 if (abstractRoom is not null)
                     _targetRoomWorldPosInPixels = GetAbstractRoomWorldPosInPixels(abstractRoom);
                 _prevTargetState = null;
             }
-            _prevTargetRoomIndex = abstractPlayer.pos.room;
+            _prevTargetRoom = abstractPlayer.Room;
 
-            if (camera.room.abstractRoom.index != _prevCameraRoomIndex)
+            if (camera.room.abstractRoom != _prevCameraRoom)
             {
                 _cameraRoomWorldPosInPixels = GetAbstractRoomWorldPosInPixels(camera.room.abstractRoom);
                 _prevTargetState = null;
             }
-            _prevCameraRoomIndex = camera.room.abstractRoom.index;
+            _prevCameraRoom = camera.room.abstractRoom;
 
             bool isTargetInSameRoom = abstractPlayer.Room == camera.room.abstractRoom;
 
