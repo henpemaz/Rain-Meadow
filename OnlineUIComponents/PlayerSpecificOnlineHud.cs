@@ -1,4 +1,5 @@
-﻿using HUD;
+﻿using System;
+using HUD;
 using RainMeadow.Arena.Nightcat;
 using RWCustom;
 using System.Collections.Generic;
@@ -143,7 +144,7 @@ namespace RainMeadow
 
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
-            if (playerId.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
+            if (playerId.FindEntity(true) is OnlineCreature oc)
             {
                 abstractPlayer = oc.abstractCreature;
                 oc.TryGetData<SlugcatCustomization>(out customization);
@@ -209,16 +210,30 @@ namespace RainMeadow
                 {
                     if (player.inShortcut
                         && player.inShortcutVessel is not null
-                        && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 0,0 shortcut
+                        && player.inShortcutVessel.pos != outsideArenaDenPos // avoiding that 0,0 shortcut
+                        && player.room is null && player.inShortcutVessel.room.index == abstractPlayer.pos.room)
                     {
                         pos = _targetRoomWorldPosInPixels + camera.room.MiddleOfTile(player.inShortcutVessel.pos);
                     }
-                    else
+                    else if (abstractPlayer.pos.TileDefined
+                        && player.room is not null && player.room.abstractRoom.index == abstractPlayer.pos.room)
                     {
-                        pos = _targetRoomWorldPosInPixels + Vector2.Lerp(player.bodyChunks[0].pos, player.bodyChunks[1].pos, 1f / 3f);
+                        // realizedCreature of a remote player can sometimes not be null when its actually not realized
+                        // so no new state for it is being sent, while new state for the abstractPlayer is always sent
+                        // so until this is fixed somewhere else in rain meadow,
+                        // we just check if the realized player's tile position matches what it should be
+                        const float tolerance = 20f; // up to one tile in each direction
+                        Vector2 expectedPos = player.room.MiddleOfTile(abstractPlayer.pos);
+                        Vector2 posDiff = expectedPos - GetPlayerTileReferencePos(player);
+                        if (Math.Abs(posDiff.x) <= tolerance && Math.Abs(posDiff.y) <= tolerance)
+                        {
+                            BodyChunk[] chunks = player.bodyChunks;
+                            pos = _targetRoomWorldPosInPixels + Vector2.Lerp(chunks[0].pos, chunks[1].pos, 1f / 3f);
+                        }
                     }
                 }
-                else if (abstractPlayer.pos.TileDefined)
+
+                if (!pos.HasValue && abstractPlayer.pos.TileDefined)
                 {
                     pos = _targetRoomWorldPosInPixels + camera.room.MiddleOfTile(abstractPlayer.pos);
                 }
@@ -364,6 +379,36 @@ namespace RainMeadow
             {
                 this.parts[i].ClearSprites();
             }
+        }
+
+        /// <summary>
+        /// The position of the player that is used to set the abstract player's tile position.
+        /// </summary>
+        private static Vector2 GetPlayerTileReferencePos(Player player)
+        {
+            // from PhysicalObject.Update
+            Vector2 pos = player.FirstChunk().pos;
+
+            if (!ModManager.MSC)
+                return pos;
+
+            // from Player.Update
+            if (player.animation != Player.AnimationIndex.HangFromBeam
+                && player.animation != Player.AnimationIndex.DeepSwim)
+            {
+                pos = player.bodyChunks[1].pos;
+            }
+            else if (player.animation == Player.AnimationIndex.BeamTip
+                || player.animation == Player.AnimationIndex.StandOnBeam)
+            {
+                pos = player.bodyChunks[1].pos - new Vector2(0f, 20f);
+            }
+            else if (player.animation == Player.AnimationIndex.HangUnderVerticalBeam)
+            {
+                pos = player.bodyChunks[0].pos + new Vector2(0f, 20f);
+            }
+
+            return pos;
         }
 
         private static Vector2 GetAbstractRoomWorldPosInPixels(AbstractRoom abstractRoom)
