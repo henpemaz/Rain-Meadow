@@ -206,30 +206,17 @@ namespace RainMeadow
             {
                 Vector2? pos = null;
 
-                if (abstractPlayer.realizedCreature is Player player)
+                Player? player = (Player?)abstractPlayer.realizedCreature;
+                if (player is not null && (isTargetInSameRoom || DoesPlayerPosMatchPlayerACPos(player)))
                 {
-                    if (player.inShortcut
-                        && player.inShortcutVessel is not null
-                        && player.inShortcutVessel.pos != outsideArenaDenPos // avoiding that 0,0 shortcut
-                        && player.room is null && player.inShortcutVessel.room.index == abstractPlayer.pos.room)
+                    if (player is { inShortcut: true, inShortcutVessel: not null }
+                        && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 0,0 shortcut
                     {
                         pos = _targetRoomWorldPosInPixels + camera.room.MiddleOfTile(player.inShortcutVessel.pos);
                     }
-                    else if (abstractPlayer.pos.TileDefined
-                        && player.room is not null && player.room.abstractRoom.index == abstractPlayer.pos.room)
-                    {
-                        // realizedCreature of a remote player can sometimes not be null when its actually not realized
-                        // so no new state for it is being sent, while new state for the abstractPlayer is always sent
-                        // so until this is fixed somewhere else in rain meadow,
-                        // we just check if the realized player's tile position matches what it should be
-                        const float tolerance = 20f; // up to one tile in each direction
-                        Vector2 expectedPos = player.room.MiddleOfTile(abstractPlayer.pos);
-                        Vector2 posDiff = expectedPos - GetPlayerTileReferencePos(player);
-                        if (Math.Abs(posDiff.x) <= tolerance && Math.Abs(posDiff.y) <= tolerance)
-                        {
-                            BodyChunk[] chunks = player.bodyChunks;
-                            pos = _targetRoomWorldPosInPixels + Vector2.Lerp(chunks[0].pos, chunks[1].pos, 1f / 3f);
-                        }
+                    else {
+                        BodyChunk[] chunks = player.bodyChunks;
+                        pos = _targetRoomWorldPosInPixels + Vector2.Lerp(chunks[0].pos, chunks[1].pos, 1f / 3f);
                     }
                 }
 
@@ -381,10 +368,33 @@ namespace RainMeadow
             }
         }
 
-        /// <summary>
-        /// The position of the player that is used to set the abstract player's tile position.
-        /// </summary>
-        private static Vector2 GetPlayerTileReferencePos(Player player)
+        private static bool DoesPlayerPosMatchPlayerACPos(Player player)
+        {
+            AbstractCreature ac = player.abstractCreature;
+
+            if (player is { inShortcut: true, inShortcutVessel: not null }
+                && player.inShortcutVessel.pos != outsideArenaDenPos)
+            {
+                return player.inShortcutVessel.room.index == ac.pos.room;
+            }
+
+            if (!ac.pos.TileDefined || player.room?.abstractRoom.index != ac.pos.room)
+                return false;
+
+            // realizedCreature of a remote player can sometimes not be null when its actually not realized
+            // so no new state for it is being sent, while new state for the abstractPlayer is always sent
+            // so until this is fixed somewhere else in rain meadow,
+            // we just check if the realized player's tile position matches what it should be
+            const float toleranceInPixels = 20f; // up to one tile in each direction
+            Vector2 posDiff = player.room.MiddleOfTile(ac.pos) - GetReferencePlayerACPosInPixels(player);
+            return Math.Abs(posDiff.x) <= toleranceInPixels && Math.Abs(posDiff.y) <= toleranceInPixels;
+        }
+
+        /// <returns>
+        /// The position of <paramref name="player"/>
+        /// that is used to set <paramref name="player"/>'s <see cref="AbstractCreature.pos"/>.
+        /// </returns>
+        private static Vector2 GetReferencePlayerACPosInPixels(Player player)
         {
             // from PhysicalObject.Update
             Vector2 pos = player.FirstChunk().pos;
