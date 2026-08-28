@@ -1,3 +1,8 @@
+# Release 1.16.0
+
+## Engine
+- Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
+
 # Release 1.15.2
 
 ## Arena 
