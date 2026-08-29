@@ -332,13 +332,40 @@ namespace RainMeadow
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
 
-            var method = typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            MethodInfo? method = null;
+            if (fieldType.IsArray || (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+            {
+                // GetMethod loves to throw AmbiguousMatch instead of returning null when it hasn't found the specific type but the name has other matches?
+                // I'm specifying Name and Arguments, how tf is it ambiguous
+                try
+                {
+                    method = typeof(Serializer).GetMethod(arguments switch
+                    {
+                        { nullable: false, longList: false } => "Serialize",
+                        { nullable: true, longList: false } => "SerializeNullable",
+                        { nullable: false, longList: true } => "SerializeLong",
+                        { nullable: true, longList: true } => "SerializeNullableLong"
+                    }, new[] { fieldType.MakeByRefType() });
+                }
+                catch
+                {
+                    RainMeadow.Warn($"Exception thrown for {fieldType}, nullable?{nullable}, longList?{longList}");
+                }
+            }
+            if (method == null)
+            {
+                method = typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            }
             if (method is not null) return method;
+
+            RainMeadow.Warn($"Serialization method not found by normal means: {fieldType}, nullable?{nullable}, longList?{longList}");
 
             if (Nullable.GetUnderlyingType(fieldType) is Type t)
             {
-                var retMethod = typeof(Serializer).GetMethod("SerializeNullable", new[] { fieldType.MakeByRefType() }); ;
+                var retMethod = typeof(Serializer).GetMethod("SerializeNullable", new[] { fieldType.MakeByRefType() });
                 if (retMethod is not null) return retMethod;
+
+                RainMeadow.Debug($"Generating dynamic method for [nullable {fieldType}]");
 
                 // T internalvalue = default(T);
                 // if (serializer.isWriting)
@@ -370,7 +397,7 @@ namespace RainMeadow
                 var hasValue = fieldType.GetProperty("HasValue").GetGetMethod();
                 var value = fieldType.GetProperty("Value").GetGetMethod();
                 var nullableCtor = fieldType.GetConstructor([t]);
-                var serializeFunc = GetSerializationMethod(t, false, true, true);
+                var serializeFunc = GetSerializationMethod(t, false, polymorphic, longList);
                 if (serializeFunc == null)
                 {
                     throw new InvalidOperationException($"No matching serialization method found for type {t.FullName}");
