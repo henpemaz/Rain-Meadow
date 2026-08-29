@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mono.Cecil;
+using BepInEx.Bootstrap;
 
 namespace RainMeadow
 {
@@ -78,8 +78,10 @@ namespace RainMeadow
         {
             index = 1; // zero is an easy to catch mistake
 
+            Assembly selfAssembly = Assembly.GetExecutingAssembly();
+
             // our own RPCs first
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypesSafely().ToList())
+            foreach (var type in selfAssembly.GetTypesSafely())
             {
                 try
                 {
@@ -94,12 +96,12 @@ namespace RainMeadow
             // intentionally thrown on failure
 
             // other RPCs
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
+            foreach (var assembly in Chainloader.PluginInfos.Select(info => info.Value.Instance.GetType().Assembly))
             {
-                if (assembly == Assembly.GetExecutingAssembly()) continue;
+                if (assembly == selfAssembly) continue;
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely().ToList())
+                    foreach (var type in assembly.GetTypesSafely())
                     {
                         try
                         {
@@ -134,14 +136,18 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType)
         {
-            if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
-            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
-            if (!methods.Any()) return;
+            if (targetType.IsGenericTypeDefinition || targetType.IsInterface)
+                return;
 
+            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
             foreach (var method in methods)
             {
+                RPCMethodAttribute rpcMethodAttribute = method.GetCustomAttribute<RPCMethodAttribute>();
+                if (rpcMethodAttribute is null)
+                    continue;
+
                 var isStatic = method.IsStatic;
-                var isSoft = method.GetCustomAttribute<RPCMethodAttribute>() is SoftRPCMethodAttribute;
+                var isSoft = rpcMethodAttribute is SoftRPCMethodAttribute;
                 // get args
                 RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
                 var args = method.GetParameters();
