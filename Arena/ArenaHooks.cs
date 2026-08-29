@@ -234,7 +234,7 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : " + ex);
             }
         }
 
@@ -251,7 +251,7 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                Error("Could not find IL hook : "+ ex);
+                Error("Could not find IL hook : " + ex);
             }
         }
         private void RainWorldGame_Update_ShortcutWaitForAllPlayers(On.RainWorldGame.orig_Update orig, RainWorldGame self)
@@ -394,7 +394,7 @@ namespace RainMeadow
                     if (!self.IsLocal())
                     {
                         if (AmoebaSummonBehavior.GetPriority(arena, spawn, self) > 1)
-                                spawn.playerProximityTime = 10; //slow down when near the player (if not dead or in ripple space)
+                            spawn.playerProximityTime = 10; //slow down when near the player (if not dead or in ripple space)
                         return false;
                     }
                     if (spawn.IsLocal() && spawn.behavior != null)
@@ -709,8 +709,8 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Brtrue, toParryLoop);
 
                 // Change the light explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<Explosion.ExplosionLight>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(160)) )
+                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<Explosion.ExplosionLight>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(160)))
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -725,8 +725,8 @@ namespace RainMeadow
                 }
 
                 // Change the shockwave explosion range (purely cosmetic, will not throw if fail)
-                if (cursor.TryGotoNext(moveType: MoveType.After,  x => x.MatchNewobj<ShockWave>())
-                    && cursor.TryGotoPrev(moveType: MoveType.After,  x => x.MatchLdcR4(200)) )
+                if (cursor.TryGotoNext(moveType: MoveType.After, x => x.MatchNewobj<ShockWave>())
+                    && cursor.TryGotoPrev(moveType: MoveType.After, x => x.MatchLdcR4(200)))
                 {
                     cursor.EmitDelegate((float orig) =>
                     {
@@ -1295,7 +1295,7 @@ namespace RainMeadow
             {
                 if (
                     self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true
-                    && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
+                    && ArenaHelpers.GetArenaClientSettings(oe.owner)?.weaverTail == true
                 )
                     self.InitializeLongerWatcherTail();
             }
@@ -1312,7 +1312,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out _)
                 && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true
-                && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
+                && ArenaHelpers.GetArenaClientSettings(oe.owner)?.weaverTail == true
             )
                 self.player.watcherMorph = 0.51f;
 
@@ -1352,7 +1352,7 @@ namespace RainMeadow
             if (
                 isArenaMode(out _)
                 && self.pGraphics.player.abstractPhysicalObject.GetOnlineObject(out var oe)
-                && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true
+                && ArenaHelpers.GetArenaClientSettings(oe.owner)?.weaverTail == true
             )
             {
                 self.weaverTier = 4;
