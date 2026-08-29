@@ -103,14 +103,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= self.gameSession.GameTypeSetup.ScoreToEnterDen) ?? false);
             }
 
-            int playersStillStanding =
-                self.gameSession.Players?.Count(player =>
-                    player.realizedCreature != null && player.realizedCreature.State.alive
-                ) ?? 0;
-
-            if (
-                playersStillStanding == 1
-                && arenaOnline.arenaSittingOnlineOrder.Count > 1
+            if (self.gameSession.thisFrameActivePlayers == 1
+                && arenaOnline.arenaSittingOnlineOrder.Count >= 1
                 && !arenaOnline.countdownInitiatedHoldFire
             )
             {
@@ -122,7 +116,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return true;
             }
 
-            if (playersStillStanding > 1 && arenaOnline.setupTime == 0)
+            if (self.gameSession.thisFrameActivePlayers > 1 && arenaOnline.setupTime == 0)
             {
                 HashSet<int> aliveTeams = new HashSet<int>();
                 if (self.gameSession.Players != null)
@@ -727,7 +721,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             )
             {
                 if (player.isMe // Custom color only for me in team battles
-                    && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) 
+                    && OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs)
                     && cs.chatUsernameColor is Color color)
                 {
                     return color;

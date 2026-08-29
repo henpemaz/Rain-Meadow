@@ -54,7 +54,7 @@ namespace RainMeadow
         public void FFacetNode_PopulateRenderLayer(On.FFacetNode.orig_PopulateRenderLayer orig, FFacetNode self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -64,7 +64,7 @@ namespace RainMeadow
         public void FSprite_PopulateRenderLayer(On.FSprite.orig_PopulateRenderLayer orig, FSprite self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -74,7 +74,7 @@ namespace RainMeadow
         public void TriangleMesh_PopulateRenderLayer(On.TriangleMesh.orig_PopulateRenderLayer orig, TriangleMesh self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -261,18 +261,19 @@ namespace RainMeadow
                 hackySlugcatCustomization = null;
                 PlayerGraphics.customColors = cachedCustomColors;
             }
-            
+
             // Disable graphics manually when in ripple mode
             int meRippleLayer = self.player.room?.game?.ActiveRippleLayer ?? 0;
             int otherRippleLayer = self.player.abstractCreature.rippleLayer;
             bool isWatcher = ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
-            if (otherRippleLayer == 0) 
+
+            if (otherRippleLayer == 0 && !self.culled)
             {
                 for (int i = 0; i < 10; i++)
                 {
                     if (i == 9 && isWatcher) continue;
                     bool isVisibilityAlreadySet = i >= 4 && i <= 8;
-                    sLeaser.sprites[i].isVisible = isVisibilityAlreadySet 
+                    sLeaser.sprites[i].isVisible = isVisibilityAlreadySet
                         ? meRippleLayer == otherRippleLayer && sLeaser.sprites[i].isVisible
                         : meRippleLayer == otherRippleLayer;
                 }

@@ -50,12 +50,7 @@ namespace RainMeadow
                 return orig(self) || (self.gameSession?.arenaSitting?.players?.Any(p => p?.score >= self.gameSession.GameTypeSetup.ScoreToEnterDen) ?? false);
             }
 
-            int playersStillStanding =
-                self.gameSession.Players?.Count(player =>
-                    player.realizedCreature != null && (player.realizedCreature.State.alive)
-                ) ?? 0;
-
-            if (playersStillStanding == 1 && arenaOnline.arenaSittingOnlineOrder.Count > 1 && !arenaOnline.countdownInitiatedHoldFire)
+            if (self.gameSession.thisFrameActivePlayers == 1 && arenaOnline.arenaSittingOnlineOrder.Count >= 1 && !arenaOnline.countdownInitiatedHoldFire)
             {
                 return true;
             }

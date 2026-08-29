@@ -39,12 +39,12 @@ public class RMOverlayHUDMenu : Menu.Menu, IOwnAHUD
     }
 
     // ctor
-    
+
     public static bool TryGetOverlayMenu(out RMOverlayHUDMenu overlayHUDOwner) => (overlayHUDOwner = overlayMenu) is not null;
     public static RMOverlayHUDMenu GetOverlayMenu() => overlayMenu;
     public static bool TryGetOverlay(out RMOverlayHUD overlayHUD) => (overlayHUD = overlayMenu?.overlayHUD) is not null;
     public static RMOverlayHUD GetOverlay() => overlayMenu?.overlayHUD;
-    
+
     private static RMOverlayHUDMenu overlayMenu;
     public RMOverlayHUDMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.RainMeadowOverlay)
     {
@@ -58,7 +58,7 @@ public class RMOverlayHUDMenu : Menu.Menu, IOwnAHUD
     public void AddOverlayHUD()
     {
         this.overlayHUD?.ClearAllSprites();
-        this.overlayHUD = new(rainWorld, this); 
+        this.overlayHUD = new(rainWorld, this);
     }
     public void RemoveOverlayHUD()
     {
@@ -92,7 +92,7 @@ public class RMOverlayHUDMenu : Menu.Menu, IOwnAHUD
         this.ShutDownProcess();
         overlayMenu = null;
     }
-    
+
     public readonly RainWorld rainWorld;
     public RMOverlayHUD? overlayHUD;
 }
@@ -103,7 +103,7 @@ public class RMOverlayHUD : HUD.HUD
     public static RMOverlayHUD GetOverlay() => RMOverlayHUDMenu.GetOverlay();
     public RMOverlayHUD(RainWorld rainWorld, RMOverlayHUDMenu owner) : base([owner.container], rainWorld, owner)
     {
-        
+
     }
 
     public void AddChatHUD(RoomCamera roomCamera)
@@ -122,9 +122,13 @@ public class RMOverlayHUD : HUD.HUD
     }
     public void DestroyChatHUD()
     {
-        chatHud?.ClearSprites();
-        this.parts.Remove(this.chatHud);
-        this.chatHud = null;
+        if (chatHud is not null)
+        {
+            chatHud.ClearMessageFromClientOptions();
+            chatHud.ClearSprites();
+            this.parts.Remove(this.chatHud);
+            this.chatHud = null;
+        }
     }
     public ChatHud? chatHud;
     public bool isFocusedOnMenu => chatHud?.chatInputActive ?? false;

@@ -199,15 +199,25 @@ namespace RainMeadow
             orig(game, roomName, saveWorldStates);
             if (RainMeadow.isStoryMode(out var story))
             {
+                // Whoever we are, this is now OUR den. The client used to skip this, so SaveStateHandler
+                // put the stale myLastDenPos straight back over the forced location 
+                story.myLastDenPos = roomName;
+                story.denForcedThisCycle = true;
 
-                if (!OnlineManager.lobby.isOwner)
+                if (story.applyingRemoteDenLocation) return;
+
+                if (OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
+                    story.defaultDenPos = roomName;
+                    // A forced relocation (echo, warp save) moves everyone, so it has to reach everyone.
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates);
+                    }
                 }
                 else
                 {
-                    story.myLastDenPos = roomName;
-
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates);
                 }
             }
         }
@@ -426,28 +436,28 @@ namespace RainMeadow
             orig(room);
             if (RainMeadow.isStoryMode(out var story))
             {
+                if (room.game.session is not StoryGameSession storySession)
+                {
+                    Error("echo raised ripple level outside of a story session?");
+                    return;
+                }
+                var deathPersistentSaveData = storySession.saveState.deathPersistentSaveData;
                 var vector = new UnityEngine.Vector2(
-                    room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel,
-                    room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel
+                    deathPersistentSaveData.minimumRippleLevel,
+                    deathPersistentSaveData.maximumRippleLevel
                 );
+
                 if (OnlineManager.lobby.isOwner)
                 {
-                    story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
+                    story.rippleLevel = deathPersistentSaveData.rippleLevel;
+                    story.minimumRippleLevel = deathPersistentSaveData.minimumRippleLevel;
+                    story.maximumRippleLevel = deathPersistentSaveData.maximumRippleLevel;
                 }
-
-                bool hostIsDead = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value)
-                    .Any(playerAvatar =>
-                        playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none && // is in game
-                        playerAvatar.FindEntity(true) is OnlinePhysicalObject opo &&
-                        opo.owner == OnlineManager.lobby.owner &&
-                        opo.apo is AbstractCreature ac &&
-                        (ac.realizedObject is null || ac.realizedCreature.dead));
-
-
-                if (!OnlineManager.lobby.isOwner && hostIsDead && story.rippleLevel < vector.y)
+                else if (story.rippleLevel < vector.y)
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
                 }
+
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)
@@ -1366,7 +1376,7 @@ namespace RainMeadow
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
 
-                if (MatchmakingManager.currentInstance.canSendChatMessages 
+                if (MatchmakingManager.currentInstance.canSendChatMessages
                     && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
                 {
                     if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(cam);
@@ -1785,6 +1795,15 @@ namespace RainMeadow
             inVoidSea = false;
             if (OnlineManager.lobby.isOwner)
             {
+                // Must happen before the save string  is built, since that string is what every client reloads for the new cycle.
+                var hostEncounters = self.currentSaveState.deathPersistentSaveData?.spinningTopEncounters;
+                if (hostEncounters != null)
+                {
+                    foreach (int encounter in storyGameMode.spinningTopEncounters)
+                    {
+                        if (!hostEncounters.Contains(encounter)) hostEncounters.Add(encounter);
+                    }
+                }
                 storyGameMode.saveStateString = SaveStateToString(self.currentSaveState);
             }
             else
@@ -1828,12 +1847,17 @@ namespace RainMeadow
                 }
             }
 
-            RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition}");
+            RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition} forced:{storyGameMode.denForcedThisCycle}");
             RainMeadow.Debug($"FINAL WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave}");
+            // The forced den has been baked into the save state now so stop protecting it. the next
+            // cycle's GoToWinScreen should be free to move us again
+            storyGameMode.denForcedThisCycle = false;
             if (OnlineManager.lobby.isOwner && storyGameMode.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher && self.currentSaveState.deathPersistentSaveData != null)
             {
                 RainMeadow.Debug($"ripple level was: {storyGameMode.rippleLevel}");
                 storyGameMode.rippleLevel = self.currentSaveState.deathPersistentSaveData.rippleLevel;
+                storyGameMode.minimumRippleLevel = self.currentSaveState.deathPersistentSaveData.minimumRippleLevel;
+                storyGameMode.maximumRippleLevel = self.currentSaveState.deathPersistentSaveData.maximumRippleLevel;
                 RainMeadow.Debug($"ripple level now: {storyGameMode.rippleLevel}");
 
             }
@@ -2162,11 +2186,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                // NOTE: Sometimes, just sometimes, an echo may raise watcher to >= 1 ripple level
-                // before metting the third echo; thus soft locking the game, this is a prevention
-                // for said case, it does not happen often, but it does happen.
-                var ret = (self.room.game.Players[0].realizedCreature is Player player && player.maxRippleLevel >= 1f) || orig(self);
-                if (ret) StoryRPCs.RegionGateOrWarpMeetRequirement();
+                if (orig(self)) StoryRPCs.RegionGateOrWarpMeetRequirement();
                 return storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
             }
             return orig(self);

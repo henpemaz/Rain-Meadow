@@ -211,7 +211,7 @@ namespace RainMeadow
                 creatingRemoteObject = oldCreatingRemoteObject;
                 throw;
             }
-            creatingRemoteObject = oldCreatingRemoteObject; 
+            creatingRemoteObject = oldCreatingRemoteObject;
 
 
             realized = initialState.realized;
@@ -228,7 +228,7 @@ namespace RainMeadow
             base.NewOwner(newOwner);
             if (newOwner.isMe)
             {
-            
+
                 if (realized && apo.realizedObject is null && apo.destroyOnAbstraction)
                 {
                     realized = false;
@@ -428,7 +428,7 @@ namespace RainMeadow
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
             }
         }
-        
+
         public void RemoveEntityFromGame(bool onlineaware = true)
         {
             RainMeadow.Debug("Removing entity from game: " + this);
@@ -499,7 +499,7 @@ namespace RainMeadow
                 }
                 if (inResource is RoomSession rs)
                 {
-                    if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);                    
+                    if (!apo.slatedForDeletion) RemoveEntityFromRoom(true);
                 }
                 AllMoving(false);
             }
@@ -540,12 +540,12 @@ namespace RainMeadow
             }
             if (requestResult is GenericResult.Error && apo.realizedObject is not null)
             {
-                foreach (var grasp in apo.realizedObject.grabbedBy)
+                for (int i = apo.realizedObject.grabbedBy.Count - 1; i >= 0; i--)
                 {
+                    Creature.Grasp grasp = apo.realizedObject.grabbedBy[i];
+
                     if (grasp.grabber.IsLocal())
-                    {
                         grasp.grabber.ReleaseGrasp(grasp.graspUsed);
-                    }
                 }
             }
         }
@@ -597,8 +597,8 @@ namespace RainMeadow
                     return;
                 }
 
-                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
-                    chunk?.ToBodyChunk(), 
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject,
+                    chunk?.ToBodyChunk(),
                     onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
@@ -608,12 +608,12 @@ namespace RainMeadow
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             if (this.IsLocked("parry")) return;
-            if (this.apo.realizedObject != null) 
+            if (this.apo.realizedObject != null)
             {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) 
+                if (result.HasValue)
                 {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
@@ -647,9 +647,10 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public void Explode(Vector2 pos)
+        public void Explode(RPCEvent rpc, Vector2 pos)
         {
             if (apo.realizedObject is null) return;
+            if (rpc.from != owner && rpc.from != roomSession?.owner) return;
             apo.realizedObject.bodyChunks[0].pos = pos;
             switch (apo.realizedObject)
             {

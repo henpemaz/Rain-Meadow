@@ -163,7 +163,9 @@ namespace RainMeadow
                 // in room or in shortcut
                 if (abstractPlayer.realizedCreature is Player player)
                 {
-                    if (player.inShortcutVessel is not null && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 
+                    if (player.inShortcut
+                        && player.inShortcutVessel is not null
+                        && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 0,0 shortcut
                     {
                         found = true;
                         rawPos = camera.room.MiddleOfTile(player.inShortcutVessel.pos) - camera.pos;

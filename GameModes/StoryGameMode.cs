@@ -42,8 +42,16 @@ namespace RainMeadow
         public StoryClientSettingsData storyClientData;
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
+        // Set when ForceSaveNewDenLocation relocates us (echo / warp save). Without this
+        // it lands after and puts the stale den straight back over the one the echo just set. STOP DOING THAT
+        public bool denForcedThisCycle = false;
+        // Just used to manage watcher crap when invoking RainWorldGame_ForceSaveNewDenLocation
+        public bool applyingRemoteDenLocation = false;
         public bool hasSheltered = false;
         public float rippleLevel;
+        public float minimumRippleLevel;
+        public float maximumRippleLevel;
+        public List<int> spinningTopEncounters = new();
 
         public List<AbstractCreature> pups;
 
@@ -64,12 +72,16 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastWarp = null;
             myLastDenPos = null;
+            denForcedThisCycle = false;
             lastWarpIsEcho = false;
             region = null;
             saveStateString = null;
             pups = new();
             storyClientData?.Sanitize();
             rippleLevel = 0.0f;
+            minimumRippleLevel = 0.0f;
+            maximumRippleLevel = 0.0f;
+            spinningTopEncounters = new();
             this.ResetOverWorld();
 
         }
