@@ -2,6 +2,8 @@
 
 Things checked off on this list are done completely done reviewing and refactoring. These files may still change if components within them are refactored and have different APIs which need to be adjusted for. Items crossed off on the list either mean they were obsolete or moved/renamed.
 
+Objects may be refactored after being marked as "done" if better practices, implementations, or standards are put into use in other objects at a later date.
+
 Documentation will most likely be done separately.
 
 - Components/
@@ -39,14 +41,15 @@ Documentation will most likely be done separately.
   - [ ] ArenaPostGameStatsDialog.cs
   - [ ] ColorMultipleSlugcatsDialog.cs
   - [ ] ColorSlugcatDialog.cs
-  - [ ] ConfirmCancelDialog.cs
-  - [ ] DialogAsyncWait.cs
+  - [x] ConfirmCancelDialog.cs
+  - [x] DialogAsyncWait.cs
+  - [x] DialogAsyncWaitCancellable.cs
   - [x] DialogBox.cs
-  - [ ] DirectConnectionDialog.cs
-  - [ ] InputDialog.cs
-  - [ ] NotifyDialog.cs
-  - [ ] NotLocalDialog.cs
-  - [ ] ScrollableConfirmDialog.cs
+  - [x] DirectConnectionDialog.cs
+  - [x] InputDialog.cs
+  - [x] NotifyDialog.cs
+  - [x] NotLocalDialog.cs
+  - [x] ScrollableConfirmDialog.cs
   - [ ] SlugcatSelector.cs
   - [ ] ~~UpdateDialog.cs~~
 - Interfaces/
