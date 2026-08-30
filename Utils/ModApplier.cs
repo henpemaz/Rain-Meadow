@@ -133,7 +133,7 @@ namespace RainMeadow
             Action confirmProceed = () =>
             {
                 ClearPopups();
-                dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
+                dialogBox = new DialogAsyncWait(manager, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
             };
@@ -172,7 +172,7 @@ namespace RainMeadow
                     OnlineManager.LeaveLobby();
                     manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 }
-                dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
+                dialogBox = new DialogAsyncWait(manager, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
             };
