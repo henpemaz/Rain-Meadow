@@ -183,7 +183,7 @@ namespace RainMeadow
             room.world.ActivateRoom(room);
             RoomRealizer.RealizedRoomTracker? tracker = self.realizedRooms.FirstOrDefault(x => x.room == room);
 
-            if (tracker is null) 
+            if (tracker is null)
             {
                 tracker = new RoomRealizer.RealizedRoomTracker(room, actuallyEntering);
                 self.realizedRooms.Add(tracker);
@@ -193,18 +193,26 @@ namespace RainMeadow
             return tracker;
         }
 
-        public static void TryKillRoom(this AbstractRoom self)
+        public static bool TryKillRoom(this AbstractRoom self)
         {
-            if (self.realizedRoom is null) return;
+            if (self.realizedRoom is null) return true;
 
             RoomRealizer roomRealizer = self.world.game.roomRealizer;
-            var trackedroom = roomRealizer.MeadowRealizeAndTrackRoom(self, false); // track the room if we aren't tracking it.
+            if (roomRealizer is null) return false;
 
-            if (!roomRealizer.CanAbstractizeRoom(trackedroom))
+            var trackedroom = roomRealizer.realizedRooms.FirstOrDefault(x => x.room == self);
+            if (trackedroom is null)
             {
-                RainMeadow.Debug($"Killing {self.name} to prevent leaks.");
-                roomRealizer.KillRoom(self);
+                roomRealizer.AddNewTrackedRoom(self, false);
+                return false;
             }
+
+            if (!roomRealizer.CanAbstractizeRoom(trackedroom)) return false;
+
+            RainMeadow.Debug($"Killing {self.name} to prevent leaks.");
+            roomRealizer.KillRoom(self);
+            roomRealizer.realizedRooms.Remove(trackedroom);
+            return true;
         }
 
         // suck it, linq

@@ -1,3 +1,49 @@
+# Release 1.16.0
+
+## Chat
+
+### Modders
+- Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
+## Engine
+- Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
+
+# Release 1.15.2
+
+## Arena 
+- Fixed a source of crashing on round transitions
+- Fixed the playlist search not accepting inputs
+- Fixed import/export maps & settings not working
+
+# Release 1.15.1
+
+## Engine
+- Improved room/world transfer logic
+- Corrected Popcorn death state
+
+## General
+- Fixed Rivulet being bald & other sprite issues
+- Fixed cape coloring
+- Fixed spectating bugs
+- Swapped Nightcat's stylish hat icon with the Watcher sprite
+- Fixed players crashing after being kicked when spectator overlay was active  
+## Arena
+- The pipe release is more reliable and should look more natural
+- Fixed dens not opening when someone left
+- Fixed quitting to menu not ending the match
+
+### Modders
+- Added `ExternalArenaGameMode.GetActivePlayerACs` method
+
+## Chat
+- Added a remix option to clear specific system messages each time a new arena round or cycle starts
+- Fixed textbox not working after loading the arena menu
+
+## Story
+- Fixed the menu erroring for clients when selecting a campaign
+### Watcher
+- Fixes echo encounters desyncing ripple levels and shelter locations
+
+
 # Release 1.15.0
 
 ## Engine

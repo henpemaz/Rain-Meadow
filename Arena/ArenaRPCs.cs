@@ -266,10 +266,14 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                if (arena.lobby.isOwner
+                    && arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
                 {
                     arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
                 }
+                int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
+                    x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
+                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer} who quitted!");
             }
         }
 
@@ -305,9 +309,9 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void Arena_EndSessionEarly()
+        public static void Arena_EndSessionEarly(RPCEvent rpc)
         {
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena) && rpc.from == arena.lobby?.owner)
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null)
@@ -316,9 +320,6 @@ namespace RainMeadow
                     return;
                 }
                 game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-
-
             }
         }
 
@@ -425,8 +426,8 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 arena.setupTime = setupTime;
-                // I don't think this is used so I'm not sure if the param here is 
-                // retrieved from host's meadow remix settings or host's actual 
+                // I don't think this is used so I'm not sure if the param here is
+                // retrieved from host's meadow remix settings or host's actual
                 // Player.maxGodTime. I'll leave it be but if this is causing issues
                 // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
@@ -556,6 +557,18 @@ namespace RainMeadow
                 game.levelSelector.levelsPlaylist.ConstrainScroll();
             }
 
+        }
+
+        [RPCMethod]
+        public static void Arena_StopWaitingForPlayersToLoad(RPCEvent rpc)
+        {
+            if (RainMeadow.isArenaMode(out var arenaOnline)
+                && rpc.from == arenaOnline.lobby?.owner
+                && arenaOnline.ArenaSession?.game?.shortcuts is ShortcutHandler shortcutHandler)
+            {
+                arenaOnline.isWaitingForPlayersToLoad = false;
+                shortcutHandler.Update(); // wait should be 0, the player should exit the shortcut immediatly
+            }
         }
     }
 }

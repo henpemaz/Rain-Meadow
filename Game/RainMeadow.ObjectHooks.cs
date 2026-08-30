@@ -14,9 +14,25 @@ namespace RainMeadow
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+            On.Room.Update += Room_Update_FreezeDeactivatedWorld;
 
             // IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1; ;
             On.LobeTree.ValidSpawnPos += LobeTree_ValidSpawnPos;
+        }
+
+        // A deactivated world deregistered all its entities, but its rooms update until the process switches.
+        private void Room_Update_FreezeDeactivatedWorld(On.Room.orig_Update orig, Room self)
+        {
+            if (OnlineManager.lobby != null
+                && self.abstractRoom.GetResource() is RoomSession rs)
+            {
+                if (!rs.worldSession.isActive)
+                {
+                    RainMeadow.Debug($"froze room update for its world, it's never coming back");
+                    return;
+                }
+            }
+            orig(self);
         }
 
         private bool LobeTree_ValidSpawnPos(On.LobeTree.orig_ValidSpawnPos orig, Room room, IntVector2 pos, List<Vector2> lobeTreeSpawnLocsSoFar)

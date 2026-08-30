@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using UnityEngine;
-using System.Collections.Generic;
-using RainMeadow.UI.Components.Patched;
-using System.Linq;
 using Menu.Remix.MixedUI.ValueTypes;
-using System;
-using System.Text;
+using RainMeadow.UI.Components.Patched;
+using UnityEngine;
 
 namespace RainMeadow.UI.Components
 {
@@ -66,13 +66,13 @@ namespace RainMeadow.UI.Components
             tabWrapper = new(menu, this);
             InGameTranslator.LanguageID? lang = menu?.manager?.rainWorld?.inGameTranslator.currentLanguage;
             float leftMargin = 10f;
-            float labelWidth = 100f;
+            float labelWidth = 140f;
             float topOffset = size.y - 60f;
             float rowHeight = 40f;
             float boxMargin = leftMargin + labelWidth // The X-position for all boxes
                 + (lang == InGameTranslator.LanguageID.French || lang == InGameTranslator.LanguageID.Spanish
-                    ? 125f // Add more space for some languages
-                    : 50f); 
+                    ? 85f // Add more space for some languages
+                    : 50f);
 
 
             foodScoreLabel = new(menu, this, menu.Translate("Food Score:"),
@@ -144,13 +144,13 @@ namespace RainMeadow.UI.Components
                 arena.survivalScore = survivalScoreTextBox.valueInt;
             };
 
-            emptyDeathScoreLabel = new(menu, this, menu.Translate("Empty Kill Score:"),
+            emptyDeathScoreLabel = new(menu, this, menu.Translate("Empty Death Score:"),
                 new(leftMargin, topOffset - rowHeight * 4), new(labelWidth, 20f), false);
             emptyDeathScoreLabel.label.alignment = FLabelAlignment.Left;
 
             emptyDeathScoreTextBox = new(RainMeadow.rainMeadowOptions.ArenaEmptyDeathScore,
             new(boxMargin, topOffset - (rowHeight * 4)), 60)
-            { alignment = FLabelAlignment.Center, description = menu.Translate("Points for other players if someone dies without a killer"), accept = OpTextBox.Accept.Int };
+            { alignment = FLabelAlignment.Center, description = menu.Translate("Points lost from self-inflicted death"), accept = OpTextBox.Accept.Int };
 
             emptyDeathScoreTextBox.OnValueUpdate += (config, value, oldValue) =>
             {
@@ -238,7 +238,13 @@ namespace RainMeadow.UI.Components
                 try
                 {
                     var arenaMenu = menu as ArenaOnlineLobbyMenu;
-                    string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList);
+                    string result = EncodePlaylist(arenaMenu?.arenaMainLobbyPage?.levelSelector?.SelectedPlayList);
+                    if (string.IsNullOrEmpty(result))
+                    {
+                        arenaImportExportLabel.text = menu.Translate("Failed");
+                        arenaImportExportLabel.label.color = Color.red;
+                        return;
+                    }
                     GUIUtility.systemCopyBuffer = result;
                     arenaImportExportLabel.text = menu.Translate("Copied");
                     arenaImportExportLabel.label.color = Color.green;
@@ -257,36 +263,43 @@ namespace RainMeadow.UI.Components
                 try
                 {
                     var arenaMenu = menu as ArenaOnlineLobbyMenu;
+                    ArenaLevelSelector? levelSelector = arenaMenu?.arenaMainLobbyPage?.levelSelector;
                     string clipboardText = UnityEngine.GUIUtility.systemCopyBuffer;
 
-                    if (!string.IsNullOrEmpty(clipboardText))
+                    if (string.IsNullOrEmpty(clipboardText) || levelSelector == null)
                     {
-                        // Validate that the clipboard text contains maps with ";"
-                        if (!clipboardText.Contains(";"))
-                        {
-                            arenaImportExportLabel.text = menu.Translate("Failed");
-                            arenaImportExportLabel.label.color = Color.red;
-                            return;
-                        }
-
-                        arenaMenu?.arenaMainLobbyPage.levelSelector.SelectedPlayList.Clear();
-                        List<string> playlist = DecodePlaylist(clipboardText);
-
-                        if (playlist == null || playlist.Count == 0)
-                        {
-                            arenaImportExportLabel.text = menu.Translate("Failed");
-                            arenaImportExportLabel.label.color = Color.red;
-                            return;
-                        }
-
-                        for (int i = 0; i < playlist.Count; i++)
-                        {
-                            arenaMenu?.arenaMainLobbyPage.levelSelector.AddItemToSelectedList(playlist[i]);
-                        }
-
-                        arenaImportExportLabel.text = menu.Translate("Imported");
-                        arenaImportExportLabel.label.color = Color.green;
+                        arenaImportExportLabel.text = menu.Translate("Failed");
+                        arenaImportExportLabel.label.color = Color.red;
+                        return;
                     }
+                    List<string> playlist = DecodePlaylist(clipboardText)
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .ToList();
+
+                    if (playlist.Count == 0 || playlist.Any(name => name.Contains("=") || name.Contains("|")))
+                    {
+                        arenaImportExportLabel.text = menu.Translate("Failed");
+                        arenaImportExportLabel.label.color = Color.red;
+                        return;
+                    }
+
+                    // Levels we don't have installed would break the session on start.
+                    List<string> knownLevels = playlist.Where(levelSelector.allLevels.Contains).ToList();
+                    if (knownLevels.Count == 0)
+                    {
+                        arenaImportExportLabel.text = menu.Translate("Failed");
+                        arenaImportExportLabel.label.color = Color.red;
+                        return;
+                    }
+
+                    levelSelector.LoadNewPlaylist(knownLevels, true);
+                    // Rebuild the shown items now instead of waiting for the mismatch timer.
+                    levelSelector.selectedLevelsPlaylist.ResolvePlaylistMismatch();
+                    menu.PlaySound(SoundID.MENU_Add_Level);
+
+                    bool importedAll = knownLevels.Count == playlist.Count;
+                    arenaImportExportLabel.text = menu.Translate(importedAll ? "Imported" : "Missing levels");
+                    arenaImportExportLabel.label.color = importedAll ? Color.green : Color.yellow;
                 }
                 catch (Exception e)
                 {
@@ -339,6 +352,13 @@ namespace RainMeadow.UI.Components
                             arenaSettingsImportExportLabel.text = menu.Translate("Failed");
                             arenaSettingsImportExportLabel.label.color = Color.red;
                             return;
+                        }
+
+                        var settingsInterface = arenaMenu?.arenaMainLobbyPage?.arenaSettingsInterface;
+                        if (settingsInterface != null)
+                        {
+                            settingsInterface.countdownTimerTextBox.valueInt = arena.setupTime;
+                            settingsInterface.CallForSync();
                         }
 
                         arenaSettingsImportExportLabel.text = menu.Translate("Imported");
@@ -442,7 +462,7 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
         }
 
-        public int timeToClearMessage = 120;
+        public int timeToClearMessage = 120, timeToClearSettingsMessage = 120;
         public override void Update()
         {
             base.Update();
@@ -547,13 +567,13 @@ namespace RainMeadow.UI.Components
 
             if (arenaSettingsImportExportLabel.text != menu.Translate("Settings:"))
             {
-                timeToClearMessage--;
-                if (timeToClearMessage <= 0)
+                timeToClearSettingsMessage--;
+                if (timeToClearSettingsMessage <= 0)
                 {
                     arenaSettingsImportExportLabel.text = menu.Translate("Settings:");
                     arenaSettingsImportExportLabel.label.color = Color.white;
 
-                    timeToClearMessage = 120;
+                    timeToClearSettingsMessage = 120;
                 }
             }
             if (arenaSettingsImportButton != null)
@@ -565,7 +585,7 @@ namespace RainMeadow.UI.Components
         /// <summary>
         /// Encodes a List<string>  into a base64 encoding of Arena map names.
         /// </summary>
-        public static string EncodePlaylist(List<string> arenaMaps)
+        public static string EncodePlaylist(List<string>? arenaMaps)
         {
             if (arenaMaps == null || arenaMaps.Count == 0)
             {
