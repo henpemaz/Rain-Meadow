@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BepInEx.Bootstrap;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -674,15 +676,22 @@ public static class MeadowExtEnumSync
     private static void InitAllExtEnums()
     {
         RainMeadow.Debug($"Running all cctors with ExtEnums");
-        List<string> assembliesWithEnums = [];
+        int assemblyCount = 0;
         // Runs all types with staticly initialzed enum, so they don't get run unpredictably
-        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Assembly meadowAssembly = Assembly.GetExecutingAssembly();
+        var modAssemblies = Chainloader.PluginInfos.Values
+            .Select(plugin => plugin.Instance.GetType().Assembly)
+            .Distinct();
+            // .Where(x => x != meadowAssembly);
+        foreach (Assembly assembly in modAssemblies ?? [])
         {
-            bool isMain = assembly == Assembly.GetExecutingAssembly();
-            bool hasEnums = false;
+            bool isMain = assembly == meadowAssembly;
+            List<string> typesLoaded = [];
             try
             {
-                foreach (Type type in assembly?.GetTypesSafely() ?? [])
+                foreach (Type type in assembly.GetTypesSafely())
                 {
                     try
                     {
@@ -695,16 +704,22 @@ public static class MeadowExtEnumSync
                         )
                         {
                             // run the cctor (if it wasn't already run)
-                            hasEnums = true;
                             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                            typesLoaded.Add(type.Name);
                         }
                     }
                     catch (Exception e)
                     {
-                        RainMeadow.Error("Error while trying to find ExtEnum in " + assembly?.FullName + ":" + type?.FullName);
+                        RainMeadow.Error("Error while trying to find ExtEnum in " + assembly.FullName + ":" + type?.FullName);
                         if (isMain) throw e;
                         RainMeadow.Error(e);
                     }
+                }
+
+                if (typesLoaded.Count > 0)
+                {
+                    assemblyCount++;
+                    RainMeadow.Debug($"Loaded {typesLoaded.Count} types in {assembly.GetName().Name} : {string.Join(", ", typesLoaded)}");
                 }
             }
             catch (Exception e)
@@ -712,9 +727,9 @@ public static class MeadowExtEnumSync
                 if (isMain) throw e;
                 RainMeadow.Error(e);
             }
-            if (hasEnums) assembliesWithEnums.Add(assembly!.GetName().Name);
         }
-        RainMeadow.Debug($"Loaded {assembliesWithEnums.Count} assemblies with enums : {string.Join(", ", assembliesWithEnums)}");
+        RainMeadow.Debug($"Loaded {assemblyCount} assemblies with static ExtEnums in {stopwatch.ElapsedMilliseconds}ms");
+        stopwatch.Stop();
     }
     public static void ResetEnumEntriesMapping()
     {
