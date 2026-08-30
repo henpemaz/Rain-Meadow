@@ -76,6 +76,7 @@ namespace RainMeadow.UI.Components
                 watcherSettingsTab = new(menu, this, new(0f, 44f));
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
+            AddSettingsTab(new TestSettingPage(menu, this), "TEST SETTINGS");
         }
         public void AddSettingsTab(SettingsPage settings, string signal)
         {
@@ -254,6 +255,7 @@ namespace RainMeadow.UI.Components
                     ShowSyncInTextbox(artiParryDistanceTextBox, greyoutAll, arena.artiParryDistanceMult);
                     ShowSyncInTextbox(artiStunDistanceTextBox, greyoutAll, arena.artiStunDistanceMult);
                 }
+                RainMeadow.Debug($"Pos at {artiExplosionLabel.pos}");
 
             }
             public override void GrafUpdate(float timeStacker)
@@ -335,7 +337,7 @@ namespace RainMeadow.UI.Components
                 new PatchedUIelementWrapper(tabWrapper, watcherRippleLevelTextBox);
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
-                
+
 
                 //Full Invisibility in Ripple Space
                 fullInvisRippleSpaceCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace.Value), positioner - spacing * 2);
@@ -400,7 +402,7 @@ namespace RainMeadow.UI.Components
 
                 amoebaLifespanTextBox.Change();
 
-                //Amoeba Lethality Factor 
+                //Amoeba Lethality Factor
                 amoebaLethalityFactorTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor.Value), positioner - spacing * 6 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
@@ -487,7 +489,7 @@ namespace RainMeadow.UI.Components
 
                 ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
                 ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
-                
+
                 ShowSyncInRemixCheckbox(fullInvisRippleSpaceCheckbox, greyoutall, arena.fullInvisInRippleSpace);
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
