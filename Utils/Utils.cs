@@ -2,17 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using Menu;
 using RWCustom;
 using UnityEngine;
-using Menu;
 
 namespace RainMeadow
 {
     internal static class Utils
     {
+        [Obsolete("Use the provided Translator in the class (this.Translate()), pass in a translator to a dependent function, or use the ProcessManager's translator (processManager.rainWorld.inGameTranslator).")]
         public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
+
+        [Obsolete("Use the provided Translator in the class (this.Translate()), pass in a translator to a dependent function, or use the ProcessManager's translator (processManager.rainWorld.inGameTranslator).")]
         public static string Translate(string text)
         {
             return Translator.Translate(text);

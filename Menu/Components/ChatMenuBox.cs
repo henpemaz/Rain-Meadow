@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Menu;
 using Menu.Remix.MixedUI;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components
 {
-    public class ChatMenuBox : RectangularMenuObject, IChatSubscriber //call ChatLogManager.Subscribe/Unsubscribe somewhere in mainprocess
+    public class ChatMenuBox : RectangularMenuObject // Subscribe/Unsubscribe from ChatLogManager.MessageLogged somewhere in main process.
     {
-        public bool Active => menu.Active;
         public ChatMenuBox(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             roundedRect = new(menu, this, Vector2.zero, this.size, true) { fillAlpha = 0.3f };
@@ -89,10 +84,13 @@ namespace RainMeadow.UI.Components
                 messageLabels.Add(GetMessageLabel(user, splitMessages[i], systemMessageType, i == 0, new(5, messageScroller.PositionOfObject(i + messageScroller.scrollObjects.Count).y), desiredSize));
             return [.. messageLabels];
         }
-        public void AddMessage(string user, string message)
+        public void OnMessageLogged(string user, string message)
         {
+            if (!menu.Active)
+                return;
+
             if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
-            
+
             MatchmakingManager.currentInstance.FilterMessage(ref message);
             if (ChatLogManager.ShouldPingFromMessage(user, message))
             {
