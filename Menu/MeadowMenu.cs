@@ -243,7 +243,7 @@ namespace RainMeadow
                     new NotifyDialog(
                         manager,
                         "Lobby is null! Exiting...",
-                        UIUtils.DIALOG_SIZE,
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE,
                         RainMeadow.Ext_ProcessID.LobbySelectMenu
                     )
                     {

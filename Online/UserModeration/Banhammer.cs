@@ -10,7 +10,7 @@ namespace RainMeadow
             NotifyDialog dialog = new(
                 manager,
                 "You were removed from the previous online game",
-                UIUtils.DIALOG_SIZE
+                UIUtils.SINGLE_LINE_DIALOG_SIZE
             );
             dialog.OnContinue += () =>
             {

@@ -83,7 +83,7 @@ namespace RainMeadow
                         checkUserConfirmation = new NotifyDialog(
                             manager,
                             "Error loading mods!",
-                            UIUtils.DIALOG_SIZE,
+                            UIUtils.SINGLE_LINE_DIALOG_SIZE,
                             cancelProceed
                         )
                     );
@@ -181,7 +181,7 @@ namespace RainMeadow
                 checkUserConfirmation = new ConfirmCancelDialog(
                     menu.manager,
                     "Warning: Differing Mod Load Orders!<LINE>This may cause unstable play.<LINE><LINE>Reorder your mods now?",
-                    UIUtils.DIALOG_SIZE,
+                    UIUtils.DEFAULT_DIALOG_SIZE,
                     confirmProceed,
                     EndModApplier
                 )
@@ -205,7 +205,7 @@ namespace RainMeadow
                 checkUserConfirmation = new NotifyDialog(
                     manager,
                     modMismatchString,
-                    UIUtils.DIALOG_SIZE,
+                    UIUtils.DEFAULT_DIALOG_SIZE,
                     Cancel
                 )
             );

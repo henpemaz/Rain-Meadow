@@ -722,7 +722,7 @@ namespace RainMeadow
                     new NotifyDialog(
                         self.manager,
                         "Rain Meadow failed to start",
-                        UIUtils.DIALOG_SIZE
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE
                     )
                 );
                 return;
@@ -743,7 +743,7 @@ namespace RainMeadow
                         new NotifyDialog(
                             self.manager,
                             "Steam is not currently available. Some features of Rain Meadow have been disabled.",
-                            UIUtils.DIALOG_SIZE,
+                            UIUtils.SINGLE_LINE_DIALOG_SIZE,
                             Ext_ProcessID.LobbySelectMenu,
                             timeOut: 0f
                         )

@@ -398,7 +398,7 @@ namespace RainMeadow
                     new NotifyDialog(
                         instance.manager,
                         "Leaving Lobby",
-                        UIUtils.DIALOG_SIZE
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE
                     )
                 );
                 LeaveLobby();

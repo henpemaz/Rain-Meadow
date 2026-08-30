@@ -296,7 +296,7 @@ namespace RainMeadow
                     new NotifyDialog(
                         manager,
                         "Lobby is null! Exiting...",
-                        UIUtils.DIALOG_SIZE,
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE,
                         RainMeadow.Ext_ProcessID.LobbySelectMenu
                     )
                     {
@@ -650,7 +650,7 @@ namespace RainMeadow
                 NotifyDialog dialog = new(
                     manager,
                     "The Steam invite feature is currently unstable, and may not work properly. Consider using the public lobby with a password instead.",
-                    UIUtils.DIALOG_SIZE,
+                    UIUtils.SINGLE_LINE_DIALOG_SIZE,
                     MatchmakingManager.currentInstance.OpenInvitationOverlay,
                     timeOut: 0f
                 );

@@ -162,7 +162,10 @@ public class LobbySelectMenu : SmartMenu
         LobbySelectNetworkPanel networkPanel = new(this, networkTab, Vector2.zero);
         networkPanel.OnDirectConnectButtonClick += () =>
         {
-            DirectConnectionDialog directConnectionDialog = new(manager, UIUtils.DIALOG_SIZE);
+            DirectConnectionDialog directConnectionDialog = new(
+                manager,
+                UIUtils.DEFAULT_DIALOG_SIZE
+            );
             directConnectionDialog.OnDirectConnectConfirm += DirectConnect;
             manager.ShowDialog(directConnectionDialog);
         };
@@ -211,7 +214,7 @@ public class LobbySelectMenu : SmartMenu
                     "Rain Meadow version <NEW_VERSION> is now available.<LINE><LINE>Update to join the newest lobbies and get the latest features & fixes."
                 )
                 .Replace("<NEW_VERSION>", RainMeadow.NewVersionAvailable),
-            UIUtils.DIALOG_SIZE,
+            UIUtils.DEFAULT_DIALOG_SIZE,
             cancelButtonText: "HOW TO UPDATE"
         );
         updateDialog.OnCancel += () =>
@@ -221,7 +224,7 @@ public class LobbySelectMenu : SmartMenu
                     Translate(
                         "For Steam: Restart your game. If Rain Meadow doesn't update automatically, resubscribe to force an update.<LINE><LINE>For Other Platforms: Visit our GitHub releases page to download the latest release.<LINE><LINE>Updating won't affect your save data."
                     ),
-                    UIUtils.DIALOG_SIZE,
+                    UIUtils.DEFAULT_DIALOG_SIZE,
                     timeOut: 0f
                 )
             );
@@ -246,7 +249,7 @@ public class LobbySelectMenu : SmartMenu
                 new NotifyDialog(
                     manager,
                     "Failed to join lobby.<LINE>Lobby is full",
-                    UIUtils.DIALOG_SIZE
+                    UIUtils.SINGLE_LINE_DIALOG_SIZE
                 )
             );
             return;
@@ -257,7 +260,7 @@ public class LobbySelectMenu : SmartMenu
             InputDialog passwordDialog = new(
                 manager,
                 "Password Required",
-                UIUtils.DIALOG_SIZE,
+                UIUtils.DEFAULT_DIALOG_SIZE,
                 (password) => StartJoiningLobby(lobbyInfo, password)
             );
             manager.ShowDialog(passwordDialog);
@@ -283,7 +286,7 @@ public class LobbySelectMenu : SmartMenu
             joiningDialog = new DialogAsyncWaitCancellable(
                 this,
                 Translate("Joining lobby..."),
-                UIUtils.DIALOG_SIZE,
+                UIUtils.DEFAULT_DIALOG_SIZE,
                 (_) => MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Cancelled)
             )
         );
@@ -300,7 +303,7 @@ public class LobbySelectMenu : SmartMenu
                 new NotifyDialog(
                     manager,
                     "Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port",
-                    UIUtils.DIALOG_SIZE
+                    UIUtils.SINGLE_LINE_DIALOG_SIZE
                 )
             );
             return;
@@ -349,10 +352,13 @@ public class LobbySelectMenu : SmartMenu
             return;
 
         string errorMessage = "Failed to join lobby:<LINE>" + error;
-        if (error != ERROR_Cancelled) manager.ShowDialog(new NotifyDialog(manager, errorMessage, UIUtils.DIALOG_SIZE));
+        if (error != ERROR_Cancelled)
+            manager.ShowDialog(
+                new NotifyDialog(manager, errorMessage, UIUtils.DEFAULT_DIALOG_SIZE)
+            );
         RainMeadow.Error(errorMessage);
 
-        // Stop any process/menu switch when an error occur 
+        // Stop any process/menu switch when an error occur
         if (OnlineManager.instance.manager._processSwitchQueue.Count > 0)
         {
             RainMeadow.Warn("Found process(es) in queue, clearing it!");
@@ -368,25 +374,28 @@ public class LobbySelectMenu : SmartMenu
         {
             if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
             {
-                int attempts = OnlineManager.lobby.enumsChecked 
-                    ? OnlineManager.lobby.joiningAttempts 
+                int attempts = OnlineManager.lobby.enumsChecked
+                    ? OnlineManager.lobby.joiningAttempts
                     : OnlineManager.lobby.enumSyncAttempts;
-                int step = !OnlineManager.lobby.enumsChecked
-                    ? 0
-                    : OnlineManager.lobby.isRequesting
-                        ? 1
-                        : 2;
+                int step =
+                    !OnlineManager.lobby.enumsChecked ? 0
+                    : OnlineManager.lobby.isRequesting ? 1
+                    : 2;
 
                 string text = Translate("Joining lobby...") + $" {step}/2";
-                if (attempts > 2) text += "\n" + Translate("(Attempt <NUM>)").Replace("<NUM>", attempts.ToString());
+                if (attempts > 2)
+                    text +=
+                        "\n" + Translate("(Attempt <NUM>)").Replace("<NUM>", attempts.ToString());
                 joiningDialog.SetText(text);
             }
 
             if (TimeoutTicks > 0)
             {
-                if (OnlineManager.lobby.enumsChecked 
-                && !OnlineManager.lobby.isRequesting 
-                && TimeoutTicks - joiningTimeoutCount > FastTimeoutCount) // Something went wrong, you should've joined by now
+                if (
+                    OnlineManager.lobby.enumsChecked
+                    && !OnlineManager.lobby.isRequesting
+                    && TimeoutTicks - joiningTimeoutCount > FastTimeoutCount
+                ) // Something went wrong, you should've joined by now
                 {
                     joiningTimeoutCount = TimeoutTicks - FastTimeoutCount; // Making the timeout shorter
                 }
@@ -400,7 +409,9 @@ public class LobbySelectMenu : SmartMenu
                     }
                     else
                     {
-                        RainMeadow.Error($"No process running? What's happening? Timing it out! (enumChecked <{OnlineManager.lobby.enumsChecked}>, isRequesting <{OnlineManager.lobby.isRequesting}>, isAvailable <{OnlineManager.lobby.isAvailable}>)");
+                        RainMeadow.Error(
+                            $"No process running? What's happening? Timing it out! (enumChecked <{OnlineManager.lobby.enumsChecked}>, isRequesting <{OnlineManager.lobby.isRequesting}>, isAvailable <{OnlineManager.lobby.isAvailable}>)"
+                        );
                         MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Unexpected);
                     }
                 }

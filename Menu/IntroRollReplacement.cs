@@ -158,7 +158,7 @@ namespace RainMeadow
                     new NotifyDialog(
                         manager,
                         "Rain Meadow: Please use an external mod to access Inv's campaign.",
-                        UIUtils.DIALOG_SIZE
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE
                     )
                 );
                 self.manager.menuMic?.PlaySound(SoundID.Thunder, 0f, 0.7f, 1f);
