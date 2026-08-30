@@ -50,18 +50,13 @@ namespace RainMeadow
         public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature oc) => (oc = GetOnlineCreature(apo) ?? default!) is not null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLocal(this AbstractPhysicalObject apo)
-        {
-            if (OnlineManager.lobby is null) throw new InvalidOperationException("The lobby is null, did you forgeet to check for a valid lobby?");
-            if (GetOnlineObject(apo) is not OnlinePhysicalObject opo) return true;
-            return opo.isMine;
-        }
+        public static bool IsLocal(this AbstractPhysicalObject apo) => OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject opo)
         {
             opo = null!;
-            if (OnlineManager.lobby is null) throw new InvalidOperationException("The lobby is null, did you forgeet to check for a valid lobby?");
+            if (OnlineManager.lobby is null) return false;
             return OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine;
         }
 
