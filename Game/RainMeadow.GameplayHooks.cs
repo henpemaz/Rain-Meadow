@@ -304,8 +304,8 @@ namespace RainMeadow
 
             if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession))
             {
-                if (creature.abstractCreature.GetOnlineCreature(out var oc) &&
-                    item.abstractPhysicalObject.GetOnlineObject(out var opo))
+                if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature oc) &&
+                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject opo))
                 {
                     oc.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, opo.id, oc.id);
                 }
