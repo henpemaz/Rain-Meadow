@@ -60,6 +60,7 @@ namespace RainMeadow
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject opo)
         {
+            opo = null!;
             if (OnlineManager.lobby is null) throw new InvalidOperationException("The lobby is null, did you forgeet to check for a valid lobby?");
             return OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine;
         }
@@ -538,7 +539,7 @@ namespace RainMeadow
         }
         public static bool IsDictionary(this Type type, out Type dictInterface)
         {
-            dictInterface = default!;
+            dictInterface = null!;
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
             {
