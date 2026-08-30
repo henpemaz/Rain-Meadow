@@ -47,7 +47,7 @@ namespace RainMeadow
         public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac) => GetOnlineObject(ac) as OnlineCreature;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature oc) => (oc = GetOnlineCreature(apo) ?? default!) is not null;
+        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature oc) => (oc = GetOnlineCreature(apo) ?? null!) is not null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this AbstractPhysicalObject apo) => OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
