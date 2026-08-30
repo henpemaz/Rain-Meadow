@@ -56,7 +56,7 @@ namespace RainMeadow
         public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject opo)
         {
             opo = null!;
-            if (OnlineManager.lobby is null) return false;
+            if (OnlineManager.lobby is null) return true;
             return OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine;
         }
 
