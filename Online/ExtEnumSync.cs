@@ -658,21 +658,8 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
 
 public static class MeadowExtEnumSync
 {
-    // ------------------- Hooks
-    internal static void EnumHooks()
-    {
-        On.RainWorld.PostModsInit += RainWorld_PostModsInit_InitAllExtEnums;
-    }
-
-    private static void RainWorld_PostModsInit_InitAllExtEnums(On.RainWorld.orig_PostModsInit orig, RainWorld self)
-    {
-        orig(self);
-        // Initialization done after every mod had a chance to initialize their ExtEnums by their own
-        InitAllExtEnums();
-    }
-
     // --------------------- Methods and Attributes
-
+    private static bool hasAllExtEnumInit = false;
     private static void InitAllExtEnums()
     {
         RainMeadow.Debug($"Running all cctors with ExtEnums");
@@ -705,7 +692,7 @@ public static class MeadowExtEnumSync
                         {
                             // run the cctor (if it wasn't already run)
                             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
-                            typesLoaded.Add(type.Name);
+                            typesLoaded.Add(type.FullName);
                         }
                     }
                     catch (Exception e)
@@ -733,6 +720,7 @@ public static class MeadowExtEnumSync
     }
     public static void ResetEnumEntriesMapping()
     {
+        if (!hasAllExtEnumInit) InitAllExtEnums();
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
         {
             // ordering them alphabetically to reduce order mismatch chances
