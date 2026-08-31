@@ -141,7 +141,7 @@ namespace RainMeadow
 
         public void JoinOrLeavePending()
         {
-            if (!isMine) { throw new InvalidProgrammerException("not owner"); }     
+            if (!isMine) { throw new InvalidProgrammerException("not owner"); }
 
             // Sanitize
             for (int i = enteredResources.Count - 1; i >= 0; i--)
@@ -196,7 +196,7 @@ namespace RainMeadow
             }
         }
 
-        
+
         public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
             RainMeadow.Debug($"{this} joining {inResource}");
@@ -523,7 +523,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this}: Locked {key}:{@event}");
             if (!locks.ContainsKey(key))
             {
-                locks.Add(key, [ @event ]);
+                locks.Add(key, [@event]);
             }
             else
             {
@@ -537,7 +537,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this}: Locked {key} manually");
             if (!locks.ContainsKey(key))
             {
-                locks.Add(key, [ new() ]);
+                locks.Add(key, [new()]);
             }
             else
             {
@@ -554,20 +554,20 @@ namespace RainMeadow
             }
         }
 
-        public void ClearLock(string key) 
+        public void ClearLock(string key)
         {
             RainMeadow.Debug($"{this}: Cleared Key {key}");
             if (locks.TryGetValue(key, out var list)) list.Clear();
         }
 
-        public void Unlock(string key, RPCEvent @event) 
+        public void Unlock(string key, RPCEvent @event)
         {
             RainMeadow.Debug($"{this}: Unlocked {key}:{@event}");
             if (locks.TryGetValue(key, out var list)) list.Remove(@event);
         }
 
         public bool IsLocked(string key) => locks.TryGetValue(key, out var list) && list.Any();
-        
+
 
 
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>

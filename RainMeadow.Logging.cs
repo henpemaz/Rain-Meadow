@@ -57,10 +57,10 @@ namespace RainMeadow
                 {
                     // Get the error
                     string croppedError = $"[{TrimCaller(callerFile)}.{callerName}] : " + string.Concat(data.ToString().TakeWhile(x => x != '\n' && x != '\r'));
-                    
+
                     // Crop the text according to the limit
                     if (croppedError.Length + 3 > ChatTextBox.textLimit) croppedError = string.Concat(croppedError.Take(ChatTextBox.textLimit - 3)) + "...";
-                    
+
                     // Avoid error spam
                     if (croppedError != ChatLogManager.chatLog.Last().Item2) ChatLogManager.LogSystemMessage(croppedError, ChatLogManager.SystemMessageType.LogError);
                 }
