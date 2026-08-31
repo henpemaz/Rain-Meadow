@@ -1050,15 +1050,21 @@ namespace RainMeadow
             }
             if (!self.IsLocal()) return;
 
-            float requiredCharge = self.usableCamoLimit / 2;
+            float requiredCharge = self.usableCamoLimit * voidSpawnTax;
 
             if (self.camoCharge >= requiredCharge)
             {
                 self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
-
             var room = self.room;
+
+            if (room.voidSpawns.Find(x => x.IsLocal() && x.behavior != null && x.timeUntilFadeout > 0) is not null)
+            {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
+                return;
+            }
+
 
             RainMeadow.sSpawningNonTransferable = true;
             AbstractPhysicalObject apo = new(
@@ -1662,6 +1668,7 @@ namespace RainMeadow
         }
 
         private const float voidSpawnTax = 0.5f; //change it when tax changes
+        private const int dynamicWarpMaxCooldown = 200;
         public void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
             if (isArenaMode(out var arena))
@@ -1702,10 +1709,22 @@ namespace RainMeadow
                             ? 1f
                             : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
-                    if (arena.voidMasterEnabled && self.full > voidSpawnTax)
+                    if (arena.voidMasterEnabled)
                     {
-                        self.percentLimited = 1;
-                        self.animSpeed = 2f;
+                        VoidSpawn? voidSpawn = self.Player.room?.voidSpawns?.Find(x => x.IsLocal() && x.behavior != null);
+                        float summonCooldown = Mathf.Clamp01((dynamicWarpMaxCooldown - self.Player.dynamicWarpCooldown)/(float)dynamicWarpMaxCooldown);
+                        float amoebaCooldown = voidSpawn is not null
+                            ? Mathf.Clamp01((arena.amoebaDuration * 40f - voidSpawn.timeUntilFadeout)/(arena.amoebaDuration * 40f))
+                            : 1;
+                        float taxPaid = self.full > voidSpawnTax ? 1 : 0;
+
+                        float overhaulCooldown = Mathf.Min(summonCooldown, amoebaCooldown, taxPaid);
+
+                        self.percentLimited = Mathf.Lerp(self.percentLimited, self.full * overhaulCooldown, 0.25f);
+                        self.animSpeed = Mathf.Lerp(
+                            self.animSpeed,
+                            (overhaulCooldown < 0.95f ? 0.2f : 1.5f) * (self.Player.isCamo ? 1.5f : -1f),
+                            0.05f);
                     }
                     else
                     {
