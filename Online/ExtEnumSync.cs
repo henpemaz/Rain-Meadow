@@ -715,6 +715,7 @@ public static class MeadowExtEnumSync
                 RainMeadow.Error(e);
             }
         }
+        hasAllExtEnumInit = true;
         RainMeadow.Debug($"Loaded {assemblyCount} assemblies with static ExtEnums in {stopwatch.ElapsedMilliseconds}ms");
         stopwatch.Stop();
     }
