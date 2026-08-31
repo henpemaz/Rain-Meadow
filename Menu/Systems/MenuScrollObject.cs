@@ -10,15 +10,28 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Systems
 {
-    public class MenuScrollObject : ScrollObject
+    public class MenuScrollObject
     {
         public static ConditionalWeakTable<MenuObject, MenuScrollObject> menuScrollObjects = new();
+        public MenuScrollObject? parentInScroller;
         public readonly MenuObject menuObject;
+        public IScrollObjectHolder? scroller;
+        public int indexInScroller;
         public bool isValidForScroller;
         public FContainer objectContainer; //default is myContainer, you can change this
         public float desiredAlpha = 1;
-        public override float LocalAlpha { get => desiredAlpha; set => desiredAlpha = value; }
-        public override Vector2 LocalPos 
+        public float ContainedAlpha
+        {
+            get
+            {
+                float alpha = LocalAlpha;
+                if (parentInScroller != null)
+                    alpha *= parentInScroller.LocalAlpha;
+                return alpha;
+            }
+        }
+        public virtual float LocalAlpha { get => desiredAlpha; set => desiredAlpha = value; }
+        public virtual Vector2 LocalPos 
         {
             get
             {
@@ -31,7 +44,7 @@ namespace RainMeadow.UI.Systems
                     posObj.pos = value;
             }
         }
-        public override Vector2 Size
+        public virtual Vector2 Size
         {
             get
             {
@@ -65,13 +78,34 @@ namespace RainMeadow.UI.Systems
                 return scrollObj;
             return new MenuScrollObject(menuObject, false);
         }
-        public void AddSubobjectsToScroller(MenuObject parent, ScrollObject owner)
+        public void AddRemoveSubobjectsToScroller(MenuObject parent, MenuScrollObject owner, bool add)
         {
             for (int i = 0; i < parent.subObjects.Count; i++)
             {
                 var sub = parent.subObjects[i];
-                sub.GetScrollObject().ParentAddedIntoScroller(owner);
+                if (add)
+                    sub.GetScrollObject().ParentAddedIntoScroller(owner);
+                else 
+                    sub.GetScrollObject().ParentRemovedFromScroller(owner);
             }
+        }
+        public void UpdateIndexFromScroller(IScrollObjectHolder scroller, int indexInScroller)
+        {
+            if (scroller != this) return;
+            this.indexInScroller = indexInScroller;
+        }
+        public virtual void UpdateInObject()
+        {
+            if (scroller == null) return;
+            if (!scroller.ScrollObjectsDirty) return;
+            if (parentInScroller != null) return;
+            Size = scroller.SizeOfObject(Size);
+            var pos = LocalPos = scroller.PositionOfObject(indexInScroller, LocalPos);
+            LocalAlpha = scroller.AlphaOfObject(pos);
+        }
+        public virtual void GrafUpdateInObject(float timeStacker)
+        {
+            objectContainer.alpha = LocalAlpha;
         }
         public virtual void TryInitiateContainer()
         {
@@ -93,35 +127,42 @@ namespace RainMeadow.UI.Systems
             }
             else objectContainer = menuObject.Container;
         }
-        public override void GrafUpdateInObject(float timeStacker)
-        {
-            base.GrafUpdateInObject(timeStacker);
-            objectContainer.alpha = LocalAlpha;
-        }
-        public override void OnRemovedFromScroller() //assuming this gets destroyed immediately
-        {
-            if (scroller != null)
-            {
-                objectContainer.container.AddChild(menuObject.myContainer);
-                objectContainer.RemoveFromContainer();
-            }
-            base.OnRemovedFromScroller();
-        }
-        public override void AddedIntoScroller(IScrollObjectHolder scroller, int index)
+        public virtual void AddedIntoScroller(IScrollObjectHolder scroller, int index)
         {
             if (!isValidForScroller)
             {
                 throw new InvalidOperationException("This menuobject is invalid for scroller, please check if its IOwnMenuObject else if your item is fully compatible, set isValidForScroller as true");
             }
             TryInitiateContainer();
-            base.AddedIntoScroller(scroller, index);
+            this.scroller = scroller;
+            indexInScroller = index;
             scroller.ItemContainer.AddChild(objectContainer);
-            AddSubobjectsToScroller(menuObject, this);
+            AddRemoveSubobjectsToScroller(menuObject, this, true);
         }
-        public override void ParentAddedIntoScroller(ScrollObject parentInScroller)
+        public virtual void RemovedFromScroller() //assuming this gets destroyed immediately
         {
-            base.ParentAddedIntoScroller(parentInScroller);
-            AddSubobjectsToScroller(menuObject, parentInScroller);
+            if (scroller != null)
+            {
+                objectContainer.container.AddChild(menuObject.myContainer);
+                objectContainer.RemoveFromContainer();
+            }
+            scroller = null;
+            parentInScroller = null;
+            indexInScroller = 0;
+            LocalAlpha = 1;
+            AddRemoveSubobjectsToScroller(menuObject, this, false);
+        }
+        public virtual void ParentAddedIntoScroller(MenuScrollObject parentInScroller)
+        {
+            this.scroller = parentInScroller.scroller;
+            this.parentInScroller = parentInScroller;
+            AddRemoveSubobjectsToScroller(menuObject, parentInScroller, true);
+        }
+        public virtual void ParentRemovedFromScroller(MenuScrollObject parentInScroller)
+        {
+            scroller = null;
+            this.parentInScroller = null;
+            AddRemoveSubobjectsToScroller(menuObject, parentInScroller, false);
         }
     }
 }
