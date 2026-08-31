@@ -49,7 +49,8 @@ Documentation will most likely be done separately.
   - [x] InputDialog.cs
   - [x] NotifyDialog.cs
   - [x] NotLocalDialog.cs
-  - [x] ScrollableConfirmDialog.cs
+  - [ ] ~~ScrollableConfirmDialog.cs~~
+  - [ ] ScrollableDialog.cs
   - [ ] SlugcatSelector.cs
   - [ ] ~~UpdateDialog.cs~~
 - Interfaces/
