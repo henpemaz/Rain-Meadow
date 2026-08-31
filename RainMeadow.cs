@@ -178,6 +178,22 @@ namespace RainMeadow
 
                 InitializeExtEnums();
 
+#if DEBUG
+                var sw2 = new Stopwatch();
+                sw2.Start();
+                var git = Type.GetType("RainMeadow.Git");
+                if (git == null) RainMeadow.Warn("Git Info wasn't bundled");
+                else
+                {
+                    var GIT_HEAD_COMMIT = git.GetField("GIT_HEAD_COMMIT", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+                    var GIT_BRANCH_NAME = git.GetField("GIT_BRANCH_NAME", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+                    var GIT_REMOTE_URL = git.GetField("GIT_REMOTE_URL", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
+                    RainMeadow.Info($"You're running a DEBUG build\nCommit: {GIT_HEAD_COMMIT}\nBranch: {GIT_BRANCH_NAME}\nRemote Url: {GIT_REMOTE_URL}");
+                    sw2.Stop();
+                    RainMeadow.Info($"Sanity check: {sw2.ElapsedMilliseconds}ms");
+                }
+#endif
+
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
                 rainMeadowOptions._LoadConfigFile(); // We need the logging settings
 
