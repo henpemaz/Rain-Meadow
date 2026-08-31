@@ -92,13 +92,19 @@ namespace RainMeadow
                 for (int i = args.OldStartingIndex; i < scrollObjects.Count; i++)
                     scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
             }
-            else if (args.Action == NotifyCollectionChangedAction.Move || args.Action == NotifyCollectionChangedAction.Add)
+            else if (args.Action == NotifyCollectionChangedAction.Add)
             {
                 if (args.NewStartingIndex != scrollObjects.Count - args.NewItems.Count)
                 {
                     for (int i = args.NewStartingIndex + args.NewItems.Count; i < scrollObjects.Count; i++)
                         scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
                 }
+            }
+            else if (args.Action == NotifyCollectionChangedAction.Move)
+            {
+                int toStart = Mathf.Min(args.NewStartingIndex, args.OldStartingIndex);
+                for (int i = toStart; i < scrollObjects.Count; i++)
+                    scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
             }
         }
         public void MoveAtBottom()
@@ -215,7 +221,7 @@ namespace RainMeadow
         public void RemoveScrollObject(MenuObject? scrollObj, bool constrainScroll = true)
         {
             if (scrollObjects.Contains(scrollObj)) return;
-            scrollObj.GetScrollObject().OnRemovedFromScroller();
+            scrollObj.GetScrollObject().RemovedFromScroller();
             this.ClearMenuObject(scrollObj);
 
             scrollObjects.Remove(scrollObj);

@@ -20,9 +20,5 @@ namespace RainMeadow.UI.Systems
         {
             this.scrollerObj = scrollerObj;
         }
-        public override void UpdateInObject()
-        {
-            base.UpdateInObject();
-        }
     }
 }
