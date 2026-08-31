@@ -614,7 +614,6 @@ Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|ウォッチャ�
 /// no translation in the list?
 
 /// arena slugcat select
-Press grab to toggle active slugcats|クリックして有効にするナメクジネコを選択
 
 /// arena back button description
 Exit to Lobby Select|ロビー選択に戻る
