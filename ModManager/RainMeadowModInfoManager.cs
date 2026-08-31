@@ -143,9 +143,8 @@ public static class RainMeadowModInfoManager
         }
         catch (Exception e)
         {
-            RainMeadow.Error($"Error loading Meadow mod info:\n{e}\n{e.StackTrace}");
+            RainMeadow.Error($"Error loading Meadow mod info:" + Environment.NewLine + e);
         }
-
         return null;
     }
 

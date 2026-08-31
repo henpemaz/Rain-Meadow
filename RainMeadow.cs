@@ -162,7 +162,8 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                Logger.LogError($"Error loading Meadow mod info files:\n{e}\n{e.StackTrace}");
+                // i'm not sure if it's a good looking stack trace
+                Logger.LogError("Error loading Meadow mod info files:" + Environment.NewLine + e);
             }
         }
 

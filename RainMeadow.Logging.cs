@@ -70,10 +70,7 @@ namespace RainMeadow
         [Conditional("TRACING")]
         public static void Stacktrace()
         {
-            var stacktrace = Environment.StackTrace;
-            stacktrace = stacktrace.Substring(stacktrace.IndexOf('\n') + 1);
-            stacktrace = stacktrace.Substring(stacktrace.IndexOf('\n'));
-            instance.Logger.LogInfo(stacktrace);
+            instance.Logger.LogInfo(Environment.NewLine + new StackTrace(true));
         }
 
         [Conditional("TRACING")]

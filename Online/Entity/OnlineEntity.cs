@@ -2,6 +2,7 @@
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static RainMeadow.OnlineEntity.EntityData;
 
@@ -202,7 +203,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} joining {inResource}");
             if (inResource == currentlyJoinedResource || joinedResources.Contains(inResource))
             {
-                RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + new StackTrace(true));
                 return;
             }
             pendingJoiningResource = inResource;

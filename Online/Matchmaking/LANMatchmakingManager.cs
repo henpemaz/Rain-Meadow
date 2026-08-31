@@ -291,8 +291,7 @@ namespace RainMeadow
 
         public void RemoveLANPlayer(OnlinePlayer leavingPlayer)
         {
-            StackTrace stackTrace = new();
-            RainMeadow.Debug(stackTrace.ToString());
+            RainMeadow.Debug(new StackTrace(true));
 
 
             if (leavingPlayer.isMe) return;

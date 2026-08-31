@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -31,10 +32,12 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
-                Debug($"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
-                var stackTrace = Environment.StackTrace;
-                if (!stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
-                    Error(Environment.StackTrace); // Log cases that we still haven't found 
+                var debugStr = $"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...";
+                var stackTrace = new StackTrace(true);
+
+                if (!stackTrace.ToString().Contains("AbstractSpaceVisualizer")) Debug(debugStr); // We know about this
+                else Error(debugStr + Environment.NewLine + stackTrace); // Log cases that we still haven't found 
+
                 return;
             }
             orig(self, obj);
