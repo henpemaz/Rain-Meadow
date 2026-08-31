@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RainMeadow
 {
@@ -43,7 +44,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(this, apo))
                 {
-                    RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                    RainMeadow.Error($"Unregistered entity leaving {this} : {apo}" + Environment.NewLine + new StackTrace(true));
                 }
             }
         }

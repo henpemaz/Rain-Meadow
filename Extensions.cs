@@ -2,6 +2,7 @@
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -71,7 +72,7 @@ namespace RainMeadow
             if (!GetOnlineObject(apo, out var oe)) return true;
             if (!oe.isMine && !oe.beingMoved && (newCoord is null || oe.roomSession is null || oe.roomSession.absroom.index != newCoord.Value.room))
             {
-                if (!quiet) RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                if (!quiet) RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession}" + Environment.NewLine + new StackTrace(true));
                 return false;
             }
             return true;

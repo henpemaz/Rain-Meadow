@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -31,10 +32,12 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
-                Debug($"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
-                var stackTrace = Environment.StackTrace;
-                if (!stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
-                    Error(Environment.StackTrace); // Log cases that we still haven't found 
+                var debugStr = $"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...";
+                var stackTrace = new StackTrace(true);
+
+                if (!stackTrace.ToString().Contains("AbstractSpaceVisualizer")) Debug(debugStr); // We know about this
+                else Error(debugStr + Environment.NewLine + stackTrace); // Log cases that we still haven't found 
+
                 return;
             }
             orig(self, obj);
@@ -45,7 +48,7 @@ namespace RainMeadow
                     self.world.GetResource()?.ApoEnteringWorld(apo);
                     self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
                 }
-            }            
+            }
         }
 
         // removes entities that should be deleted when going between rooms
@@ -60,7 +63,7 @@ namespace RainMeadow
                 // this.betweenRoomsWaitingLobby[k].creature.abstractCreature.Move(newCoord)
                 // becomes 
                 //
-                
+
                 int inbetween_room_index_loc = 0;
                 int newCoord_loc = 0;
                 c.GotoNext(MoveType.Before,
@@ -86,11 +89,14 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc, inbetween_room_index_loc);
                 c.Emit(OpCodes.Ldloc, newCoord_loc);
-                c.EmitDelegate((ShortcutHandler handler, int inbetween_room_index, WorldCoordinate cord) => {
+                c.EmitDelegate((ShortcutHandler handler, int inbetween_room_index, WorldCoordinate cord) =>
+                {
                     Debug($"{handler}, {inbetween_room_index}, {cord}");
-                    if (OnlineManager.lobby != null) {
+                    if (OnlineManager.lobby != null)
+                    {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
-                        if (creature?.GetOnlineCreature() is OnlineCreature oc) {
+                        if (creature?.GetOnlineCreature() is OnlineCreature oc)
+                        {
                             try
                             {
                                 if (creature.FollowedByCamera(0))
@@ -105,7 +111,7 @@ namespace RainMeadow
                             }
 
                             creature.MoveMovable(cord);
-                            
+
                             return true;
                         }
                     }
@@ -132,19 +138,23 @@ namespace RainMeadow
         // owner will send us an RPC to spit it out.
         private void ShortcutHandler_Update1(On.ShortcutHandler.orig_Update orig, ShortcutHandler self)
         {
-            try {
+            try
+            {
                 for (int i = self.transportVessels.Count - 1; i >= 0; i--)
                 {
                     if (!self.transportVessels[i].creature.IsLocal())
                     {
                         Room realized_room = self.transportVessels[i].room.realizedRoom;
                         IntVector2 next_pos = ShortcutHandler.NextShortcutPosition(self.transportVessels[i].pos, self.transportVessels[i].lastPos, realized_room);
-                        if (realized_room.GetTile(next_pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance) {
+                        if (realized_room.GetTile(next_pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                        {
                             self.transportVessels[i].wait = 5;
                         }
                     }
                 }
-            } catch (Exception err) {
+            }
+            catch (Exception err)
+            {
                 RainMeadow.Error(err);
             }
 
@@ -168,8 +178,9 @@ namespace RainMeadow
             }
 
             var connectedObjects = vessel.creature.abstractCreature.GetAllConnectedObjects();
-            if (connectedObjects.All(x => x.IsLocal())) {
-                return result; 
+            if (connectedObjects.All(x => x.IsLocal()))
+            {
+                return result;
             }
 
             foreach (var apo in connectedObjects)
@@ -181,19 +192,22 @@ namespace RainMeadow
                     {
                         Trace($"Denied because of connected object: {innerOnlineEntity}");
                         result = false; // Same for all connected entities
-                        if (apo.Room != vessel.room && innerOnlineEntity.isMine) {
+                        if (apo.Room != vessel.room && innerOnlineEntity.isMine)
+                        {
 
                             bool ready = orig_result;
-                            if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null) {
+                            if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null)
+                            {
                                 apo.world.game.roomRealizer.MeadowRealizeAndTrackRoom(vessel.room, true);
                                 if (apo is AbstractCreature critter)
                                 {
                                     ready = ready && self.CreatureAllowedInRoom(critter, vessel.room.realizedRoom);
-                                }  
+                                }
                             }
-                          
+
                             RoomSession? session = vessel.room.GetResource();
-                            if (session is not null) {
+                            if (session is not null)
+                            {
                                 session.Needed();
                                 if (session.isAvailable && !session.isPending && ready)
                                 {
@@ -251,9 +265,10 @@ namespace RainMeadow
 
 
         private List<OnlineCreature> creatures_who_reclaim_sticks = new();
-        private bool IsTakingUnmoveableObject(Creature self, IntVector2 entrancePos) {
+        private bool IsTakingUnmoveableObject(Creature self, IntVector2 entrancePos)
+        {
             // currently unused.
-            return false; 
+            return false;
         }
 
         // event driven shortcutting for remotes
@@ -284,22 +299,25 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
 
-                if (!IsTakingUnmoveableObject(self, entrancePos)) {
+                if (!IsTakingUnmoveableObject(self, entrancePos))
+                {
                     orig(self, entrancePos, carriedByOther);
                     onlineCreature.enteringShortCut = false;
                     if (room.isOwner) // proccessed, now broadcast
                     {
                         onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
-                    }              
-                } else self.enteringShortCut = null;
+                    }
+                }
+                else self.enteringShortCut = null;
 
             }
             else if (onlineCreature.isMine)
             {
-                if (!IsTakingUnmoveableObject(self, entrancePos)) {
+                if (!IsTakingUnmoveableObject(self, entrancePos))
+                {
                     orig(self, entrancePos, carriedByOther);
                     RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
-                    
+
                     if (room.isOwner) // now broadcast
                     {
                         onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
@@ -308,7 +326,8 @@ namespace RainMeadow
                     {
                         room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
                     }
-                } else self.enteringShortCut = null;
+                }
+                else self.enteringShortCut = null;
             }
             else
             {
@@ -318,11 +337,12 @@ namespace RainMeadow
             }
         }
 
-        private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) 
+        private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks)
         {
-          
+
             orig(self, pos, newRoom, spitOutAllSticks);
-            if (OnlineManager.lobby == null) {
+            if (OnlineManager.lobby == null)
+            {
                 return;
             }
 
@@ -331,11 +351,11 @@ namespace RainMeadow
                 Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
                 return;
             }
-            
 
-            if (onlineEntity.isMine) 
+
+            if (onlineEntity.isMine)
             {
-                if (spitOutAllSticks && (newRoom.abstractRoom.GetResource() is RoomSession rs)) 
+                if (spitOutAllSticks && (newRoom.abstractRoom.GetResource() is RoomSession rs))
                 {
                     List<OnlinePlayer> players_who_need_to_know = new();
                     if (onlineEntity.currentlyJoinedResource is RoomSession room)
@@ -346,13 +366,13 @@ namespace RainMeadow
                     {
                         if (connectedobj.GetOnlineObject(out var inneronlineEntity))
                         {
-                            if (inneronlineEntity.owner is not null) 
+                            if (inneronlineEntity.owner is not null)
                             {
                                 players_who_need_to_know.Add(inneronlineEntity.owner);
                             }
                         }
                     }
-                    
+
                     players_who_need_to_know = players_who_need_to_know.Distinct().ToList();
                     foreach (var participant in players_who_need_to_know)
                     {

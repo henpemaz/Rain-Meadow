@@ -52,7 +52,7 @@ namespace RainMeadow
 
                 fullyEnabled = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 fullyEnabled = false;
                 Logger.LogError(e);
@@ -61,7 +61,7 @@ namespace RainMeadow
 
         private bool AdvancedProfilingEnabled()
         {
-            foreach(var arg in Environment.GetCommandLineArgs())
+            foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "-meadowprofiler") return true;
             }
@@ -162,7 +162,8 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                Logger.LogError($"Error loading Meadow mod info files:\n{e}\n{e.StackTrace}");
+                // i'm not sure if it's a good looking stack trace
+                Logger.LogError("Error loading Meadow mod info files:" + Environment.NewLine + e);
             }
         }
 
@@ -232,7 +233,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
-                        if (shader.name == "RippleGlowColored" 
+                        if (shader.name == "RippleGlowColored"
                             || shader.name == "RippleSpawnBodyColored")
                         {
                             RainMeadow.Debug("also registering ripple side variant");
@@ -294,7 +295,7 @@ namespace RainMeadow
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     json = JObject.Parse(request.downloadHandler.text);
-                } 
+                }
                 else
                 {
                     Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
@@ -326,7 +327,7 @@ namespace RainMeadow
                         yield break;
                     }
                     NewVersionAvailable = latestVersion;
-                    
+
                 }
             }
         }
