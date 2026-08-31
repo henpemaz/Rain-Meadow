@@ -76,7 +76,7 @@ namespace RainMeadow.UI.Components
                 watcherSettingsTab = new(menu, this, new(0f, 44f));
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
-            AddSettingsTab(new TestSettingPage(menu, this), "TEST SETTINGS");
+            AddSettingsTab(new TestSetting(menu, this), "TEST SETTINGS");
         }
         public void AddSettingsTab(SettingsPage settings, string signal)
         {
