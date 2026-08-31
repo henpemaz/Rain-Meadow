@@ -53,18 +53,17 @@ namespace RainMeadow
         public static bool IsLocal(this AbstractPhysicalObject apo) => OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject opo)
+        public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo)
         {
-            opo = null!;
-            if (OnlineManager.lobby is null) return true;
-            return OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine;
+            opo = null;
+            return OnlineManager.lobby is null || (OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject opo) => IsLocal(po.abstractPhysicalObject, out opo);
+        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo) => IsLocal(po.abstractPhysicalObject, out opo);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord = null, bool quiet = false)
