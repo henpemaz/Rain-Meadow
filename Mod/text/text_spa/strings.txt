@@ -796,7 +796,6 @@ Watcher Settings|Ajustes de Watcher
 Return to Select Settings Page|Volver a la página de selección de ajustes
 Watcher Ripple Level:|Nivel de onda del Vigilante:
 Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Actualiza el nivel de onda del Vigilante. Va del 1 (predeterminado) al 9.
-Press grab to toggle active slugcats|Presiona "Agarrar" para cambiar los Gatos-babosa permitidos
 Invite friends|Invitar amigos
 Cape Color|Color de capa
 fell into the abyss thanks to|fue tirado al abismo gracias a
