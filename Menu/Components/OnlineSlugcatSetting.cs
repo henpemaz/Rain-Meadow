@@ -651,7 +651,7 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
         OnlineSettingParameter? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster);
         voidMaster?.color = RainWorld.RippleColor * 1.5f;
         voidMaster?.tabIndependant = true;
-        (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Summon amoebas at the cost of your camo timer";
+        (voidMaster as OnlineSettingCheckBox)?.altDescription = "Summon amoebas at the cost of your camo timer";
 
         (GetSettingParameter(RainMeadow.rainMeadowOptions.AmoebaControl) as OnlineSettingCheckBox)?
             .altDescription = "Amoeba's direction is influenced by pointing";
