@@ -12,7 +12,7 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 
 namespace RainMeadow.UI.Components;
-public abstract class SlugcatSettingTextBoxValue : SlugcatSettingParameter
+public abstract class OnlineSettingTextBoxValue : OnlineSettingParameter
 {
     public const float textBoxMargin = 5;
     public OpTextBox textBox;
@@ -21,8 +21,10 @@ public abstract class SlugcatSettingTextBoxValue : SlugcatSettingParameter
         get => textBox.size.x;
         set => textBox.size = new Vector2(value, textBox.size.y);
     }
-    public SlugcatSettingTextBoxValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SlugcatSettingsConfigData config, SlugcatSettingTab? tab = null)
-         : base(menu, owner, config, tab)
+    public OnlineSettingTextBoxValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : this(menu, owner, owner.tabWrapper, config, tab) {}
+    public OnlineSettingTextBoxValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : base(menu, owner, tabWrapper, config, tab)
     {
         textBox = new(new Configurable<int>(40), Vector2.zero, 40);
     }
@@ -33,33 +35,52 @@ public abstract class SlugcatSettingTextBoxValue : SlugcatSettingParameter
             textBox.description = menu.Translate(config.description);
         }
         textBox.OnValueUpdate += (uiConfig, value, lastValue) => SyncValueToAttribute();
-        new PatchedUIelementWrapper(settingPage.tabWrapper, textBox);
+        new PatchedUIelementWrapper(tabWrapper, textBox);
     }
     public override void Update()
     {
         base.Update();
-        this.textBox.pos = pos
+
+        textBox.pos = pos
             + Vector2.right * (elementSize.x - textBox.size.x - textBoxMargin)
             + Vector2.up * (elementSize.y - textBox.size.y)/2f;
-
-        if (settingPage.IsActuallyHidden) return;
         if (config.AttributeValue is not object value) return;
 
+        if (!visible) return;
         if (isClient) SyncValueToAttribute();
-        ShowSyncInTextbox(textBox, settingPage.SettingsDisabled, value);
+        ShowSyncInTextbox(textBox, grayedOut, value);
     }
     public override void GrafUpdate(float timeStacker)
     {
         if (color is not null) textBox.colorEdge = (Color)color;
+
         base.GrafUpdate(timeStacker);
+
         label.label.color = textBox.rect.colorEdge;
+
+        textBox.Hidden = !visible;
+        textBox.label.isVisible = visible;
+        textBox.label.alpha = currentAlpha;
+        textBox._cursor.isVisible = visible;
+        textBox._cursor.alpha *= currentAlpha;
+        textBox.rect.sprites.Do(x =>
+        {
+            x.isVisible = visible;
+            x.alpha = currentAlpha;
+        });
+    }
+    public override void ResetValueToDefault()
+    {
+        textBox.value = config.configurable.defaultValue;
     }
 }
 
-public class SlugcatSettingIntValue : SlugcatSettingTextBoxValue
+public class OnlineSettingIntValue : OnlineSettingTextBoxValue
 {
-    public SlugcatSettingIntValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SlugcatSettingsConfigData config, SlugcatSettingTab? tab = null)
-         : base(menu, owner, config, tab)
+    public OnlineSettingIntValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : this(menu, owner, owner.tabWrapper, config, tab) {}
+    public OnlineSettingIntValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : base(menu, owner, tabWrapper, config, tab)
     {
         textBox = new(new Configurable<int>((int)config.configurable.BoxedValue), Vector2.zero, 40)
         {
@@ -81,10 +102,12 @@ public class SlugcatSettingIntValue : SlugcatSettingTextBoxValue
     }
 }
 
-public class SlugcatSettingFloatValue : SlugcatSettingTextBoxValue
+public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
 {
-    public SlugcatSettingFloatValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SlugcatSettingsConfigData config, SlugcatSettingTab? tab = null)
-         : base(menu, owner, config, tab)
+    public OnlineSettingFloatValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : this(menu, owner, owner.tabWrapper, config, tab) {}
+    public OnlineSettingFloatValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : base(menu, owner, tabWrapper, config, tab)
     {
         textBox = new(new Configurable<float>((float)config.configurable.BoxedValue), Vector2.zero, 60)
         {
@@ -106,10 +129,12 @@ public class SlugcatSettingFloatValue : SlugcatSettingTextBoxValue
     }
 }
 
-public class SlugcatSettingStringValue : SlugcatSettingTextBoxValue
+public class OnlineSettingStringValue : OnlineSettingTextBoxValue
 {
-    public SlugcatSettingStringValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SlugcatSettingsConfigData config, SlugcatSettingTab? tab = null)
-         : base(menu, owner, config, tab)
+    public OnlineSettingStringValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : this(menu, owner, owner.tabWrapper, config, tab) {}
+    public OnlineSettingStringValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
+         : base(menu, owner, tabWrapper, config, tab)
     {
         textBox = new(new Configurable<string>((string)config.configurable.BoxedValue), Vector2.zero, 120)
         {

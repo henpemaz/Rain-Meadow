@@ -8,10 +8,11 @@ using static RainMeadow.UI.Components.TabContainer;
 using static Menu.Menu;
 using System;
 using HarmonyLib;
+using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components;
 
-public readonly struct SlugcatSettingsConfigData
+public readonly struct SettingsConfigData
 {
     internal static Dictionary<Type, Func<object?>> GetAttributeOwnerDict = [];
     public readonly string name;
@@ -26,37 +27,38 @@ public readonly struct SlugcatSettingsConfigData
     {
         GetAttributeOwnerDict[typeof(T)] = getAttributeOwnerFunc;
     }
-    static SlugcatSettingsConfigData()
+    static SettingsConfigData()
     {
         AddNewGetAttributeOwnerFunction(() => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode);
+        AddNewGetAttributeOwnerFunction(() => (OnlineManager.lobby?.gameMode as ArenaOnlineGameMode)?.arenaClientSettings);
     }
 
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, Type attributeOwnerType, string description = "")
+    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "")
     {
         this.name = name;
-        this.attributeName = arenaOnlineAttributeName;
+        attributeName = arenaOnlineAttributeName;
         this.configurable = configurable;
         this.description = description;
         this.attributeOwnerType = attributeOwnerType;
     }
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "")
-         : this(name, configurable, arenaOnlineAttributeName, typeof(ArenaOnlineGameMode), description) {}
+    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "")
+         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description) {}
 
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, Type attributeOwnerType, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, arenaOnlineAttributeName, attributeOwnerType, description)
+    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
+         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
     {
-        this.slugcatTab = slugcat;
+        slugcatTab = slugcat;
     }
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, arenaOnlineAttributeName, typeof(ArenaOnlineGameMode), slugcat, description) {}
+    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
+         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, slugcat, description) {}
 
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, Type attributeOwnerType, string tabName, string description = "")
-         : this(name, configurable, arenaOnlineAttributeName, attributeOwnerType, description)
+    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string tabName, string description = "")
+         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
     {
         this.tabName = tabName;
     }
-    public SlugcatSettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string tabName, string description = "")
-         : this(name, configurable, arenaOnlineAttributeName, typeof(ArenaOnlineGameMode), tabName, description) {}
+    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string tabName, string description = "")
+         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, tabName, description) {}
 
     public readonly object? AttributeValue
     {
@@ -82,60 +84,60 @@ public readonly struct SlugcatSettingsConfigData
         }
     }
 
-    public static bool operator== (SlugcatSettingsConfigData left, SlugcatSettingsConfigData right)
+    public static bool operator== (SettingsConfigData left, SettingsConfigData right)
     {
         return left.name == right.name
             && left.attributeName == right.attributeName
             && left.attributeOwnerType == right.attributeOwnerType
             && left.configurable == right.configurable;
     }
-    public static bool operator!= (SlugcatSettingsConfigData left, SlugcatSettingsConfigData right)
+    public static bool operator!= (SettingsConfigData left, SettingsConfigData right)
     {
         return !(left == right);
     }
     public override bool Equals(object obj)
     {
-        return obj is SlugcatSettingsConfigData config && config == this;
+        return obj is SettingsConfigData config && config == this;
     }
     public override int GetHashCode()
     {
         return base.GetHashCode();
     }
 }
-public readonly struct SlugcatSettingsTabData
+public readonly struct SettingsTabData
 {
     public readonly SlugcatStats.Name? slugcatIcon;
     public readonly string? name;
     public readonly string? icon;
     public readonly Color? color;
-    public SlugcatSettingsTabData(SlugcatStats.Name slugcat)
+    public SettingsTabData(SlugcatStats.Name slugcat)
     {
-        this.slugcatIcon = slugcat;
+        slugcatIcon = slugcat;
     }
-    public SlugcatSettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color)
+    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color)
     {
         this.slugcatIcon = slugcatIcon;
         this.name = name;
         this.color = color;
     }
-    public SlugcatSettingsTabData(string name, string icon, Color color)
+    public SettingsTabData(string name, string icon, Color color)
     {
         this.icon = icon;
         this.name = name;
         this.color = color;
     }
 
-    public static bool operator== (SlugcatSettingsTabData left, SlugcatSettingsTabData right)
+    public static bool operator== (SettingsTabData left, SettingsTabData right)
     {
         return left.name == right.name && left.slugcatIcon == right.slugcatIcon;
     }
-    public static bool operator!= (SlugcatSettingsTabData left, SlugcatSettingsTabData right)
+    public static bool operator!= (SettingsTabData left, SettingsTabData right)
     {
         return !(left == right);
     }
     public override bool Equals(object obj)
     {
-        return obj is SlugcatSettingsTabData tab && tab == this;
+        return obj is SettingsTabData tab && tab == this;
     }
     public override int GetHashCode()
     {
@@ -146,52 +148,52 @@ public readonly struct SlugcatSettingsTabData
 public abstract class OnlineSlugcatSettingsBase : SettingsPage
 {
     public const string RESETTODEFAULT = "RESETTODEFAULT";
-    public static Vector2 defaultBoxSize = new(450, 430);
+    public static Vector2 defaultBoxSize = new(450, 440);
     public Vector2 settingsBoxSize;
     public float margin;
     public SimpleButton? backButton;
     public SimpleButton? resetButton;
     public MenuTabWrapper tabWrapper;
-    protected List<SlugcatSettingElement> elements;
+    protected List<OnlineSettingElement> elements;
     public float spacing;
     public float textSpacing;
 
-    public SlugcatSettingTab? GetSlugcatSettingTab(SlugcatStats.Name slugcatTab)
+    public OnlineSettingTab? GetSettingTab(SlugcatStats.Name slugcatTab)
     {
         return elements.Find(x =>
-            x is SlugcatSettingTab tab
+            x is OnlineSettingTab tab
             && tab.config.name is null
             && tab.config.slugcatIcon == slugcatTab)
-        as SlugcatSettingTab;
+        as OnlineSettingTab;
     }
-    public SlugcatSettingTab? GetSlugcatSettingTab(string tabName)
+    public OnlineSettingTab? GetSettingTab(string tabName)
     {
         return elements.Find(x =>
-            x is SlugcatSettingTab tab
+            x is OnlineSettingTab tab
             && tab.config.name == tabName)
-        as SlugcatSettingTab;
+        as OnlineSettingTab;
     }
-    public SlugcatSettingParameter? GetSlugcatSettingParameter(string paramName)
+    public OnlineSettingParameter? GetSettingParameter(string paramName)
     {
         return elements.Find(x =>
-            x is SlugcatSettingParameter param
+            x is OnlineSettingParameter param
             && param.config.name == paramName)
-        as SlugcatSettingParameter;
+        as OnlineSettingParameter;
     }
-    public SlugcatSettingParameter? GetSlugcatSettingParameter(ConfigurableBase configurable)
+    public OnlineSettingParameter? GetSettingParameter(ConfigurableBase configurable)
     {
         return elements.Find(x =>
-            x is SlugcatSettingParameter param
+            x is OnlineSettingParameter param
             && param.config.configurable == configurable)
-        as SlugcatSettingParameter;
+        as OnlineSettingParameter;
     }
-    public SlugcatSettingParameter? GetSlugcatSettingParameter(string attributeName, Type attributeOwnerType)
+    public OnlineSettingParameter? GetSettingParameter(string attributeName, Type attributeOwnerType)
     {
         return elements.Find(x =>
-            x is SlugcatSettingParameter param
+            x is OnlineSettingParameter param
             && param.config.attributeName == attributeName
             && param.config.attributeOwnerType == attributeOwnerType)
-        as SlugcatSettingParameter;
+        as OnlineSettingParameter;
     }
 
     protected OnlineSlugcatSettingsBase(Menu.Menu menu, MenuObject owner, float spacing = 5f, float margin = 30f, float textSpacing = 300) : base(menu, owner)
@@ -202,19 +204,53 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         this.textSpacing = textSpacing;
         this.margin = margin;
 
-        this.settingsBoxSize = defaultBoxSize - Vector2.right * margin * 2;
+        settingsBoxSize = defaultBoxSize - Vector2.right * margin * 2;
         this.SafeAddSubobjects(tabWrapper);
     }
+
+    public void UpdateElementsVisibility()
+    {
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i].tab is OnlineSettingTab tab)
+            {
+                if (tab.grayedOut && !elements[i].tabIndependant)
+                    elements[i].grayedOut = true;
+                if (!tab.visible || tab.folded)
+                    elements[i].visible = false;
+            }
+
+            if (elements[i].visible)
+            {
+                elements[i].alpha = 1;
+            }
+            else
+            {
+                elements[i].HardSetAlpha(0);
+            }
+        }
+    }
+    public void UpdateElementsPosition()
+    {
+        int position = 0;
+        for (int i = 0; i < elements.Count; i++)
+        {
+            elements[i].position = position;
+            if (elements[i].visible) position++;
+        }
+    }
+
     public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
     {
         if (backButton is null)
         {
-            backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(margin, 30), new(80, 30));
+            backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(margin, 20), new(80, 30));
             AddObjects(backButton);
         }
         if (resetButton is null)
         {
-            resetButton = new(menu, this, menu.Translate("RESET"), RESETTODEFAULT, new(settingsBoxSize.x - 40, 30), new(80, 30));
+            resetButton = new(menu, this, menu.Translate("RESET"), RESETTODEFAULT, new(settingsBoxSize.x - 40, 20), new(80, 30));
             AddObjects(resetButton);
         }
     }
@@ -225,30 +261,29 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         if (IsActuallyHidden) return;
 
         bool greyoutAll = SettingsDisabled;
+
         foreach (MenuObject obj in subObjects)
         {
             if (obj != backButton && obj is ButtonTemplate btn)
                 btn.buttonBehav.greyedOut = greyoutAll;
         }
-        UpdateElements();
-    }
-
-    public void UpdateElements()
-    {
-        int position = 0;
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i].visible) elements[i].position = position++;
-            if (elements[i] is SlugcatSettingTab tab)
+            elements[i].visible = !IsActuallyHidden;
+            elements[i].grayedOut = greyoutAll;
+        }
+        UpdateElementsVisibility();
+        UpdateElementsPosition();
+    }
+    public override void GrafUpdate(float timeStacker)
+    {
+        base.GrafUpdate(timeStacker);
+        if (IsActuallyHidden)
+        {
+            for (int i = 0; i < elements.Count; i++)
             {
-                int j = i + 1;
-                while (j < elements.Count && elements[i].tab == tab)
-                {
-                    if (elements[i].grayedOut && !elements[j].tabIndependant)
-                        elements[j].grayedOut = true;
-                    elements[j].visible = elements[i].visible && !tab.folded;
-                    j++;
-                }
+                elements[i].pos = elements[i].targetPos + Vector2.up * 5f;
+                elements[i].HardSetAlpha(0);
             }
         }
     }
@@ -257,7 +292,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is SlugcatSettingParameter param)
+            if (elements[i] is OnlineSettingParameter param)
             {
                 param.SaveOption();
             }
@@ -267,7 +302,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is SlugcatSettingParameter param)
+            if (elements[i] is OnlineSettingParameter param)
             {
                 param.SaveOption(true);
             }
@@ -277,19 +312,36 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is SlugcatSettingParameter param)
+            if (elements[i] is OnlineSettingParameter param)
             {
                 param.SyncValueToAttribute();
+            }
+        }
+    }
+
+    public override void Singal(MenuObject sender, string message)
+    {
+        base.Singal(sender, message);
+        if (message == RESETTODEFAULT)
+        {
+            menu.PlaySound(SoundID.MENU_Button_Successfully_Assigned);
+
+            for (int i = 0; i < elements.Count; i++)
+            {
+                if (elements[i] is OnlineSettingParameter param)
+                {
+                    param.ResetValueToDefault();
+                }
             }
         }
     }
 }
 public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where T : class
 {
-    protected static List<SlugcatSettingsConfigData> onlineConfigurables = [];
-    protected static List<SlugcatSettingsTabData> onlineConfigurableTabs = [];
+    protected static List<SettingsConfigData> onlineConfigurables = [];
+    protected static List<SettingsTabData> onlineConfigurableTabs = [];
 
-    public static void AddSlugcatSettingsTab(SlugcatSettingsTabData tab)
+    public static void AddSlugcatSettingsTab(SettingsTabData tab)
     {
         if (onlineConfigurableTabs.Exists(x => x == tab))
         {
@@ -298,14 +350,14 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
         }
         onlineConfigurableTabs.Add(tab);
     }
-    public static void AddSlugcatSettingsConfigurable(SlugcatSettingsConfigData config)
+    public static void AddSlugcatSettingsConfigurable(SettingsConfigData config)
     {
         if (onlineConfigurables.Exists(x => x.attributeName == config.attributeName && x.attributeOwnerType == config.attributeOwnerType))
         {
             RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} is already in the page !");
             return;
         }
-        if (!SlugcatSettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
+        if (!SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
         {
             RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name} is not registered and has no GET function !");
             return;
@@ -330,9 +382,9 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
         onlineConfigurables.Add(config);
     }
 
-    private static List<SlugcatSettingsConfigData> GetAllConfigurablesFromTab(SlugcatSettingsTabData? tab = null)
+    private static List<SettingsConfigData> GetAllConfigurablesFromTab(SettingsTabData? tab = null)
     {
-        if (tab is SlugcatSettingsTabData onlineConfigurableTab)
+        if (tab is SettingsTabData onlineConfigurableTab)
         {
             if (onlineConfigurableTab.name is null)
             {
@@ -340,28 +392,32 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
             }
             else
             {
-                return onlineConfigurables.FindAll(x => x.name == onlineConfigurableTab.name);
+                return onlineConfigurables.FindAll(x => x.tabName == onlineConfigurableTab.name);
             }
         }
         return onlineConfigurables.FindAll(x => x.tabName is null && x.slugcatTab is null);
     }
-    private SlugcatSettingTab GetElementFromConfig(SlugcatSettingsTabData tab)
+    private OnlineSettingTab GetElementFromConfig(SettingsTabData tab)
     {
-        return new SlugcatSettingTab(menu, this, tab);
+        return new OnlineSettingTab(menu, this, tab);
     }
-    private SlugcatSettingParameter? GetElementFromConfig(SlugcatSettingsConfigData configurable, SlugcatSettingTab? tab = null)
+    private OnlineSettingParameter? GetElementFromConfig(SettingsConfigData configurable, OnlineSettingTab? tab = null)
     {
         if (configurable.configurable.settingType == typeof(int))
         {
-            return new SlugcatSettingIntValue(menu, this, configurable, tab);
+            return new OnlineSettingIntValue(menu, this, configurable, tab);
         }
         else if (configurable.configurable.settingType == typeof(float))
         {
-            return new SlugcatSettingFloatValue(menu, this, configurable, tab);
+            return new OnlineSettingFloatValue(menu, this, configurable, tab);
         }
         else if (configurable.configurable.settingType == typeof(string))
         {
-            return new SlugcatSettingStringValue(menu, this, configurable, tab);
+            return new OnlineSettingStringValue(menu, this, configurable, tab);
+        }
+        else if (configurable.configurable.settingType == typeof(bool))
+        {
+            return new OnlineSettingCheckBox(menu, this, configurable, tab);
         }
         RainMeadow.Error($"Error trying to find UI element for [{configurable.name} : {configurable.attributeOwnerType}.{configurable.attributeName}] : type {configurable.configurable.settingType} is not handled !");
         return null;
@@ -372,11 +428,11 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
     {
         foreach (var tab in onlineConfigurableTabs)
         {
-            SlugcatSettingTab tabElement = GetElementFromConfig(tab);
+            OnlineSettingTab tabElement = GetElementFromConfig(tab);
             elements.Add(tabElement);
             GetAllConfigurablesFromTab(tab).Do(config =>
             {
-                if (GetElementFromConfig(config, tabElement) is SlugcatSettingParameter param)
+                if (GetElementFromConfig(config, tabElement) is OnlineSettingParameter param)
                 {
                     elements.Add(param);
                 }
@@ -388,7 +444,7 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
         }
         GetAllConfigurablesFromTab().Do(config =>
         {
-            if (GetElementFromConfig(config) is SlugcatSettingParameter param)
+            if (GetElementFromConfig(config) is OnlineSettingParameter param)
             {
                 elements.Add(param);
             }
@@ -398,34 +454,218 @@ public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where
             }
         });
 
-        UpdateElements();
+        UpdateElementsPosition();
+        for (int i = 0; i < elements.Count; i++)
+        {
+            elements[i].HardSetPosition(elements[i].WantedPosition);
+        }
         this.SafeAddSubobjects([.. elements]);
     }
 }
 
-public class TestSetting : OnlineSlugcatSettings<TestSetting>
+public class TestMSCSetting : OnlineSlugcatSettings<TestMSCSetting>
 {
-    public override string Name => "Test";
-    static TestSetting()
+    public override string Name => "Test MSC";
+    static TestMSCSetting()
     {
         AddSlugcatSettingsConfigurable(new(
-            "Test (it's ascend)",
+            "Artificer Explosion Capacity",
+            MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity,
+            nameof(ArenaOnlineGameMode.artiExplosionCount),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+            "How many explosions Artificer can use before cooldown")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Artificer Stun Range Multiplier",
+            RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult,
+            nameof(ArenaOnlineGameMode.artiStunDistanceMult),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+            "Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Artificer Parry Range Multiplier",
+            RainMeadow.rainMeadowOptions.ArtificerParryDistanceMult,
+            nameof(ArenaOnlineGameMode.artiParryDistanceMult),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+            "How far Artificer can parry from compared to vanilla range. Default: 0.3")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Artificer Parry Leniency",
+            RainMeadow.rainMeadowOptions.ArtificerParryLeniency,
+            nameof(ArenaOnlineGameMode.artiParryLeniency),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+            "Gives Artificer more leniency frames in the concussive blast's parry")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Disable Mauling",
+            RainMeadow.rainMeadowOptions.BlockMaul,
+            nameof(ArenaOnlineGameMode.disableMaul),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+            "Prevent Artificer and <PAINCATNAME> from mauling")
+        );
+
+        AddSlugcatSettingsConfigurable(new(
+            "Sain't",
+            RainMeadow.rainMeadowOptions.ArenaSAINOT,
+            nameof(ArenaOnlineGameMode.sainot),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
+            "Disable Saint ascendance ability, but allow it to throw spears")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Saint Ascendance Duration",
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer,
             nameof(ArenaOnlineGameMode.arenaSaintAscendanceTimer),
             MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
             "How long Saint's ascendance ability lasts for. Default: 3s")
         );
+
         AddSlugcatSettingsConfigurable(new(
-            "Test (it's stun)",
-            RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult,
-            nameof(ArenaOnlineGameMode.artiStunDistanceMult),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
-            "wawa")
+            "<PAINCATNAME> gets egg at 0 throw skill",
+            RainMeadow.rainMeadowOptions.PainCatEgg,
+            nameof(ArenaOnlineGameMode.painCatEgg),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
+            "If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0")
         );
-        AddSlugcatSettingsTab(new(SlugcatStats.Name.Red));
+        AddSlugcatSettingsConfigurable(new(
+            "<PAINCATNAME> can always throw spears",
+            RainMeadow.rainMeadowOptions.PainCatThrows,
+            nameof(ArenaOnlineGameMode.painCatThrows),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
+            "Always allow <PAINCATNAME> to throw spears, even if throw skill is 0")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "<PAINCATNAME> sometimes gets a friend",
+            RainMeadow.rainMeadowOptions.PainCatLizard,
+            nameof(ArenaOnlineGameMode.painCatLizard),
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
+            "Allow <PAINCATNAME> to rarely spawn with a little friend")
+        );
     }
-    public TestSetting(Menu.Menu menu, MenuObject owner) : base(menu, owner)
+    public TestMSCSetting(Menu.Menu menu, MenuObject owner, string painCatName) : base(menu, owner)
     {
-        // GetSlugcatSettingParameter(RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult)?.color = Color.red + Color.white * 0.25f;
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i] is OnlineSettingParameter param)
+            {
+                param.label.text = param.label.text.Replace("<PAINCATNAME>", painCatName);
+            }
+        }
+    }
+}
+
+public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
+{
+    public const string WATCHERCAMO = "Watcher's Camo",
+        WATCHERWEAVER = "Watcher's Weaver",
+        WATCHERVOIDMASTER = "Watcher's Voidmaster";
+    public override string Name => "Test Watcher";
+    static TestWatcherSetting()
+    {
+
+        AddSlugcatSettingsTab(new(
+            WATCHERCAMO,
+            Watcher.WatcherEnums.SlugcatStatsName.Watcher,
+            PlayerGraphics.DefaultSlugcatColor(Watcher.WatcherEnums.SlugcatStatsName.Watcher) * 1.5f
+        ));
+        AddSlugcatSettingsTab(new(
+            WATCHERWEAVER,
+            Watcher.WatcherEnums.SlugcatStatsName.Watcher,
+            RainWorld.GoldRGB * 1.5f
+        ));
+        AddSlugcatSettingsTab(new(
+            WATCHERVOIDMASTER,
+            Watcher.WatcherEnums.SlugcatStatsName.Watcher,
+            RainWorld.RippleColor * 1.5f
+        ));
+
+        AddSlugcatSettingsConfigurable(new(
+            "Watcher Camo Duration",
+            RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer,
+            nameof(ArenaOnlineGameMode.watcherCamoTimer),
+            WATCHERCAMO,
+            "How long Watcher's abilities last for. Default: 12s")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Watcher Ripple Level",
+            RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel,
+            nameof(ArenaOnlineGameMode.watcherRippleLevel),
+            WATCHERCAMO,
+            "Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Full Invisibility In Ripple Space",
+            RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace,
+            nameof(ArenaOnlineGameMode.fullInvisInRippleSpace),
+            WATCHERCAMO,
+            "Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.")
+        );
+
+        AddSlugcatSettingsConfigurable(new(
+            "Weaver Watcher",
+            RainMeadow.rainMeadowOptions.WeaverWatcher,
+            typeof(ArenaClientSettings),
+            nameof(ArenaClientSettings.weaverTail),
+            WATCHERWEAVER,
+            "Your watcher has synced normal cosmetics")
+        );
+
+        AddSlugcatSettingsConfigurable(new(
+            "Voidkeeper",
+            RainMeadow.rainMeadowOptions.VoidMaster,
+            nameof(ArenaOnlineGameMode.voidMasterEnabled),
+            WATCHERVOIDMASTER,
+            "Amoeba summoning is disabled lobby-wide")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Voidkeeper Amoeba Duration",
+            RainMeadow.rainMeadowOptions.AmoebaDuration,
+            nameof(ArenaOnlineGameMode.amoebaDuration),
+            WATCHERVOIDMASTER,
+            "Amoeba duration time in seconds")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Amoeba Lethality Factor",
+            RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor,
+            nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor),
+            WATCHERVOIDMASTER,
+            "Multiplier for amoeba lethality")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Void's Vengeance",
+            RainMeadow.rainMeadowOptions.AmoebaControl,
+            nameof(ArenaOnlineGameMode.amoebaControl),
+            WATCHERVOIDMASTER,
+            "Amoebas chase targets at-will")
+        );
+    }
+    public TestWatcherSetting(Menu.Menu menu, MenuObject owner) : base(menu, owner)
+    {
+        (GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace) as OnlineSettingCheckBox)?
+            .altDescription = "Watcher will be fully invisible to everyone when in ripple space";
+
+        OnlineSettingParameter? weaverGraphics = GetSettingParameter(RainMeadow.rainMeadowOptions.WeaverWatcher);
+        weaverGraphics?.color = RainWorld.GoldRGB * 1.5f;
+        weaverGraphics?.isClient = true;
+        (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Your watcher has synced weaver cosmetics";
+
+        OnlineSettingParameter? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster);
+        voidMaster?.color = RainWorld.RippleColor * 1.5f;
+        voidMaster?.tabIndependant = true;
+        (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Summon amoebas at the cost of your camo timer";
+
+        (GetSettingParameter(RainMeadow.rainMeadowOptions.AmoebaControl) as OnlineSettingCheckBox)?
+            .altDescription = "Amoeba's direction is influenced by pointing";
+    }
+
+    public override void Update()
+    {
+        base.Update();
+
+        OnlineSettingCheckBox? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster) as OnlineSettingCheckBox;
+        if (voidMaster is not null && !voidMaster.checkBox.GetValueBool())
+        {
+            GetSettingTab(WATCHERVOIDMASTER)?.grayedOut = true;
+            UpdateElementsVisibility();
+        }
     }
 }
