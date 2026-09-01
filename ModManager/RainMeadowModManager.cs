@@ -125,27 +125,25 @@ namespace RainMeadow
                 var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
                 var enable = requiredMods.Except(active).ToList();
 
-                //add mod dependencies to the list 
-                int countEnabled = 0;
-                while (countEnabled < enable.Count)
+                // Add mod dependencies to the list.
+                // Note: Because detected dependencies immediately get added to the end of enable, the for loop also checks those dependencies' dependencies (basically recursion).
+                for (int i = 0; i < enable.Count; i++)
                 {
-                    countEnabled = enable.Count; //loop until no more additions are made
-                    for (int i = 0; i < enable.Count; i++)
-                    {
-                        int index = ModManager.InstalledMods.FindIndex(mod => mod.id == enable[i]);
-                        if (index < 0) continue;
-                        foreach (var req in ModManager.InstalledMods[index].requirements)
-                        {
-                            int reqindex = ModManager.InstalledMods.FindIndex(mod => mod.id == req);
-                            if (reqindex < 0) continue;
-                            if (!(enable.Contains(req) || ModManager.ActiveMods.Contains(ModManager.InstalledMods[reqindex]))) //ignore mods that are already in enable; no change necessary
-                                if (ModManager.InstalledMods.Contains(ModManager.InstalledMods[reqindex])) //if the dependency is installed
-                                    enable.Add(ModManager.InstalledMods[reqindex].id); //enable it            
-                        }
-                    }
-                    //THEN RUN THE CHECK AGAIN WITH THE DEPENDENCIES IN THE ENABLED LIST
-                }
+                    string modIdToEnable = enable[i];
 
+                    ModManager.Mod? modToEnable = ModManager.InstalledMods
+                        .FirstOrDefault(mod => mod.id == modIdToEnable);
+                    if (modToEnable is null) continue;
+
+                    foreach (string requiredModId in modToEnable.requirements)
+                    {
+                        if (enable.Contains(requiredModId)) continue;
+                        if (ModManager.ActiveMods.Any(mod => mod.id == requiredModId)) continue;
+                        if (!ModManager.InstalledMods.Any(mod => mod.id == requiredModId)) continue;
+
+                        enable.Add(requiredModId);
+                    }
+                }
                 
                 //clear phony entries to the mod list
                 enable.RemoveAll(mod => mod == null || mod == "" /* || mod == "henpemaz_rainmeadow" */);
