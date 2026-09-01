@@ -45,7 +45,7 @@
 	</ItemGroup>
 
     
-    <Target Name="GitGenerate" BeforeTargets="BeforeCompile" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Target Name="GitGenerate" BeforeTargets="BeforeCompile" Condition="'$(Configuration)' == 'Debug'">
         <Exec Command='git branch --show-current' ConsoleToMSBuild="true">
             <Output TaskParameter="ConsoleOutput" PropertyName="GitBranch" />
         </Exec>
