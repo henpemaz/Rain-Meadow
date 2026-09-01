@@ -62,10 +62,10 @@
             <Output TaskParameter="ConsoleOutput" PropertyName="GitHead" />
         </Exec>
 
-        <WriteLinesToFile File="$(IntermediateOutputPath)Git.cs" Overwrite="true" Lines="namespace RainMeadow { public static class Git { public const string GIT_BRANCH_NAME = &quot;$(GitBranch)&quot;%3B public const string GIT_REMOTE_URL = &quot;$(GitRemoteUrl)&quot;%3B public const string GIT_HEAD_COMMIT = &quot;$(GitHead)&quot;%3B } }" />
+        <WriteLinesToFile File="$(IntermediateOutputPath)GitInfo.g.cs" Overwrite="true" Lines="namespace RainMeadow { public static class GitInfo { public const string BRANCH_NAME = &quot;$(GitBranch)&quot;%3B public const string REMOTE_URL = &quot;$(GitRemoteUrl)&quot;%3B public const string HEAD_COMMIT = &quot;$(GitHead)&quot;%3B } }" />
 
         <ItemGroup>
-            <Compile Include="$(IntermediateOutputPath)Git.cs" />
+            <Compile Include="$(IntermediateOutputPath)GitInfo.g.cs" />
         </ItemGroup>
     </Target>
 

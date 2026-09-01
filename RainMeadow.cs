@@ -179,7 +179,7 @@ namespace RainMeadow
                 InitializeExtEnums();
 
 #if DEBUG
-                RainMeadow.Info($"You're running a DEBUG build from: {Git.GIT_BRANCH_NAME}\n{Git.GIT_REMOTE_URL}commit/{Git.GIT_HEAD_COMMIT}");
+                RainMeadow.Info($"You're running a DEBUG build from: {GitInfo.BRANCH_NAME}\n{GitInfo.REMOTE_URL}commit/{GitInfo.HEAD_COMMIT}");
 #endif
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
