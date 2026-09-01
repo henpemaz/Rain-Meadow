@@ -12,6 +12,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using UnityEngine;
 
@@ -1384,7 +1385,7 @@ namespace RainMeadow
 
                 )
                 {
-                    var restartButton = new SimplerButton(
+                    var restartButton = new EventfulButton(
                         self,
                         self.pages[0],
                         self.Translate("RESTART"),

@@ -7,6 +7,7 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
@@ -18,8 +19,8 @@ namespace RainMeadow.UI.Pages;
 
 public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 {
-    public SimplerButton readyButton;
-    public SimplerButton? startButton;
+    public EventfulButton readyButton;
+    public EventfulButton? startButton;
     public SimplerSymbolButton arenaInfoButton,
         arenaGameStatsButton;
     public MenuLabel activeGameModeLabel,
@@ -57,10 +58,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         this.painCatIndex = painCatIndex;
         var scugslotsHint = UnityEngine.Random.Range(0, 21);
 
-        readyButton = new SimplerButton(
+        readyButton = new EventfulButton(
             menu,
             this,
-            Utils.Translate("READY?"),
+            menu.Translate("READY?"),
             new Vector2(1056f, 50f),
             new Vector2(110f, 30f)
         );
@@ -83,7 +84,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         };
         arenaGameStatsButton.roundedRect.size = arenaGameStatsButton.size;
         arenaGameStatsButton.OnClick += _ => OpenGameStatsDialog();
-        readyButton.description = Utils.Translate(
+        readyButton.Description = menu.Translate(
             scugslotsHint == 20
                 ? SlugcatSelector.slugcatSelectorHints[
                     UnityEngine.Random.Range(0, SlugcatSelector.slugcatSelectorHints.Count)
@@ -669,7 +670,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                 levelSelector.LoadNewPlaylist(Arena.playList, false); //dont replace playlist when starting game
             if (startButton is null)
             {
-                startButton = new SimplerButton(
+                startButton = new EventfulButton(
                     menu,
                     this,
                     menu.Translate("START MATCH!"),

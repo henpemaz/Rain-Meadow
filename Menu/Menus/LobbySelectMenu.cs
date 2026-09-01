@@ -1,6 +1,7 @@
 using System.Net;
 using Menu;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Menus.Panels;
 using Steamworks;
@@ -15,7 +16,7 @@ public class LobbySelectMenu : SmartMenu
     public LobbySelectMetadataPanel metadataPanel;
     public ProperlyAlignedMenuLabel statisticsLabel;
     public LobbyCardSelector lobbyCardSelector;
-    public SimplerButton joinButton;
+    public EventfulButton joinButton;
     public DialogAsyncWaitCancellable? joiningDialog;
     public LobbyInfo? lastSelectedLobbyInfo;
 
@@ -59,7 +60,7 @@ public class LobbySelectMenu : SmartMenu
             .rainWorld
             .Shaders["MenuText"];
 
-        SimplerButton creditsButton = new(
+        EventfulButton creditsButton = new(
             this,
             mainPage,
             Translate("CREDITS"),
@@ -113,31 +114,31 @@ public class LobbySelectMenu : SmartMenu
             lastSelectedLobbyInfo = lobbyInfo;
         };
 
-        joinButton = new SimplerButton(
+        joinButton = new EventfulButton(
             this,
             mainPage,
             Translate("JOIN"),
             new Vector2(1056, 50),
             new Vector2(110, 30),
-            Translate("Join selected lobby")
+            Translate("Join selected lobby"),
+            // button can't be clicked if SelectedLobby is null (see Update())
+            onClick: (btn) => JoinLobbyChecks(lobbyCardSelector.SelectedLobby!)
         );
         joinButton.buttonBehav.greyedOut = true;
-        // button can't be clicked if SelectedLobby is null (see Update())
-        joinButton.OnClick += (btn) => JoinLobbyChecks(lobbyCardSelector.SelectedLobby!);
 
-        SimplerButton createButton = new(
+        EventfulButton createButton = new(
             this,
             mainPage,
             Translate("CREATE!"),
             new Vector2(936, 50),
             new Vector2(110, 30),
             Translate("Create a new lobby")
-        );
-        createButton.OnClick += (btn) =>
+        )
         {
-            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyCreateMenu);
-            PlaySound(SoundID.MENU_Switch_Page_In);
+            SoundOnClick = SoundID.MENU_Switch_Page_In,
         };
+        createButton.OnClick += (btn) =>
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyCreateMenu);
 
         TabContainer tabContainer = new(
             this,
@@ -355,7 +356,11 @@ public class LobbySelectMenu : SmartMenu
         {
             string errorMessage = "Failed to join lobby:<LINE>";
             manager.ShowDialog(
-                new NotifyDialog(manager, Translate(errorMessage) + error, UIUtils.DEFAULT_DIALOG_SIZE)
+                new NotifyDialog(
+                    manager,
+                    Translate(errorMessage) + error,
+                    UIUtils.DEFAULT_DIALOG_SIZE
+                )
             );
             RainMeadow.Error(errorMessage + error);
         }

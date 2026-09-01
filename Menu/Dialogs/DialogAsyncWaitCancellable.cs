@@ -1,11 +1,12 @@
 ﻿using System;
+using RainMeadow.UI.Components.Base;
 using UnityEngine;
 
 namespace RainMeadow.UI.Dialogs;
 
 public class DialogAsyncWaitCancellable : DialogAsyncWait
 {
-    public SimplerButton continueButton;
+    public EventfulButton continueButton;
 
     public event Action? OnCancel;
 
@@ -22,7 +23,7 @@ public class DialogAsyncWaitCancellable : DialogAsyncWait
         OnCancel = onCancel;
 
         // From DialogBoxNotify
-        continueButton = new SimplerButton(
+        continueButton = new EventfulButton(
             this,
             dialogPage,
             Translate("CANCEL"),

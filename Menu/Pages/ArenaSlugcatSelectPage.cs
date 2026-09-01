@@ -4,6 +4,7 @@ using System.Linq;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using UnityEngine;
 using Watcher;
@@ -13,7 +14,7 @@ namespace RainMeadow.UI.Pages;
 
 public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.SelectOneButtonOwner
 {
-    public SimplerButton backButton;
+    public EventfulButton backButton;
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel, chooseYourSlugcatLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
@@ -37,7 +38,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
+        backButton = new EventfulButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ =>
         {
             if (ArenaMenu == null) return;

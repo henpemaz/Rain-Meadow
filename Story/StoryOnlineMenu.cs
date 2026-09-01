@@ -9,6 +9,7 @@ using Steamworks;
 using RainMeadow.UI.Dialogs;
 using RainMeadow.UI;
 using UnityEngine;
+using RainMeadow.UI.Components.Base;
 
 namespace RainMeadow
 {
@@ -644,7 +645,7 @@ namespace RainMeadow
             lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
             pages[0].subObjects.Add(lobbyLabel);
 
-            var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
+            var invite = new EventfulButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
             invite.OnClick += (_) =>
             {
                 NotifyDialog dialog = new(

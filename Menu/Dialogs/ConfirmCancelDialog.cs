@@ -1,5 +1,6 @@
 using System;
 using Menu;
+using RainMeadow.UI.Components.Base;
 using UnityEngine;
 
 namespace RainMeadow.UI.Dialogs;
@@ -26,7 +27,7 @@ public class ConfirmCancelDialog : Dialog
 
         dialogBox = new DialogBox(this, dialogPage, Translate(message), pos, size);
 
-        SimplerButton confirmButton = new(
+        EventfulButton confirmButton = new(
             this,
             dialogPage,
             Translate(confirmButtonText),
@@ -36,11 +37,10 @@ public class ConfirmCancelDialog : Dialog
         confirmButton.OnClick += (btn) =>
         {
             manager.StopSideProcess(this);
-            PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
             OnConfirm?.Invoke();
         };
 
-        SimplerButton cancelButton = new(
+        EventfulButton cancelButton = new(
             this,
             dialogPage,
             Translate(cancelButtonText),
@@ -50,7 +50,6 @@ public class ConfirmCancelDialog : Dialog
         cancelButton.OnClick += (btn) =>
         {
             manager.StopSideProcess(this);
-            PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
             OnCancel?.Invoke();
         };
 
