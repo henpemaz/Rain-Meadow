@@ -212,15 +212,19 @@ namespace RainMeadow
                 }
 
                 //add mods that have their dependencies disabled to the disable list (e.g: a mod that requires Slugbase)
-                int countDisabled = 0;
-                while (countDisabled < disable.Count)
+                bool hasAddedAnyDependents;
+                do
                 {
-                    foreach (var mod in ModManager.ActiveMods)
-                        if (!disable.Contains(mod.id)) //ignore mods that are already in disable; no change necessary
-                            if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
-                                disable.Add(mod.id); //disable the mod
-                    countDisabled = disable.Count;
-                }
+                    hasAddedDependent = false;
+                    foreach (ModManager.Mod mod in ModManager.ActiveMods)
+                    {
+                        if (disable.Contains(mod.id)) continue;
+                        if (!disable.Any(id => mod.requirements.Contains(id))) continue;
+
+                        disable.Add(mod.id);
+                        hasAddedAnyDependents = true;
+                    }
+                } while (hasAddedAnyDependents);
 
                 //clear phony entries to the mod list again, just in case
                 enable.RemoveAll(mod => mod == null || mod == "");
