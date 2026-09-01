@@ -74,31 +74,12 @@ namespace RainMeadow
             public Guid key;
         }
 
-        public static void SetupRPCs()
+        public static void SetupRPCs(IEnumerable<Assembly> assemblies)
         {
             index = 1; // zero is an easy to catch mistake
 
-            Assembly selfAssembly = Assembly.GetExecutingAssembly();
-
-            // our own RPCs first
-            foreach (var type in selfAssembly.GetTypesSafely())
+            foreach (Assembly assembly in assemblies)
             {
-                try
-                {
-                    RegisterRPCs(type);
-                }
-                catch (Exception e)
-                {
-                    RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
-                    throw e;
-                }
-            }
-            // intentionally thrown on failure
-
-            // other RPCs
-            foreach (var assembly in Chainloader.PluginInfos.Select(info => info.Value.Instance.GetType().Assembly))
-            {
-                if (assembly == selfAssembly) continue;
                 try
                 {
                     foreach (var type in assembly.GetTypesSafely())
@@ -109,6 +90,11 @@ namespace RainMeadow
                         }
                         catch (Exception e)
                         {
+                            if (assembly == Assembly.GetExecutingAssembly())
+                            {
+                                RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
+                                throw; // intentionally thrown on failure
+                            }
                             RainMeadow.Error(assembly.FullName + ":" + type.FullName);
                             RainMeadow.Error(e);
                         }
@@ -116,6 +102,7 @@ namespace RainMeadow
                 }
                 catch (Exception e)
                 {
+                    if (assembly == Assembly.GetExecutingAssembly()) throw; // intentionally thrown on failure
                     RainMeadow.Error(e);
                 }
             }

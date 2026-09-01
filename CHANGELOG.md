@@ -2,12 +2,11 @@
 
 ## General
 - Improved startup time
-  - Optimized registering RPCs (~28x as fast) and online states (~2x as fast)
+  - Optimized registering RPCs (up to ~2700% faster) and online states (~100% faster)
   - Total Rain Meadow load time ~20% faster
 
 ### Modders
 - Removed `OnlineState.RegisterState`
-- RPCMethods and OnlineStates now only loaded from the main mod assemblies (the ones that BepInEx detects as mods, i.e. with the class inheriting BaseUnityPlugin) instead of every loaded assembly
 
 ## Chat
 

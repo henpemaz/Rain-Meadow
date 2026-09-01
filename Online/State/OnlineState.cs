@@ -51,13 +51,11 @@ namespace RainMeadow
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
-        internal static void InitializeBuiltinTypes()
+        internal static void InitializeBuiltinTypes(IEnumerable<Assembly> assemblies)
         {
             _ = StateType.Unknown; // runs static init
-            Assembly selfAssembly = Assembly.GetExecutingAssembly();
-            foreach (var assembly in Chainloader.PluginInfos.Select(info => info.Value.Instance.GetType().Assembly))
+            foreach (Assembly assembly in assemblies)
             {
-                bool isMain = assembly == selfAssembly;
                 bool hasState = false; // wether this assembly tried to register any onlinestates
                 try
                 {
@@ -74,14 +72,14 @@ namespace RainMeadow
                         catch (Exception e)
                         {
                             RainMeadow.Error($"{assembly.FullName}:{type.FullName}");
-                            if (isMain || hasState) throw;
+                            if (hasState || assembly == Assembly.GetExecutingAssembly()) throw;
                             RainMeadow.Error(e);
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    if (isMain || hasState) throw;
+                    if (hasState || assembly == Assembly.GetExecutingAssembly()) throw;
                     RainMeadow.Error(e);
                 }
             }
