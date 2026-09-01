@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow;
 
+[Obsolete]
 public class SimplerSymbolButton(
     Menu.Menu menu,
     MenuObject owner,
