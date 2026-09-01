@@ -179,15 +179,7 @@ namespace RainMeadow
                 InitializeExtEnums();
 
 #if DEBUG
-                var git = Type.GetType("RainMeadow.Git");
-                if (git == null) RainMeadow.Warn("Git Info wasn't bundled");
-                else
-                {
-                    var GIT_HEAD_COMMIT = git.GetField("GIT_HEAD_COMMIT", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
-                    var GIT_BRANCH_NAME = git.GetField("GIT_BRANCH_NAME", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
-                    var GIT_REMOTE_URL = git.GetField("GIT_REMOTE_URL", BindingFlags.Static | BindingFlags.Public)?.GetValue(null);
-                    RainMeadow.Info($"You're running a DEBUG build from: {GIT_BRANCH_NAME}\n{GIT_REMOTE_URL}commit/{GIT_HEAD_COMMIT}");
-                }
+                RainMeadow.Info($"You're running a DEBUG build from: {Git.GIT_BRANCH_NAME}\n{Git.GIT_REMOTE_URL}commit/{Git.GIT_HEAD_COMMIT}");
 #endif
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
