@@ -65,7 +65,11 @@ namespace RainMeadow
                 }
                 catch (Exception)
                 {
-                    RainMeadow.Error($"{type.Assembly.FullName}:{type.FullName}");
+                    RainMeadow.Error(
+                        type.Assembly == Assembly.GetExecutingAssembly() ?
+                            $"Error registering OnlineState for builtin type: {type.FullName}" :
+                            $"{type.Assembly.FullName}:{type.FullName}"
+                    );
                     throw;
                 }
             }
