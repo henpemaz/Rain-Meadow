@@ -78,31 +78,20 @@ namespace RainMeadow
         {
             index = 1; // zero is an easy to catch mistake
 
-            foreach (Assembly assembly in assemblies)
+            foreach (Type type in assemblies.SelectMany(assembly => assembly.GetTypesSafely()))
             {
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely())
-                    {
-                        try
-                        {
-                            RegisterRPCs(type);
-                        }
-                        catch (Exception e)
-                        {
-                            if (assembly == Assembly.GetExecutingAssembly())
-                            {
-                                RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
-                                throw; // intentionally thrown on failure
-                            }
-                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            RainMeadow.Error(e);
-                        }
-                    }
+                    RegisterRPCs(type);
                 }
                 catch (Exception e)
                 {
-                    if (assembly == Assembly.GetExecutingAssembly()) throw; // intentionally thrown on failure
+                    if (type.Assembly == Assembly.GetExecutingAssembly())
+                    {
+                        RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
+                        throw; // intentionally thrown on failure
+                    }
+                    RainMeadow.Error(type.Assembly.FullName + ":" + type.FullName);
                     RainMeadow.Error(e);
                 }
             }

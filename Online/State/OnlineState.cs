@@ -54,33 +54,19 @@ namespace RainMeadow
         internal static void InitializeBuiltinTypes(IEnumerable<Assembly> assemblies)
         {
             _ = StateType.Unknown; // runs static init
-            foreach (Assembly assembly in assemblies)
+            foreach (Type type in assemblies.SelectMany(assembly => assembly.GetTypesSafely()))
             {
-                bool hasState = false; // wether this assembly tried to register any onlinestates
+                if (type.IsAbstract || !typeof(OnlineState).IsAssignableFrom(type))
+                    continue;
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely())
-                    {
-                        try
-                        {
-                            if (type.IsAbstract || !typeof(OnlineState).IsAssignableFrom(type))
-                                continue;
-                            hasState = true;
-                            StateType stateType = new StateType(type.FullName, true);
-                            handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error($"{assembly.FullName}:{type.FullName}");
-                            if (hasState || assembly == Assembly.GetExecutingAssembly()) throw;
-                            RainMeadow.Error(e);
-                        }
-                    }
+                    StateType stateType = new(type.FullName!, true);
+                    handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    if (hasState || assembly == Assembly.GetExecutingAssembly()) throw;
-                    RainMeadow.Error(e);
+                    RainMeadow.Error($"{type.Assembly.FullName}:{type.FullName}");
+                    throw;
                 }
             }
         }
