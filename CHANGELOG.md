@@ -2,8 +2,8 @@
 
 ## General
 - Improved startup time
-  - Optimized registering RPCs (up to ~2700% faster) and online states (~100% faster)
-  - Total Rain Meadow load time ~20% faster
+  - Optimized registering RPCs (up to ~2700% faster) and online states (up to ~100% faster)
+  - Total Rain Meadow load time up to ~20% faster
 
 ### Modders
 - Removed `OnlineState.RegisterState`
