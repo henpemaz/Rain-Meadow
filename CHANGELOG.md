@@ -1,5 +1,10 @@
 # Release 1.16.0
 
+## General
+- Improved startup time
+  - Optimized registering RPCs (~28x as fast) and online states (~2x as fast)
+  - Total Rain Meadow load time ~20% faster
+
 ## Chat
 
 ### Modders
