@@ -19,8 +19,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
     public List<SlugcatStats.Name[]> slugcatSelectNamePages;
-    public SimplerSymbolButton prevButton;
-    public SimplerSymbolButton nextButton;
+    public EventfulSymbolButton prevButton;
+    public EventfulSymbolButton nextButton;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
     public bool readyWarning, lastBanSlugInput, banSlugInput, lastSainot;
@@ -201,14 +201,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             maxButtonsInRow = (int)Mathf.Ceil(Math.Min(maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
             maxRowStartingXPos = 633f - (maxButtonsInRow / 2 * 110f - ((maxButtonsInRow % 2 == 0) ? 55f : 0f));
         }
-        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
-        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInRow), 433f));
+        prevButton = new EventfulSymbolButton(menu, this, "Menu_Symbol_Arrow", new(maxRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
+        nextButton = new EventfulSymbolButton(menu, this, "Menu_Symbol_Arrow", new(maxRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInRow), 433f));
         prevButton.symbolSprite.rotation = 270;
         nextButton.symbolSprite.rotation = 90;
         prevButton.OnClick += _ => SwitchSlugcatTabBy(-1);
         nextButton.OnClick += _ => SwitchSlugcatTabBy(1);
-        prevButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        nextButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
         if (ArenaHelpers.selectableSlugcats.Count <= maxScugsPerPage)
         {
             prevButton.buttonBehav.greyedOut = true;

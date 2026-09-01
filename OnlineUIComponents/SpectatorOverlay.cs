@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components.Base;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -188,7 +189,10 @@ namespace RainMeadow
                 };
                 if (canKick)
                 {
-                    kickbutton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(this.size.x + 10, 0));
+                    kickbutton = new(menu, this, "Menu_Symbol_Clear_All", new(this.size.x + 10, 0))
+                    {
+                        SoundOnClick = null
+                    };
                     kickbutton.OnClick += (_) =>
                     {
                         if (BanClickedOnce)
@@ -205,7 +209,10 @@ namespace RainMeadow
                 }
                 if (kickbutton == null && player != OnlineManager.mePlayer)
                 {
-                    kickbutton = new(menu, this, ClientMuteSymbol, "MUTEPLAYER", new(this.size.x + 10, 0));
+                    kickbutton = new(menu, this, ClientMuteSymbol, new(this.size.x + 10, 0))
+                    {
+                        SoundOnClick = null
+                    };
                     kickbutton.OnClick += (_) =>
                     {
                         MutePlayer ^= true;
@@ -233,7 +240,7 @@ namespace RainMeadow
 
             public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => avatar.isMine || (!avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead)));
             public List<OnlineCreature> avatars;
-            public SimplerSymbolButton? kickbutton;
+            public EventfulSymbolButton? kickbutton;
         }
     }
 }

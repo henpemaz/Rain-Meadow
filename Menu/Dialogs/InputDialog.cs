@@ -68,14 +68,13 @@ public class InputDialog : Dialog
             onClick: (btn) => OnEnter()
         );
 
-        SimplerSymbolButton cancelButton = new(
+        EventfulSymbolButton cancelButton = new(
             this,
             dialogPage,
             "Menu_Symbol_Clear_All",
-            "",
-            center + (size / 2) - new Vector2(40f, 40f)
+            center + (size / 2) - new Vector2(40f, 40f),
+            onClick: (btn) => manager.StopSideProcess(this)
         );
-        cancelButton.OnClick += (btn) => manager.StopSideProcess(this);
 
         new UIelementWrapper(tabWrapper, textBox);
         dialogPage.subObjects.AddRange([dialogBox, tabWrapper, continueButton, cancelButton]);

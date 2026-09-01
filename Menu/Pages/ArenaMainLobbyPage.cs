@@ -21,7 +21,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 {
     public EventfulButton readyButton;
     public EventfulButton? startButton;
-    public SimplerSymbolButton arenaInfoButton,
+    public EventfulSymbolButton arenaInfoButton,
         arenaGameStatsButton;
     public MenuLabel activeGameModeLabel,
         readyPlayerCounterLabel,
@@ -75,15 +75,14 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             menu,
             this,
             "Multiplayer_Bones",
-            "",
-            new(readyButton.pos.x + readyButton.size.x + 10, readyButton.pos.y)
+            new(readyButton.pos.x + readyButton.size.x + 10, readyButton.pos.y),
+            menu.Translate("View Post-Game Stats"),
+            (btn) => OpenGameStatsDialog()
         )
         {
-            description = menu.Translate("View Post-Game Stats"),
             size = new(30, 30),
         };
         arenaGameStatsButton.roundedRect.size = arenaGameStatsButton.size;
-        arenaGameStatsButton.OnClick += _ => OpenGameStatsDialog();
         readyButton.Description = menu.Translate(
             scugslotsHint == 20
                 ? SlugcatSelector.slugcatSelectorHints[
@@ -134,17 +133,13 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             menu,
             this,
             "Meadow_Menu_SmallQuestionMark",
-            "",
             new Vector2(
                 chatMenuBox.pos.x + chatMenuBox.size.x / 2 - 12,
                 playerDisplayer!.pos.y + playerDisplayer.scrollUpButton!.pos.y
             ),
-            ""
-        )
-        {
-            description = menu.Translate("View Current Mode Info"),
-        };
-        arenaInfoButton.OnClick += _ => OpenInfoDialog();
+            menu.Translate("View Current Mode Info"),
+            (btn) => OpenInfoDialog()
+        );
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         playListTab = new(menu, tabContainer);

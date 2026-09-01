@@ -15,7 +15,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
 {
     public MenuTabWrapper tabWrapper;
     public OpTextBox searchBar;
-    public SimplerSymbolButton refreshButton,
+    public EventfulSymbolButton refreshButton,
         sortButton;
     public LobbyInfo[] lobbyInfos = [];
     public LobbyCard[] lobbyCards = [];
@@ -74,32 +74,30 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             UpdateLobbyCards();
         };
 
-        refreshButton = new SimplerSymbolButton(
+        refreshButton = new EventfulSymbolButton(
             menu,
             this,
             "Menu_Symbol_Repeats",
-            "",
             new Vector2(534, size.y - 10),
-            menu.Translate("Refresh lobbies list")
+            menu.Translate("Refresh lobbies list"),
+            (btn) => RefreshLobbies?.Invoke()
         );
-        refreshButton.OnClick += (btn) => RefreshLobbies?.Invoke();
 
-        sortButton = new SimplerSymbolButton(
+        sortButton = new EventfulSymbolButton(
             menu,
             this,
             "Meadow_Menu_Sort_A-Z",
-            "",
             new Vector2(505, size.y - 10),
-            menu.Translate("Sort A to Z")
+            menu.Translate("Sort A to Z"),
+            CycleSortingOrder
         );
-        sortButton.OnClick += CycleSortingOrder;
         sortingOrder = SortingOrder.AtoZ;
 
         new PatchedUIelementWrapper(tabWrapper, searchBar);
         this.SafeAddSubobjects(tabWrapper, refreshButton, sortButton);
     }
 
-    public void CycleSortingOrder(SymbolButton btn)
+    public void CycleSortingOrder(EventfulSymbolButton btn)
     {
         // ignore dumb casting cases like (SortingOrder)1290467 as a possible branch. Will still create warnings if new
         // entries are added to the SortingOrder enum properly.
