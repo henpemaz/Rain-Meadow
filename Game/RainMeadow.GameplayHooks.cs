@@ -299,7 +299,7 @@ namespace RainMeadow
         {
 
             orig(self, item, creature);
-            if (OnlineManager.lobby != null) return;
+            if (OnlineManager.lobby is null) return;
             if (!creature.IsLocal()) return;
 
             if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession))
