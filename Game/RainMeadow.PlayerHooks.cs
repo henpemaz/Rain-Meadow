@@ -944,6 +944,17 @@ public partial class RainMeadow
 
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
+        // STOP AUTO EATING
+        if (isArenaMode(out _)
+            && !self.isNPC
+            && self.input != null
+            && self.input.Length > 0
+            && !self.input[0].pckp
+            && self.eatCounter <= 15)
+        {
+            self.eatCounter = 40;
+        }
+
         orig(self, eu);
         // if (isArenaMode(out var _))
         if (OnlineManager.lobby != null)

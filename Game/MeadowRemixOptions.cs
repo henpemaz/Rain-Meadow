@@ -54,6 +54,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> ArenaMonkFruitSpawn;
     public readonly Configurable<bool> WeaponCollisionFix;
 
     public readonly Configurable<bool> EnableBombs;
@@ -225,6 +226,7 @@ public class RainMeadowOptions : OptionInterface
         ArtificerParryDistanceMult = config.Bind("ArtificerParryDistanceMult", 0.3f);
         ArtificerStunDistanceMult = config.Bind("ArtificerStunDistanceMult", 0.5f);
         ArtificerParryLeniency = config.Bind("ArtificerParryLeniency", true);
+        ArenaMonkFruitSpawn = config.Bind("ArenaMonkFruitSpawn", true);
         BlockMaul = config.Bind("BlockMaul", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
