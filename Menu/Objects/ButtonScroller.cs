@@ -17,11 +17,15 @@ namespace RainMeadow
     //a scroller just for predetermined buttons, intended for buttons' owner to be ButtonScroller, rn has predetermined height and spacing
     public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME, IScrollObjectHolder
     {
-        public enum TextAnchor
-        {
-            Top,
-            Bottom
-        }
+        public bool sliderDefaultIsDown, greyOutWhenNoScroll, startEndWithSpacing, sliderIsOnRightSide, isScrolling, buttonsDirty, lastButtonsDirty;
+        public float desiredScrollOffset, scrollOffset, prevScrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap,
+            _buttonSpacing, _buttonHeight = 30, maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
+        public PatchedVerticalSlider scrollSlider;
+        public EventfulScrollButton? scrollUpButton, scrollDownButton;
+        public ObservableCollection<MenuObject> scrollObjects = [];
+        public FContainer itemContainer;
+        public List<SideButton> sideButtons = [];
+        public FSprite[] sideButtonLines = [];
         public static float CalculateHeightBasedOnAmtOfButtons(int amtOfButtonsView, float buttonHeight, float spacing, bool startEndSpacing = false)
         {
             //remember it goes by buttonsize + button spacing not the buttonSpacing + buttonsize. button size plus first as there will be not extra spacing
@@ -63,7 +67,7 @@ namespace RainMeadow
         public bool CanScrollUp => DownScrollOffset > 0;
         public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
         public bool CanScroll => !menu.FreezeMenuFunctions;
-        public bool ScrollObjectsDirty => buttonsDirty;
+        public bool ScrollObjectsDirty => lastButtonsDirty;
         public virtual FContainer ItemContainer => itemContainer;
         public bool IsHidden { get; set; }
         public TextAnchor textAnchor = TextAnchor.Top;
@@ -102,9 +106,10 @@ namespace RainMeadow
             }
             else if (args.Action == NotifyCollectionChangedAction.Move)
             {
-                int toStart = Mathf.Min(args.NewStartingIndex, args.OldStartingIndex);
+                throw new NotImplementedException("ButtonScroller is not designed to move elements like that");
+                /*int toStart = Mathf.Min(args.NewStartingIndex, args.OldStartingIndex);
                 for (int i = toStart; i < scrollObjects.Count; i++)
-                    scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
+                    scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);*/
             }
         }
         public void MoveAtBottom()
@@ -137,9 +142,11 @@ namespace RainMeadow
         }
         public override void Update()
         {
+            lastButtonsDirty = buttonsDirty;
+            buttonsDirty = false;
             base.Update();
             if (!IsHidden && CanScroll && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
-            buttonsDirty = false; //menuobj with scroll function would have checked if this is dirty
+            //menuobj with scroll function would have checked if this is dirty
                 /*for (int i = 0; i < buttons.Count; i++)
                 {
                     buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
@@ -220,7 +227,7 @@ namespace RainMeadow
         public void RemoveScrollObject(int index, bool constrainScroll = true) => RemoveScrollObject(scrollObjects.GetValueOrDefault(index), constrainScroll);
         public void RemoveScrollObject(MenuObject? scrollObj, bool constrainScroll = true)
         {
-            if (scrollObjects.Contains(scrollObj)) return;
+            if (!scrollObjects.Contains(scrollObj)) return;
             scrollObj.GetScrollObject().RemovedFromScroller();
             this.ClearMenuObject(scrollObj);
 
@@ -250,19 +257,20 @@ namespace RainMeadow
         {
             if (scrollObjects == null) return;
             int actualStartingIndex = startingIndex == -1? this.scrollObjects.Count : startingIndex;
+            int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(scrollObjects[startingIndex]);
             for (int i = 0; i < scrollObjects.Length; i++)
             {
                 var obj = scrollObjects[i];
                 int indexInsert = actualStartingIndex + i;
                 OnAddMenuScrollObject(obj, indexInsert);
+                subObjects.Insert(subObjectIndexToInsert + i, obj);
                 this.scrollObjects.Insert(actualStartingIndex + i, obj);
             }
         }
         public virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt)
         {
             scrollObject.GetScrollObject().AddedIntoScroller(this, indexAt);
-            subObjects.Add(scrollObject);
-                scrollObject.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
+            scrollObject.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
 
         }
         public Vector2 GetIdealNormalPosForButton(int index)
@@ -323,16 +331,11 @@ namespace RainMeadow
                 sideButtonLines[i].MoveToBack();
             }
         }
-
-        public bool sliderDefaultIsDown, greyOutWhenNoScroll, startEndWithSpacing, sliderIsOnRightSide, isScrolling, buttonsDirty;
-        public float desiredScrollOffset, scrollOffset, prevScrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap, 
-            _buttonSpacing, _buttonHeight = 30, maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
-        public PatchedVerticalSlider scrollSlider;
-        public EventfulScrollButton? scrollUpButton, scrollDownButton;
-        public ObservableCollection<MenuObject> scrollObjects = [];
-        public FContainer itemContainer;
-        public List<SideButton> sideButtons = [];
-        public FSprite[] sideButtonLines = [];
+        public enum TextAnchor
+        {
+            Top,
+            Bottom
+        }
         public class SideButton : SimplerSymbolButton
         {
             public SideButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string symbolName, string text, string description, string signal = "") : base(menu, owner, symbolName, signal, pos)

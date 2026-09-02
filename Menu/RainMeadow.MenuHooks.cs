@@ -4,6 +4,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
+using RainMeadow.UI.Components;
 using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Menus;
 using RainMeadow.UI.Systems;
@@ -53,6 +54,8 @@ namespace RainMeadow
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenLastPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
@@ -250,6 +253,13 @@ namespace RainMeadow
                 return stryMenu.slugPageContainer; //now all slugcat pages will be in a stored in this container instead of menu.container, so refreshpages will add slugcat sprites here
             }
             return orig(self);
+        }
+        private Vector2 PositionedMenuObject_GetScreenPos(Func<PositionedMenuObject,Vector2> orig, PositionedMenuObject self)
+        {
+            var origScreenPos = orig(self);
+            if (self.owner is ScrollableContainer.Scrollable scrollable)
+                origScreenPos = scrollable.GetNewScreenPos(self, origScreenPos);
+            return origScreenPos;
         }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
