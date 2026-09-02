@@ -479,7 +479,6 @@ namespace RainMeadow
 
             var trimmedLine = line.Trim();
 
-            // Leading comment disables the whole line
             if (trimmedLine.StartsWith(CommentPrefix))
             {
                 trimmedLine = trimmedLine.TrimStart(CommentPrefix);
@@ -488,7 +487,6 @@ namespace RainMeadow
 
             var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
 
-            // Trim any additional  comments
             if (commentStartIndex != -1)
             {
                 trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
