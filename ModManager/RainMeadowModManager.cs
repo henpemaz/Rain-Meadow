@@ -36,10 +36,8 @@ namespace RainMeadow
 
         public static string WhitelistedModsExplanationComment =>
             """
-            // Whitelist. While ANY line below is uncommented, this file replaces both
+            // Whitelist. When any line is uncommented, this file replaces both
             // meadow-highimpactmods.txt and meadow-bannedmods.txt entirely.
-            // Clients joining your lobby must run exactly the mods listed here that you also
-            // have enabled, and must disable every other mod they have enabled.
             // Uncomment a line by removing its leading '//'. Leave every line commented to
             // disable whitelist mode and go back to the high-impact / banned lists.
 
@@ -64,9 +62,6 @@ namespace RainMeadow
             List<string> requiredMods;
             if (whitelistedMods.Count > 0)
             {
-                // Whitelist mode: meadow-highimpactmods.txt is ignored, but mods that were
-                // auto-detected as sync-required (e.g. region/level modifiers) still apply,
-                // since skipping them risks a client crash rather than a mismatched mod list.
                 requiredMods = whitelistedMods.Union(generatedSyncRequiredMods).ToList();
             }
             else
@@ -115,8 +110,8 @@ namespace RainMeadow
         {
             if (IsWhitelistActive())
             {
-                // Whitelist mode ignores meadow-bannedmods.txt; CheckMods derives the disable
-                // list from the required list instead.
+                // Whitelist mode ignores meadow-bannedmods.txt and CheckMods gets the disable
+                // list from the required list instead
                 return [];
             }
 
@@ -136,8 +131,8 @@ namespace RainMeadow
         }
 
         /// <summary>
-        /// Returns the list of mod IDs uncommented in meadow-whitelistmods.txt, creating the file
-        /// (seeded with the currently active mods, all commented out) if it doesn't exist yet.
+        /// Returns the list of mod IDs uncommented in meadow-whitelistmods.txt and creates the file
+        /// with all currently active mods all commented out if it doesn't exist yet.
         /// </summary>
         public static List<string> GetWhitelistedMods()
         {
@@ -191,8 +186,8 @@ namespace RainMeadow
         }
 
         /// <summary>
-        /// Whether meadow-whitelistmods.txt has any uncommented entries. When true, the
-        /// high-impact and banned mod lists are ignored and clients must match the whitelist exactly.
+        /// Whether meadow-whitelistmods.txt has any uncommented entries. If true then the
+        /// high impact and banned mod lists are ignored and clients must match the whitelist exactly.
         /// </summary>
         public static bool IsWhitelistActive()
         {
@@ -207,7 +202,7 @@ namespace RainMeadow
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
-        /// <param name="whitelistMode">Whether the host's lobby is whitelist mode; if true, the user must disable every active mod that isn't in <paramref name="requiredMods"/>, and <paramref name="bannedMods"/> is ignored.</param>
+        /// <param name="whitelistMode">Whether the host's lobby is whitelist mode <paramref name="requiredMods"/>, and <paramref name="bannedMods"/> is ignored.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
         internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "", bool whitelistMode = false)
         {
@@ -466,13 +461,12 @@ namespace RainMeadow
         }
 
         /// <summary>
-        /// Parses a single line from one of the user defined mod list files, stripping whitespace,
-        /// a disabling leading comment prefix, and any trailing (e.g. mod name) comment.
+        /// Parses a single line from one of the user defined mod list files
         /// </summary>
-        /// <param name="line">The raw line to parse.</param>
-        /// <param name="modId">The parsed mod id, or "" if <paramref name="line"/> was blank.</param>
-        /// <param name="isDisabledLine">Whether the line had a leading comment prefix (i.e. it's excluded).</param>
-        /// <returns>False if the line was blank and should be left as-is; true otherwise.</returns>
+        /// <param name="line">The raw line to parse</param>
+        /// <param name="modId">The parsed mod id or "" if <paramref name="line"/> was blank</param>
+        /// <param name="isDisabledLine">Whether the line had a leading comment prefix</param>
+        /// <returns>False if the line was blank and should be left alone</returns>
         private static bool TryParseModListLine(string line, out string modId, out bool isDisabledLine)
         {
             modId = "";
@@ -494,7 +488,7 @@ namespace RainMeadow
 
             var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
 
-            // Trim any additional (non-leading) comments
+            // Trim any additional  comments
             if (commentStartIndex != -1)
             {
                 trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
