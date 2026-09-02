@@ -14,6 +14,7 @@ namespace RainMeadow
         // TODO: possibly rename these
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
+        public static string WhitelistedModsFileName => "meadow-whitelistmods.txt";
 
         public static string SyncRequiredModsExplanationComment =>
             """
@@ -33,6 +34,17 @@ namespace RainMeadow
 
             """;
 
+        public static string WhitelistedModsExplanationComment =>
+            """
+            // Whitelist. While ANY line below is uncommented, this file replaces both
+            // meadow-highimpactmods.txt and meadow-bannedmods.txt entirely.
+            // Clients joining your lobby must run exactly the mods listed here that you also
+            // have enabled, and must disable every other mod they have enabled.
+            // Uncomment a line by removing its leading '//'. Leave every line commented to
+            // disable whitelist mode and go back to the high-impact / banned lists.
+
+            """;
+
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
@@ -45,11 +57,22 @@ namespace RainMeadow
                 };
         public static string[] GetRequiredMods()
         {
+            var whitelistedMods = GetWhitelistedMods();
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
+            var generatedSyncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
 
-            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-
-            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+            List<string> requiredMods;
+            if (whitelistedMods.Count > 0)
+            {
+                // Whitelist mode: meadow-highimpactmods.txt is ignored, but mods that were
+                // auto-detected as sync-required (e.g. region/level modifiers) still apply,
+                // since skipping them risks a client crash rather than a mismatched mod list.
+                requiredMods = whitelistedMods.Union(generatedSyncRequiredMods).ToList();
+            }
+            else
+            {
+                requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, generatedSyncRequiredMods, SyncRequiredModsExplanationComment);
+            }
 
             //add dependencies
             foreach (var mod in ModManager.ActiveMods)
@@ -90,6 +113,13 @@ namespace RainMeadow
       
         public static string[] GetBannedMods()
         {
+            if (IsWhitelistActive())
+            {
+                // Whitelist mode ignores meadow-bannedmods.txt; CheckMods derives the disable
+                // list from the required list instead.
+                return [];
+            }
+
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
             var syncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
@@ -106,6 +136,70 @@ namespace RainMeadow
         }
 
         /// <summary>
+        /// Returns the list of mod IDs uncommented in meadow-whitelistmods.txt, creating the file
+        /// (seeded with the currently active mods, all commented out) if it doesn't exist yet.
+        /// </summary>
+        public static List<string> GetWhitelistedMods()
+        {
+            var path = Path.Combine(Custom.RootFolderDirectory(), WhitelistedModsFileName);
+
+            if (!File.Exists(path))
+            {
+                var seedLines = ModIdsToIdAndName(ModManager.ActiveMods.Select(mod => mod.id).ToList())
+                    .Select(line => CommentPrefix + line)
+                    .ToList();
+                seedLines.Insert(0, WhitelistedModsExplanationComment);
+
+                try
+                {
+                    File.WriteAllLines(path, seedLines);
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+
+                return [];
+            }
+
+            var whitelistedMods = new List<string>();
+
+            try
+            {
+                foreach (var line in File.ReadAllLines(path))
+                {
+                    if (!TryParseModListLine(line, out var modId, out var isDisabledLine))
+                    {
+                        continue;
+                    }
+
+                    if (isDisabledLine || modId == "")
+                    {
+                        continue;
+                    }
+
+                    whitelistedMods.Add(modId);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                return [];
+            }
+
+            return whitelistedMods.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Whether meadow-whitelistmods.txt has any uncommented entries. When true, the
+        /// high-impact and banned mod lists are ignored and clients must match the whitelist exactly.
+        /// </summary>
+        public static bool IsWhitelistActive()
+        {
+            return GetWhitelistedMods().Count > 0;
+        }
+
+        /// <summary>
         /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary.
         /// </summary>
         /// <param name="requiredMods">Mods that the user MUST have in order to join the lobby</param>
@@ -113,8 +207,9 @@ namespace RainMeadow
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
+        /// <param name="whitelistMode">Whether the host's lobby is whitelist mode; if true, the user must disable every active mod that isn't in <paramref name="requiredMods"/>, and <paramref name="bannedMods"/> is ignored.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "")
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "", bool whitelistMode = false)
         {
             try
             {
@@ -122,7 +217,9 @@ namespace RainMeadow
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+                var disable = whitelistMode
+                    ? active.Except(requiredMods).ToList()
+                    : GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list
@@ -328,28 +425,10 @@ namespace RainMeadow
             // Trim non-leading comments (leading comments will be used to exclude mods)
             foreach (var line in existingLines)
             {
-                if (string.IsNullOrWhiteSpace(line))
+                if (!TryParseModListLine(line, out var trimmedLine, out var isDisabledLine))
                 {
                     linesToWrite.Add(line);
                     continue;
-                }
-
-                var trimmedLine = line.Trim();
-                var isDisabledLine = false;
-
-                // Leading comment disables the whole line
-                if (trimmedLine.StartsWith(CommentPrefix))
-                {
-                    trimmedLine = trimmedLine.TrimStart(CommentPrefix);
-                    isDisabledLine = true;
-                }
-
-                var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
-
-                // Trim any additional (non-leading) comments
-                if (commentStartIndex != -1)
-                {
-                    trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
                 }
 
                 // Discard duplicate active lines
@@ -384,6 +463,45 @@ namespace RainMeadow
         private static List<string> ModIdsToIdAndName(List<string> modIds)
         {
             return modIds.Select(x => IsModInstalled(x) ? x + " // " + ModIdToName(x) : x).ToList();
+        }
+
+        /// <summary>
+        /// Parses a single line from one of the user defined mod list files, stripping whitespace,
+        /// a disabling leading comment prefix, and any trailing (e.g. mod name) comment.
+        /// </summary>
+        /// <param name="line">The raw line to parse.</param>
+        /// <param name="modId">The parsed mod id, or "" if <paramref name="line"/> was blank.</param>
+        /// <param name="isDisabledLine">Whether the line had a leading comment prefix (i.e. it's excluded).</param>
+        /// <returns>False if the line was blank and should be left as-is; true otherwise.</returns>
+        private static bool TryParseModListLine(string line, out string modId, out bool isDisabledLine)
+        {
+            modId = "";
+            isDisabledLine = false;
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return false;
+            }
+
+            var trimmedLine = line.Trim();
+
+            // Leading comment disables the whole line
+            if (trimmedLine.StartsWith(CommentPrefix))
+            {
+                trimmedLine = trimmedLine.TrimStart(CommentPrefix);
+                isDisabledLine = true;
+            }
+
+            var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
+
+            // Trim any additional (non-leading) comments
+            if (commentStartIndex != -1)
+            {
+                trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
+            }
+
+            modId = trimmedLine;
+            return true;
         }
     }
 }
