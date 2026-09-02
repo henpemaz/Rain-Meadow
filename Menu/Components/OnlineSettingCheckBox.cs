@@ -13,7 +13,7 @@ using RainMeadow.UI.Components.Patched;
 using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components;
-public class OnlineSettingCheckBox : OnlineSettingParameter
+public class OnlineSettingCheckBox : OnlineSettingConfigurable
 {
     public const float checkBoxMargin = 5;
     public readonly bool defaultValue;

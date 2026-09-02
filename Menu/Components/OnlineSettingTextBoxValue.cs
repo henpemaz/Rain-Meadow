@@ -12,7 +12,7 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 
 namespace RainMeadow.UI.Components;
-public abstract class OnlineSettingTextBoxValue : OnlineSettingParameter
+public abstract class OnlineSettingTextBoxValue : OnlineSettingConfigurable
 {
     public const float textBoxMargin = 5;
     public override MenuObject selectable => textBox.wrapper;

@@ -4,146 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
-using static RainMeadow.UI.Components.TabContainer;
-using static Menu.Menu;
 using System;
 using HarmonyLib;
 using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components;
-
-public readonly struct SettingsConfigData
-{
-    internal static Dictionary<Type, Func<object?>> GetAttributeOwnerDict = [];
-    public readonly string name;
-    public readonly string attributeName;
-    public readonly Type attributeOwnerType;
-    public readonly ConfigurableBase configurable;
-    public readonly string? tabName;
-    public readonly SlugcatStats.Name? slugcatTab;
-    public readonly string description;
-
-    public static void AddNewGetAttributeOwnerFunction<T>(Func<T?> getAttributeOwnerFunc) where T : class
-    {
-        GetAttributeOwnerDict[typeof(T)] = getAttributeOwnerFunc;
-    }
-    static SettingsConfigData()
-    {
-        AddNewGetAttributeOwnerFunction(() => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode);
-        AddNewGetAttributeOwnerFunction(() => (OnlineManager.lobby?.gameMode as ArenaOnlineGameMode)?.arenaClientSettings);
-    }
-
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "")
-    {
-        this.name = name;
-        attributeName = arenaOnlineAttributeName;
-        this.configurable = configurable;
-        this.description = description;
-        this.attributeOwnerType = attributeOwnerType;
-    }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description) {}
-
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
-    {
-        slugcatTab = slugcat;
-    }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, slugcat, description) {}
-
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string tabName, string description = "")
-         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
-    {
-        this.tabName = tabName;
-    }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string tabName, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, tabName, description) {}
-
-    public readonly object? AttributeValue
-    {
-        get
-        {
-            return GetAttributeOwnerDict[attributeOwnerType]() is object data
-                ? attributeOwnerType.GetField(attributeName)?.GetValue(data)
-                : null;
-        }
-        set
-        {
-            if (GetAttributeOwnerDict[attributeOwnerType]() is object data)
-            {
-                try
-                {
-                    attributeOwnerType.GetField(attributeName).SetValue(data, value);
-                }
-                catch (Exception ex)
-                {
-                    RainMeadow.Error($"Could not convert [{value}] into {attributeOwnerType.GetField(attributeName)?.FieldType} : {attributeOwnerType.Name}.{attributeOwnerType.GetField(attributeName)?.Name} \n" + ex);
-                }
-            }
-        }
-    }
-
-    public static bool operator== (SettingsConfigData left, SettingsConfigData right)
-    {
-        return left.name == right.name
-            && left.attributeName == right.attributeName
-            && left.attributeOwnerType == right.attributeOwnerType
-            && left.configurable == right.configurable;
-    }
-    public static bool operator!= (SettingsConfigData left, SettingsConfigData right)
-    {
-        return !(left == right);
-    }
-    public override bool Equals(object obj)
-    {
-        return obj is SettingsConfigData config && config == this;
-    }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-}
-public readonly struct SettingsTabData
-{
-    public readonly SlugcatStats.Name? slugcatIcon;
-    public readonly string? name;
-    public readonly string? icon;
-    public readonly Color? color;
-    public SettingsTabData(SlugcatStats.Name slugcat)
-    {
-        slugcatIcon = slugcat;
-    }
-    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color)
-    {
-        this.slugcatIcon = slugcatIcon;
-        this.name = name;
-        this.color = color;
-    }
-    public SettingsTabData(string name, string icon, Color color)
-    {
-        this.icon = icon;
-        this.name = name;
-        this.color = color;
-    }
-
-    public static bool operator== (SettingsTabData left, SettingsTabData right)
-    {
-        return left.name == right.name && left.slugcatIcon == right.slugcatIcon;
-    }
-    public static bool operator!= (SettingsTabData left, SettingsTabData right)
-    {
-        return !(left == right);
-    }
-    public override bool Equals(object obj)
-    {
-        return obj is SettingsTabData tab && tab == this;
-    }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-}
 
 public abstract class OnlineSlugcatSettingsBase : SettingsPage
 {
@@ -174,27 +39,27 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             && tab.config.name == tabName)
         as OnlineSettingTab;
     }
-    public OnlineSettingParameter? GetSettingParameter(string paramName)
+    public OnlineSettingConfigurable? GetSettingParameter(string paramName)
     {
         return elements.Find(x =>
-            x is OnlineSettingParameter param
+            x is OnlineSettingConfigurable param
             && param.config.name == paramName)
-        as OnlineSettingParameter;
+        as OnlineSettingConfigurable;
     }
-    public OnlineSettingParameter? GetSettingParameter(ConfigurableBase configurable)
+    public OnlineSettingConfigurable? GetSettingParameter(ConfigurableBase configurable)
     {
         return elements.Find(x =>
-            x is OnlineSettingParameter param
+            x is OnlineSettingConfigurable param
             && param.config.configurable == configurable)
-        as OnlineSettingParameter;
+        as OnlineSettingConfigurable;
     }
-    public OnlineSettingParameter? GetSettingParameter(string attributeName, Type attributeOwnerType)
+    public OnlineSettingConfigurable? GetSettingParameter(string attributeName, Type attributeOwnerType)
     {
         return elements.Find(x =>
-            x is OnlineSettingParameter param
+            x is OnlineSettingConfigurable param
             && param.config.attributeName == attributeName
             && param.config.attributeOwnerType == attributeOwnerType)
-        as OnlineSettingParameter;
+        as OnlineSettingConfigurable;
     }
 
     protected OnlineSlugcatSettingsBase(Menu.Menu menu, MenuObject owner, float spacing = 5f, float margin = 30f, float textSpacing = 300) : base(menu, owner)
@@ -253,7 +118,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is OnlineSettingParameter param)
+            if (elements[i] is OnlineSettingConfigurable param)
             {
                 param.ResetValueToDefault();
             }
@@ -327,7 +192,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         for (int i = 0; i < elements.Count; i++)
         {
             elements[i].visible = !IsActuallyHidden;
-            elements[i].grayedOut = elements[i] is OnlineSettingParameter param && param.isClient
+            elements[i].grayedOut = elements[i] is OnlineSettingConfigurable param && param.isClient
                 ? greyoutAll
                 : greyoutNonClient;
         }
@@ -351,7 +216,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is OnlineSettingParameter param)
+            if (elements[i] is OnlineSettingConfigurable param)
             {
                 param.SaveOption();
             }
@@ -361,7 +226,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is OnlineSettingParameter param)
+            if (elements[i] is OnlineSettingConfigurable param)
             {
                 param.SaveOption(true);
             }
@@ -371,7 +236,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is OnlineSettingParameter param)
+            if (elements[i] is OnlineSettingConfigurable param)
             {
                 param.SyncValueToAttribute();
             }
@@ -443,7 +308,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
     {
         return new OnlineSettingTab(menu, this, tab);
     }
-    private OnlineSettingParameter? GetElementFromConfig(SettingsConfigData configurable, OnlineSettingTab? tab = null)
+    private OnlineSettingConfigurable? GetElementFromConfig(SettingsConfigData configurable, OnlineSettingTab? tab = null)
     {
         if (configurable.configurable.settingType == typeof(int))
         {
@@ -474,7 +339,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
             elements.Add(tabElement);
             GetAllConfigurablesFromTab(tab).Do(config =>
             {
-                if (GetElementFromConfig(config, tabElement) is OnlineSettingParameter param)
+                if (GetElementFromConfig(config, tabElement) is OnlineSettingConfigurable param)
                 {
                     elements.Add(param);
                 }
@@ -486,7 +351,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
         }
         GetAllConfigurablesFromTab().Do(config =>
         {
-            if (GetElementFromConfig(config) is OnlineSettingParameter param)
+            if (GetElementFromConfig(config) is OnlineSettingConfigurable param)
             {
                 elements.Add(param);
             }
@@ -587,7 +452,7 @@ public class TestMSCSetting : OnlineSlugcatSettings<TestMSCSetting>
     {
         for (int i = 0; i < elements.Count; i++)
         {
-            if (elements[i] is OnlineSettingParameter param)
+            if (elements[i] is OnlineSettingConfigurable param)
             {
                 param.label.text = param.label.text.Replace("<PAINCATNAME>", painCatName);
             }
@@ -692,12 +557,12 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
         (GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace) as OnlineSettingCheckBox)?
             .altDescription = "Watcher will be fully invisible to everyone when in ripple space";
 
-        OnlineSettingParameter? weaverGraphics = GetSettingParameter(RainMeadow.rainMeadowOptions.WeaverWatcher);
+        OnlineSettingConfigurable? weaverGraphics = GetSettingParameter(RainMeadow.rainMeadowOptions.WeaverWatcher);
         weaverGraphics?.color = RainWorld.GoldRGB * 1.5f;
         weaverGraphics?.isClient = true;
         (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Your watcher has synced weaver cosmetics";
 
-        OnlineSettingParameter? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster);
+        OnlineSettingConfigurable? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster);
         voidMaster?.color = RainWorld.RippleColor * 1.5f;
         voidMaster?.tabIndependant = true;
         (voidMaster as OnlineSettingCheckBox)?.altDescription = "Summon amoebas at the cost of your camo timer";

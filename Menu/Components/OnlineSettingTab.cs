@@ -1,16 +1,48 @@
 using Menu;
-using Menu.Remix;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
-using static RainMeadow.UI.Components.TabContainer;
-using static Menu.Menu;
-using System;
 using HarmonyLib;
 
 namespace RainMeadow.UI.Components;
+public readonly struct SettingsTabData
+{
+    public readonly SlugcatStats.Name? slugcatIcon;
+    public readonly string? name;
+    public readonly string? icon;
+    public readonly Color? color;
+    public SettingsTabData(SlugcatStats.Name slugcat)
+    {
+        slugcatIcon = slugcat;
+    }
+    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color)
+    {
+        this.slugcatIcon = slugcatIcon;
+        this.name = name;
+        this.color = color;
+    }
+    public SettingsTabData(string name, string icon, Color color)
+    {
+        this.icon = icon;
+        this.name = name;
+        this.color = color;
+    }
 
+    public static bool operator== (SettingsTabData left, SettingsTabData right)
+    {
+        return left.name == right.name && left.slugcatIcon == right.slugcatIcon;
+    }
+    public static bool operator!= (SettingsTabData left, SettingsTabData right)
+    {
+        return !(left == right);
+    }
+    public override bool Equals(object obj)
+    {
+        return obj is SettingsTabData tab && tab == this;
+    }
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+}
 public class OnlineSettingTab : OnlineSettingElement
 {
     private const float iconSize = 24;
