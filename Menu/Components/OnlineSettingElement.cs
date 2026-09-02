@@ -13,6 +13,7 @@ public abstract class OnlineSettingElement : PositionedMenuObject
 
     public static bool debug = false;
     public FSprite? spacingRect;
+    public abstract MenuObject selectable {get;}
 
     public int position = 0;
     public Vector2 WantedPosition => Vector2.up * settingsBoxSize.y

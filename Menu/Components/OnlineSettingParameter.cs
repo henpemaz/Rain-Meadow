@@ -10,7 +10,15 @@ public abstract class OnlineSettingParameter : OnlineSettingElement
     public MenuLabel label;
     public MenuTabWrapper tabWrapper;
     public Color? color;
-    public bool isClient;
+    public bool isClient
+    {
+        get;
+        set
+        {
+            field = value;
+            if (value) tabIndependant = true;
+        }
+    }
 
     public OnlineSettingParameter(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null, bool isClient = false)
          : this(menu, owner, owner.tabWrapper, config, tab, isClient) {}

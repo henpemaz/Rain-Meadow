@@ -147,16 +147,17 @@ public readonly struct SettingsTabData
 
 public abstract class OnlineSlugcatSettingsBase : SettingsPage
 {
-    public const string RESETTODEFAULT = "RESETTODEFAULT";
     public static Vector2 defaultBoxSize = new(450, 440);
     public Vector2 settingsBoxSize;
     public float margin;
     public SimpleButton? backButton;
-    public SimpleButton? resetButton;
+    public SimplerButton? resetButton;
     public MenuTabWrapper tabWrapper;
     protected List<OnlineSettingElement> elements;
     public float spacing;
     public float textSpacing;
+    public bool wasHidden = true;
+    public int lastVisibleElementCount = 0;
 
     public OnlineSettingTab? GetSettingTab(SlugcatStats.Name slugcatTab)
     {
@@ -210,7 +211,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
     public void UpdateElementsVisibility()
     {
-
+        int visibleElementCount = 0;
         for (int i = 0; i < elements.Count; i++)
         {
             if (elements[i].tab is OnlineSettingTab tab)
@@ -224,11 +225,17 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             if (elements[i].visible)
             {
                 elements[i].alpha = 1;
+                visibleElementCount++;
             }
             else
             {
                 elements[i].HardSetAlpha(0);
             }
+        }
+        if (lastVisibleElementCount != visibleElementCount)
+        {
+            lastVisibleElementCount = visibleElementCount;
+            BindSettingsButtons(IsActuallyHidden);
         }
     }
     public void UpdateElementsPosition()
@@ -238,6 +245,45 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         {
             elements[i].position = position;
             if (elements[i].visible) position++;
+        }
+    }
+    public void ResetSettings()
+    {
+        menu.PlaySound(SoundID.MENU_Button_Successfully_Assigned);
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i] is OnlineSettingParameter param)
+            {
+                param.ResetValueToDefault();
+            }
+        }
+    }
+    public void BindSettingsButtons(bool isHidden)
+    {
+        if (isHidden)
+        {
+            elements.Select(el => el.selectable).Do(sel =>
+            {
+                sel.RemoveBind(bottom:true, top:true);
+            });
+            backButton.RemoveBind(right:true, top:true, bottom:true);
+            resetButton.RemoveBind(left:true, top:true, bottom:true);
+        }
+        else
+        {
+            List<MenuObject> visibleElements = elements.FindAll(x => x.visible).Select(el => el.selectable).ToList();
+
+            if (backButton is not null)
+                visibleElements.Insert(0, backButton);
+
+            menu.TrySequentialMutualBind(visibleElements, bottomTop: true, loopLastIndex: true, reverseList:true);
+
+            if (backButton is not null && resetButton is not null)
+                menu.MutualHorizontalButtonBind(backButton, resetButton);
+
+            menu.TryMutualBind(resetButton, visibleElements.FirstOrDefault(), bottomTop:false);
+            menu.TryMutualBind(visibleElements.LastOrDefault(), resetButton, bottomTop:false);
         }
     }
 
@@ -250,27 +296,40 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         }
         if (resetButton is null)
         {
-            resetButton = new(menu, this, menu.Translate("RESET"), RESETTODEFAULT, new(settingsBoxSize.x - 40, 20), new(80, 30));
+            resetButton = new(menu, this, menu.Translate("RESET"), new(settingsBoxSize.x - 40, 20), new(80, 30));
+            resetButton.OnClick += (b) => ResetSettings();
             AddObjects(resetButton);
         }
+
+        BindSettingsButtons(IsActuallyHidden);
+        if (forceSelectedObject) menu.selectedObject = elements.FirstOrDefault()?.selectable ?? backButton;
     }
     public override void Update()
     {
         base.Update();
 
+        if (wasHidden != IsActuallyHidden)
+        {
+            wasHidden = IsActuallyHidden;
+            BindSettingsButtons(IsActuallyHidden);
+        }
+
         if (IsActuallyHidden) return;
 
-        bool greyoutAll = SettingsDisabled;
+        bool greyoutNonClient = SettingsDisabled;
+        bool greyoutAll = (OnlineManager.lobby?.gameMode as ArenaOnlineGameMode)?.initiateLobbyCountdown ?? true;
 
         foreach (MenuObject obj in subObjects)
         {
             if (obj != backButton && obj is ButtonTemplate btn)
-                btn.buttonBehav.greyedOut = greyoutAll;
+                btn.buttonBehav.greyedOut = greyoutNonClient;
         }
         for (int i = 0; i < elements.Count; i++)
         {
             elements[i].visible = !IsActuallyHidden;
-            elements[i].grayedOut = greyoutAll;
+            elements[i].grayedOut = elements[i] is OnlineSettingParameter param && param.isClient
+                ? greyoutAll
+                : greyoutNonClient;
         }
         UpdateElementsVisibility();
         UpdateElementsPosition();
@@ -315,23 +374,6 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             if (elements[i] is OnlineSettingParameter param)
             {
                 param.SyncValueToAttribute();
-            }
-        }
-    }
-
-    public override void Singal(MenuObject sender, string message)
-    {
-        base.Singal(sender, message);
-        if (message == RESETTODEFAULT)
-        {
-            menu.PlaySound(SoundID.MENU_Button_Successfully_Assigned);
-
-            for (int i = 0; i < elements.Count; i++)
-            {
-                if (elements[i] is OnlineSettingParameter param)
-                {
-                    param.ResetValueToDefault();
-                }
             }
         }
     }
@@ -551,13 +593,20 @@ public class TestMSCSetting : OnlineSlugcatSettings<TestMSCSetting>
             }
         }
     }
+    public override void Update()
+    {
+        base.Update();
+
+        // OnlineSettingCheckBox? sainot = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSAINOT) as OnlineSettingCheckBox;
+        // sainot?.tab?.label.text = menu.Translate(sainot.checkBox.GetValueBool() ? "Sain't" : "Saint");
+    }
 }
 
 public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
 {
-    public const string WATCHERCAMO = "Watcher's Camo",
-        WATCHERWEAVER = "Watcher's Weaver",
-        WATCHERVOIDMASTER = "Watcher's Voidmaster";
+    public const string WATCHERCAMO = "Watcher Camo",
+        WATCHERWEAVER = "Watcher Weaver",
+        WATCHERVOIDMASTER = "Watcher Voidmaster";
     public override string Name => "Test Watcher";
     static TestWatcherSetting()
     {

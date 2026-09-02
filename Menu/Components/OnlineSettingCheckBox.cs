@@ -17,6 +17,7 @@ public class OnlineSettingCheckBox : OnlineSettingParameter
 {
     public const float checkBoxMargin = 5;
     public readonly bool defaultValue;
+    public override MenuObject selectable => checkBox.wrapper;
     public OpCheckBox checkBox;
     public string? altDescription;
     public OnlineSettingCheckBox(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)

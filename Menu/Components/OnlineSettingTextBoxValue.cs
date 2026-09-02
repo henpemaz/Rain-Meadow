@@ -15,6 +15,7 @@ namespace RainMeadow.UI.Components;
 public abstract class OnlineSettingTextBoxValue : OnlineSettingParameter
 {
     public const float textBoxMargin = 5;
+    public override MenuObject selectable => textBox.wrapper;
     public OpTextBox textBox;
     public float TextBoxSize
     {

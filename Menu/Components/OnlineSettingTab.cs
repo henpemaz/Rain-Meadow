@@ -15,14 +15,18 @@ public class OnlineSettingTab : OnlineSettingElement
 {
     private const float iconSize = 24;
     private const float elementSpacing = 10;
+    private const float selectedTweening = 0.3f;
     public readonly SettingsTabData config;
-    public bool folded = false;
     public PositionedMenuObject icon;
     public MenuLabel label;
     public FSprite divider;
     public TabButton tabButton;
-    public string name = "";
     public Color tabColor = Color.gray;
+    public string name = "";
+    public float selectedTween = 0f;
+    public bool folded = false;
+
+    public override MenuObject selectable => tabButton;
 
     public OnlineSettingTab(Menu.Menu menu, MenuObject owner, SettingsTabData config)
          : base(menu, owner, null)
@@ -77,12 +81,19 @@ public class OnlineSettingTab : OnlineSettingElement
     {
         base.Update();
 
-        tabButton.open = !folded;
-
         tabButton.pos = Vector2.left * Mathf.Min(margin - 5, tabButton.size.x);
         icon.pos = tabButton.pos + Vector2.right * tabButton.size.x;
         label.pos = icon.pos + Vector2.right * (iconSize + elementSpacing);
         label.size.x = label.label.textRect.width + elementSpacing;
+
+        if (selectable.Selected)
+        {
+            selectedTween = Mathf.Lerp(selectedTween, 1, selectedTweening);
+        }
+        else
+        {
+            selectedTween = Mathf.Lerp(selectedTween, 0, selectedTweening * 2);
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -111,7 +122,8 @@ public class OnlineSettingTab : OnlineSettingElement
         divider.x = DrawX(timeStacker) + spacing;
         divider.y = DrawY(timeStacker) + elementSize.y/2f;
         divider.scaleX = Mathf.Max(0, settingsBoxSize.x - spacing);
-        divider.color = tabColor;
+        divider.scaleY = 2f + 2f * selectedTween;
+        divider.color = Color.Lerp(tabColor, Color.white, selectedTween * 0.35f);
     }
     public override void Singal(MenuObject sender, string message)
     {
@@ -130,7 +142,7 @@ public class OnlineSettingTab : OnlineSettingElement
     public class TabButton : BigSimpleButton
     {
         public FSprite arrowSprite;
-        public bool open = true;
+        public OnlineSettingTab settingTab => (owner as OnlineSettingTab)!;
         public TabButton(Menu.Menu menu, OnlineSettingTab owner, float size)
              : base(menu, owner, "", "", Vector2.zero, new Vector2(size, size), FLabelAlignment.Left, false)
         {
@@ -148,9 +160,10 @@ public class OnlineSettingTab : OnlineSettingElement
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            arrowSprite.x = DrawX(timeStacker) + size.x/2f;
+            arrowSprite.x = DrawX(timeStacker) + size.y/2f;
             arrowSprite.y = DrawY(timeStacker) + size.y/2f;
-            arrowSprite.rotation = open ? 180 : 90;
+            arrowSprite.rotation = !settingTab.folded ? 180 : 90;
+            arrowSprite.color = MyColor(timeStacker);
         }
         public override void RemoveSprites()
         {
