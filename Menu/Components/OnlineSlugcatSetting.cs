@@ -378,7 +378,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         }
     }
 }
-public abstract class OnlineSlugcatSettings<T> : OnlineSlugcatSettingsBase where T : class
+public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase where TSelf : class
 {
     protected static List<SettingsConfigData> onlineConfigurables = [];
     protected static List<SettingsTabData> onlineConfigurableTabs = [];
