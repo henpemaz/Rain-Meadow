@@ -441,6 +441,7 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
             (x,y) => DoesStringMatchCompressed(x, y));
     }
 }
+
 // compress by sorting by size, put it as a char at the start and then removing the extra letters needed to guess the enum
 public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase(enumType)
 {
@@ -684,10 +685,10 @@ public static class MeadowExtEnumSync
                     {
                         if (type
                                 .GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
-                                .Any(x => x.IsStatic && ExtEnumBase.valueDictionary.ContainsKey(x.FieldType))
+                                .Any(x => x.IsStatic && IsSyncedExtEnum(x.FieldType, out _))
                             || type
                                 .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
-                                .Any(x => x.CanRead && x.GetMethod.IsStatic && ExtEnumBase.valueDictionary.ContainsKey(x.PropertyType))
+                                .Any(x => x.CanRead && x.GetMethod.IsStatic && IsSyncedExtEnum(x.PropertyType, out _))
                         )
                         {
                             // run the cctor (if it wasn't already run)
@@ -758,14 +759,8 @@ public static class MeadowExtEnumSync
 
     public static bool IsSyncedExtEnum(Type enumType, out CompressedExtEnumBase compressedExtEnum)
     {
-        compressedExtEnum = null!;
-        int i = SyncedExtEnumList.FindIndex(x => x.enumType == enumType);
-        if (i > -1)
-        {
-            compressedExtEnum = SyncedExtEnumList[i];
-            return true;
-        }
-        return false;
+        compressedExtEnum = SyncedExtEnumList.Find(x => x.enumType == enumType);
+        return compressedExtEnum is not null;
     }
 
     public static byte MeadowIndex<T>(this T extEnum) where T : ExtEnum<T>
