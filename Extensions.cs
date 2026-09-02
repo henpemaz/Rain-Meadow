@@ -338,6 +338,12 @@ namespace RainMeadow
             return new Color(Mathf.Clamp(valuecolor.r, 1f / 255f, 1f), Mathf.Clamp(valuecolor.g, 1f / 255f, 1f), Mathf.Clamp(valuecolor.b, 1f / 255f, 1f));
         }
 
+        public static IEnumerable<Assembly> FindReferencingAssemblies(this Assembly assembly)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Where(asm => asm.GetReferencedAssemblies().Any(name => name.Name == assembly.GetName().Name));
+        }
+
         public static Type[] GetTypesSafely(this Assembly assembly)
         {
             try

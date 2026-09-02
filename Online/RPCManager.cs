@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mono.Cecil;
+using BepInEx.Bootstrap;
 
 namespace RainMeadow
 {
@@ -74,12 +74,11 @@ namespace RainMeadow
             public Guid key;
         }
 
-        public static void SetupRPCs()
+        public static void SetupRPCs(IEnumerable<Assembly> assemblies)
         {
             index = 1; // zero is an easy to catch mistake
 
-            // our own RPCs first
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypesSafely().ToList())
+            foreach (Type type in assemblies.SelectMany(assembly => assembly.GetTypesSafely()))
             {
                 try
                 {
@@ -87,33 +86,12 @@ namespace RainMeadow
                 }
                 catch (Exception e)
                 {
-                    RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
-                    throw e;
-                }
-            }
-            // intentionally thrown on failure
-
-            // other RPCs
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
-            {
-                if (assembly == Assembly.GetExecutingAssembly()) continue;
-                try
-                {
-                    foreach (var type in assembly.GetTypesSafely().ToList())
+                    if (type.Assembly == Assembly.GetExecutingAssembly())
                     {
-                        try
-                        {
-                            RegisterRPCs(type);
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            RainMeadow.Error(e);
-                        }
+                        RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
+                        throw; // intentionally thrown on failure
                     }
-                }
-                catch (Exception e)
-                {
+                    RainMeadow.Error(type.Assembly.FullName + ":" + type.FullName);
                     RainMeadow.Error(e);
                 }
             }
@@ -134,14 +112,18 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType)
         {
-            if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
-            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
-            if (!methods.Any()) return;
+            if (targetType.IsGenericTypeDefinition || targetType.IsInterface)
+                return;
 
+            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly);
             foreach (var method in methods)
             {
+                RPCMethodAttribute rpcMethodAttribute = method.GetCustomAttribute<RPCMethodAttribute>();
+                if (rpcMethodAttribute is null)
+                    continue;
+
                 var isStatic = method.IsStatic;
-                var isSoft = method.GetCustomAttribute<RPCMethodAttribute>() is SoftRPCMethodAttribute;
+                var isSoft = rpcMethodAttribute is SoftRPCMethodAttribute;
                 // get args
                 RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
                 var args = method.GetParameters();

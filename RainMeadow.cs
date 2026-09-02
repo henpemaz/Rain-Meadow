@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using RainMeadow.Game;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -190,10 +191,15 @@ namespace RainMeadow
 
                 StartCoroutine(CheckForUpdates());
 
+                List<Assembly> referencingAssembliesWithSelf = Assembly.GetExecutingAssembly()
+                    .FindReferencingAssemblies()
+                    .Prepend(Assembly.GetExecutingAssembly()) // our own first
+                    .ToList();
+
                 UsernameGenerator.Timestamp = DateTime.Now.Ticks;
 
                 var sw = Stopwatch.StartNew();
-                OnlineState.InitializeBuiltinTypes();
+                OnlineState.InitializeBuiltinTypes(referencingAssembliesWithSelf);
                 sw.Stop();
                 RainMeadow.Debug($"OnlineState.InitializeBuiltinTypes: {sw.Elapsed}");
 
@@ -208,7 +214,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
                 sw = Stopwatch.StartNew();
-                RPCManager.SetupRPCs();
+                RPCManager.SetupRPCs(referencingAssembliesWithSelf);
                 sw.Stop();
                 RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
 
