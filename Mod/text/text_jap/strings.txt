@@ -826,6 +826,9 @@ SESSION RESULTS|セッション結果
 SESSION ENDED!|セッションエンド!
 IT'S A DRAW!|引き分けだ!
 How long Wacher's abilities last for. Default: 12s|ウォッチャーの能力の持続時間
+Full Invisibility In Ripple Space:|リップル完全な不可視:
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|ウォッチャーは輝きを残し、他のウオッチャーは目を見ることができる
+Watcher will be fully invisible to everyone when in ripple space|ウォッチャーは完全に見えなくなる
 Survive,|生き残る
 Item Stealing|アイテム盗む
 Join In Progress|進行中<LINE>マッチへ参加
