@@ -91,7 +91,7 @@ namespace RainMeadow.UI.Systems
         }
         public void UpdateIndexFromScroller(IScrollObjectHolder scroller, int indexInScroller)
         {
-            if (scroller != this) return;
+            if (scroller != this.scroller) return;
             this.indexInScroller = indexInScroller;
         }
         public virtual void UpdateInObject()
@@ -133,7 +133,6 @@ namespace RainMeadow.UI.Systems
             {
                 throw new InvalidOperationException("This menuobject is invalid for scroller, please check if its IOwnMenuObject else if your item is fully compatible, set isValidForScroller as true");
             }
-            TryInitiateContainer();
             this.scroller = scroller;
             indexInScroller = index;
             scroller.ItemContainer.AddChild(objectContainer);
