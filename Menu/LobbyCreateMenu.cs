@@ -141,8 +141,8 @@ public class LobbyCreateMenu : SmartMenu
         mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Cheats:"), where, new Vector2(400, 20f), false));
         where.x += 80;
         where.y -= 5;
-        lobbyCheats = new OpCheckBox(new Configurable<bool>(false), where) 
-        { 
+        lobbyCheats = new OpCheckBox(new Configurable<bool>(false), where)
+        {
             description = Utils.Translate("If enabled, players will be allowed to use most Dev Tools cheats. Use with caution."),
         };
         new UIelementWrapper(this.tabWrapper, lobbyCheats);
@@ -174,7 +174,13 @@ public class LobbyCreateMenu : SmartMenu
 
 
         // display version
-        MenuLabel versionLabel = new MenuLabel(this, pages[0], $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+        var versionString = $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}";
+#if DEBUG
+        string gitString = GitInfo.HEAD_COMMIT.Substring(0, 7);
+        if (GitInfo.BRANCH_NAME.Length > 0) gitString = $"{GitInfo.BRANCH_NAME} ({gitString})";
+        versionString += " | " + gitString;
+#endif
+        MenuLabel versionLabel = new MenuLabel(this, pages[0], versionString, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
         versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
         mainPage.subObjects.Add(versionLabel);
 

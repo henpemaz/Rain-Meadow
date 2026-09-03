@@ -44,6 +44,31 @@
 		</None>
 	</ItemGroup>
 
+    
+    <Target Name="GitGenerate" BeforeTargets="BeforeCompile" Condition="'$(Configuration)' == 'Debug'">
+        <Exec Command='git branch --show-current' ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="ExistingGitBranch" />
+        </Exec>
+
+        <Exec Command='git config --default "" --get branch.$(ExistingGitBranch).remote' Condition="'$(ExistingGitBranch)' == ''" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitRemoteName" />
+        </Exec>
+
+        <Exec Command='git remote get-url $(GitRemoteName)' Condition="'$(GitRemoteName)' != ''" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitRemoteUrl" />
+        </Exec>
+        
+        <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="GitHead" />
+        </Exec>
+
+        <WriteLinesToFile File="$(IntermediateOutputPath)GitInfo.g.cs" Overwrite="true" Lines="namespace RainMeadow { public static class GitInfo { public const string BRANCH_NAME = &quot;$(ExistingGitBranch)&quot;%3B public const string REMOTE_URL = &quot;$(GitRemoteUrl)&quot;%3B public const string HEAD_COMMIT = &quot;$(GitHead)&quot;%3B } }" />
+
+        <ItemGroup>
+            <Compile Include="$(IntermediateOutputPath)GitInfo.g.cs" />
+        </ItemGroup>
+    </Target>
+
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<ItemGroup>
 			<BuildFiles Include="$(Outdir)\*" />

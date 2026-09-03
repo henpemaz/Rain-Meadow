@@ -82,10 +82,17 @@ public class LobbySelectMenu : SmartMenu
             false
         );
 
+
+        var versionString = $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}";
+#if DEBUG
+        string gitString = GitInfo.HEAD_COMMIT.Substring(0, 7);
+        if (GitInfo.BRANCH_NAME.Length > 0) gitString = $"{GitInfo.BRANCH_NAME} ({gitString})";
+        versionString += " | " + gitString;
+#endif
         ProperlyAlignedMenuLabel versionLabel = new(
             this,
             mainPage,
-            $"{Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}",
+            versionString,
             new Vector2(
                 (1366f - manager.rainWorld.screenSize.x) / 2f + 5f,
                 manager.rainWorld.screenSize.y - 768f
@@ -340,8 +347,8 @@ public class LobbySelectMenu : SmartMenu
         {
             if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
             {
-                int attempts = OnlineManager.lobby.enumsChecked 
-                    ? OnlineManager.lobby.joiningAttempts 
+                int attempts = OnlineManager.lobby.enumsChecked
+                    ? OnlineManager.lobby.joiningAttempts
                     : OnlineManager.lobby.enumSyncAttempts;
                 int step = !OnlineManager.lobby.enumsChecked
                     ? 0
@@ -356,8 +363,8 @@ public class LobbySelectMenu : SmartMenu
 
             if (TimeoutTicks > 0)
             {
-                if (OnlineManager.lobby.enumsChecked 
-                && !OnlineManager.lobby.isRequesting 
+                if (OnlineManager.lobby.enumsChecked
+                && !OnlineManager.lobby.isRequesting
                 && TimeoutTicks - joiningTimeoutCount > FastTimeoutCount) // Something went wrong, you should've joined by now
                 {
                     joiningTimeoutCount = TimeoutTicks - FastTimeoutCount; // Making the timeout shorter

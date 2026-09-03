@@ -52,7 +52,7 @@ namespace RainMeadow
 
                 fullyEnabled = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 fullyEnabled = false;
                 Logger.LogError(e);
@@ -61,7 +61,7 @@ namespace RainMeadow
 
         private bool AdvancedProfilingEnabled()
         {
-            foreach(var arg in Environment.GetCommandLineArgs())
+            foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "-meadowprofiler") return true;
             }
@@ -178,6 +178,13 @@ namespace RainMeadow
 
                 InitializeExtEnums();
 
+#if DEBUG
+                string gitFrom = (GitInfo.BRANCH_NAME.Length > 0 ? GitInfo.BRANCH_NAME : "HEAD detached") + $" at {GitInfo.HEAD_COMMIT.Substring(0, 8)}";
+                RainMeadow.Info($"You're running a DEBUG build from: {gitFrom}");
+                if (GitInfo.REMOTE_URL.Length > 0)
+                    RainMeadow.Info($"{GitInfo.REMOTE_URL}commit/{GitInfo.HEAD_COMMIT}");
+#endif
+
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
                 rainMeadowOptions._LoadConfigFile(); // We need the logging settings
 
@@ -232,7 +239,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
-                        if (shader.name == "RippleGlowColored" 
+                        if (shader.name == "RippleGlowColored"
                             || shader.name == "RippleSpawnBodyColored")
                         {
                             RainMeadow.Debug("also registering ripple side variant");
@@ -294,7 +301,7 @@ namespace RainMeadow
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     json = JObject.Parse(request.downloadHandler.text);
-                } 
+                }
                 else
                 {
                     Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
@@ -326,7 +333,7 @@ namespace RainMeadow
                         yield break;
                     }
                     NewVersionAvailable = latestVersion;
-                    
+
                 }
             }
         }
