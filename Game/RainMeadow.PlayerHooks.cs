@@ -36,6 +36,7 @@ public partial class RainMeadow
         IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.IsObjectThrowable += Player_IsObjectThrowable;
         On.Player.CanIPickThisUp += Player_CanIPickThisUp;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         IL.Player.Collide += Player_Collide;
@@ -783,18 +784,57 @@ public partial class RainMeadow
         return orig(self, hand);
     }
 
+    private bool Player_IsObjectThrowable(On.Player.orig_IsObjectThrowable orig, Player self, PhysicalObject obj)
+    {
+        if (ArenaHelpers.IsArenaShieldFruit(self, obj))
+        {
+            for (int i = 0; i < self.grasps.Length; i++)
+            {
+                if (self.grasps[i]?.grabbed is PhysicalObject other
+                    && other != obj
+                    && orig(self, other))
+                {
+                    return false;
+                }
+            }
+        }
+        return orig(self, obj);
+    }
+
     private void SlugcatHand_Update(On.SlugcatHand.orig_Update orig, SlugcatHand self)
     {
         if (OnlineManager.lobby != null && self.owner.owner is Player player)
         {
-            // Keep the pointing on as if it was a local update, this will be kept until handPointing is
-            // no longer -1, remember this is networking and in some frames we may have non-updated
-            // reachingForObject (see RealizedPlayerState.cs)
+
             if (player.graphicsModule is PlayerGraphics playerGraphics && player.handPointing != -1)
             {
                 playerGraphics.hands[player.handPointing].reachingForObject = true;
             }
             orig(self);
+
+            // keep fruit outward facing
+            int dir = player.ThrowDirection;
+            if (dir != 0
+                && self.limbNumber >= 0
+                && self.limbNumber < player.grasps.Length)
+            {
+                if (player.grasps[self.limbNumber]?.grabbed is PhysicalObject held && ArenaHelpers.IsArenaShieldFruit(player, held))
+                {
+                    self.relativeHuntPos.x = Mathf.Abs(self.relativeHuntPos.x) * dir;
+                }
+                else
+                {
+                    int otherLimb = 1 - self.limbNumber;
+                    if (otherLimb >= 0
+                        && otherLimb < player.grasps.Length
+                        && player.grasps[self.limbNumber]?.grabbed != null
+                        && player.grasps[otherLimb]?.grabbed is PhysicalObject otherHeld
+                        && ArenaHelpers.IsArenaShieldFruit(player, otherHeld))
+                    {
+                        self.relativeHuntPos.x = -Mathf.Abs(self.relativeHuntPos.x) * dir;
+                    }
+                }
+            }
         }
         else
         {
