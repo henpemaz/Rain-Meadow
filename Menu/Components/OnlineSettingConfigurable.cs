@@ -15,6 +15,7 @@ public readonly struct SettingsConfigData
     public readonly string? tabName;
     public readonly SlugcatStats.Name? slugcatTab;
     public readonly string description;
+    public readonly bool isClient;
 
     public static void AddNewGetAttributeOwnerFunction<T>(Func<T?> getAttributeOwnerFunc) where T : class
     {
@@ -26,32 +27,34 @@ public readonly struct SettingsConfigData
         AddNewGetAttributeOwnerFunction(() => (OnlineManager.lobby?.gameMode as ArenaOnlineGameMode)?.arenaClientSettings);
     }
 
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "")
+    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "", bool isClient = false)
     {
         this.name = name;
         attributeName = arenaOnlineAttributeName;
         this.configurable = configurable;
         this.description = description;
         this.attributeOwnerType = attributeOwnerType;
+        this.isClient = isClient;
     }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description) {}
+    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "", bool isClient = false)
+         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description, isClient) {}
 
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
+
+    public SettingsConfigData(string name, SlugcatStats.Name slugcat, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "", bool isClient = false)
+         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description, isClient)
     {
         slugcatTab = slugcat;
     }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, SlugcatStats.Name slugcat, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, slugcat, description) {}
+    public SettingsConfigData(string name, SlugcatStats.Name slugcat, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "", bool isClient = false)
+         : this(name, slugcat, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description, isClient) {}
 
-    public SettingsConfigData(string name, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string tabName, string description = "")
-         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description)
+    public SettingsConfigData(string name, string tabName, ConfigurableBase configurable, Type attributeOwnerType, string arenaOnlineAttributeName, string description = "", bool isClient = false)
+         : this(name, configurable, attributeOwnerType, arenaOnlineAttributeName, description, isClient)
     {
         this.tabName = tabName;
     }
-    public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string tabName, string description = "")
-         : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, tabName, description) {}
+    public SettingsConfigData(string name, string tabName, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "", bool isClient = false)
+         : this(name, tabName, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description, isClient) {}
 
     public readonly object? AttributeValue
     {
@@ -99,32 +102,25 @@ public readonly struct SettingsConfigData
 }
 public abstract class OnlineSettingConfigurable : OnlineSettingElement
 {
-    public readonly SettingsConfigData config;
+    public readonly SettingsConfigData data;
     public MenuLabel label;
     public MenuTabWrapper tabWrapper;
     public Color? color;
-    public bool isClient
-    {
-        get;
-        set
-        {
-            field = value;
-            if (value) tabIndependant = true;
-        }
-    }
+    public abstract object Value {get;}
 
-    public OnlineSettingConfigurable(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null, bool isClient = false)
-         : this(menu, owner, owner.tabWrapper, config, tab, isClient) {}
-    public OnlineSettingConfigurable(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null, bool isClient = false)
+    public OnlineSettingConfigurable(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData data, OnlineSettingTab? tab = null)
+         : this(menu, owner, owner.tabWrapper, data, tab) {}
+    public OnlineSettingConfigurable(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData data, OnlineSettingTab? tab = null)
          : base(menu, owner, tab)
     {
-        this.config = config;
+        this.data = data;
         this.tabWrapper = tabWrapper;
-        this.isClient = isClient;
+        isClient = data.isClient;
+
         label = new(
             menu,
             this,
-            menu.Translate(config.name + ":"),
+            menu.Translate(data.name + ":"),
             Vector2.zero,
             new(textSpacing, 30),
             false

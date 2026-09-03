@@ -24,6 +24,7 @@ public abstract class OnlineSettingElement : PositionedMenuObject
     public Vector2 targetPos;
     public bool grayedOut = false;
     public bool tabIndependant = false;
+    public bool isClient = false;
     public bool visible = true;
     public float alpha = 1;
     protected float currentAlpha = 0;

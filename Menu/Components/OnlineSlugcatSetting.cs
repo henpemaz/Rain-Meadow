@@ -28,37 +28,37 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         return elements.Find(x =>
             x is OnlineSettingTab tab
-            && tab.config.name is null
-            && tab.config.slugcatIcon == slugcatTab)
+            && tab.data.name is null
+            && tab.data.slugcatIcon == slugcatTab)
         as OnlineSettingTab;
     }
     public OnlineSettingTab? GetSettingTab(string tabName)
     {
         return elements.Find(x =>
             x is OnlineSettingTab tab
-            && tab.config.name == tabName)
+            && tab.data.name == tabName)
         as OnlineSettingTab;
     }
     public OnlineSettingConfigurable? GetSettingParameter(string paramName)
     {
         return elements.Find(x =>
             x is OnlineSettingConfigurable param
-            && param.config.name == paramName)
+            && param.data.name == paramName)
         as OnlineSettingConfigurable;
     }
     public OnlineSettingConfigurable? GetSettingParameter(ConfigurableBase configurable)
     {
         return elements.Find(x =>
             x is OnlineSettingConfigurable param
-            && param.config.configurable == configurable)
+            && param.data.configurable == configurable)
         as OnlineSettingConfigurable;
     }
     public OnlineSettingConfigurable? GetSettingParameter(string attributeName, Type attributeOwnerType)
     {
         return elements.Find(x =>
             x is OnlineSettingConfigurable param
-            && param.config.attributeName == attributeName
-            && param.config.attributeOwnerType == attributeOwnerType)
+            && param.data.attributeName == attributeName
+            && param.data.attributeOwnerType == attributeOwnerType)
         as OnlineSettingConfigurable;
     }
 
@@ -81,7 +81,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         {
             if (elements[i].tab is OnlineSettingTab tab)
             {
-                if (tab.grayedOut && !elements[i].tabIndependant)
+                if (tab.grayedOut && !elements[i].tabIndependant && !elements[i].isClient)
                     elements[i].grayedOut = true;
                 if (!tab.visible || tab.folded)
                     elements[i].visible = false;
@@ -192,7 +192,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         for (int i = 0; i < elements.Count; i++)
         {
             elements[i].visible = !IsActuallyHidden;
-            elements[i].grayedOut = elements[i] is OnlineSettingConfigurable param && param.isClient
+            elements[i].grayedOut = elements[i].isClient
                 ? greyoutAll
                 : greyoutNonClient;
         }
@@ -373,78 +373,80 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
 public class TestMSCSetting : OnlineSlugcatSettings<TestMSCSetting>
 {
     public override string Name => "Test MSC";
+    private OnlineSettingCheckBox? sainotSetting;
+    private OnlineSettingIntValue? ascendSetting;
     static TestMSCSetting()
     {
         AddSlugcatSettingsConfigurable(new(
             "Artificer Explosion Capacity",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity,
             nameof(ArenaOnlineGameMode.artiExplosionCount),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             "How many explosions Artificer can use before cooldown")
         );
         AddSlugcatSettingsConfigurable(new(
             "Artificer Stun Range Multiplier",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult,
             nameof(ArenaOnlineGameMode.artiStunDistanceMult),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             "Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5")
         );
         AddSlugcatSettingsConfigurable(new(
             "Artificer Parry Range Multiplier",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             RainMeadow.rainMeadowOptions.ArtificerParryDistanceMult,
             nameof(ArenaOnlineGameMode.artiParryDistanceMult),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             "How far Artificer can parry from compared to vanilla range. Default: 0.3")
         );
         AddSlugcatSettingsConfigurable(new(
             "Artificer Parry Leniency",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             RainMeadow.rainMeadowOptions.ArtificerParryLeniency,
             nameof(ArenaOnlineGameMode.artiParryLeniency),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             "Gives Artificer more leniency frames in the concussive blast's parry")
         );
         AddSlugcatSettingsConfigurable(new(
             "Disable Mauling",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             RainMeadow.rainMeadowOptions.BlockMaul,
             nameof(ArenaOnlineGameMode.disableMaul),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
             "Prevent Artificer and <PAINCATNAME> from mauling")
         );
 
         AddSlugcatSettingsConfigurable(new(
             "Sain't",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
             RainMeadow.rainMeadowOptions.ArenaSAINOT,
             nameof(ArenaOnlineGameMode.sainot),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
             "Disable Saint ascendance ability, but allow it to throw spears")
         );
         AddSlugcatSettingsConfigurable(new(
             "Saint Ascendance Duration",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer,
             nameof(ArenaOnlineGameMode.arenaSaintAscendanceTimer),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
             "How long Saint's ascendance ability lasts for. Default: 3s")
         );
 
         AddSlugcatSettingsConfigurable(new(
             "<PAINCATNAME> gets egg at 0 throw skill",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             RainMeadow.rainMeadowOptions.PainCatEgg,
             nameof(ArenaOnlineGameMode.painCatEgg),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             "If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0")
         );
         AddSlugcatSettingsConfigurable(new(
             "<PAINCATNAME> can always throw spears",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             RainMeadow.rainMeadowOptions.PainCatThrows,
             nameof(ArenaOnlineGameMode.painCatThrows),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             "Always allow <PAINCATNAME> to throw spears, even if throw skill is 0")
         );
         AddSlugcatSettingsConfigurable(new(
             "<PAINCATNAME> sometimes gets a friend",
+            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             RainMeadow.rainMeadowOptions.PainCatLizard,
             nameof(ArenaOnlineGameMode.painCatLizard),
-            MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel,
             "Allow <PAINCATNAME> to rarely spawn with a little friend")
         );
     }
@@ -457,13 +459,16 @@ public class TestMSCSetting : OnlineSlugcatSettings<TestMSCSetting>
                 param.label.text = param.label.text.Replace("<PAINCATNAME>", painCatName);
             }
         }
+
+        sainotSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSAINOT) as OnlineSettingCheckBox;
+        ascendSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer) as OnlineSettingIntValue;
     }
     public override void Update()
     {
         base.Update();
 
-        // OnlineSettingCheckBox? sainot = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSAINOT) as OnlineSettingCheckBox;
-        // sainot?.tab?.label.text = menu.Translate(sainot.checkBox.GetValueBool() ? "Sain't" : "Saint");
+        sainotSetting?.tab?.label.text = menu.Translate(sainotSetting.valueBool ? "Sain't" : "Saint");
+        if (sainotSetting?.valueBool is true) ascendSetting?.grayedOut = true;
     }
 }
 
@@ -473,6 +478,9 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
         WATCHERWEAVER = "Watcher Weaver",
         WATCHERVOIDMASTER = "Watcher Voidmaster";
     public override string Name => "Test Watcher";
+    private OnlineSettingIntValue? rippleLevelSetting;
+    private OnlineSettingCheckBox? invisSetting;
+    private OnlineSettingCheckBox? voidMasterSetting;
     static TestWatcherSetting()
     {
 
@@ -484,7 +492,8 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
         AddSlugcatSettingsTab(new(
             WATCHERWEAVER,
             Watcher.WatcherEnums.SlugcatStatsName.Watcher,
-            RainWorld.GoldRGB * 1.5f
+            RainWorld.GoldRGB * 1.5f,
+            true
         ));
         AddSlugcatSettingsTab(new(
             WATCHERVOIDMASTER,
@@ -494,78 +503,80 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
 
         AddSlugcatSettingsConfigurable(new(
             "Watcher Camo Duration",
+            WATCHERCAMO,
             RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer,
             nameof(ArenaOnlineGameMode.watcherCamoTimer),
-            WATCHERCAMO,
             "How long Watcher's abilities last for. Default: 12s")
         );
         AddSlugcatSettingsConfigurable(new(
             "Watcher Ripple Level",
+            WATCHERCAMO,
             RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel,
             nameof(ArenaOnlineGameMode.watcherRippleLevel),
-            WATCHERCAMO,
             "Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1")
         );
         AddSlugcatSettingsConfigurable(new(
             "Full Invisibility In Ripple Space",
+            WATCHERCAMO,
             RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace,
             nameof(ArenaOnlineGameMode.fullInvisInRippleSpace),
-            WATCHERCAMO,
             "Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.")
         );
 
         AddSlugcatSettingsConfigurable(new(
             "Weaver Watcher",
+            WATCHERWEAVER,
             RainMeadow.rainMeadowOptions.WeaverWatcher,
             typeof(ArenaClientSettings),
             nameof(ArenaClientSettings.weaverTail),
-            WATCHERWEAVER,
-            "Your watcher has synced normal cosmetics")
+            "Your watcher has synced normal cosmetics",
+            true)
         );
 
         AddSlugcatSettingsConfigurable(new(
             "Voidkeeper",
+            WATCHERVOIDMASTER,
             RainMeadow.rainMeadowOptions.VoidMaster,
             nameof(ArenaOnlineGameMode.voidMasterEnabled),
-            WATCHERVOIDMASTER,
             "Amoeba summoning is disabled lobby-wide")
         );
         AddSlugcatSettingsConfigurable(new(
             "Voidkeeper Amoeba Duration",
+            WATCHERVOIDMASTER,
             RainMeadow.rainMeadowOptions.AmoebaDuration,
             nameof(ArenaOnlineGameMode.amoebaDuration),
-            WATCHERVOIDMASTER,
             "Amoeba duration time in seconds")
         );
         AddSlugcatSettingsConfigurable(new(
             "Amoeba Lethality Factor",
+            WATCHERVOIDMASTER,
             RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor,
             nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor),
-            WATCHERVOIDMASTER,
             "Multiplier for amoeba lethality")
         );
         AddSlugcatSettingsConfigurable(new(
             "Void's Vengeance",
+            WATCHERVOIDMASTER,
             RainMeadow.rainMeadowOptions.AmoebaControl,
             nameof(ArenaOnlineGameMode.amoebaControl),
-            WATCHERVOIDMASTER,
             "Amoebas chase targets at-will")
         );
     }
     public TestWatcherSetting(Menu.Menu menu, MenuObject owner) : base(menu, owner)
     {
-        (GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace) as OnlineSettingCheckBox)?
-            .altDescription = "Watcher will be fully invisible to everyone when in ripple space";
+        rippleLevelSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel) as OnlineSettingIntValue;
+
+        invisSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaWatcherFullInvisibleInRippleSpace) as OnlineSettingCheckBox;
+        invisSetting?.altDescription = "Watcher will be fully invisible to everyone when in ripple space";
 
         OnlineSettingConfigurable? weaverGraphics = GetSettingParameter(RainMeadow.rainMeadowOptions.WeaverWatcher);
         weaverGraphics?.color = RainWorld.GoldRGB * 1.5f;
-        weaverGraphics?.isClient = true;
         (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Your watcher has synced weaver cosmetics";
 
-        OnlineSettingConfigurable? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster);
-        voidMaster?.color = RainWorld.RippleColor * 1.5f;
-        voidMaster?.tabIndependant = true;
-        (voidMaster as OnlineSettingCheckBox)?.altDescription = "Summon amoebas at the cost of your camo timer";
+        voidMasterSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster) as OnlineSettingCheckBox;
+        voidMasterSetting?.color = RainWorld.RippleColor * 1.5f;
+        voidMasterSetting?.tabIndependant = true;
+        voidMasterSetting?.altDescription = "Summon amoebas at the cost of your camo timer";
 
         (GetSettingParameter(RainMeadow.rainMeadowOptions.AmoebaControl) as OnlineSettingCheckBox)?
             .altDescription = "Amoeba's direction is influenced by pointing";
@@ -575,11 +586,12 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
     {
         base.Update();
 
-        OnlineSettingCheckBox? voidMaster = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster) as OnlineSettingCheckBox;
-        if (voidMaster is not null && !voidMaster.checkBox.GetValueBool())
+        if (rippleLevelSetting?.valueInt < 9) invisSetting?.grayedOut = true;
+
+        if (voidMasterSetting?.valueBool is false)
         {
             GetSettingTab(WATCHERVOIDMASTER)?.grayedOut = true;
-            UpdateElementsVisibility();
+            UpdateElementsVisibility(); // update the whole tab
         }
     }
 }

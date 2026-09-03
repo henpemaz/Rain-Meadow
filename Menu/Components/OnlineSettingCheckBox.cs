@@ -18,6 +18,8 @@ public class OnlineSettingCheckBox : OnlineSettingConfigurable
     public const float checkBoxMargin = 5;
     public readonly bool defaultValue;
     public override MenuObject selectable => checkBox.wrapper;
+    public override object Value => valueBool;
+    public bool valueBool => checkBox.GetValueBool();
     public OpCheckBox checkBox;
     public string? altDescription;
     public OnlineSettingCheckBox(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
@@ -55,7 +57,7 @@ public class OnlineSettingCheckBox : OnlineSettingConfigurable
             + Vector2.up * (elementSize.y - checkBox.size.y)/2f;
 
         if (!visible) return;
-        if (config.AttributeValue is not bool value) return;
+        if (data.AttributeValue is not bool value) return;
 
         if (isClient) SyncValueToAttribute();
         ShowSyncInRemixCheckbox(checkBox, grayedOut, value);
@@ -77,19 +79,19 @@ public class OnlineSettingCheckBox : OnlineSettingConfigurable
     }
     public override void ResetValueToDefault()
     {
-        checkBox.value = config.configurable.defaultValue;
+        checkBox.value = data.configurable.defaultValue;
     }
 
     public override void SaveOption(bool clientOption = false)
     {
         if (!clientOption || isClient)
         {
-            config.configurable.BoxedValue = checkBox.GetValueBool();
+            data.configurable.BoxedValue = checkBox.GetValueBool();
         }
     }
 
     public override void SyncValueToAttribute()
     {
-        config.AttributeValue = checkBox.GetValueBool();
+        data.AttributeValue = checkBox.GetValueBool();
     }
 }

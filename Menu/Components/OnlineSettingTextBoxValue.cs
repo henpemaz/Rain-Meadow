@@ -31,9 +31,9 @@ public abstract class OnlineSettingTextBoxValue : OnlineSettingConfigurable
     }
     protected void InitTextBox()
     {
-        if (!string.IsNullOrWhiteSpace(config.description))
+        if (!string.IsNullOrWhiteSpace(data.description))
         {
-            textBox.description = menu.Translate(config.description);
+            textBox.description = menu.Translate(data.description);
         }
         textBox.OnValueUpdate += (uiConfig, value, lastValue) => SyncValueToAttribute();
         new PatchedUIelementWrapper(tabWrapper, textBox);
@@ -45,7 +45,7 @@ public abstract class OnlineSettingTextBoxValue : OnlineSettingConfigurable
         textBox.pos = pos
             + Vector2.right * (elementSize.x - textBox.size.x - textBoxMargin)
             + Vector2.up * (elementSize.y - textBox.size.y)/2f;
-        if (config.AttributeValue is not object value) return;
+        if (data.AttributeValue is not object value) return;
 
         if (!visible) return;
         if (isClient) SyncValueToAttribute();
@@ -72,12 +72,14 @@ public abstract class OnlineSettingTextBoxValue : OnlineSettingConfigurable
     }
     public override void ResetValueToDefault()
     {
-        textBox.value = config.configurable.defaultValue;
+        textBox.value = data.configurable.defaultValue;
     }
 }
 
 public class OnlineSettingIntValue : OnlineSettingTextBoxValue
 {
+    public override object Value => valueInt;
+    public int valueInt => textBox.valueInt;
     public OnlineSettingIntValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
          : this(menu, owner, owner.tabWrapper, config, tab) {}
     public OnlineSettingIntValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
@@ -92,19 +94,21 @@ public class OnlineSettingIntValue : OnlineSettingTextBoxValue
     }
     public override void SyncValueToAttribute()
     {
-        config.AttributeValue = textBox.valueInt;
+        data.AttributeValue = textBox.valueInt;
     }
     public override void SaveOption(bool clientOption = false)
     {
         if (!clientOption || isClient)
         {
-            config.configurable.BoxedValue = textBox.valueInt;
+            data.configurable.BoxedValue = textBox.valueInt;
         }
     }
 }
 
 public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
 {
+    public override object Value => valueFloat;
+    public float valueFloat => textBox.valueFloat;
     public OnlineSettingFloatValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
          : this(menu, owner, owner.tabWrapper, config, tab) {}
     public OnlineSettingFloatValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
@@ -119,19 +123,21 @@ public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
     }
     public override void SyncValueToAttribute()
     {
-        config.AttributeValue = textBox.valueFloat;
+        data.AttributeValue = textBox.valueFloat;
     }
     public override void SaveOption(bool clientOption = false)
     {
         if (!clientOption || isClient)
         {
-            config.configurable.BoxedValue = textBox.valueFloat;
+            data.configurable.BoxedValue = textBox.valueFloat;
         }
     }
 }
 
 public class OnlineSettingStringValue : OnlineSettingTextBoxValue
 {
+    public override object Value => valueString;
+    public string valueString => textBox.value;
     public OnlineSettingStringValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
          : this(menu, owner, owner.tabWrapper, config, tab) {}
     public OnlineSettingStringValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
@@ -146,13 +152,13 @@ public class OnlineSettingStringValue : OnlineSettingTextBoxValue
     }
     public override void SyncValueToAttribute()
     {
-        config.AttributeValue = textBox.value;
+        data.AttributeValue = textBox.value;
     }
     public override void SaveOption(bool clientOption = false)
     {
         if (!clientOption || isClient)
         {
-            config.configurable.BoxedValue = textBox.value;
+            data.configurable.BoxedValue = textBox.value;
         }
     }
 }

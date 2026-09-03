@@ -9,21 +9,25 @@ public readonly struct SettingsTabData
     public readonly string? name;
     public readonly string? icon;
     public readonly Color? color;
-    public SettingsTabData(SlugcatStats.Name slugcat)
+    public readonly bool isClient;
+    public SettingsTabData(SlugcatStats.Name slugcat, bool isClient = false)
     {
         slugcatIcon = slugcat;
+        this.isClient = isClient;
     }
-    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color)
+    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color, bool isClient = false)
     {
         this.slugcatIcon = slugcatIcon;
         this.name = name;
         this.color = color;
+        this.isClient = isClient;
     }
-    public SettingsTabData(string name, string icon, Color color)
+    public SettingsTabData(string name, string icon, Color color, bool isClient = false)
     {
         this.icon = icon;
         this.name = name;
         this.color = color;
+        this.isClient = isClient;
     }
 
     public static bool operator== (SettingsTabData left, SettingsTabData right)
@@ -48,7 +52,7 @@ public class OnlineSettingTab : OnlineSettingElement
     private const float iconSize = 24;
     private const float elementSpacing = 10;
     private const float selectedTweening = 0.3f;
-    public readonly SettingsTabData config;
+    public readonly SettingsTabData data;
     public PositionedMenuObject icon;
     public MenuLabel label;
     public FSprite divider;
@@ -60,30 +64,32 @@ public class OnlineSettingTab : OnlineSettingElement
 
     public override MenuObject selectable => tabButton;
 
-    public OnlineSettingTab(Menu.Menu menu, MenuObject owner, SettingsTabData config)
+    public OnlineSettingTab(Menu.Menu menu, MenuObject owner, SettingsTabData data)
          : base(menu, owner, null)
     {
-        this.config = config;
-        if (config.slugcatIcon is not null)
+        this.data = data;
+        isClient = data.isClient;
+
+        if (data.slugcatIcon is not null)
         {
-            icon = new PositionedSlugIcon(menu, this, Vector2.zero, config.slugcatIcon.value);
+            icon = new PositionedSlugIcon(menu, this, Vector2.zero, data.slugcatIcon.value);
         }
         else
         {
-            icon = new MenuIllustration(menu, this, "", config.icon, Vector2.zero, true, true);
+            icon = new MenuIllustration(menu, this, "", data.icon, Vector2.zero, true, true);
         }
 
-        if (config.name is not null && config.color is not null)
+        if (data.name is not null && data.color is not null)
         {
-            name = config.name;
-            tabColor = (Color)config.color;
+            name = data.name;
+            tabColor = (Color)data.color;
         }
-        else if (config.slugcatIcon is not null)
+        else if (data.slugcatIcon is not null)
         {
-            name = SlugcatStats.getSlugcatName(config.slugcatIcon);
+            name = SlugcatStats.getSlugcatName(data.slugcatIcon);
             tabColor = Color.HSVToRGB(
-                PlayerGraphics.DefaultSlugcatColor(config.slugcatIcon).ToHSL().hue,
-                PlayerGraphics.DefaultSlugcatColor(config.slugcatIcon).ToHSL().saturation < 0.1f ? 0 : 0.75f,
+                PlayerGraphics.DefaultSlugcatColor(data.slugcatIcon).ToHSL().hue,
+                PlayerGraphics.DefaultSlugcatColor(data.slugcatIcon).ToHSL().saturation < 0.1f ? 0 : 0.75f,
                 1f
             );
         }
