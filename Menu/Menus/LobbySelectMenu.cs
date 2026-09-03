@@ -85,7 +85,9 @@ public class LobbySelectMenu : SmartMenu
 
         var versionString = $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}";
 #if DEBUG
-        versionString = $"{versionString} | {GitInfo.BRANCH_NAME} ({GitInfo.HEAD_COMMIT.Substring(0, 7)})";
+        string gitString = GitInfo.HEAD_COMMIT.Substring(0, 7);
+        if (GitInfo.BRANCH_NAME.Length > 0) gitString = $"{GitInfo.BRANCH_NAME} ({gitString})";
+        versionString += " | " + gitString;
 #endif
         ProperlyAlignedMenuLabel versionLabel = new(
             this,
