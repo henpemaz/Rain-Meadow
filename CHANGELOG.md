@@ -1,5 +1,8 @@
 # Release 1.16.0
 
+## Arena
+- Fixed infinite tinnitus caused by remote/frozen players pinning the shared microphone's deafness
+
 ## Chat
 
 ### Modders

@@ -66,6 +66,8 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
+            IL.VirtualMicrophone.Update += VirtualMicrophone_Update;
+            On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
@@ -437,6 +439,51 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void VirtualMicrophone_Update(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skipVanilla = il.DefineLabel();
+
+                //Old: deafContribution = 0f; if (followAbstractCreature?.realizedCreature != null) deafContribution = (IsArenaSession && followAbstractCreature.realizedCreature is Player) ? game.Players.Max(p => p.realizedCreature.Deaf) : followAbstractCreature.realizedCreature.Deaf;
+                //New: deafContribution = 0f; if (OnlineManager.lobby != null) deafContribution = (me != null && me.room != null && !me.slatedForDeletetion) ? me.Deaf : 0f;
+                c.GotoNext(MoveType.After,
+                    i => i.MatchStfld<VirtualMicrophone>(nameof(VirtualMicrophone.deafContribution))
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((VirtualMicrophone self) =>
+                {
+                    if (OnlineManager.lobby == null) return false;
+                    var me = self.room?.game?.Players?
+                        .FirstOrDefault(x => x != null && x.IsLocal())?.realizedCreature;
+                    self.deafContribution = (me != null && me.room != null && !me.slatedForDeletetion)
+                        ? me.Deaf
+                        : 0f;
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skipVanilla);
+
+                c.GotoNext(i => i.MatchLdfld<VirtualMicrophone>(nameof(VirtualMicrophone.deaf)));
+                c.GotoPrev(i => i.MatchLdarg(0));
+                c.MarkLabel(skipVanilla);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
+        {
+            if (OnlineManager.lobby != null && self.player != null && !self.player.IsLocal())
+            {
+                self.slatedForDeletetion = true;
+                return;
+            }
+            orig(self, eu);
         }
 
         private void Creature_Die(On.Creature.orig_Die orig, Creature self)
