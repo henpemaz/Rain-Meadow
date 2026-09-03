@@ -1227,19 +1227,6 @@ public partial class RainMeadow
             c.Index += 6;
             c.MarkLabel(skip);
 
-            // infinite tinnitus fix
-            c.Index = 0;
-            ILLabel skipTinnitus = il.DefineLabel();
-            c.GotoNext(MoveType.After,
-                i => i.MatchStfld<Player>(nameof(Player.mushroomEffect)),
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<Player>("get_AI"),
-                i => i.MatchBrtrue(out skipTinnitus)
-                );
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
-            c.Emit(OpCodes.Brfalse, skipTinnitus);
-
             // don't try teleporting remote players when using dev tools
             c.Index = 0;
             ILLabel skipDevTools = il.DefineLabel();
@@ -2122,8 +2109,6 @@ public partial class RainMeadow
         {
             self.slugOnBack.DropSlug();
         }
-
-        self.deaf = 0; //Doctors HATE this one simple trick!
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
         RainMeadow.Debug($"%%% DESTROY {oe}");
