@@ -171,14 +171,15 @@ namespace RainMeadow
 
             for (int i = arenaOnline.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
             {
-                OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                    arenaOnline.arenaSittingOnlineOrder[i]
-                );
-                if (missingPlayer == null)
+                ushort lobbyId = arenaOnline.arenaSittingOnlineOrder[i];
+                if (ArenaHelpers.FindOnlinePlayerByLobbyId(lobbyId) is null
+                    || arenaOnline.playersQuitMidRound.Contains(lobbyId))
                 {
                     arenaOnline.arenaSittingOnlineOrder.RemoveAt(i);
                 }
             }
+
+            arenaOnline.playersQuitMidRound.Clear();
 
             if (RoomSession.map.TryGetValue(abstractRoom, out var roomSession))
             {
@@ -1242,16 +1243,18 @@ namespace RainMeadow
                 .Count(settings =>
                     settings!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
                 );
+            int sittingPlayerCount =
+                arenaOnline.arenaSittingOnlineOrder.Count - arenaOnline.playersQuitMidRound.Count;
             if (
                 self.Players.Count + activePlayerCountWithOverseers
-                != arenaOnline.arenaSittingOnlineOrder.Count
+                != sittingPlayerCount
             )
             {
                 RainMeadow.Trace(
-                    $"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arenaOnline.arenaSittingOnlineOrder.Count}"
+                    $"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {sittingPlayerCount}"
                 );
 
-                var extraPlayers = self.Players.Skip(arenaOnline.arenaSittingOnlineOrder.Count).ToList();
+                var extraPlayers = self.Players.Skip(sittingPlayerCount).ToList();
 
                 self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
@@ -1276,7 +1279,7 @@ namespace RainMeadow
             {
                 arenaOnline.playersEqualToOnlineSitting =
                     self.Players.Count + activePlayerCountWithOverseers
-                    == arenaOnline.arenaSittingOnlineOrder.Count;
+                    == sittingPlayerCount;
             }
 
             if (!self.sessionEnded)

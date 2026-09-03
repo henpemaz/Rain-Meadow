@@ -164,6 +164,7 @@ namespace RainMeadow
         public bool shufflePlayList;
         public List<string> playList = [];
         public List<ushort> arenaSittingOnlineOrder = [];
+        public List<ushort> playersQuitMidRound = [];
         public List<ushort> playersLateWaitingInLobbyForNextRound = [];
         public List<int> bannedSlugs = [];
 
@@ -700,14 +701,15 @@ namespace RainMeadow
 
             for (int i = arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
             {
-                OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                    arenaSittingOnlineOrder[i]
-                );
-                if (missingPlayer is null)
+                ushort lobbyId = arenaSittingOnlineOrder[i];
+                if (ArenaHelpers.FindOnlinePlayerByLobbyId(lobbyId) is null
+                    || playersQuitMidRound.Contains(lobbyId))
                 {
                     arenaSittingOnlineOrder.RemoveAt(i);
                 }
             }
+
+            playersQuitMidRound.Clear();
 
             AbstractRoom absRoom = game.world.abstractRooms[0];
             Room room = absRoom.realizedRoom;
@@ -955,6 +957,7 @@ namespace RainMeadow
             }
             currentLevel = 0;
             arenaSittingOnlineOrder.Clear();
+            playersQuitMidRound.Clear();
             playersReadiedUp.list.Clear();
             playersLateWaitingInLobbyForNextRound.Clear();
         }
@@ -981,6 +984,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arenaSittingOnlineOrder.Clear();
+                playersQuitMidRound.Clear();
                 ClearAllLobbyDataStats();
             }
         }

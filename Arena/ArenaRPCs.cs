@@ -70,7 +70,7 @@ namespace RainMeadow
                 );
                 return;
             }
-            if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, playerNumber)is not OnlinePlayer onlinePlayer)
+            if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arenaOnline, playerNumber) is not OnlinePlayer onlinePlayer)
             {
                 RainMeadow.Warn($"Unable to find online player with player number {playerNumber}.");
                 return;
@@ -266,10 +266,10 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (arena.lobby.isOwner
-                    && arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId)
+                    && !arena.playersQuitMidRound.Contains(earlyQuitterOrLatecomer.inLobbyId))
                 {
-                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                    arena.playersQuitMidRound.Add(earlyQuitterOrLatecomer.inLobbyId);
                 }
                 int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
                     x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
