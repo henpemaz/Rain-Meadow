@@ -830,6 +830,41 @@ namespace RainMeadow
             {
                 player.slugcatStats.throwingSkill = 1;
             }
+            if (player.SlugCatClass == SlugcatStats.Name.Yellow && arenaOnline.monkFruitSpawn)
+            {
+                int freeHand = player.FreeHand();
+
+                if (freeHand >= 0)
+                {
+                    AbstractPhysicalObject monkFruit = new DangleFruit.AbstractDangleFruit(
+                        room.world,
+                        null,
+                        abstractCreature.pos,
+                        room.world.game.GetNewID(),
+                        -1,
+                        -1,
+                        false,
+                        null
+                    );
+                    room.abstractRoom.AddEntity(monkFruit);
+                    monkFruit.RealizeInRoom();
+
+
+                    // remove the stalk
+                    if (monkFruit.realizedObject is DangleFruit spawnedFruit && spawnedFruit.stalk != null)
+                    {
+                        spawnedFruit.stalk.fruit = null;
+                        spawnedFruit.stalk.Destroy();
+                        spawnedFruit.stalk = null;
+                    }
+
+                    self.room.world.GetResource().ApoEnteringWorld(monkFruit);
+                    self.room.abstractRoom.GetResource()
+                        ?.ApoEnteringRoom(monkFruit, monkFruit.pos);
+
+                    player.SlugcatGrab(monkFruit.realizedObject, freeHand);
+                }
+            }
             if (ModManager.MSC)
             {
                 if (player.SlugCatClass
