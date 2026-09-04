@@ -89,11 +89,6 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
             On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
-            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
-            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
-            On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons +=
-                MultiplayerMenu_InitiateGameTypeSpecificButtons;
-            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
             On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
@@ -2367,20 +2362,6 @@ namespace RainMeadow
             }
         }
 
-        public string MultiplayerMenu_ArenaImage(
-            On.Menu.MultiplayerMenu.orig_ArenaImage orig,
-            Menu.MultiplayerMenu self,
-            SlugcatStats.Name classID,
-            int color
-        )
-        {
-            if (isArenaMode(out var arena))
-            {
-                return SlugcatColorableButton.GetFileForSlugcatIndex(classID, color, false);
-            }
-            return orig(self, classID, color);
-        }
-
         public void ArenaGameSession_PlayerLandSpear(
             On.ArenaGameSession.orig_PlayerLandSpear orig,
             ArenaGameSession self,
@@ -2534,18 +2515,6 @@ namespace RainMeadow
                         RainMeadow.Debug($"Setting {array.IDString} to value {i}");
                         arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString] = i;
                     }
-                    foreach (var player in OnlineManager.players)
-                    {
-                        if (player.id == OnlineManager.lobby.owner.id || player.isMe)
-                        {
-                            continue;
-                        }
-                        player.InvokeOnceRPC(
-                            ArenaRPCs.Arena_UpdateSelectedChoice,
-                            array.IDString,
-                            i
-                        );
-                    }
                 }
                 orig(self, array, i);
             }
@@ -2573,99 +2542,7 @@ namespace RainMeadow
                         RainMeadow.Debug($"Setting {box.IDString} to value {c}");
                         arena.onlineArenaSettingsInterfaceeBool[box.IDString] = c;
                     }
-                    foreach (var player in OnlineManager.players)
-                    {
-                        if (player.id == OnlineManager.lobby.owner.id || player.isMe)
-                        {
-                            continue;
-                        }
-                        player.InvokeOnceRPC(
-                            ArenaRPCs.Arena_UpdateSelectedCheckbox,
-                            box.IDString,
-                            c
-                        );
-                    }
                 }
-            }
-        }
-
-        public void MultiplayerMenu_InitiateGameTypeSpecificButtons(
-            On.Menu.MultiplayerMenu.orig_InitiateGameTypeSpecificButtons orig,
-            Menu.MultiplayerMenu self
-        )
-        {
-            if (isArenaMode(out var _))
-            {
-                self.currentGameType = ArenaSetup.GameTypeID.Competitive; // force override for now
-            }
-            orig(self);
-        }
-
-        public void LevelSelector_LevelFromPlayList(
-            On.Menu.LevelSelector.orig_LevelFromPlayList orig,
-            Menu.LevelSelector self,
-            int index
-        )
-        {
-            if (isArenaMode(out var arena))
-            {
-                foreach (var player in OnlineManager.players)
-                {
-                    if (player.id == OnlineManager.lobby.owner.id || player.isMe)
-                    {
-                        continue;
-                    }
-                    player.InvokeOnceRPC(
-                        ArenaRPCs.Arena_LevelFromPlaylist,
-                        index,
-                        self.levelsPlaylist.levelItems[index].name
-                    );
-                }
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    return;
-                }
-            }
-            orig(self, index);
-            if (isArenaMode(out var _))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playList = self.levelsPlaylist.PlayList;
-                }
-            }
-        }
-
-        public void LevelSelector_LevelToPlaylist(
-            On.Menu.LevelSelector.orig_LevelToPlaylist orig,
-            Menu.LevelSelector self,
-            string levelName
-        )
-        {
-            if (isArenaMode(out var arena))
-            {
-                foreach (var player in OnlineManager.players)
-                {
-                    if (player.id == OnlineManager.lobby.owner.id)
-                    {
-                        continue;
-                    }
-                    player.InvokeOnceRPC(ArenaRPCs.Arena_LevelToPlaylist, levelName);
-                }
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    return;
-                }
-                orig(self, levelName);
-                arena.playList = self.levelsPlaylist.PlayList;
-                foreach (var i in arena.playList)
-                {
-                    RainMeadow.Debug(i);
-                }
-            }
-            else
-            {
-                orig(self, levelName);
             }
         }
 
@@ -3252,7 +3129,7 @@ namespace RainMeadow
                     if (message == "CONTINUE")
                     {
                         self.manager.RequestMainProcessSwitch(
-                            RainMeadow.Ext_ProcessID.ArenaLobbyMenu
+                            RainMeadow.Ext_ProcessID.ArenaOnlineLobbyMenu
                         );
                         self.manager.rainWorld.options.DeleteArenaSitting();
                         self.PlaySound(SoundID.MENU_Switch_Page_In);

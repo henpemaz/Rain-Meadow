@@ -47,7 +47,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
 
     public ArenaOnlineLobbyMenu(ProcessManager manager)
-        : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
+        : base(manager, RainMeadow.Ext_ProcessID.ArenaOnlineLobbyMenu)
     {
         RainMeadow.DebugMe();
         if (OnlineManager.lobby == null)

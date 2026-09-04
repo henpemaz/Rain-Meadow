@@ -946,19 +946,6 @@ namespace RainMeadow
 
         }
 
-        public void ResetOnReturnToMenu(ArenaLobbyMenu lobby)
-        {
-            ResetGameTimer();
-            if (externalArenaGameMode != null)
-            {
-                externalArenaGameMode.ResetOnSessionEnd();
-            }
-            currentLevel = 0;
-            arenaSittingOnlineOrder.Clear();
-            playersReadiedUp.list.Clear();
-            playersLateWaitingInLobbyForNextRound.Clear();
-        }
-
         public void ResetOnReturnMenu(ProcessManager manager)
         {
             manager.rainWorld.options.DeleteArenaSitting();
@@ -983,30 +970,6 @@ namespace RainMeadow
                 arenaSittingOnlineOrder.Clear();
                 ClearAllLobbyDataStats();
             }
-        }
-
-        public void ResetReadyUpLogic(ArenaOnlineGameMode arenaOnline, ArenaLobbyMenu lobby)
-        {
-            if (lobby.playButton != null)
-            {
-                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
-                lobby.playButton.inactive = false;
-            }
-            if (OnlineManager.lobby.isOwner)
-            {
-                arenaOnline.allPlayersReadyLockLobby =
-                    arenaOnline.playersReadiedUp.list.Count == OnlineManager.players.Count;
-                arenaOnline.isInGame = false;
-                arenaOnline.leaveForNextLevel = false;
-            }
-            if (arenaOnline.returnToLobby)
-            {
-                arenaOnline.playersReadiedUp.list.Clear();
-                arenaOnline.returnToLobby = false;
-            }
-
-            lobby.manager.rainWorld.options.DeleteArenaSitting();
-            //Nightcat.ResetNightcat();
         }
 
         public void AllowJoinOrRejoin()
@@ -1040,7 +1003,7 @@ namespace RainMeadow
 
         public override ProcessManager.ProcessID MenuProcessId()
         {
-            return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
+            return RainMeadow.Ext_ProcessID.ArenaOnlineLobbyMenu;
         }
 
         public static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
