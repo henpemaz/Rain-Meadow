@@ -9,6 +9,8 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using UnityEngine;
 using System.Diagnostics.PerformanceData;
+using RainMeadow.UI.Dialogs;
+using RainMeadow.UI;
 
 
 namespace RainMeadow {
@@ -57,8 +59,13 @@ namespace RainMeadow {
                     dialogue += Environment.NewLine + Utils.Translate($"Players can “Direct Connect” to this lobby through {isMe1} interface(s).");
                 }
                 OnlineManager.instance.manager.ShowDialog(
-                    new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)), 
-                        OnlineManager.instance.manager, null));
+                    new NotifyDialog(
+                        OnlineManager.instance.manager,
+                        dialogue,
+                        UIUtils.DEFAULT_DIALOG_SIZE,
+                        timeOut: 0f
+                    )
+                );
             }
 
             public void reset()
@@ -361,7 +368,14 @@ namespace RainMeadow {
             return "Unknown Lan Lobby";
         }
         public override void OpenInvitationOverlay() {
-            OnlineManager.instance.manager.ShowDialog(new DialogNotify(Utils.Translate("You cannot use this feature here."), OnlineManager.instance.manager, null));
+            OnlineManager.instance.manager.ShowDialog(
+                new NotifyDialog(
+                    OnlineManager.instance.manager,
+                    "You cannot use this feature here.",
+                    UIUtils.SINGLE_LINE_DIALOG_SIZE,
+                    timeOut: 0f
+                )
+            );
         }
     }
 }
