@@ -4,6 +4,7 @@ using System.Linq;
 using HUD;
 using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI;
 using RWCustom;
 using UnityEngine;
 
@@ -245,7 +246,7 @@ namespace RainMeadow
             if (!RainMeadow.isArenaMode(out var arena)) return;
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
             {
-                resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaOnlineLobbyMenu);
                 arena.ResetOnReturnMenu(resl.manager);
             }
             arena.arenaClientSettings.ready = true;
@@ -291,24 +292,6 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_NotifyRejoinAllowed(bool hasPermission)
-        {
-            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (lobby == null)
-                {
-                    RainMeadow.Debug("Could not start player");
-                    return;
-                }
-                RainMeadow.Debug("Starting game for player");
-                arena.isInGame = true; // state might be too late
-                arena.hasPermissionToRejoin = hasPermission;
-                RainMeadow.Debug("Start game immediately");
-                lobby.StartGame();
-            }
-        }
-        [RPCMethod]
         public static void Arena_EndSessionEarly(RPCEvent rpc)
         {
             if (RainMeadow.isArenaMode(out var arena) && rpc.from == arena.lobby?.owner)
@@ -323,34 +306,6 @@ namespace RainMeadow
             }
         }
 
-        [RPCMethod]
-        public static void Arena_ForceReadyUp()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                var stillInGame = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as MultiplayerResults);
-
-                if (stillInGame != null)
-                {
-                    arena.returnToLobby = true;
-                    stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                    stillInGame.manager.rainWorld.options.DeleteArenaSitting();
-                    stillInGame.ArenaSitting.players.Clear();
-                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
-                    return;
-                }
-                if (lobby.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-
-                if (lobby.playButton != null)
-                {
-                    lobby.playButton.Clicked();
-                }
-            }
-        }
         [RPCMethod]
         public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
         {
@@ -370,55 +325,6 @@ namespace RainMeadow
 
             }
         }
-
-        [RPCMethod]
-        public static void Arena_UpdateSelectedChoice(string stringID, int value)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-
-                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
-                {
-                    if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == stringID)
-                    {
-
-                        game.arenaSettingsInterface.SetSelected((selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, value); // why didn't this method take a freakin string
-                    }
-
-                }
-
-            }
-        }
-
-        [RPCMethod]
-        public static void Arena_UpdateSelectedCheckbox(string stringID, bool c)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-
-                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
-                {
-
-                    if (selectable is Menu.CheckBox && (selectable as Menu.CheckBox).IDString == stringID)
-                    {
-
-                        game.arenaSettingsInterface.SetChecked((selectable as CheckBox), c);
-                    }
-                }
-
-            }
-        }
-
 
         [RPCMethod]
         public static void Arena_InitialSetupTimers(int setupTime, int saintMaxTime)
@@ -485,25 +391,11 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
-                {
-                    arena.playersReadiedUp.list.Add(userIsReady.id);
-                }
-
-            }
-        }
-
-
-        [RPCMethod]
         public static void AddShortCutVessel(RWCustom.IntVector2 pos, OnlinePhysicalObject crit, RoomSession roomSess, int wait)
         {
 
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaOnlineLobbyMenu);
 
             if (lobby != null)
             {
@@ -521,43 +413,6 @@ namespace RainMeadow
 
         }
 
-
-        [RPCMethod]
-        public static void Arena_LevelToPlaylist(string chosenLevel)
-        {
-
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-            if (game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-
-            (game).GetGameTypeSetup.playList.Add(chosenLevel);
-            game.levelSelector.levelsPlaylist.AddLevelItem(new Menu.LevelSelector.LevelItem(game, game.levelSelector.levelsPlaylist, chosenLevel));
-            game.levelSelector.levelsPlaylist.ScrollPos = game.levelSelector.levelsPlaylist.LastPossibleScroll;
-            game.levelSelector.levelsPlaylist.ConstrainScroll();
-
-        }
-
-        [RPCMethod]
-        public static void Arena_LevelFromPlaylist(int index, string chosenLevel)
-        {
-
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-            if (game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-
-            if (game.levelSelector.levelsPlaylist.levelItems.Count > 0)
-            {
-                game.GetGameTypeSetup.playList.RemoveAt(index);
-                game.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(game, game.levelSelector.levelsPlaylist, chosenLevel));
-                game.levelSelector.levelsPlaylist.ScrollPos = game.levelSelector.levelsPlaylist.LastPossibleScroll;
-                game.levelSelector.levelsPlaylist.ConstrainScroll();
-            }
-
-        }
 
         [RPCMethod]
         public static void Arena_StopWaitingForPlayersToLoad(RPCEvent rpc)
