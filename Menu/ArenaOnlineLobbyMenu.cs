@@ -436,6 +436,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 Arena.hasPermissionToRejoin
                 && !initiateStartGameAfterCountDown
                 && Arena.arenaClientSettings.ready
+                && !Arena.playersQuitMidRound.Contains(OnlineManager.mePlayer.inLobbyId) // quit this round; wait for the next one
             )
             {
                 initiateStartGameAfterCountDown = true;
