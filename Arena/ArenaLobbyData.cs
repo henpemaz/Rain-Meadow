@@ -39,9 +39,6 @@ namespace RainMeadow
             [OnlineField(group = "arenaLobby")]
             public Dictionary<string, int> playerResultColors;
 
-            [OnlineField(nullable = true, group = "arenaLobby")]
-            public DynamicOrderedPlayerIDs playersReadiedUp;
-
             [OnlineField(group = "arenaLobby")]
             public List<int> bannedSlugs;
 
@@ -245,7 +242,6 @@ namespace RainMeadow
                 returnToLobby = arenaOnline.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>(arenaOnline.onlineArenaSettingsInterfaceMultiChoice);
                 onlineArenaSettingsInterfaceBool = new Dictionary<string, bool>(arenaOnline.onlineArenaSettingsInterfaceeBool);
-                playersReadiedUp = new DynamicOrderedPlayerIDs(arenaOnline.playersReadiedUp.list.ToList());
                 reigningChamps = new DynamicOrderedPlayerIDs(arenaOnline.reigningChamps.list.ToList());
 
                 winsByInLobbyId = arenaOnline.WinsByOPlayer.ToDictionary(
@@ -355,7 +351,6 @@ namespace RainMeadow
                 arenaOnline.onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 arenaOnline.onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 arenaOnline.playersInLobbyChoosingSlugs = playersChoosingSlugs;
-                arenaOnline.playersReadiedUp = playersReadiedUp;
                 arenaOnline.reigningChamps = reigningChamps;
 
                 arenaOnline.WinsByOPlayer = OnlineManager.players.ToDictionary(

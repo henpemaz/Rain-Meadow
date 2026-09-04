@@ -105,7 +105,6 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = [];
         public Dictionary<string, int> playerResultColors = [];
-        public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new();
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
@@ -199,7 +198,6 @@ namespace RainMeadow
             paincatName = "";
             allPlayersReadyLockLobby = false;
             returnToLobby = false;
-            playersReadiedUp.list = new List<MeadowPlayerId>();
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
