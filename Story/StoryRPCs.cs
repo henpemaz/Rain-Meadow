@@ -188,20 +188,27 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
         }
 
-        // Raises ripple level, usually client also tells
-        [RPCMethod]
-        public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
+        // Host accepts the first (min,max) report for a given echo id
+        public static void DetermineRippleRaise(StoryGameMode story, int spinningTopID, UnityEngine.Vector2 vector)
         {
+            if (spinningTopID != -1)
+            {
+                if (story.hostRippleRaiser.TryGetValue(spinningTopID, out var authoritative))
+                {
+                    RainMeadow.Debug($"discarding duplicate raise report for echo {spinningTopID} (reported {vector.y}, authoritative {authoritative.y})");
+                    return;
+                }
+                story.hostRippleRaiser[spinningTopID] = vector;
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+            }
 
-            if (!RainMeadow.isStoryMode(out var story)) return;
-            if (story.rippleLevel >= vector.y) return;
+            if (story.maximumRippleLevel >= vector.y) return; // max vs max
 
-            RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
+            RainMeadow.Debug($"Raising Ripple Level from: {story.maximumRippleLevel} to {vector.y} (echo {spinningTopID})");
 
-
-            story.rippleLevel = vector.y;
             story.minimumRippleLevel = UnityEngine.Mathf.Max(story.minimumRippleLevel, vector.x);
             story.maximumRippleLevel = UnityEngine.Mathf.Max(story.maximumRippleLevel, vector.y);
+            story.rippleLevel = UnityEngine.Mathf.Max(story.rippleLevel, vector.y); 
 
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession)
             {
@@ -209,18 +216,30 @@ namespace RainMeadow
             }
         }
 
+        // Client -> host: Send to ripple raise request for determination
+       // Helps prevent race condition
         [RPCMethod]
-        public static void PlayRaiseRippleLevelAnimation(UnityEngine.Vector2 vector)
+        public static void RaiseRippleLevelRequest(int spinningTopID, UnityEngine.Vector2 vector)
         {
+            if (!RainMeadow.isStoryMode(out var story)) return;
+            DetermineRippleRaise(story, spinningTopID, vector);
+        }
+
+        [RPCMethod]
+        public static void PlayRaiseRippleLevelAnimation(int spinningTopID, UnityEngine.Vector2 vector)
+        {
+            if (RainMeadow.isStoryMode(out var story) && spinningTopID != -1)
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+
             // apply the data even mid-transition, only the HUD part needs a live game.
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession)) return;
             ApplyRippleLevelToSaveState(storyGameSession, vector);
 
-            if (RainMeadow.isStoryMode(out var story) && OnlineManager.lobby.isOwner)
+            if (RainMeadow.isStoryMode(out var story2) && OnlineManager.lobby.isOwner)
             {
-                story.rippleLevel = UnityEngine.Mathf.Max(story.rippleLevel, vector.y);
-                story.minimumRippleLevel = UnityEngine.Mathf.Max(story.minimumRippleLevel, vector.x);
-                story.maximumRippleLevel = UnityEngine.Mathf.Max(story.maximumRippleLevel, vector.y);
+                story2.rippleLevel = UnityEngine.Mathf.Max(story2.rippleLevel, vector.y);
+                story2.minimumRippleLevel = UnityEngine.Mathf.Max(story2.minimumRippleLevel, vector.x);
+                story2.maximumRippleLevel = UnityEngine.Mathf.Max(story2.maximumRippleLevel, vector.y);
             }
 
             var karmaMeter = game.cameras?.FirstOrDefault()?.hud?.karmaMeter;
