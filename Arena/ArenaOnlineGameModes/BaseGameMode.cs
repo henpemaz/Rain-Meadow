@@ -1236,15 +1236,24 @@ namespace RainMeadow
             }
 
             int activePlayerCountWithOverseers = arenaOnline
-                .arenaSittingOnlineOrder.Select(id => ArenaHelpers.FindOnlinePlayerByLobbyId(id)) // Get the player
+                .arenaSittingOnlineOrder.Where(id => !arenaOnline.playersQuitMidRound.Contains(id)) // Skip mid-round quitters, as sittingPlayerCount does
+                .Select(id => ArenaHelpers.FindOnlinePlayerByLobbyId(id)) // Get the player
                 .Where(player => player != null) // Ensure player exists
                 .Select(player => ArenaHelpers.GetArenaClientSettings(player)) // Get settings
                 .Where(settings => settings != null) // Ensure settings exist
                 .Count(settings =>
                     settings!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
                 );
-            int sittingPlayerCount =
-                arenaOnline.arenaSittingOnlineOrder.Count - arenaOnline.playersQuitMidRound.Count;
+            if (arenaOnline.playersQuitMidRound.Count > 0)
+            {
+                self.Players.RemoveAll(ac =>
+                    ac?.GetOnlineCreature()?.owner is OnlinePlayer owner
+                    && arenaOnline.playersQuitMidRound.Contains(owner.inLobbyId)
+                );
+            }
+            int sittingPlayerCount = arenaOnline.arenaSittingOnlineOrder.Count(id =>
+                !arenaOnline.playersQuitMidRound.Contains(id)
+            );
             if (
                 self.Players.Count + activePlayerCountWithOverseers
                 != sittingPlayerCount
@@ -1258,12 +1267,13 @@ namespace RainMeadow
 
                 self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
-                foreach (
-                    var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value)
-                )
+                foreach (var avatarEntry in OnlineManager.lobby.playerAvatars)
                 {
+                    var playerAvatar = avatarEntry.Value;
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none)
                         continue; // not in game
+                    if (arenaOnline.playersQuitMidRound.Contains(avatarEntry.Key.inLobbyId))
+                        continue; // quit mid-round; their avatar may linger a few frames
                     if (
                         playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
                         && opo.apo is AbstractCreature ac

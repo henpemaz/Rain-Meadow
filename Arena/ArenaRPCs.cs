@@ -266,14 +266,13 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId)
+                if (arena.lobby.isOwner
+                    && arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId)
                     && !arena.playersQuitMidRound.Contains(earlyQuitterOrLatecomer.inLobbyId))
                 {
-                    arena.playersQuitMidRound.Add(earlyQuitterOrLatecomer.inLobbyId);
+                    arena.playersQuitMidRound.Add(earlyQuitterOrLatecomer.inLobbyId); // clients receive this via ArenaLobbyData
+                    RainMeadow.Debug($"{earlyQuitterOrLatecomer} quit mid-round");
                 }
-                int removedPlayers = arena.ArenaSession?.Players?.RemoveAll(
-                    x => x.GetOnlineCreature()?.owner == earlyQuitterOrLatecomer) ?? 0;
-                RainMeadow.Debug($"Removed {removedPlayers} players from {earlyQuitterOrLatecomer} who quitted!");
             }
         }
 

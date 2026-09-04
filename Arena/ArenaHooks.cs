@@ -2262,26 +2262,30 @@ namespace RainMeadow
                         return;
                     }
 
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            arena.arenaSittingOnlineOrder[i]
-                        );
-
-                        if (onlinePlayer != null && !onlinePlayer.isMe)
+                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                         {
-                            if (OnlineManager.lobby.isOwner)
+                            ushort lobbyId = arena.arenaSittingOnlineOrder[i];
+                            if (arena.playersQuitMidRound.Contains(lobbyId))
+                            {
+                                continue; // already left the round; they have no session to end
+                            }
+
+                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(lobbyId);
+
+                            if (onlinePlayer != null && !onlinePlayer.isMe)
                             {
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
-                            else
-                            {
-                                onlinePlayer.InvokeOnceRPC(
-                                    ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                                    OnlineManager.mePlayer
-                                );
-                            }
                         }
+                    }
+                    else
+                    {
+                        OnlineManager.lobby.owner.InvokeOnceRPC(
+                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                            OnlineManager.mePlayer
+                        );
                     }
 
                     if (OnlineManager.lobby.isOwner)
