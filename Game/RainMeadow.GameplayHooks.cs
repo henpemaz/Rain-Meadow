@@ -465,8 +465,12 @@ namespace RainMeadow
                     return true;
                 });
                 c.Emit(OpCodes.Brtrue, skipVanilla);
-
-                c.GotoNext(i => i.MatchLdfld<VirtualMicrophone>(nameof(VirtualMicrophone.deaf)));
+                
+                c.GotoNext(MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<VirtualMicrophone>(nameof(VirtualMicrophone.deaf)));
+                var skipVanilla = c.MarkLabel();
                 c.GotoPrev(i => i.MatchLdarg(0));
                 c.MarkLabel(skipVanilla);
             }
