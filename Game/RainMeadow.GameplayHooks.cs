@@ -466,8 +466,11 @@ namespace RainMeadow
                 });
                 c.Emit(OpCodes.Brtrue, skipVanilla);
 
-                c.GotoNext(i => i.MatchLdfld<VirtualMicrophone>(nameof(VirtualMicrophone.deaf)));
-                c.GotoPrev(i => i.MatchLdarg(0));
+                c.GotoNext(MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<VirtualMicrophone>(nameof(VirtualMicrophone.deaf))
+                    );
                 c.MarkLabel(skipVanilla);
             }
             catch (Exception e)
