@@ -1185,10 +1185,10 @@ namespace RainMeadow
                 RainMeadow.Debug($"{onlinePlayer} left mid-round; recording as a quitter");
             }
 
-            if (ArenaSession is ArenaGameSession arenaSession)
-            {
-                arenaSession.Players.RemoveAll(ac => ac?.GetOnlineCreature()?.owner == onlinePlayer);
-            }
+            if (ArenaSession is not null) 
+             { 
+                 ArenaSession.Players.RemoveAll(ac => ac?.GetOnlineCreature()?.owner == onlinePlayer); 
+             }
 
             base.PlayerLeftLobby(onlinePlayer);
         }
