@@ -1176,6 +1176,20 @@ namespace RainMeadow
             AllKillsByOPlayer.Remove(onlinePlayer);
             RoundKillsByOPlayer.Remove(onlinePlayer);
 
+            if (OnlineManager.lobby.isOwner
+                && isInGame
+                && arenaSittingOnlineOrder.Contains(onlinePlayer.inLobbyId)
+                && !playersQuitMidRound.Contains(onlinePlayer.inLobbyId))
+            {
+                playersQuitMidRound.Add(onlinePlayer.inLobbyId); // clients receive this via ArenaLobbyData
+                RainMeadow.Debug($"{onlinePlayer} left mid-round; recording as a quitter");
+            }
+
+            if (ArenaSession is ArenaGameSession arenaSession)
+            {
+                arenaSession.Players.RemoveAll(ac => ac?.GetOnlineCreature()?.owner == onlinePlayer);
+            }
+
             base.PlayerLeftLobby(onlinePlayer);
         }
 
