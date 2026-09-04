@@ -1273,7 +1273,7 @@ namespace RainMeadow
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none)
                         continue; // not in game
                     if (arenaOnline.playersQuitMidRound.Contains(avatarEntry.Key.inLobbyId))
-                        continue; // quit mid-round; their avatar may linger a few frames
+                        continue; // avatar may linger a few frames after quit
                     if (
                         playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
                         && opo.apo is AbstractCreature ac
