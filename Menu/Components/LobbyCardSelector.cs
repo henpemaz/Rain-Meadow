@@ -190,10 +190,7 @@ public class LobbyCardSelector
         UpdateLobbyCards();
     }
 
-    public void SetSelectedSelectOneButton(
-        string groupKey,
-        EventfulSelectOneButton button
-    )
+    public void SetSelectedSelectOneButton(string groupKey, EventfulSelectOneButton button)
     {
         if (groupKey != LobbyCardGroupKey || button is not LobbyCard card)
         {
@@ -340,7 +337,7 @@ public class LobbyCardSelector
                     new Vector2(0, 10),
                     new FSprite(iconName)
                 );
-                icons.Add((sprite, sprite.Size.x));
+                icons.Add((sprite, sprite.size.x));
                 accountedModCount += 1;
             }
 
