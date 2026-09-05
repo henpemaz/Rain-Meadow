@@ -433,7 +433,7 @@ namespace RainMeadow
 
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
-            if (!RainMeadow.isStoryMode(out var story)) { orig(room); return; }
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) { orig(room); return; }
             if (room.game.session is not StoryGameSession storySession)
             {
                 Error("echo raised ripple level outside of a story session?");
@@ -463,11 +463,11 @@ namespace RainMeadow
                 Error("could not resolve spinning top id for ripple raise; skipping duplicate-encounter dedupe and echo bookkeeping for this raise");
             }
 
-            var d = storySession.saveState.deathPersistentSaveData;
+            DeathPersistentSaveData d = storySession.saveState.deathPersistentSaveData;
 
             orig(room);
 
-            var vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
+            Vector2 vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
 
             if (OnlineManager.lobby.isOwner)
             {

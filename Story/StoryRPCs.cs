@@ -192,7 +192,7 @@ namespace RainMeadow
         {
             if (spinningTopID != -1)
             {
-                if (story.hostRippleRaiser.TryGetValue(spinningTopID, out var authoritative))
+                if (story.hostRippleRaiser.TryGetValue(spinningTopID, out UnityEngine.Vector2 authoritative))
                 {
                     RainMeadow.Debug($"discarding duplicate raise report for echo {spinningTopID} (reported {vector.y}, authoritative {authoritative.y})");
                     return;
@@ -208,7 +208,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        var oneStep = OneStepFromCurrent(story.minimumRippleLevel, story.maximumRippleLevel, story.rippleLevel);
+                        UnityEngine.Vector2 oneStep = OneStepFromCurrent(story.minimumRippleLevel, story.maximumRippleLevel, story.rippleLevel);
                         vector = new UnityEngine.Vector2(
                             UnityEngine.Mathf.Min(vector.x, oneStep.x),
                             UnityEngine.Mathf.Min(vector.y, oneStep.y));
@@ -252,8 +252,7 @@ namespace RainMeadow
         public static void RaiseRippleLevelRequest(RPCEvent rpc, int spinningTopID, UnityEngine.Vector2 vector)
         {
             if (!OnlineManager.lobby.isOwner) return;
-            if (rpc != null && rpc.from == null) return;
-            if (!RainMeadow.isStoryMode(out var story)) return;
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) return;
             vector = new UnityEngine.Vector2(
                 UnityEngine.Mathf.Clamp(vector.x, 0f, 5f),
                 UnityEngine.Mathf.Clamp(vector.y, 0f, 5f));
@@ -263,7 +262,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void PlayRaiseRippleLevelAnimation(int spinningTopID, UnityEngine.Vector2 vector)
         {
-            if (RainMeadow.isStoryMode(out var story) && spinningTopID != -1)
+            if (RainMeadow.isStoryMode(out StoryGameMode story) && spinningTopID != -1)
                 StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
 
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession)) return;

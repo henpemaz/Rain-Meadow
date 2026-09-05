@@ -44,7 +44,7 @@ namespace RainMeadow
 
             Watcher.SpinningTop? found = null;
             int count = 0;
-            foreach (var uad in room.updateList)
+            foreach (UpdatableAndDeletable uad in room.updateList)
             {
                 if (uad is Watcher.SpinningTop spinningTop)
                 {
