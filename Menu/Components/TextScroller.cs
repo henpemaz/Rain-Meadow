@@ -18,12 +18,12 @@ public class TextScroller : ButtonScroller
         float sliderSizeYOffset = 0,
         bool sliderDefaultIsDown = false
     )
-        : base(menu, owner, pos, size, sliderOnRight, sliderPosOffset, sliderSizeYOffset)
+        : base(menu, owner, pos, size, null, sliderOnRight? Systems.ScrollSystem.Direction.Left : Systems.ScrollSystem.Direction.Right, sliderPosOffset, sliderSizeYOffset)
     {
         this.sliderDefaultIsDown = sliderDefaultIsDown;
         buttonHeight = 15;
         buttonSpacing = 3;
-        startEndWithSpacing = false;
+        StartEndWithSpacing = false;
     }
 
     // treat different elements as separate lines

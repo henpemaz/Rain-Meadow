@@ -46,7 +46,7 @@ namespace RainMeadow
             float scrollTop = size.y - Margin - TitleHeight;
             float scrollHeight = scrollTop - ButtonAreaHeight;
             float scrollWidth = size.x - Margin * 2f - 30f; // leave room for the slider on the right
-            var scroller = new ButtonScroller(this, roundedRect, new Vector2(Margin, ButtonAreaHeight), new Vector2(scrollWidth, scrollHeight), true)
+            var scroller = new ButtonScroller(this, roundedRect, new Vector2(Margin, ButtonAreaHeight), new Vector2(scrollWidth, scrollHeight), null, UI.Systems.ScrollSystem.Direction.Right)
             {
                 greyOutWhenNoScroll = true,
                 buttonHeight = LineHeight,

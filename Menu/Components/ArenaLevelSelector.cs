@@ -294,7 +294,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public class PlaylistSelector : ButtonScroller
     {
         public const string AddOnClick = "Add level to playlist", RemoveOnClick = "Remove level from playlist";
-        public bool searchBarRequestedRemoved;
         public FContainer dividerContainer;
         public MenuTabWrapper tabWrapper;
         public OpTextBox? searchBox;
@@ -333,7 +332,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             }
         }
         public ArenaLevelSelector? MyLevelSelector => owner as ArenaLevelSelector;
-        public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, 5, 120, new(80, 10), sliderPosOffset: new(0, 9), sliderSizeYOffset: -40, startEndWithSpacing: true)
+        // 5, 120, new(80, 10)
+        public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, new GridScrollSystem(new(120, 80), new(0, 10), 5, startEndWithSpacing: true), sliderPosOffset: new(0, 9), sliderSizeAxisOffset: -40)
         {
             greyOutWhenNoScroll = true;
             showThumbsTransitionState = ShowThumbsStatus ? 1 : 0;
@@ -362,26 +362,41 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             lastShowThumbsTransitionState = showThumbsTransitionState;
             showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, ShowThumbsStatus ? 1f : 0f, 0.015f, 1f / 30f);
 
-            if (showThumbsTransitionState != lastShowThumbsTransitionState) ConstrainScroll();
-
             buttonHeight = Mathf.Lerp(20, 30 + ThumbHeight, ShowThumbsTransitionState(1f));
             buttonSpacing = (buttonHeight - 20) / 6;
 
-            if (searchBarRequestedRemoved)
-                buttonsDirty = true;
+            if (showThumbsTransitionState != lastShowThumbsTransitionState)
+                ConstrainScroll();
         }
-        public override float GetIdealYPosWithScroll(int elementIndex)
+        public override Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
-            float scrollPos = StepsDownOfItem(elementIndex) - scrollOffset;
-            float idealScrollPos = UpperBound - scrollPos * ButtonHeightAndSpacing;
-            LevelItem? lvlItem = scrollObjects.GetValueOrDefault(elementIndex) as LevelItem;
-            return idealScrollPos + (((lvlItem?.levelItemBelow != null) ? 3 : 0) - (lvlItem?.levelItemAbove != null ? 3 : 0) * showThumbsTransitionState);
+            int indexToRef = gridSystem.IndexToRef;
+            int currentIndex = Math.Min(index, scrollObjects.Count - 1);
+            var menuObj = scrollObjects.GetValueOrDefault(currentIndex);
+            var prevMenuObj = scrollObjects.GetValueOrDefault(currentIndex - 1);
+            (Vector2, Vector2) posSizeOfElement = (origPosition, menuObj?.GetScrollObject().Size ?? default);
+            (Vector2, Vector2)? prevPosSizeOfElement = null;
+            if (prevMenuObj != null)
+            {
+                var prevMenuObjScrollObj = prevMenuObj.GetScrollObject();
+                Vector2 pos = prevMenuObjScrollObj.LocalPos, size = prevMenuObjScrollObj.Size;
+                if (prevMenuObj is LevelItem prevLvlItem)
+                {
+                    pos[indexToRef] += size[indexToRef] * (1 - Mathf.Pow(Custom.SCurve(1 - prevLvlItem.fadeAway, 0.3f), 0.5f));
+                    pos[indexToRef] += -(prevLvlItem.levelItemBelow != null ? 3 : 0) + (prevLvlItem.levelItemAbove != null ? 3 : 0) * showThumbsTransitionState;
+                }
+                prevPosSizeOfElement = (pos, size);
+            }
+            Vector2 newPos = gridSystem.PositionOfElementWithScroll(currentIndex, posSizeOfElement, prevPosSizeOfElement, scrollOffset);
+            if (menuObj is LevelItem lvlItem)
+                newPos[indexToRef] += (lvlItem.levelItemBelow != null ? 3 : 0) - (lvlItem.levelItemAbove != null ? 3 : 0) * showThumbsTransitionState;
+            return newPos;
         }
         public override float GetCurrentScrollOffset()
         {
             float scrollPos = base.GetCurrentScrollOffset();
             int intScrollPos = (int)scrollPos;
-            if (intScrollPos > 0 && intScrollPos == Math.Max(0, scrollObjects.Count - MaxVisibleItemsShown))
+            if (intScrollPos > 0 && intScrollPos == Math.Max(0, scrollObjects.Count - gridSystem.cachedVisibleItemsShown))
             {
                 for (int i = intScrollPos; i < scrollObjects.Count; i++)
                 {
@@ -397,11 +412,11 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 num += ((i > 0) ? Mathf.Pow(Custom.SCurve(1 - (scrollObjects[i - 1] is LevelItem lvlItem ? lvlItem.fadeAway : 0), 0.3f), 0.5f) : 1);
             return num;
         }
-        public override float AlphaOfObject(Vector2 combinedPos)
+        public override float AlphaOfObject(Vector2 combinedPos, Vector2 elementSize)
         {
             float y = combinedPos.y;
-            float elementUpperBound = y + buttonHeight;
-            return y < LowerBound ? 1 - Math.Min(1, (LowerBound - y) / buttonHeight) : elementUpperBound > UpperBound ? 1 - Math.Min(1, (elementUpperBound - UpperBound) / buttonHeight) : 1;
+            float elementUpperBound = y + elementSize.y;
+            return y < 0 ? 1 - Math.Min(1, -y / buttonHeight) : elementUpperBound > size.y ? 1 - Math.Min(1, (elementUpperBound - size.y) / buttonHeight) : 1;
         }
         public virtual void LoadLevelsInit()
         {
@@ -447,7 +462,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             searchButton = AddSideButton("modSearch", "", menu.Translate("Search for levels"), "SEARCHLEVEL");
             searchButton.OnClick += (btn) =>
             {
-                searchBarRequestedRemoved = true; //we cant trust buttondirty to be set true earlier than the levelitems being called to update
+                buttonsDirty = true;
                 if (searchBox != null)
                 {
                     FilterLevelsList("");

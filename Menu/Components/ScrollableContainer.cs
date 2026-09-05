@@ -22,9 +22,8 @@ namespace RainMeadow.UI.Components
         public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, maxScrollSpeed = 1.2f, floatScrollMultipler = 100f;
         public bool scrollableDirty = true, lastScrollableDirty = true, cameraDirty = true, sliderDefaultIsDown, isScrolling;
         public float scrollSliderValueCap, scrollSliderValue, scrollSpeed, desiredScrollPosOffset, floatScrollPosOffset, prevFloatScrollPosOffset;
-
         public Scrollable? _content;
-        public readonly ContentScrollSystem scrollingSystem;
+        public readonly ContentScrollSystem contentSystem;
 
         public Slider? scrollSlider;
 
@@ -60,10 +59,10 @@ namespace RainMeadow.UI.Components
             (owner?.Container ?? menu.container).AddChild(myContainer = new());
             myContainer.AddChild(itemMaskContainer = new()); 
             myContainer.AddChild(camContainer = new());
-            this.scrollingSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
-            this.scrollingSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
-            this.scrollingSystem.OnViewSizeChanged += ViewSizeChanged;
-            this.scrollingSystem.OnContentSizeChanged += ContentSizeChanged;
+            this.contentSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
+            this.contentSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
+            this.contentSystem.OnViewSizeChanged += ViewSizeChanged;
+            this.contentSystem.OnContentSizeChanged += ContentSizeChanged;
             cam = new GameObject().AddComponent<Camera>();
             int index = -1;
             for (int i = 0; i < OpScrollBox._cameras.Count; i++)
@@ -89,7 +88,7 @@ namespace RainMeadow.UI.Components
         }
         public void BuildSliders(ScrollSystem.Anchor horiVertSliderAnchor)
         {
-            if (scrollingSystem.IsHorizontal)
+            if (contentSystem.IsHorizontal)
             {
                 bool sliderOnTop = horiVertSliderAnchor is ScrollSystem.Anchor.TopRight or ScrollSystem.Anchor.TopLeft;
                 scrollSlider = new HorizontalSlider(menu, this, null, new Vector2(20, sliderOnTop? size.y : -32), new(size.x - 40, 30f), new("Test"), true);
@@ -116,7 +115,7 @@ namespace RainMeadow.UI.Components
         }
         public Scrollable CreateNewContentObject(float contentSize)
         {
-            Vector2 sizeofcontent = scrollingSystem.IsHorizontal ? new(contentSize, size.y) : new(size.x, contentSize);
+            Vector2 sizeofcontent = contentSystem.IsHorizontal ? new(contentSize, size.y) : new(size.x, contentSize);
             Scrollable scrollable = new(menu, this, Vector2.zero, sizeofcontent);
             ContentObject = scrollable;
             return scrollable;
@@ -174,7 +173,7 @@ namespace RainMeadow.UI.Components
         public void AddScroll(float scrollAmt)
         {
             scrollAmt *= floatScrollMultipler;
-            if (scrollingSystem.AddScroll(scrollAmt * 10, ref desiredScrollPosOffset))
+            if (contentSystem.TryAddScrollThroughWheel(scrollAmt * 5, ref desiredScrollPosOffset))
             {
                 menu.PlaySound(SoundID.MENU_Scroll_Tick);
                 isScrolling = true;
@@ -182,9 +181,10 @@ namespace RainMeadow.UI.Components
         }
         public void UpdateScrollingSystemComponents()
         {
-            scrollingSystem.ViewSize = size;
+            contentSystem.ViewSize = size;
             var contentObj = ContentObject;
-            scrollingSystem.SetContentSize(ContentObject?.size ?? default);
+            if (contentObj != null)
+                contentSystem.ContentSize = contentObj.size[contentSystem.IndexToRef];
         }
         public void UpdateScroll()
         {
@@ -199,7 +199,7 @@ namespace RainMeadow.UI.Components
             if (prevFloatScrollPosOffset != floatScrollPosOffset)
                 MarkScrollObjectsDirty();
 
-            var maxScroll = scrollingSystem.GetMaxScroll();
+            var maxScroll = contentSystem.GetMaxScroll();
 
             scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, maxScroll, scrollSliderCapLerp, 30);
 
@@ -211,7 +211,7 @@ namespace RainMeadow.UI.Components
         }
         public void ConstrainScroll(bool immediatelyApplyConstrainedScroll = false)
         {
-            desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset, 0, scrollingSystem.GetMaxScroll());
+            desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset, 0, contentSystem.GetMaxScroll());
             if (immediatelyApplyConstrainedScroll)
                 floatScrollPosOffset = desiredScrollPosOffset;
 
@@ -221,6 +221,7 @@ namespace RainMeadow.UI.Components
             UpdateScrollingSystemComponents();
             if (cameraDirty)
                 RefreshCamera();
+            cam?.enabled = !IsHidden;
             lastScrollableDirty = scrollableDirty;
             scrollableDirty = false;
             base.Update();
@@ -241,22 +242,22 @@ namespace RainMeadow.UI.Components
         {
             DestroyRender();
             UnityEngine.Object.Destroy(cam?.gameObject);
-            scrollingSystem.MarkScrollObjectsDirty -= MarkScrollObjectsDirty;
-            scrollingSystem.OnViewSizeChanged -= ViewSizeChanged;
-            scrollingSystem.OnContentSizeChanged -= ContentSizeChanged;
+            contentSystem.MarkScrollObjectsDirty -= MarkScrollObjectsDirty;
+            contentSystem.OnViewSizeChanged -= ViewSizeChanged;
+            contentSystem.OnContentSizeChanged -= ContentSizeChanged;
             base.RemoveSprites();
         }
         public float ValueOfSlider(Slider slider)
         {
             if (slider == scrollSlider)
-                return scrollingSystem.GetSliderValue(scrollSliderValue);
+                return contentSystem.GetSliderValue(scrollSliderValue);
             return 0;
         }
         public void SliderSetValue(Slider slider, float f)
         {
             if (slider == scrollSlider)
             {
-                var val = scrollSliderValue = scrollingSystem.GetSliderValue(f);
+                var val = scrollSliderValue = contentSystem.GetSliderValue(f);
                 SetScrollImmediately(Mathf.Lerp(0, scrollSliderValueCap, val));
                 return;
             }
@@ -268,9 +269,9 @@ namespace RainMeadow.UI.Components
         public Vector2 PositionOfObject(int index, Vector2 origPosition)
         {
             Vector2 contentSize = ContentObject == null ? Vector2.zero : ContentObject.size;
-            return scrollingSystem.NormalPositionOfElement(index, (origPosition, contentSize), null) + scrollingSystem.ScrollOffsetToDirection(prevFloatScrollPosOffset);
+            return contentSystem.PositionOfElementWithScroll(index, (origPosition, contentSize), null, floatScrollPosOffset);
         }
-        public float AlphaOfObject(Vector2 posOfContent)
+        public float AlphaOfObject(Vector2 posOfContent, Vector2 sizeofContent)
         {
             return 1;
         }
@@ -320,7 +321,7 @@ namespace RainMeadow.UI.Components
 
                 if (anchorToFollow == ScrollSystem.Anchor.BottomLeft || (checkSubobjectsOnly && !subObjects.Contains(posMenuObj)))
                     return origScreenPos;
-                var isHori = myScrollContainer.scrollingSystem.IsHorizontal;
+                var isHori = myScrollContainer.contentSystem.IsHorizontal;
                 if (isHori && anchorToFollow is ScrollSystem.Anchor.TopRight or ScrollSystem.Anchor.BottomRight)
                     origScreenPos.x += ScreenPosOffset.x;
                 if (!isHori && anchorToFollow is ScrollSystem.Anchor.TopLeft or ScrollSystem.Anchor.TopRight)

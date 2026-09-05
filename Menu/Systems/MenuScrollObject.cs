@@ -101,7 +101,7 @@ namespace RainMeadow.UI.Systems
             if (parentInScroller != null) return;
             Size = scroller.SizeOfObject(Size);
             var pos = LocalPos = scroller.PositionOfObject(indexInScroller, LocalPos);
-            LocalAlpha = scroller.AlphaOfObject(pos);
+            LocalAlpha = scroller.AlphaOfObject(pos, Size);
         }
         public virtual void GrafUpdateInObject(float timeStacker)
         {

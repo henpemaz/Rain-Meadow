@@ -51,7 +51,7 @@ namespace RainMeadow
             }
             msgExtents = [];
 
-            scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
+            scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new Vector2(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
                 textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
@@ -94,7 +94,7 @@ namespace RainMeadow
             int GetFirstIndex()
             {
                 for (int i = 0; i < scroller.scrollObjects.Count; ++i)
-                    if (scroller.scrollObjects[i].GetScrollObject().LocalAlpha >= 0.5f && scroller.scrollObjects[i].GetScrollObject().LocalPos.y >= scroller.LowerBound)
+                    if (scroller.scrollObjects[i].GetScrollObject().LocalAlpha >= 0.5f && scroller.scrollObjects[i].GetScrollObject().LocalPos.y >= 0)
                         return i;
                 return 0;
             }
@@ -209,7 +209,7 @@ namespace RainMeadow
                     splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
                     for (int i = 0; i < splitMessages.Count; i++)
                     {
-                        float yPos = scroller.GetIdealYPosWithScroll(scroller.scrollObjects.Count) + textOffsetSquishFix;
+                        float yPos = scroller.PositionOfObject(scroller.scrollObjects.Count).y + textOffsetSquishFix;
                         string s = splitMessages[i];
                         if (isSystemMessage)
                         {

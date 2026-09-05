@@ -36,7 +36,7 @@ namespace RainMeadow.UI.Components
             buttonHeight = heightSpacingOfLargeButton.Item1;
             buttonSpacing = heightSpacingOfLargeButton.Item2;
         }
-        public ButtonDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, Vector2 sliderPosOffset = default, float sliderSizeYOffset = -40) : base(menu, owner, pos, size, sliderPosOffset: sliderPosOffset == default? new(0, 9) : sliderPosOffset, sliderSizeYOffset: sliderSizeYOffset)
+        public ButtonDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, Vector2 sliderPosOffset = default, float sliderSizeYOffset = -40) : base(menu, owner, pos, size, sliderPosOffset: sliderPosOffset == default? new(0, 9) : sliderPosOffset, sliderSizeAxisOffset: sliderSizeYOffset)
         {
             greyOutWhenNoScroll = true;
             AddScrollUpDownButtons();

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Systems;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components
@@ -14,10 +15,10 @@ namespace RainMeadow.UI.Components
             //chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30));
             chatTypingBox.OnTextSubmit += () =>
             {
-                if (messageScroller != null) messageScroller.MoveAtBottom();
+                messageScroller?.MoveToBoundary(ScrollSystem.Direction.Bottom);
             };
             float posYOffset = chatTypingBox.size.y + 10;
-            messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), true, new(-5, -posYOffset), posYOffset - 25)
+            messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), null, ScrollSystem.Direction.Right, new(-5, -posYOffset), posYOffset - 25)
             {
                 sliderDefaultIsDown = true,
                 buttonHeight = 20,
@@ -65,9 +66,9 @@ namespace RainMeadow.UI.Components
         }
         public void AddNewMessageToScroller(string user, string message)
         {
-            bool setNewScrollPosToLatest = messageScroller.IsAtBottom();
+            bool setNewScrollPosToLatest = messageScroller.IsAtBoundary(ScrollSystem.Direction.Bottom);
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
-            if (setNewScrollPosToLatest) messageScroller.MoveAtBottom();
+            if (setNewScrollPosToLatest) messageScroller.MoveToBoundary(ScrollSystem.Direction.Bottom);
         }
         public AlignedMenuLabel[] GetMessageLabels(string user, string message)
         {
