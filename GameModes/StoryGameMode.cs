@@ -53,6 +53,8 @@ namespace RainMeadow
         public float maximumRippleLevel;
         public List<int> spinningTopEncounters = new();
 
+        public Dictionary<int, Vector2> hostRippleRaiser = new();
+
         public List<AbstractCreature> pups;
 
         public StoryLobbyData.MenuSaveStateState? menuSaveState;
@@ -82,6 +84,7 @@ namespace RainMeadow
             minimumRippleLevel = 0.0f;
             maximumRippleLevel = 0.0f;
             spinningTopEncounters = new();
+            hostRippleRaiser = new();
             this.ResetOverWorld();
 
         }
