@@ -109,7 +109,7 @@ namespace RainMeadow.UI
             public StoredResults(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, string name) : base(menu, owner, pos, size)
             {
                 roundedRect = new(menu, this, Vector2.zero, size, true);
-                scroller = new(menu, this, Vector2.zero, new(size.x, size.y - 45), false, new(30, 20), -20)
+                scroller = new(menu, this, Vector2.zero, new(size.x, size.y - 45), null, Systems.ScrollSystem.Direction.Left, new(30, 20), -20)
                 {
                     greyOutWhenNoScroll = true,
                     buttonHeight = 30,

@@ -20,12 +20,13 @@ namespace RainMeadow.UI.Systems
         public float _contentSize;
         public Vector2 _viewSize;
         public readonly Axis scrollingAxis;
-        public event Action? MarkScrollObjectsDirty, OnViewSizeChanged, OnContentSizeChanged;
+        public event Action? MarkScrollObjectsDirty, OnViewSizeChanged;
         public bool ScrollStartsFromTop => ScrollPosAnchor is Anchor.TopLeft or Anchor.TopRight;
         public bool ScrollStartsFromLeft => ScrollPosAnchor is Anchor.TopLeft or Anchor.BottomLeft;
         public bool IsHorizontal => scrollingAxis == Axis.Horizontal;
         public Action? MarkDirtyForScrollObjects => MarkScrollObjectsDirty;
         public int IndexToRef => IsHorizontal ? 0 : 1;
+        public int OppositeIndexToRef => IsHorizontal ? 1 : 0;
         public Vector2 ScrollStepDir
         {
             get
@@ -50,17 +51,6 @@ namespace RainMeadow.UI.Systems
                 return new(stepX, stepY);
             }
         }
-        public virtual float ContentSize
-        {
-            get => _contentSize;
-            set
-            {
-                if (_contentSize == value) return;
-                _contentSize = value;
-                MarkDirtyForScrollObjects?.Invoke();
-                OnContentSizeChanged?.Invoke();
-            }
-        }
         public virtual Vector2 ViewSize
         {
             get => _viewSize;
@@ -74,7 +64,7 @@ namespace RainMeadow.UI.Systems
         }
         /// <summary>
         /// Determines where the scroll position is anchored to, relative to the container and affects the direction of scroll<para></para>
-        /// For example, at TopLeft, 0 scroll starts at top left, and scrolls down/right.<br/>
+        /// For example, at TopLeft, at 0 scroll, you will view at the top left, and scrolls down/right.<br/>
         /// </summary>
         public Anchor ScrollPosAnchor
         {
@@ -89,42 +79,52 @@ namespace RainMeadow.UI.Systems
         public ScrollSystem(Axis scrollingAxis)
         {
             this.scrollingAxis = scrollingAxis;
-        }
-        public void SetContentSize(Vector2 size)
-        {
-            ContentSize = size[IndexToRef];
-        }
-        public float GetScrollNeededForScrollAnchor(Anchor anchor)
-        {
-            bool anchorStartsFromLeft = anchor is Anchor.TopLeft or Anchor.BottomLeft;
-            bool anchorStartsFromTop = anchor is Anchor.TopLeft or Anchor.TopRight;
-            if (IsHorizontal && ScrollStartsFromLeft != anchorStartsFromLeft)
-            {
-                return GetMaxScroll();
-            }
-            else if (!IsHorizontal && ScrollStartsFromTop != anchorStartsFromTop)
-                return GetMaxScroll();
 
-            return 0;
         }
-        public virtual float GetMaxScroll()
+        public virtual Direction GetElementPosDirection(bool inverse = false)
         {
-            return Mathf.Max(ContentSize - ViewSize[IndexToRef], 0);
+            if (IsHorizontal)
+            {
+                if (ScrollStartsFromLeft)
+                    return inverse ? Direction.Left : Direction.Right;
+                return inverse? Direction.Right : Direction.Left;
+            }
+            if (ScrollStartsFromTop)
+                return inverse? Direction.Top : Direction.Bottom;
+            return inverse? Direction.Bottom : Direction.Top;
         }
-        public bool AddScroll(float scrollOffset, ref float desiredScrollPosOffset)
+        public bool TryGetScrollNeededForBounds(Direction boundary, out float scrollOffset)
+        {
+            scrollOffset = 0;
+            if (IsHorizontal && boundary is Direction.Left or Direction.Right)
+            {
+                if (boundary is Direction.Left != ScrollStartsFromLeft)
+                    scrollOffset = GetMaxScroll();
+                return true;
+            }
+            else if (!IsHorizontal && boundary is Direction.Top or Direction.Bottom)
+            {
+                if (boundary is Direction.Top != ScrollStartsFromTop)
+                    scrollOffset = GetMaxScroll();
+                return true;
+            }
+
+            return false;
+        }
+        public bool TryAddScrollThroughWheel(float scrollOffset, ref float desiredScrollPosOffset)
         {
             float scrollPosOffset = scrollOffset;
-            scrollPosOffset *= ScrollStepDir[IsHorizontal? 0 : 1];
+            scrollPosOffset *= ScrollStepDir[IndexToRef];
             return TryAddScroll(scrollPosOffset, ref desiredScrollPosOffset);
         }
         public bool TryAddScroll(float scrollPosOffset, ref float desiredScrollPosOffset)
         {
             if (scrollPosOffset != 0)
             {
-                var horiMaxScroll = GetMaxScroll();
-                if ((scrollPosOffset < 0 && desiredScrollPosOffset > 0) || (scrollPosOffset > 0 && desiredScrollPosOffset < horiMaxScroll))
+                var maxScroll = GetMaxScroll();
+                if ((scrollPosOffset < 0 && desiredScrollPosOffset > 0) || (scrollPosOffset > 0 && desiredScrollPosOffset < maxScroll))
                 {
-                    desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset + scrollPosOffset, 0, horiMaxScroll);
+                    desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset + scrollPosOffset, 0, maxScroll);
                     return true;
                 }
             }
@@ -134,21 +134,28 @@ namespace RainMeadow.UI.Systems
         public float GetSliderValue(float origSliderValue)
         {
             if (scrollingAxis == Axis.Horizontal)
-            {
                 return ScrollStartsFromLeft ? origSliderValue : 1 - origSliderValue;
-            }
             return ScrollStartsFromTop ? 1 - origSliderValue : origSliderValue;
         }
-        public Vector2 ScrollOffsetToDirection(float scrollOffset)
+        public virtual Vector2 ScrollOffsetToPosOffset(float scrollOffset)
         {
             Vector2 scrollVec = new(scrollOffset, scrollOffset);
             return scrollVec * ScrollPosStepDir;
         }
+        public Vector2 PositionOfElementWithScroll(int index, ValueTuple<Vector2, Vector2> posSizeOfElement, ValueTuple<Vector2, Vector2>? posSizeOfPrevEleemnt, float scrollOffset)
+        {
+            Vector2 scrollPosOffset = new(0, 0);
+            if (posSizeOfPrevEleemnt == null)
+                scrollPosOffset = ScrollOffsetToPosOffset(scrollOffset);
+            return NormalPositionOfElement(index, posSizeOfElement, posSizeOfPrevEleemnt) + scrollPosOffset;
+        }
         public abstract Vector2 NormalPositionOfElement(int index, ValueTuple<Vector2, Vector2> posSizeOfElement, ValueTuple<Vector2, Vector2>? posSizeOfPrevEleemnt);
         public abstract Vector2 SizeOfElement(int index, Vector2 origSizeOfElement);
-        public virtual void SetElementCount(int elementCount)
+        public abstract float GetMaxScroll();
+        public enum Direction
         {
-
+            Left, Right,
+            Top, Bottom
         }
         public enum Anchor
         {
@@ -158,7 +165,7 @@ namespace RainMeadow.UI.Systems
         public enum Axis
         {
             Horizontal = 1, 
-            Vertical = 2,
+            Vertical,
         }
     }
 }

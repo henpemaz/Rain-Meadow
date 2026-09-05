@@ -47,7 +47,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             5,
             550,
             (80, 10),
-            sliderSizeYOffset: -40,
+            sliderSizeAxisOffset: -40,
             startEndWithSpacing: true
         )
     {

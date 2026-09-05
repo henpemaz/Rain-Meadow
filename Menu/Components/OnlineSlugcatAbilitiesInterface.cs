@@ -551,7 +551,7 @@ namespace RainMeadow.UI.Components
                 for (int i = 0; i < array.Length; i++)
                 {
                     KeyValuePair<string, SettingsPage> pair = array[i];
-                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, new(0, scroller.GetIdealYPosWithScroll(i)), new(290, 45));
+                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, scroller.PositionOfObject(i), new(290, 45));
                     if (i > 0)
                         btn.CreateTopDivider();
                     scroller.AddScrollObjects(btn);

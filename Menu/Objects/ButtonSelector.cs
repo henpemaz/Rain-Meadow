@@ -1,5 +1,6 @@
 ﻿using System;
 using Menu;
+using RainMeadow.UI.Systems;
 using UnityEngine;
 
 namespace RainMeadow
@@ -64,7 +65,8 @@ namespace RainMeadow
         {
             if (scroller == null)
             {
-                scroller = new(menu, this, new(0, StartingYPoint), NumberOfButtonsToShow - 1, size.x, new(size.y, buttonSpacing));
+                var gridSystem = new GridScrollSystem(size, new(0, buttonSpacing), NumberOfButtonsToShow - 1);
+                scroller = new(menu, this, new(0, StartingYPoint), gridSystem);
                 scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
                 subObjects.Add(scroller);
                 if (playSound)
