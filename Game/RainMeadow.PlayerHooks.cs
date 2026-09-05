@@ -1927,7 +1927,7 @@ public partial class RainMeadow
             {
                 self.controller = new OnlineController(oe, self); // remote player
             }
-            else if (oe is null)
+            else
             {
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
@@ -2169,7 +2169,7 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) =>
             {
-                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
+                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out _))
                 {
                     // signal not-in-a-room
                     self.objectInStomach.InDen = true;

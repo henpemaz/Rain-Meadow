@@ -41,13 +41,13 @@ namespace RainMeadow
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo) => OnlinePhysicalObject.map.TryGetValue(apo, out opo);
+        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject opo) => OnlinePhysicalObject.map.TryGetValue(apo, out opo);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac) => GetOnlineObject(ac) as OnlineCreature;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature? oc) => (oc = GetOnlineCreature(apo)) is not null;
+        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature oc) => (oc = GetOnlineCreature(apo) ?? null!) is not null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this AbstractPhysicalObject apo) => OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
@@ -531,9 +531,9 @@ namespace RainMeadow
                 TryParallelStitchBind(listList[0], listList[listList.Count - 1], areRows, areColumns);
             }
         }
-        public static bool IsDictionary(this Type type, out Type? dictInterface)
+        public static bool IsDictionary(this Type type, out Type dictInterface)
         {
-            dictInterface = null;
+            dictInterface = null!;
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
             {

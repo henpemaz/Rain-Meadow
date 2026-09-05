@@ -38,7 +38,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
             {
                 if (
                     arenaPlayer.playerNumber
-                    == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner)
+                    == ArenaHelpers.FindOnlinePlayerNumber(arena, opo.owner)
                 )
                 {
                     additionalPoints = arenaPlayer.allKills.Count;
@@ -56,7 +56,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
             if (!RainMeadow.isArenaMode(out var arena)) return base.SwimTowards;
             VoidSpawn voidSpawn = this.owner;
             // RainMeadow.Debug($"{voidSpawn} choosing a behavior...");
-            
+
 
             // 1. If pointing, go toward the point.
             if (arena.amoebaControl && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
@@ -82,7 +82,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                     return pointingVector;
                 }
             }
-            
+
 
             // 2. If spear hit is on, and a target player was found, go toward it.
             Player? ownerPlayer = null;
@@ -106,11 +106,11 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 }
                 if (!voidSpawn.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers)
                     continue;
-                
+
                 if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     ArenaTeamClientSettings? playerTeam =
-                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
+                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe.owner);
                     if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
                         continue;
                 }
@@ -131,18 +131,18 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 )
                 {
                     foundPlayer = realizedPlayer;
-                    foundPlayerPriority  = GetPriority(arena, voidSpawn, foundPlayer);
+                    foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
                     minDistance = distance;
                 }
             }
-            
-            if (foundPlayer != null) 
+
+            if (foundPlayer != null)
             {
                 // RainMeadow.Debug($"(2) Attacking Player !");
                 this.wasCircling = false;
                 return foundPlayer.mainBodyChunk.pos;
             }
-            
+
 
             // 3. If a hostile creature is found, go toward it.
             Creature? foundCreature = null;
@@ -167,7 +167,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 );
                 int aggression = voidSpawn.abstractPhysicalObject.rippleLayer != creature.abstractCreature.rippleLayer
                     ? 0 // can't really aggro if you are not in the same realm
-                    : (ownerPlayer is not null 
+                    : (ownerPlayer is not null
                         ? (int)(abstractCreature.abstractAI?.RealAI?.CurrentPlayerAggression(ownerPlayer.abstractCreature) * 10 ?? 0)
                         : 5); // aggression is from 0 to 1, make it an int from 0 to 10
 
@@ -182,7 +182,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 }
             }
 
-            if (foundCreature != null) 
+            if (foundCreature != null)
             {
                 // RainMeadow.Debug($"(3) Attacking Creature !");
                 if (minDistance <= stunDistance) voidSpawn.playerProximityTime = 10;
@@ -190,7 +190,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 return foundCreature.mainBodyChunk.pos;
             }
 
-            
+
             // 4. If an owner is found, circle around it
             if (ownerPlayer is not null)
             {
