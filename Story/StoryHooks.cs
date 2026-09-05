@@ -2,6 +2,7 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -592,11 +593,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    var restartButton = new SimplerButton(self, self.pages[0], self.Translate("RESTART"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
-                    restartButton.OnClick += (_) =>
-                    {
-                        self.game.GoToDeathScreen();
-                    };
+                    EventfulButton restartButton = new(self, self.pages[0], self.Translate("RESTART"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f), onClick: (btn) => self.game.GoToDeathScreen());
                     self.pages[0].subObjects.Add(restartButton);
                 }
                 else

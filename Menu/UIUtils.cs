@@ -10,8 +10,9 @@ public static class UIUtils
     public const float DEFAULT_SCREEN_WIDTH = 1366f;
     public const float DEFAULT_SCREEN_HEIGHT = 768f;
 
-    // commonly used dialog size
-    public static Vector2 DIALOG_SIZE => new(480f, 320f);
+    // commonly used dialog sizes
+    public static Vector2 DEFAULT_DIALOG_SIZE => new(480f, 320f);
+    public static Vector2 SINGLE_LINE_DIALOG_SIZE => new(480f, 115f);
 
     public static Vector2 ScreenCenter(ProcessManager manager) =>
         new(

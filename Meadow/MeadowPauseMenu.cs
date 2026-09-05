@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -48,15 +49,14 @@ namespace RainMeadow
             RainMeadow.Debug("suco4 is " + suco4);
 
             int buttonCount = 0;
-            SimplerButton AddButton(string localizedText, string localizedDescription, Action<SimplerButton> onClick, bool active = true, string emotesprite = null)
+            EventfulButton AddButton(string localizedText, string localizedDescription, Action<EventfulButton> onClick, bool active = true, string emotesprite = null, SoundID? soundOnClick = null)
             {
                 Vector2 pos = new Vector2(
                     this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
                 pos.y -= (buttonCount) * 40f;
-                SimplerButton button = new SimplerButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription);
-                button.OnClick += onClick;
+                EventfulButton button = new EventfulButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription, onClick) { SoundOnClick = soundOnClick };
                 button.nextSelectable[0] = button;
                 button.nextSelectable[2] = button;
                 button.buttonBehav.greyedOut = !active;
@@ -71,13 +71,13 @@ namespace RainMeadow
                 return button;
             }
             this.pages[this.currentPage].lastSelectedObject = this.continueButton =
-            AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
+            AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue, soundOnClick: SoundID.HUD_Unpause_Game);
             AddButton(this.Translate("TO HUB"), this.Translate("Teleport to the closest hub"), this.ToHub, targetHub != -1, emotesprite: MeadowProgression.Emote.symbolTree.value.ToLowerInvariant());
             AddButton(this.Translate("TO OUTSKIRTS"), this.Translate("Teleport to outskirts"), this.ToOutskirts, suco4 != -1, emotesprite: MeadowProgression.Emote.symbolSurvivor.value.ToLowerInvariant());
-            AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter, emotesprite: MeadowProgression.Emote.symbolShelter.value.ToLowerInvariant());
+            AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter, emotesprite: MeadowProgression.Emote.symbolShelter.value.ToLowerInvariant(), SoundID.MENU_Passage_Button);
             AddButton(this.Translate("UNSTUCK"), this.Translate("Teleport to a nearby pipe"), this.Unstuck);
-            AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby);
-            this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu);
+            AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby, soundOnClick: SoundID.HUD_Exit_Game);
+            this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu, soundOnClick: SoundID.HUD_Exit_Game);
 
             Vector2 pos = new Vector2(
                     this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
@@ -153,37 +153,33 @@ namespace RainMeadow
             return MeadowMusic.defaultPlopVolume / 0.575f;
         }
 
-        private void Continue(SimplerButton button)
+        private void Continue(EventfulButton button)
         {
             RainMeadow.DebugMe();
             this.wantToContinue = true;
-            base.PlaySound(SoundID.HUD_Unpause_Game);
         }
 
-        private void ToMainMenu(SimplerButton button)
+        private void ToMainMenu(EventfulButton button)
         {
             RainMeadow.DebugMe();
-            base.PlaySound(SoundID.HUD_Exit_Game);
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
         }
 
-        private void ToLobby(SimplerButton button)
+        private void ToLobby(EventfulButton button)
         {
             RainMeadow.DebugMe();
-            base.PlaySound(SoundID.HUD_Exit_Game);
             OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.AskNowLeave);
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
         }
 
-        private void Passage(SimplerButton button)
+        private void Passage(EventfulButton button)
         {
             RainMeadow.DebugMe();
-            base.PlaySound(SoundID.MENU_Passage_Button);
             OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.AskNowLeave);
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.FastTravelScreen);
         }
 
-        private void ToOutskirts(SimplerButton button)
+        private void ToOutskirts(EventfulButton button)
         {
             RainMeadow.DebugMe();
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(suco4, -1, -1, 0);
@@ -192,7 +188,7 @@ namespace RainMeadow
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
-        private void ToHub(SimplerButton button)
+        private void ToHub(EventfulButton button)
         {
             RainMeadow.DebugMe();
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(targetHub, -1, -1, 0);
@@ -201,7 +197,7 @@ namespace RainMeadow
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
-        private void Unstuck(SimplerButton button)
+        private void Unstuck(EventfulButton button)
         {
             RainMeadow.DebugMe();
             var creature = mgm.avatars[0].realizedCreature;
@@ -248,7 +244,7 @@ namespace RainMeadow
         public void CreateElementBinds()
         {
             //Group up elements
-            List<MenuObject> PauseElements = pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(SimplerButton)).ToList();
+            List<MenuObject> PauseElements = pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(EventfulButton)).ToList();
             PauseElements.Add(hubVolumeSlider.subObjects[0]); //oh you special little snowflake
             PauseElements.AddRange(pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(CheckBox)).ToList());
             //Apply new binds

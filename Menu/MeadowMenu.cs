@@ -1,5 +1,8 @@
 using Menu;
 using Menu.Remix;
+using RainMeadow.UI;
+using RainMeadow.UI.Components.Base;
+using RainMeadow.UI.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +10,11 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class MeadowMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
+    public class MeadowMenu : SmartMenu, EventfulSelectOneButton.IEventfulSelectOneButtonOwner
     {
+        public const string SkinButtonGroupKey = "skinButtons",
+            NotSkinButtonError = "MeadowMenu is being sent EventfulSelectOneButtons that aren't SkinButtons? (unrecognized group key)";
+
         public MeadowGameMode mgm;
         RainEffect rainEffect;
 
@@ -40,7 +46,7 @@ namespace RainMeadow
 
         private MenuLabel eyeColorLabel;
 
-        public NullLobbyError nullLobbyError;
+        public bool shownNullLobbyDialog;
 
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
@@ -163,7 +169,7 @@ namespace RainMeadow
             for (int i = 0; i < skins.Count; i++)
             {
                 var skin = skins[i];
-                var btn = new EventfulSelectOneButton(this, mainPage, Utils.Translate(MeadowProgression.skinData[skin].displayName), "skinButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), skinButtons, i);
+                var btn = new EventfulSelectOneButton(this, mainPage, Utils.Translate(MeadowProgression.skinData[skin].displayName), new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), SkinButtonGroupKey);
                 mainPage.subObjects.Add(btn);
                 skinButtons[i] = btn;
             }
@@ -231,14 +237,24 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (nullLobbyError != null)
-            {
+
+            if (shownNullLobbyDialog)
                 return;
-            }
-            if (OnlineManager.lobby == null && nullLobbyError == null)
+
+            if (OnlineManager.lobby == null)
             {
-                nullLobbyError = new NullLobbyError(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Meadow lobby is null! Exiting...", false);
-                this.pages[0].subObjects.Add(nullLobbyError);
+                manager.ShowDialog(
+                    new NotifyDialog(
+                        manager,
+                        "Lobby is null! Exiting...",
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE,
+                        RainMeadow.Ext_ProcessID.LobbySelectMenu
+                    )
+                    {
+                        OnlyShowInInitialProcess = true,
+                    }
+                );
+                shownNullLobbyDialog = true;
                 return;
             }
             if (this.rainEffect != null)
@@ -360,19 +376,38 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
-        public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
+        public void SetSelectedSelectOneButton(string groupKey, EventfulSelectOneButton button)
         {
-            return skinIndex;
-        }
+            if (groupKey != SkinButtonGroupKey)
+            {
+                RainMeadow.Warn(NotSkinButtonError);
+                return;
+            }
 
-        public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
-        {
-            skinIndex = to;
-            personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
+            int index = skinButtons.IndexOf(button);
+            if (index == -1)
+            {
+                RainMeadow.Error("Skin button was not a known skin button?");
+                return;
+            }
+
+            skinIndex = index;
+            personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = personaSettings.skin;
 
             UpdateTintPreview();
+        }
+
+        public EventfulSelectOneButton? GetSelectedSelectOneButton(string groupKey)
+        {
+            if (groupKey != SkinButtonGroupKey)
+            {
+                RainMeadow.Warn(NotSkinButtonError);
+                return null;
+            }
+
+            return skinButtons[skinIndex];
         }
 
         // Slider owner

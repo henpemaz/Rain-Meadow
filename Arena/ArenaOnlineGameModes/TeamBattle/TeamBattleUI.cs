@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
+using RainMeadow.UI.Components;
+using RainMeadow.UI;
 using System.Runtime.CompilerServices;
 using Menu;
 using RainMeadow.UI;
@@ -55,6 +58,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value },
             { 3, RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value }
         };
+
+        public override string GameModeInfo => "Choose a faction. Last team standing wins.";
 
         public void ArenaSettingsInit()
         {
@@ -142,11 +147,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
             return base.DidPlayerWinRainbow(arenaOnline, player)
                 || BestTeamIndexes.Count == 1 && teamSettings?.team == BestTeamIndexes[0];
-        }
-
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
-        {
-            return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
         /// <inheritdoc/>

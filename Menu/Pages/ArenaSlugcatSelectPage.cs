@@ -4,6 +4,7 @@ using System.Linq;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using UnityEngine;
 using Watcher;
@@ -13,13 +14,13 @@ namespace RainMeadow.UI.Pages;
 
 public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.SelectOneButtonOwner
 {
-    public SimplerButton backButton;
+    public EventfulButton backButton;
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel, chooseYourSlugcatLabel;
-    public EventfulSelectOneButton[] slugcatSelectButtons;
+    public LEGACY_EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
     public List<SlugcatStats.Name[]> slugcatSelectNamePages;
-    public SimplerSymbolButton prevButton;
-    public SimplerSymbolButton nextButton;
+    public EventfulSymbolButton prevButton;
+    public EventfulSymbolButton nextButton;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
     public bool readyWarning, lastBanSlugInput, banSlugInput, lastSainot;
@@ -37,7 +38,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
+        backButton = new EventfulButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ =>
         {
             if (ArenaMenu == null) return;
@@ -47,7 +48,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         CreateArrowButtons();
 
-        slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
+        slugcatSelectButtons = new LEGACY_EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
         slugcatSelectNamePages = new List<SlugcatStats.Name[]>();
 
@@ -116,7 +117,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             this.ClearMenuObject(oldButton);
 
         currentSlugcatSelectPage = Extensions.RealModulo((currentSlugcatSelectPage + increasePageBy), slugcatSelectNamePages.Count);
-        slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
+        slugcatSelectButtons = new LEGACY_EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
         slugcatIllustrations = new MenuIllustration[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
 
         int currentButtonsInTopRow = (int)Mathf.Ceil(slugcatSelectNamePages[currentSlugcatSelectPage].Length / 2f);
@@ -132,7 +133,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             else
                 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
 
-            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage * maxScugsPerPage));
+            LEGACY_EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage * maxScugsPerPage));
             SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
@@ -200,14 +201,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             maxButtonsInRow = (int)Mathf.Ceil(Math.Min(maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
             maxRowStartingXPos = 633f - (maxButtonsInRow / 2 * 110f - ((maxButtonsInRow % 2 == 0) ? 55f : 0f));
         }
-        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
-        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInRow), 433f));
+        prevButton = new EventfulSymbolButton(menu, this, "Menu_Symbol_Arrow", new(maxRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
+        nextButton = new EventfulSymbolButton(menu, this, "Menu_Symbol_Arrow", new(maxRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInRow), 433f));
         prevButton.symbolSprite.rotation = 270;
         nextButton.symbolSprite.rotation = 90;
         prevButton.OnClick += _ => SwitchSlugcatTabBy(-1);
         nextButton.OnClick += _ => SwitchSlugcatTabBy(1);
-        prevButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        nextButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
         if (ArenaHelpers.selectableSlugcats.Count <= maxScugsPerPage)
         {
             prevButton.buttonBehav.greyedOut = true;
@@ -308,7 +307,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             readyWarningLabel.text = Arena != null && Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in <COUNTDOWN>! Ready up!!").Replace("<COUNTDOWN>", Arena.lobbyCountDown.ToString()) : menu.LongTranslate(defaultReadyWarningText);
         }
         if (Arena != null && OnlineManager.lobby.isOwner && banSlugInput && !lastBanSlugInput && slugcatSelectButtons.Contains(menu.selectedObject))
-            OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
+            OnSlugcatPressedBan(((LEGACY_EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
         {
             int slugIndex = slugcatSelectButtons[i].buttonArrayIndex;
