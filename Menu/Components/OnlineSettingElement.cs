@@ -28,6 +28,7 @@ public abstract class OnlineSettingElement : PositionedMenuObject
     public bool visible = true;
     public float alpha = 1;
     protected float currentAlpha = 0;
+    public virtual int additionalPositionsTaken => 0;
 
     public readonly OnlineSettingTab? tab;
     public OnlineSlugcatSettingsBase? slugcatSettingPage => owner as OnlineSlugcatSettingsBase;

@@ -1,6 +1,7 @@
 using Menu;
 using UnityEngine;
 using HarmonyLib;
+using RainMeadow.UI.Components.Base;
 
 namespace RainMeadow.UI.Components;
 public readonly struct SettingsTabData
@@ -18,6 +19,12 @@ public readonly struct SettingsTabData
     public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color, bool isClient = false)
     {
         this.slugcatIcon = slugcatIcon;
+        this.name = name;
+        this.color = color;
+        this.isClient = isClient;
+    }
+    public SettingsTabData(string name, Color color, bool isClient = false)
+    {
         this.name = name;
         this.color = color;
         this.isClient = isClient;
@@ -70,13 +77,13 @@ public class OnlineSettingTab : OnlineSettingElement
         this.data = data;
         isClient = data.isClient;
 
-        if (data.slugcatIcon is not null)
+        if (data.slugcatIcon is not null || data.icon is null)
         {
-            icon = new PositionedSlugIcon(menu, this, Vector2.zero, data.slugcatIcon.value);
+            icon = new PositionedSlugIcon(menu, this, Vector2.zero, data.slugcatIcon?.value ?? "?"); // HOPEFULLY no slugcat EVER will have the "?" ID
         }
         else
         {
-            icon = new MenuIllustration(menu, this, "", data.icon, Vector2.zero, true, true);
+            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false));
         }
 
         if (data.name is not null && data.color is not null)
@@ -136,10 +143,10 @@ public class OnlineSettingTab : OnlineSettingElement
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);
-        if (icon is MenuIllustration illustration)
+        if (icon is PositionedSprite positionedSprite)
         {
-            illustration.sprite.isVisible = visible;
-            illustration.sprite.alpha = currentAlpha;
+            positionedSprite.Sprite.isVisible = visible;
+            positionedSprite.Sprite.alpha = currentAlpha;
         }
         else if (icon is PositionedSlugIcon slugicon)
         {

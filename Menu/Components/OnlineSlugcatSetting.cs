@@ -6,7 +6,6 @@ using UnityEngine;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 using System;
 using HarmonyLib;
-using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components;
 
@@ -109,7 +108,12 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         for (int i = 0; i < elements.Count; i++)
         {
             elements[i].position = position;
-            if (elements[i].visible) position++;
+            if (elements[i].visible)
+            {
+                position++;
+                if (elements[i].additionalPositionsTaken > 0)
+                    position += elements[i].additionalPositionsTaken;
+            }
         }
     }
     public void ResetSettings()
@@ -259,20 +263,27 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
     }
     public static void AddSlugcatSettingsConfigurable(SettingsConfigData config)
     {
-        if (onlineConfigurables.Exists(x => x.attributeName == config.attributeName && x.attributeOwnerType == config.attributeOwnerType))
+        if (string.IsNullOrWhiteSpace(config.attributeName))
         {
-            RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} is already in the page !");
-            return;
+            RainMeadow.Warn($"Adding configurable {config.name} with nowhere to save the value for the lobby !");
         }
-        if (!SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
+        else
         {
-            RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name} is not registered and has no GET function !");
-            return;
-        }
-        if (config.attributeOwnerType.GetField(config.attributeName) is null)
-        {
-            RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} doesn't exist or is not an attribute !");
-            return;
+            if (onlineConfigurables.Exists(x => x.attributeName == config.attributeName && x.attributeOwnerType == config.attributeOwnerType))
+            {
+                RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} is already in the page !");
+                return;
+            }
+            if (!SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
+            {
+                RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name} is not registered and has no GET function !");
+                return;
+            }
+            if (config.attributeOwnerType.GetField(config.attributeName) is null)
+            {
+                RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} doesn't exist or is not an attribute !");
+                return;
+            }
         }
 
         if (config.slugcatTab is not null
@@ -283,7 +294,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
 
         if (config.tabName is not null && !onlineConfigurableTabs.Exists(x => x.name == config.tabName))
         {
-            AddSlugcatSettingsTab(new(config.tabName, "Futile_White", Color.gray));
+            AddSlugcatSettingsTab(new(config.tabName, Color.gray));
         }
 
         onlineConfigurables.Add(config);
@@ -310,21 +321,29 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
     }
     private OnlineSettingConfigurable? GetElementFromConfig(SettingsConfigData configurable, OnlineSettingTab? tab = null)
     {
-        if (configurable.configurable.settingType == typeof(int))
+        if (configurable.AttributeType == typeof(int))
         {
             return new OnlineSettingIntValue(menu, this, configurable, tab);
         }
-        else if (configurable.configurable.settingType == typeof(float))
+        else if (configurable.AttributeType == typeof(float))
         {
             return new OnlineSettingFloatValue(menu, this, configurable, tab);
         }
-        else if (configurable.configurable.settingType == typeof(string))
+        else if (configurable.AttributeType == typeof(string))
         {
             return new OnlineSettingStringValue(menu, this, configurable, tab);
         }
-        else if (configurable.configurable.settingType == typeof(bool))
+        else if (configurable.AttributeType == typeof(bool))
         {
             return new OnlineSettingCheckBox(menu, this, configurable, tab);
+        }
+        else if (configurable.AttributeType == typeof(KeyCode))
+        {
+            return new OnlineSettingKeycode(menu, this, configurable, tab);
+        }
+        else if (configurable.AttributeType.IsEnum || configurable.AttributeType.IsExtEnum())
+        {
+            return new OnlineSettingEnumList(menu, this, configurable, tab);
         }
         RainMeadow.Error($"Error trying to find UI element for [{configurable.name} : {configurable.attributeOwnerType}.{configurable.attributeName}] : type {configurable.configurable.settingType} is not handled !");
         return null;
@@ -483,7 +502,6 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
     private OnlineSettingCheckBox? voidMasterSetting;
     static TestWatcherSetting()
     {
-
         AddSlugcatSettingsTab(new(
             WATCHERCAMO,
             Watcher.WatcherEnums.SlugcatStatsName.Watcher,
@@ -593,5 +611,42 @@ public class TestWatcherSetting : OnlineSlugcatSettings<TestWatcherSetting>
             GetSettingTab(WATCHERVOIDMASTER)?.grayedOut = true;
             UpdateElementsVisibility(); // update the whole tab
         }
+    }
+}
+
+public class TestSetting : OnlineSlugcatSettings<TestSetting>
+{
+    public const string TESTTAB = "Tab With Icon";
+    public override string Name => "Test Others";
+    static TestSetting()
+    {
+        AddSlugcatSettingsTab(new(
+            TESTTAB,
+            "Symbol_HellSpear",
+            RainWorld.RippleGold
+        ));
+
+        AddSlugcatSettingsConfigurable(new(
+            "Test str",
+            "Auto-Gerenated Tab",
+            new Configurable<string>("wawa"),
+            "")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Test key",
+            TESTTAB,
+            new Configurable<KeyCode>(KeyCode.Escape),
+            "")
+        );
+        AddSlugcatSettingsConfigurable(new(
+            "Test enum",
+            TESTTAB,
+            new Configurable<RainMeadowOptions.ChatClear>(RainMeadowOptions.ChatClear.None),
+            "")
+        );
+    }
+    public TestSetting(Menu.Menu menu, MenuObject owner) : base(menu, owner)
+    {
+
     }
 }

@@ -49,6 +49,12 @@ namespace RainMeadow.UI.Components
                 textbox.valueFloat = (float)obj;
             else textbox.value = (string)obj;
         }
+        public static void ShowSyncInGenericUIConfig(UIconfig uiConfig, bool greyout, object obj)
+        {
+            uiConfig.greyedOut = greyout;
+            if (!uiConfig.held)
+                uiConfig.value = obj.ToString();
+        }
         public void SaveAllInterfaceOptions(bool isOwner)
         {
             foreach (SettingsPage settings in settingSignals.Values)
@@ -78,6 +84,7 @@ namespace RainMeadow.UI.Components
             }
             AddSettingsTab(new TestMSCSetting(menu, this, paincatName), "TEST MSC SETTINGS");
             AddSettingsTab(new TestWatcherSetting(menu, this), "TEST WATCHER SETTINGS");
+            AddSettingsTab(new TestSetting(menu, this), "TEST OTHERS SETTINGS");
         }
         public void AddSettingsTab(SettingsPage settings, string signal)
         {

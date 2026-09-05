@@ -60,25 +60,28 @@ public readonly struct SettingsConfigData
     {
         get
         {
+            if (string.IsNullOrWhiteSpace(attributeName)) return null;
             return GetAttributeOwnerDict[attributeOwnerType]() is object data
                 ? attributeOwnerType.GetField(attributeName)?.GetValue(data)
                 : null;
         }
         set
         {
+            if (string.IsNullOrWhiteSpace(attributeName)) return;
             if (GetAttributeOwnerDict[attributeOwnerType]() is object data)
             {
                 try
                 {
-                    attributeOwnerType.GetField(attributeName).SetValue(data, value);
+                    attributeOwnerType.GetField(attributeName).SetValue(data, value is string strVal ? ValueConverter.ConvertToValue(strVal, AttributeType) : value);
                 }
                 catch (Exception ex)
                 {
-                    RainMeadow.Error($"Could not convert [{value}] into {attributeOwnerType.GetField(attributeName)?.FieldType} : {attributeOwnerType.Name}.{attributeOwnerType.GetField(attributeName)?.Name} \n" + ex);
+                    RainMeadow.Error($"Could not convert {value} into {attributeOwnerType.GetField(attributeName)?.FieldType} : {attributeOwnerType.Name}.{attributeOwnerType.GetField(attributeName)?.Name} \n" + ex);
                 }
             }
         }
     }
+    public readonly Type AttributeType => configurable.settingType;
 
     public static bool operator== (SettingsConfigData left, SettingsConfigData right)
     {
@@ -102,10 +105,12 @@ public readonly struct SettingsConfigData
 }
 public abstract class OnlineSettingConfigurable : OnlineSettingElement
 {
+    public const float BoxMargin = 5;
     public readonly SettingsConfigData data;
     public MenuLabel label;
     public MenuTabWrapper tabWrapper;
     public Color? color;
+    public string DefaultValue => data.configurable.defaultValue;
     public abstract object Value {get;}
 
     public OnlineSettingConfigurable(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData data, OnlineSettingTab? tab = null)
