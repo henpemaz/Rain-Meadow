@@ -460,35 +460,22 @@ namespace RainMeadow
             }
             else
             {
-                Error("could not resolve spinning top id for ripple raise; falling back to legacy path");
+                Error("could not resolve spinning top id for ripple raise; skipping duplicate-encounter dedupe and echo bookkeeping for this raise");
             }
 
             var d = storySession.saveState.deathPersistentSaveData;
-            Debug($"[ripple] pre-orig  me={OnlineManager.mePlayer} owner={OnlineManager.lobby.isOwner} echo={spinningTopID} " +
-                  $"room={room.abstractRoom?.name} ripple={d.rippleLevel} min={d.minimumRippleLevel} max={d.maximumRippleLevel}");
 
             orig(room);
-
-            Debug($"[ripple] post-orig ripple={d.rippleLevel} min={d.minimumRippleLevel} max={d.maximumRippleLevel}");
 
             var vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
 
             if (OnlineManager.lobby.isOwner)
             {
-
-                StoryRPCs.DetermineRippleRaise(story, spinningTopID, vector);
+                StoryRPCs.DetermineRippleRaise(story, spinningTopID, vector, trustVector: true);
             }
             else if (story.maximumRippleLevel < vector.y) // max vs max, not current vs max — see 06
             {
                 OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevelRequest, spinningTopID, vector);
-            }
-
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                if (!player.isMe)
-                {
-                    player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, spinningTopID, vector);
-                }
             }
         }
 
