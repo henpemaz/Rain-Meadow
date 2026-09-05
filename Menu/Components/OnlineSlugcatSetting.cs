@@ -628,7 +628,7 @@ public class TestSetting : OnlineSlugcatSettings<TestSetting>
 
         AddSlugcatSettingsConfigurable(new(
             "Test str",
-            "Auto-Gerenated Tab",
+            "Auto-Generated Tab",
             new Configurable<string>("wawa"),
             "")
         );
