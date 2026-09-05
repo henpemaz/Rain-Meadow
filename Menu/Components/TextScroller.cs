@@ -18,12 +18,12 @@ public class TextScroller : ButtonScroller
         float sliderSizeYOffset = 0,
         bool sliderDefaultIsDown = false
     )
-        : base(menu, owner, pos, size, sliderOnRight, sliderPosOffset, sliderSizeYOffset)
+        : base(menu, owner, pos, size, null, sliderOnRight? Systems.ScrollSystem.Direction.Left : Systems.ScrollSystem.Direction.Right, sliderPosOffset, sliderSizeYOffset)
     {
         this.sliderDefaultIsDown = sliderDefaultIsDown;
         buttonHeight = 15;
         buttonSpacing = 3;
-        startEndWithSpacing = false;
+        StartEndWithSpacing = false;
     }
 
     // treat different elements as separate lines
@@ -44,7 +44,7 @@ public class TextScroller : ButtonScroller
                 menu,
                 this,
                 textLines[i],
-                GetIdealPosWithScrollForButton(i + buttons.Count),
+                PositionOfObject(i + scrollObjects.Count),
                 new Vector2(size.x, buttonHeight),
                 false
             )
@@ -69,7 +69,7 @@ public class TextScroller : ButtonScroller
                 menu,
                 this,
                 "",
-                GetIdealPosWithScrollForButton(buttons.Count),
+                PositionOfObject(scrollObjects.Count),
                 new Vector2(0, buttonHeight),
                 false
             )

@@ -39,11 +39,11 @@ namespace RainMeadow
                     button.avatars = realizedPlayers.Where(x => x.owner == button.player).ToList();
                     continue;
                 }
-                playerScroller.RemoveButton(button, false);
+                playerScroller.RemoveScrollObject(button, false);
             }
             foreach (OnlinePlayer player in newPlayers)
             {
-                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
+                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.PositionOfObject(playerScroller.scrollObjects.Count), OnlineManager.lobby.isOwner && !player.isMe);
                 playerScroller.AddScrollObjects(playerButton);
             }
             playerScroller.ConstrainScroll();

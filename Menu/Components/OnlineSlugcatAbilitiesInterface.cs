@@ -3,6 +3,8 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Systems;
 using RWCustom;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,8 +107,8 @@ namespace RainMeadow.UI.Components
                 SettingsPage settings = settingSignals[message];
                 SettingsPage? prevSettings = activeSettings;
                 if (prevSettings == settings) return;
-                OnSwitchSettingsTab(settings, prevSettings);
                 SwitchTab(settings);
+                OnSwitchSettingsTab(settings, prevSettings);
             }
         }
 
@@ -117,6 +119,8 @@ namespace RainMeadow.UI.Components
             public MenuTabWrapper tabWrapper;
             public OpTextBox saintAscendDurationTimerTextBox;
             public MenuLabel saintAscendanceTimerLabel;
+            public ScrollableContainer scrollableContainer;
+            public ScrollableContainer.Scrollable scrollable;
 
 
             public OpTextBox artiExplosionTextBox, artiParryDistanceTextBox, artiStunDistanceTextBox;
@@ -126,7 +130,11 @@ namespace RainMeadow.UI.Components
             public override string Name => "MSC Settings";
             public MSCSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, string painCatName, float textSpacing = 300) : base(menu, owner)
             {
-                tabWrapper = new(menu, this);
+                scrollableContainer = new(menu, this, Vector2.zero, new(450, 475));
+                scrollableContainer.camSizeOffset = new(-10, -10);
+                scrollable = scrollableContainer.CreateNewContentObject(9000);
+                scrollable.defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.TopLeft;
+                tabWrapper = new(menu, scrollable);
                 Vector2 positioner = new(360, 420);
                 artiExplosionTextBox = new(new Configurable<int>(MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value), positioner + new Vector2(-7.5f, 0), 40)
                 {
@@ -140,7 +148,7 @@ namespace RainMeadow.UI.Components
                     if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiExplosionCount = artiExplosionTextBox.valueInt;
                 };
-                artiExplosionLabel = new(menu, this, Translate("Artificer Explosion Capacity"), artiExplosionTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                artiExplosionLabel = new(menu, scrollable, Translate("Artificer Explosion Capacity"), artiExplosionTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 artiExplosionLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, artiExplosionTextBox);
 
@@ -155,7 +163,7 @@ namespace RainMeadow.UI.Components
                     if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiStunDistanceMult = artiStunDistanceTextBox.valueFloat;
                 };
-                artiStunDistanceLabel = new(menu, this, Translate("Artificer Stun Range Multiplier"), artiStunDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                artiStunDistanceLabel = new(menu, scrollable, Translate("Artificer Stun Range Multiplier"), artiStunDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 artiStunDistanceLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, artiStunDistanceTextBox);
 
@@ -171,13 +179,13 @@ namespace RainMeadow.UI.Components
                     if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.artiParryDistanceMult = artiParryDistanceTextBox.valueFloat;
                 };
-                artiParryDistanceLabel = new(menu, this, Translate("Artificer Parry Range Multiplier"), artiParryDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                artiParryDistanceLabel = new(menu, scrollable, Translate("Artificer Parry Range Multiplier"), artiParryDistanceTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 artiParryDistanceLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, artiParryDistanceTextBox);
 
-                artiParryLeniencyCheckBox = new(menu, this, this, positioner - spacing * 3, textSpacing, Translate("Artificer Parry Leniency:"), ARTIPARRYLENIENCY, false, Translate("Gives Artificer more leniency frames in the concussive blast's parry"));
-                blockMaulCheckBox = new(menu, this, this, positioner - spacing * 4, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
-                sainotCheckBox = new(menu, this, this, positioner - spacing * 5, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
+                artiParryLeniencyCheckBox = new(menu, scrollable, this, positioner - spacing * 3, textSpacing, Translate("Artificer Parry Leniency:"), ARTIPARRYLENIENCY, false, Translate("Gives Artificer more leniency frames in the concussive blast's parry"));
+                blockMaulCheckBox = new(menu, scrollable, this, positioner - spacing * 4, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
+                sainotCheckBox = new(menu, scrollable, this, positioner - spacing * 5, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
                 saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 6 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
@@ -188,13 +196,14 @@ namespace RainMeadow.UI.Components
                     if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
                     arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
                 };
-                saintAscendanceTimerLabel = new(menu, this, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                saintAscendanceTimerLabel = new(menu, scrollable, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 saintAscendanceTimerLabel.label.alignment = FLabelAlignment.Left;
                 new PatchedUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
-                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 7, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
-                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 8, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
-                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 9, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
-                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, artiParryLeniencyCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox, artiExplosionLabel, artiParryDistanceLabel, artiStunDistanceLabel);
+                painCatEggCheckBox = new(menu, scrollable, this, positioner - spacing * 7, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
+                painCatThrowsCheckBox = new(menu, scrollable, this, positioner - spacing * 8, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
+                painCatLizardCheckBox = new(menu, scrollable, this, positioner - spacing * 9, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
+                this.SafeAddSubobjects(scrollableContainer);
+                scrollable.subObjects.AddRange([tabWrapper, blockMaulCheckBox, artiParryLeniencyCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox, artiExplosionLabel, artiParryDistanceLabel, artiStunDistanceLabel]);
                 string Translate(string s) => menu.LongTranslate(s).Replace("<PAINCATNAME>", painCatName);
             }
             public void SyncMenuObjectStatus(MenuObject obj)
@@ -229,8 +238,9 @@ namespace RainMeadow.UI.Components
             {
                 if (backButton == null)
                 {
-                    backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(30, 30), new(80, 30));
-                    AddObjects(backButton);
+                    backButton = new(menu, scrollable, menu.Translate("BACK"), BACKTOSELECT, new(30, 30), new(80, 30));
+                    scrollable.subObjects.Add(backButton);
+                    scrollable.ForceAnchor(backButton, ScrollSystem.Anchor.BottomLeft);
                     menu.MutualVerticalButtonBind(backButton, painCatLizardCheckBox);
                     menu.MutualVerticalButtonBind(artiExplosionLabel, backButton); //loop
                 }
@@ -541,7 +551,7 @@ namespace RainMeadow.UI.Components
                 for (int i = 0; i < array.Length; i++)
                 {
                     KeyValuePair<string, SettingsPage> pair = array[i];
-                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, new(0, scroller.GetIdealYPosWithScroll(i)), new(290, 45));
+                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, scroller.PositionOfObject(i), new(290, 45));
                     if (i > 0)
                         btn.CreateTopDivider();
                     scroller.AddScrollObjects(btn);
@@ -578,12 +588,12 @@ namespace RainMeadow.UI.Components
                 titleDivider.x = titleLabel.x;
                 titleDivider.y = titleLabel.y - titleLabel.textRect.height - 3;
             }
-            public class SettingsButton : BigSimpleButton, ButtonScroller.IPartOfButtonScroller
+            public class SettingsButton : BigSimpleButton, IOwnMenuScrollObject
             {
                 public float Alpha { get; set; } = 1;
                 public Vector2 Pos { get => pos; set => pos = value; }
                 public Vector2 Size { get => size; set => size = value; }
-                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(scroller.buttons.IndexOf(this) - 1)?.Alpha ?? 0 : 0;
+                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.scrollObjects.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
                 public FSprite? topDivSprite;
                 public FSprite arrowSprite;
                 public SettingsPage settingsPage;

@@ -7,6 +7,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Systems;
 using RWCustom;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace RainMeadow
 {
     public static class MenuHelpers
     {
+        public static MenuScrollObject GetScrollObject(this MenuObject menuObject) => MenuScrollObject.menuScrollObjects.GetValue(menuObject, x => MenuScrollObject.GetScrollObjectFromMenuObject(x));
         public static void CallEveryDynamicBindHandler(this MenuObject obj)
         {
             MenuObject owner = obj;

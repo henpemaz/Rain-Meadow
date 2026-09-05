@@ -7,6 +7,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components;
@@ -46,7 +47,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             5,
             550,
             (80, 10),
-            sliderSizeYOffset: -40,
+            sliderSizeAxisOffset: -40,
             startEndWithSpacing: true
         )
     {
@@ -217,7 +218,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
         Emptiest,
     }
 
-    public class LobbyCard : EventfulSelectOneButton, IPartOfButtonScroller
+    public class LobbyCard : EventfulSelectOneButton, IOwnMenuScrollObject
     {
         public LobbyInfo lobbyInfo;
 

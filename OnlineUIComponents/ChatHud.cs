@@ -99,9 +99,9 @@ namespace RainMeadow
                         quiet ? 0.7f : 0.6f
                     );
                 }
-                bool shouldGoDown = chatLogOverlay.scroller.IsAtBottom();
+                bool shouldGoDown = chatLogOverlay.scroller.IsAtBoundary(UI.Systems.ScrollSystem.Direction.Bottom);
                 chatLogOverlay.UpdateLogDisplay();
-                if (shouldGoDown) chatLogOverlay.scroller.MoveAtBottom();
+                if (shouldGoDown) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom);
             }
         }
 
@@ -180,7 +180,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatInputOverlay != null)
             {
-                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveAtBottom();
+                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom);
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;

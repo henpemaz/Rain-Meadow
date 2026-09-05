@@ -86,7 +86,7 @@ namespace RainMeadow.UI
             {
                 if (strings.Length <= i)
                 {
-                    storedResults.scroller.RemoveButton(menulabels[i], true);
+                    storedResults.scroller.RemoveScrollObject(menulabels[i], true);
                     continue;
                 }
                 menulabels[i].text = strings[i];
@@ -96,7 +96,7 @@ namespace RainMeadow.UI
             IEnumerable<string> newStrings = strings.Skip(count);
             foreach (string s in newStrings)
             {
-                AlignedMenuLabel label = new(this, storedResults.scroller, s, storedResults.scroller.GetIdealPosWithScrollForButton(storedResults.scroller.buttons.Count), new(storedResults.scroller.size.x, 30), false);
+                AlignedMenuLabel label = new(this, storedResults.scroller, s, storedResults.scroller.PositionOfObject(storedResults.scroller.scrollObjects.Count), new(storedResults.scroller.size.x, 30), false);
                 label.label.color = MenuColorEffect.rgbMediumGrey;
                 storedResults.scroller.AddScrollObjects(label);
             }
@@ -109,7 +109,7 @@ namespace RainMeadow.UI
             public StoredResults(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, string name) : base(menu, owner, pos, size)
             {
                 roundedRect = new(menu, this, Vector2.zero, size, true);
-                scroller = new(menu, this, Vector2.zero, new(size.x, size.y - 45), false, new(30, 20), -20)
+                scroller = new(menu, this, Vector2.zero, new(size.x, size.y - 45), null, Systems.ScrollSystem.Direction.Left, new(30, 20), -20)
                 {
                     greyOutWhenNoScroll = true,
                     buttonHeight = 30,
