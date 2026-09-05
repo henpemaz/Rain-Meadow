@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BepInEx.Bootstrap;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -439,6 +441,7 @@ public class FirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase
             (x,y) => DoesStringMatchCompressed(x, y));
     }
 }
+
 // compress by sorting by size, put it as a char at the start and then removing the extra letters needed to guess the enum
 public class SizeAndFirstLetterCompressedExtEnum(Type enumType) : CompressedExtEnumBase(enumType)
 {
@@ -656,8 +659,70 @@ public class SeparatorCompressedExtEnum(Type enumType, char separator) : Compres
 
 public static class MeadowExtEnumSync
 {
+    // --------------------- Methods and Attributes
+    private static bool hasAllExtEnumInit = false;
+    private static void InitAllExtEnums()
+    {
+        RainMeadow.Debug($"Running all cctors with ExtEnums");
+        int assemblyCount = 0;
+        // Runs all types with staticly initialzed enum, so they don't get run unpredictably
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Assembly meadowAssembly = Assembly.GetExecutingAssembly();
+        var modAssemblies = Chainloader.PluginInfos.Values
+            .Select(plugin => plugin.Instance.GetType().Assembly)
+            .Distinct();
+            // .Where(x => x != meadowAssembly);
+        foreach (Assembly assembly in modAssemblies ?? [])
+        {
+            bool isMain = assembly == meadowAssembly;
+            List<string> typesLoaded = [];
+            try
+            {
+                foreach (Type type in assembly.GetTypesSafely())
+                {
+                    try
+                    {
+                        if (type
+                                .GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                                .Any(x => x.IsStatic && IsSyncedExtEnum(x.FieldType, out _))
+                            || type
+                                .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                                .Any(x => x.CanRead && x.GetMethod.IsStatic && IsSyncedExtEnum(x.PropertyType, out _))
+                        )
+                        {
+                            // run the cctor (if it wasn't already run)
+                            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                            typesLoaded.Add(type.FullName);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error("Error while trying to find ExtEnum in " + assembly.FullName + ":" + type?.FullName);
+                        if (isMain) throw e;
+                        RainMeadow.Error(e);
+                    }
+                }
+
+                if (typesLoaded.Count > 0)
+                {
+                    assemblyCount++;
+                    RainMeadow.Debug($"Loaded {typesLoaded.Count} types in {assembly.GetName().Name} : {string.Join(", ", typesLoaded)}");
+                }
+            }
+            catch (Exception e)
+            {
+                if (isMain) throw e;
+                RainMeadow.Error(e);
+            }
+        }
+        hasAllExtEnumInit = true;
+        RainMeadow.Debug($"Loaded {assemblyCount} assemblies with static ExtEnums in {stopwatch.ElapsedMilliseconds}ms");
+        stopwatch.Stop();
+    }
     public static void ResetEnumEntriesMapping()
     {
+        if (!hasAllExtEnumInit) InitAllExtEnums();
         for (int i = 0; i < SyncedExtEnumList.Count; i++)
         {
             // ordering them alphabetically to reduce order mismatch chances
@@ -672,14 +737,14 @@ public static class MeadowExtEnumSync
     // I don't want to assume that the order of SyncedExtEnumList is the same. I'll leave it public if some mods want to sync more enums here.
     // Also, having it static initialized is no biggies ! We'll assign the values later.
     public static SeparatorCompressedExtEnum OnlineStateTypeMap {get;}
-    public static List<CompressedExtEnumBase> SyncedExtEnumList = new()
-    {
+    public static List<CompressedExtEnumBase> SyncedExtEnumList =
+    [
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Name)),
         new FirstLetterCompressedExtEnum(typeof(SlugcatStats.Timeline)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(AbstractPhysicalObject.AbstractObjectType)),
         new SizeAndFirstLetterCompressedExtEnum(typeof(CreatureTemplate.Type)),
         (OnlineStateTypeMap = new SeparatorCompressedExtEnum(typeof(OnlineState.StateType), '.')),
-    };
+    ];
 
     // We need a double special character for the trim since the compressed value can have ANY character in it
     public const string compressionSeparator = ";;";
@@ -694,14 +759,8 @@ public static class MeadowExtEnumSync
 
     public static bool IsSyncedExtEnum(Type enumType, out CompressedExtEnumBase compressedExtEnum)
     {
-        compressedExtEnum = null!;
-        int i = SyncedExtEnumList.FindIndex(x => x.enumType == enumType);
-        if (i > -1)
-        {
-            compressedExtEnum = SyncedExtEnumList[i];
-            return true;
-        }
-        return false;
+        compressedExtEnum = SyncedExtEnumList.Find(x => x.enumType == enumType);
+        return compressedExtEnum is not null;
     }
 
     public static byte MeadowIndex<T>(this T extEnum) where T : ExtEnum<T>
