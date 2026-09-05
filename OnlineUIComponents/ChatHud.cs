@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using HUD;
-using Rewired;
-using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatHud : HudPart, IChatSubscriber
+    public class ChatHud : HudPart
     {
         private TextPrompt textPrompt;
         public RoomCamera camera;
@@ -19,7 +16,6 @@ namespace RainMeadow
 
         public float logScrollPos = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value ? 0 : -1;
 
-        public bool Active => true; //=> game.processActive;
         public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;
         public bool InGameTransition => game.processActive || game.manager.upcomingProcess != null;
 
@@ -34,7 +30,7 @@ namespace RainMeadow
             this.camera = camera;
             this.game = camera.game;
 
-            ChatLogManager.Subscribe(this);
+            ChatLogManager.MessageLogged += OnMessageLogged;
             if (!ChatLogManager.shownChatTutorial)
             {
                 this.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
@@ -51,6 +47,30 @@ namespace RainMeadow
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
         }
 
+        public void ClearMessageFromClientOptions()
+        {
+            if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.Death)
+            {
+                ClearMessages(x => x.User == ChatLogManager.TypeToSysMesSignature(ChatLogManager.SystemMessageType.CreatureDeath));
+            }
+            else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.System)
+            {
+                ClearMessages(x => ChatLogManager.IsUserSystemSignature(x.User));
+            }
+            else if (RainMeadow.rainMeadowOptions.ClearChatEveryRound.Value == RainMeadowOptions.ChatClear.All)
+            {
+                ClearMessages(x => true);
+            }
+        }
+        public void ClearMessages(Predicate<(string User, string Message)> match)
+        {
+            ChatLogManager.chatLog.RemoveAll(match);
+            if (chatLogOverlay is not null) ShutDownChatLog(); // clear the UI
+            if (showChatLog && chatLogOverlay == null && !ShouldForceCloseChat)
+            {
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+            }
+        }
         public void UpdateCamera(RoomCamera camera)
         {
             this.camera = camera;
@@ -58,9 +78,8 @@ namespace RainMeadow
             this.textPrompt = camera.hud.textPrompt;
         }
 
-        public void AddMessage(string user, string message)
+        public void OnMessageLogged(string user, string message)
         {
-            if (!Active) return;
             if (OnlineManager.lobby == null) return;
             if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
 
@@ -74,9 +93,9 @@ namespace RainMeadow
                 if (ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
                 {
                     camera.virtualMicrophone.PlaySound(
-                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
-                        0, 
-                        quiet ? 0.7f : 1.5f, 
+                        quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick,
+                        0,
+                        quiet ? 0.7f : 1.5f,
                         quiet ? 0.7f : 0.6f
                     );
                 }
@@ -174,7 +193,7 @@ namespace RainMeadow
             if (chatInputOverlay != null) ShutDownChatInput();
             if (chatLogOverlay != null) ShutDownChatLog();
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
-            ChatLogManager.Unsubscribe(this);
+            ChatLogManager.MessageLogged -= OnMessageLogged;
         }
         public override void ClearSprites()
         {

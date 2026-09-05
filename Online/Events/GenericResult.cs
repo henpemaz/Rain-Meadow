@@ -13,7 +13,7 @@
 
         public override void Process()
         {
-            (referencedEvent as ResolvableEvent).Resolve(this);
+            (referencedEvent as ResolvableEvent)!.Resolve(this);
         }
 
         public class Ok : GenericResult

@@ -797,7 +797,6 @@ Watcher Settings|Paramètre Watcher
 Return to Select Settings Page|Retourner aux Paramètres d'Abilités
 Watcher Ripple Level:|Niveau d'Ondulation du Guetteur :
 Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Niveau d'Ondulation du Guetteur :
-Press grab to toggle active slugcats|Appuyer sur "attraper" pour activer/désactiver les slugcats actifs.
 Invite friends|Inviter des Amis
 Cape Color|Couleur de Cape
 fell into the abyss thanks to|est tombé dans les abymes à cause de

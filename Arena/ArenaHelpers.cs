@@ -9,19 +9,19 @@ namespace RainMeadow
 {
     public static class ArenaHelpers
     {
-        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> otherSlugcats = new List<SlugcatStats.Name>();
-        public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name?>();
+        public static List<SlugcatStats.Name> allSlugcats = [];
+        public static List<SlugcatStats.Name> baseGameSlugcats = [];
+        public static List<SlugcatStats.Name> vanillaSlugcats = [];
+        public static List<SlugcatStats.Name> mscSlugcats = [];
+        public static List<SlugcatStats.Name> otherSlugcats = [];
+        public static List<SlugcatStats.Name> selectableSlugcats = [];
 
-        public static readonly List<string> nonArenaSlugs = new List<string>
-        {
+        public static readonly List<string> nonArenaSlugs =
+        [
             "MeadowOnline",
             "MeadowRandom",
-            RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value,
-        };
+            RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value
+        ];
 
         public static void RecreateSlugcatCache()
         {
@@ -119,7 +119,7 @@ namespace RainMeadow
         }
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
-        public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
+        public static OnlinePlayer? FindOnlinePlayerByLobbyId(ushort lobbyId)
         {
             foreach (var player in OnlineManager.players)
             {
@@ -145,10 +145,33 @@ namespace RainMeadow
             return OnlineManager.mePlayer;
         }
 
+        public static AbstractCreature? FindPlayerACByArenaPlayer(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaGameSession arenaSession,
+            ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arenaOnline, arenaPlayer.playerNumber);
+
+            if (onlinePlayer is null)
+                return null;
+
+            return arenaSession.Players
+                .Find(playerAC => playerAC.GetOnlineCreature()?.owner == onlinePlayer);
+        }
+
+        public static ArenaSitting.ArenaPlayer? FindArenaPlayerByOnlinePlayer(
+            ArenaOnlineGameMode arenaOnline,
+            ArenaSitting arenaSitting,
+            OnlinePlayer onlinePlayer)
+        {
+            int playerNumber = FindOnlinePlayerNumber(arenaOnline, onlinePlayer);
+            // When the round transitions the online list keeps all player numbers but the local list of arena players is cleared. These leaves some niche cases where the player number is out of bounds of the local list.
+            return arenaSitting.players.Find(arenaPlayer => arenaPlayer.playerNumber == playerNumber);
+        }
+
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(
             ArenaOnlineGameMode arena,
-            int playerNumber
-        )
+            int playerNumber)
         {
             try
             {
@@ -217,6 +240,7 @@ namespace RainMeadow
             RainMeadow.Debug("Finished GetAllAlivePlayers");
             return allAlivePlayers;
         }
+
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
             manager.arenaSitting.players = [];
@@ -238,7 +262,7 @@ namespace RainMeadow
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
 
-        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
+        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistent)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
             {
@@ -257,7 +281,7 @@ namespace RainMeadow
                     return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
                 }
             }
-            return defaultIfNonExistant;
+            return defaultIfNonExistent;
         }
 
         public static void SaveOptionToArena(string ID, object obj)
@@ -279,8 +303,7 @@ namespace RainMeadow
         public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) =>
             GetDataSettings<ArenaClientSettings>(player);
 
-        public static T? GetDataSettings<T>(OnlinePlayer? player)
-            where T : OnlineEntity.EntityData
+        public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)
             {
@@ -328,25 +351,22 @@ namespace RainMeadow
         }
 
         public static bool CheckSameTeam(
-    ArenaOnlineGameMode arena,
-    OnlinePlayer? A,
-    OnlinePlayer? B,
-    Creature creature,
-    Creature friend
-)
+            ArenaOnlineGameMode arena,
+            OnlinePlayer? A,
+            OnlinePlayer? B,
+            Creature creature,
+            Creature friend)
         {
             if (A is not null && B is not null)
             {
                 if (
-                    OnlineManager
-                        .lobby.clientSettings[A]
-                        .TryGetData<ArenaTeamClientSettings>(out var tb1)
+                    OnlineManager.lobby.clientSettings.TryGetValue(A, out var cA)
+                        && cA.TryGetData<ArenaTeamClientSettings>(out var tb1)
                 )
                 {
                     if (
-                        OnlineManager
-                            .lobby.clientSettings[B]
-                            .TryGetData<ArenaTeamClientSettings>(out var tb2)
+                        OnlineManager.lobby.clientSettings.TryGetValue(B, out var cB)
+                            && cB.TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
                         return tb1.team == tb2.team
@@ -359,136 +379,30 @@ namespace RainMeadow
             return false;
         }
 
-        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) =>
-            players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
-
-        public static List<IconSymbol.IconSymbolData> GetAllOnlinePlayerTrophies(
-            ArenaOnlineGameMode arena,
-            int playerNumber
-        )
+        public static int GetReadiedPlayerCount(List<OnlinePlayer> players)
         {
-            List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-            for (int i = 0; i < arena.playerNumberWithTrophies[onlinePlayer.inLobbyId].Count; i++)
-            {
-                IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]
-                    );
-                trophies.Add(iconSymbolData);
-            }
-            return trophies;
+            return players.Count(player => GetArenaClientSettings(player)?.ready ?? false);
         }
 
-        public static List<string> GetAllPlayerTrophies(
-            ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
-        {
-            List<string> trophies = new List<string>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
-                arena,
-                sittingPlayer.playerNumber
-            );
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-
-            for (int i = 0; i < sittingPlayer.allKills.Count; i++)
-            {
-                trophies.Add(sittingPlayer.allKills[i].ToString());
-            }
-
-            return trophies;
-        }
-
-        public static List<IconSymbol.IconSymbolData> GetRoundOnlinePlayerTrophies(
-        ArenaOnlineGameMode arena,
-        int playerNumber
-    )
-        {
-            List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Warn("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-            for (int i = 0; i < arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId].Count; i++)
-            {
-                IconSymbol.IconSymbolData iconSymbolData =
-                    IconSymbol.IconSymbolData.IconSymbolDataFromString(
-                        arena.playerNumberWithTrophiesPerRound[onlinePlayer.inLobbyId][i]
-                    );
-                trophies.Add(iconSymbolData);
-            }
-            return trophies;
-        }
-
-        public static List<string> GetRoundPlayerTrophies(
-            ArenaOnlineGameMode arena,
-            ArenaSitting.ArenaPlayer sittingPlayer
-        )
-        {
-            List<string> trophies = new List<string>();
-            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(
-                arena,
-                sittingPlayer.playerNumber
-            );
-            if (onlinePlayer == null)
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
-                return trophies;
-            }
-
-            if (!arena.playerNumberWithTrophiesPerRound.ContainsKey(onlinePlayer.inLobbyId))
-            {
-                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
-                return trophies;
-            }
-
-            for (int i = 0; i < sittingPlayer.roundKills.Count; i++)
-            {
-                trophies.Add(sittingPlayer.roundKills[i].ToString());
-            }
-
-            return trophies;
-        }
-        
         // Adding that function to hook for other mods
         public static Color GetAmoebaColor(OnlinePlayer owner, bool inOtherRipple = false)
         {
-            Color rawColor = (RainMeadow.isArenaMode(out _)
-                ? (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
-                        && OnlineManager.lobby.clientSettings[owner]?.TryGetData<ArenaTeamClientSettings>(out var tcs) is true
-                            ? teamBattle.teamColors[tcs.team]
-                            : GetArenaClientSettings(owner)?.slugcatColor)
-                : null) ?? RainWorld.RippleColor;
+            Color rawColor = RainWorld.RippleColor;
+            if (RainMeadow.isArenaMode(out _))
+            {
+                Color? teamColor = null;
+                if (
+                    TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
+                    && OnlineManager.lobby.clientSettings.TryGetValue(owner, out var ownerSettings)
+                    && ownerSettings.TryGetData<ArenaTeamClientSettings>(out var tcs)
+                    && tcs.team >= 0 && tcs.team < teamBattle.teamColors.Count
+                )
+                {
+                    teamColor = teamBattle.teamColors[tcs.team];
+                }
+
+                rawColor = teamColor ?? GetArenaClientSettings(owner)?.slugcatColor ?? RainWorld.RippleColor;
+            }
             HSLColor hSLColor = rawColor.ToHSL();
             hSLColor.lightness = inOtherRipple ? RainWorld.RippleGold.ToHSL().lightness / 2 : RainWorld.RippleColor.ToHSL().lightness;
             return hSLColor.rgb;

@@ -1,9 +1,9 @@
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using Watcher;
 
 namespace RainMeadow
@@ -40,9 +40,9 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
-            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;           
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
             On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
-            
+
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
@@ -260,7 +260,7 @@ namespace RainMeadow
             if (self.GetOnlineObject(out var oe) && (oe.isTransferable || !oe.isMine)) self.destroyOnAbstraction = false;
 
             orig(self, coord);
-            
+
             if (OnlineManager.lobby != null && oe is not null)
             {
                 oe.realized = false;
@@ -274,7 +274,7 @@ namespace RainMeadow
                         {
                             self.Destroy();
                         }
-                    } 
+                    }
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource().ApoEnteringWorld(apo);
+                self.world.GetResource()?.ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
@@ -566,17 +566,20 @@ namespace RainMeadow
 
         private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
         {
-            System.Func<bool> waitCondition = null;
+            System.Func<bool>? waitCondition = null;
 
             if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner))
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
+            // orig already ran  so there is nothing left to execute here.
+            // This only holds transitionInProgress until the old world's participants clear
+            // used to throw an exception literally every warp
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
                 waitCondition,
-                () => self.WorldLoaded(warpUsed)
+                null
             );
         }
 
@@ -587,8 +590,11 @@ namespace RainMeadow
             { // there exists "warps" to the same world, twice, for some bloody reason
                 //this in fact probably is required for now because rain world devs DESPISE US
                 RainMeadow.Debug("Unsubscribing from old world");
-                oldWorldSession.Deactivate();
+                // NotNeeded first!
+                // it only cascades to the room sessions while we're still active.
+                // Deactivating first nulls out subresources
                 oldWorldSession.NotNeeded(); // done? let go
+                oldWorldSession.Deactivate();
             }
 
             self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));

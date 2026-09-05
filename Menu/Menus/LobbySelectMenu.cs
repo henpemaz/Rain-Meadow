@@ -14,8 +14,14 @@ public class LobbySelectMenu : SmartMenu
     public ProperlyAlignedMenuLabel statisticsLabel;
     public LobbyCardSelector lobbyCardSelector;
     public SimplerButton joinButton;
-    public DialogAsyncWait? joiningDialog;
+    public DialogAsyncWaitCancellable? joiningDialog;
     public LobbyInfo? lastSelectedLobbyInfo;
+
+    private int joiningTimeoutCount = 0;
+    private const int FastTimeoutCount = 200;
+    private int TimeoutTicks = RainMeadow.rainMeadowOptions.JoiningTimeout.Value * 40;
+    private const string ERROR_Unexpected = "Something went wrong...";
+    private const string ERROR_Cancelled = "Cancelled";
 
     public override MenuScene.SceneID GetScene =>
         ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -248,12 +254,14 @@ public class LobbySelectMenu : SmartMenu
     public void RequestJoinLobby(LobbyInfo lobbyInfo, string? password)
     {
         manager.ShowDialog(
-            joiningDialog = new DialogAsyncWait(
+            joiningDialog = new DialogAsyncWaitCancellable(
                 this,
                 Translate("Joining lobby..."),
-                UIUtils.DIALOG_SIZE
+                UIUtils.DIALOG_SIZE,
+                (_) => MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Cancelled)
             )
         );
+        joiningTimeoutCount = 0;
         MatchmakingManager.currentInstance.RequestJoinLobby(lobbyInfo, password);
     }
 
@@ -313,18 +321,68 @@ public class LobbySelectMenu : SmartMenu
             return;
 
         string errorMessage = "Failed to join lobby:<LINE>" + error;
-        manager.ShowDialog(new NotifyDialog(manager, errorMessage, UIUtils.DIALOG_SIZE));
+        if (error != ERROR_Cancelled) manager.ShowDialog(new NotifyDialog(manager, errorMessage, UIUtils.DIALOG_SIZE));
         RainMeadow.Error(errorMessage);
+
+        // Stop any process/menu switch when an error occur 
+        if (OnlineManager.instance.manager._processSwitchQueue.Count > 0)
+        {
+            RainMeadow.Warn("Found process(es) in queue, clearing it!");
+            OnlineManager.instance.manager._processSwitchQueue.Clear();
+        }
     }
 
     public override void Update()
     {
         base.Update();
         joinButton.buttonBehav.greyedOut = lobbyCardSelector.SelectedLobby == null;
+        if (joiningDialog is not null && OnlineManager.lobby is not null)
+        {
+            if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
+            {
+                int attempts = OnlineManager.lobby.enumsChecked 
+                    ? OnlineManager.lobby.joiningAttempts 
+                    : OnlineManager.lobby.enumSyncAttempts;
+                int step = !OnlineManager.lobby.enumsChecked
+                    ? 0
+                    : OnlineManager.lobby.isRequesting
+                        ? 1
+                        : 2;
+
+                string text = Translate("Joining lobby...") + $" {step}/2";
+                if (attempts > 2) text += "\n" + Translate("(Attempt <NUM>)").Replace("<NUM>", attempts.ToString());
+                joiningDialog.SetText(text);
+            }
+
+            if (TimeoutTicks > 0)
+            {
+                if (OnlineManager.lobby.enumsChecked 
+                && !OnlineManager.lobby.isRequesting 
+                && TimeoutTicks - joiningTimeoutCount > FastTimeoutCount) // Something went wrong, you should've joined by now
+                {
+                    joiningTimeoutCount = TimeoutTicks - FastTimeoutCount; // Making the timeout shorter
+                }
+
+                if (++joiningTimeoutCount >= TimeoutTicks)
+                {
+                    if (OnlineManager.lobby.joiningEvent is not null)
+                    {
+                        RainMeadow.Warn("Joining process it taking too long, timing it out!");
+                        OnlineManager.lobby.joiningEvent.Abort(); // safely timeout
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"No process running? What's happening? Timing it out! (enumChecked <{OnlineManager.lobby.enumsChecked}>, isRequesting <{OnlineManager.lobby.isRequesting}>, isAvailable <{OnlineManager.lobby.isAvailable}>)");
+                        MatchmakingManager.currentInstance.JoinLobby(false, ERROR_Unexpected);
+                    }
+                }
+            }
+        }
     }
 
     public override void ShutDownProcess()
     {
+        RainMeadow.DebugMe();
         MatchmakingManager.OnLobbyListReceived -= OnLobbyListReceived;
         MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
         base.ShutDownProcess();

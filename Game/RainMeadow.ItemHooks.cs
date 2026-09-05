@@ -19,6 +19,10 @@ namespace RainMeadow
             IL.SeedCob.PlaceInRoom += SeedCob_PlaceInRoom;
 
             APOFS += FireSpriteLarva_APOFS;
+            // save and restore EntityID.altSeed
+            On.EntityID.ToString += EntityID_ToString;
+            On.EntityID.FromString += EntityID_FromString;
+          
         }
 
         private AbstractPhysicalObject FireSpriteLarva_APOFS(World world, string[] array, EntityID entityID, AbstractPhysicalObject.AbstractObjectType apoType, WorldCoordinate pos)
@@ -28,6 +32,28 @@ namespace RainMeadow
                 return new Watcher.BoxWorm.Larva.AbstractLarva(world, null, pos, entityID);
             }
             return null;
+           
+        }
+      
+
+        private string EntityID_ToString(On.EntityID.orig_ToString orig, ref EntityID self)
+        {
+            if (OnlineManager.lobby is null) return orig(ref self);
+
+            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}", orig(ref self), self.altSeed);
+        }
+
+        private EntityID EntityID_FromString(On.EntityID.orig_FromString orig, string s)
+        {
+            if (OnlineManager.lobby is null) return orig(s);
+
+            var entityID = orig(s);
+            string[] array = s.Split('.');
+            if (array.Length > 3)
+            {
+                entityID.altSeed = int.Parse(array[3], NumberStyles.Any, CultureInfo.InvariantCulture);
+            }
+            return entityID;
         }
 
         private void SeedCob_PlaceInRoom(ILContext il)

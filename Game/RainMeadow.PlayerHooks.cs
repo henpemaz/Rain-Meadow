@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RWCustom;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -139,7 +139,7 @@ public partial class RainMeadow
         try
         {
             ILCursor cursor = new ILCursor(il);
-            if (cursor.TryGotoNext(MoveType.Before, 
+            if (cursor.TryGotoNext(MoveType.Before,
                 x => x.MatchCallvirt(typeof(FNode).GetProperty(nameof(FNode.isVisible)).GetSetMethod())))
             {
                 cursor.MoveAfterLabels();
@@ -147,8 +147,8 @@ public partial class RainMeadow
                 cursor.EmitDelegate((bool orig, Creature creature) =>
                 {
                     // Debug($"Is mud of [{creature}/{creature.abstractCreature?.GetOnlineCreature()}] visible ? <{orig}><{creature.abstractCreature?.rippleLayer}><{creature.abstractCreature?.world?.game?.ActiveRippleLayer}>");
-                    return orig 
-                        && creature.abstractCreature?.rippleLayer == 0 
+                    return orig
+                        && creature.abstractCreature?.rippleLayer == 0
                         && creature.abstractCreature?.world?.game?.ActiveRippleLayer == 0;
                 });
             }
@@ -189,7 +189,7 @@ public partial class RainMeadow
     }
 
     // sync Artificer's parry. Cmon she needs it.
-    public static void PlayArtiParryCustomSound(Weapon weapon) 
+    public static void PlayArtiParryCustomSound(Weapon weapon)
     {
         weapon.room.PlaySound(SoundID.Spear_Bounce_Off_Creauture_Shell, weapon.firstChunk, false, 1.2f, 2f);
     }
@@ -210,13 +210,13 @@ public partial class RainMeadow
             cursor.EmitDelegate((Player player, List<Weapon> weapons, int i) =>
             {
                 Weapon weapon = weapons[i]; // we grab the weapon from the local variables
-                if (OnlineManager.lobby != null && i == 0) {PlayArtiParryCustomSound(weapon);} // play only in Meadow, not in local
+                if (OnlineManager.lobby != null && i == 0) { PlayArtiParryCustomSound(weapon); } // play only in Meadow, not in local
 
                 if (weapon.abstractPhysicalObject.GetOnlineObject() is not OnlinePhysicalObject onlineWeapon
                     || onlineWeapon.isMine // We don't need to do anything if the spear is ours
                     || player.abstractCreature.GetOnlineCreature() is not OnlineCreature onlineCreature
                     || !onlineCreature.isMine) return; // We don't fire if the parry isn't from the client
-                
+
                 RainMeadow.Debug($"ARTI PARRY !! {onlineCreature}, {onlineWeapon}, {onlineWeapon.owner}, Frame {Mathf.RoundToInt(ARTI_PARRY_MAX_COOLDOWN - player.pyroParryCooldown)}");
 
                 RealizedWeaponState? realizedWeaponState = GetAppropriateWeaponState(onlineWeapon);
@@ -224,8 +224,8 @@ public partial class RainMeadow
                 {
                     RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
                     return;
-                } 
-                
+                }
+
                 onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, true, i != 0));
                 foreach (OnlinePlayer otherplayer in onlineWeapon.roomSession?.participants ?? [])
                 {
@@ -269,10 +269,10 @@ public partial class RainMeadow
             cursor.EmitDelegate((Weapon weapon, SharedPhysics.CollisionResult result) =>
             {
                 if (weapon.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject onlineWeapon
-                    && result.obj is Creature target 
+                    && result.obj is Creature target
                     && target.abstractCreature.GetOnlineCreature() is OnlineCreature onlineCreature)
                 {
-                    if (!onlineCreature.isMine) 
+                    if (!onlineCreature.isMine)
                     {
                         // spear was already deflected, if an RPC comes in, we'll ignore it
                         onlineWeapon.Lock("deflected"); // Locking manually is abit sketchy, but it's kind of my only way.
@@ -286,10 +286,10 @@ public partial class RainMeadow
                         {
                             RainMeadow.Error($"Failed to create the appropriate weapon state for obj {onlineWeapon}");
                             return;
-                        } 
-                        
+                        }
+
                         onlineWeapon.Lock("parry", onlineWeapon.owner.InvokeRPC(RPCs.Weapon_CreatureDeflect, onlineWeapon, realizedWeaponState, false, false));
-                        
+
                         foreach (OnlinePlayer player in onlineWeapon.roomSession?.participants ?? [])
                         {
                             if (player is not null && player != onlineWeapon.owner && !player.isMe)
@@ -306,7 +306,7 @@ public partial class RainMeadow
             Logger.LogError(e);
         }
     }
-    
+
     public bool BottomPlayerUsingSpearmasterAbility(Player spearmaster, out Player user)
     {
         user = null!;
@@ -1156,9 +1156,9 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                && (hud.textPrompt?.pausedMode is true 
+                && (hud.textPrompt?.pausedMode is true
                     || RMOverlayHUDMenu.GetOverlay()?.isFocusedOnMenu is true
-                    || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) 
+                    || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive)
                         && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
                 GameplayOverrides.StopPlayerMovement(self);
@@ -1226,19 +1226,6 @@ public partial class RainMeadow
             c.Emit(OpCodes.Brfalse, skip);
             c.Index += 6;
             c.MarkLabel(skip);
-
-            // infinite tinnitus fix
-            c.Index = 0;
-            ILLabel skipTinnitus = il.DefineLabel();
-            c.GotoNext(MoveType.After,
-                i => i.MatchStfld<Player>(nameof(Player.mushroomEffect)),
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<Player>("get_AI"),
-                i => i.MatchBrtrue(out skipTinnitus)
-                );
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
-            c.Emit(OpCodes.Brfalse, skipTinnitus);
 
             // don't try teleporting remote players when using dev tools
             c.Index = 0;
@@ -2086,53 +2073,27 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        OnlineCreature? onlineCreature = self.abstractCreature.GetOnlineCreature();
+        // player quit while a death event was running, or wait loop is processing
+        if (onlineCreature is null)
         {
-            if (isArenaMode(out var _))
-            {
-                RainMeadow.Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier");
-            }
-            else
-            {
-                throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            }
+            orig(self);
+            RainMeadow.Error("Player doesn't have an OnlineCreature counterpart!!");
+            return;
         }
-        if (onlineEntity != null && !onlineEntity.isMine) return;
-        RainMeadow.Debug($"%%% DIE {onlineEntity}");
-        // Inside player_die hook
+        // Remote avatars die when their owner's state says so, not from our local
+        // simulation. Predicted deaths (weapon hits are simulated on the attacker's end
+        // too) would get corrected by the next state and fake a revive on the HUD.
+        if (!onlineCreature.isMine)
+            return;
 
-        if (RainMeadow.isArenaMode(out var arena) && self.killTag == null && arena.emptyKillTagScore > 0 && !self.dead)
+        if (isArenaMode(out ArenaOnlineGameMode arenaOnline))
         {
-            OnlinePlayer deadOnlinePlayer = self.abstractCreature.GetOnlineCreature()?.owner;
-
-            if (self.room?.game?.session != null && self.room.game.session is ArenaGameSession s)
-            {
-                int deadPlayerNumber = s.arenaSitting.players.FirstOrDefault(p =>
-                    ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, p.playerNumber) == deadOnlinePlayer)?.playerNumber ?? -1;
-
-                if (deadPlayerNumber != -1)
-                {
-                    int newScore = s.arenaSitting.players[deadPlayerNumber].score - arena.emptyKillTagScore; // re-assign here so that we don't double proc the UI update
-                    ArenaRPCs.UpdatePlayerScore(deadPlayerNumber, newScore);
-                    for (int i = 0; i < s.arenaSitting.players.Count; i++)
-                    {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.arenaSitting.players[i].playerNumber);
-                        if (onlinePlayer == null) continue;
-
-                        if (onlinePlayer.isMe)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            // Send the RPC to everyone else in the lobby
-                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.UpdatePlayerScore, deadPlayerNumber, newScore);
-                        }
-                    }
-                }
-            }
+            arenaOnline.externalArenaGameMode.On_Player_Die(arenaOnline, orig, self);
+            return;
         }
 
+        Debug($"%%% DIE {onlineCreature}");
         orig(self);
     }
 
@@ -2148,8 +2109,6 @@ public partial class RainMeadow
         {
             self.slugOnBack.DropSlug();
         }
-
-        self.deaf = 0; //Doctors HATE this one simple trick!
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
         RainMeadow.Debug($"%%% DESTROY {oe}");

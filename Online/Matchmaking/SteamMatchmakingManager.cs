@@ -239,7 +239,7 @@ namespace RainMeadow
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }
 
-        public override void JoinLobby(bool success)
+        public override void JoinLobby(bool success, string failReason = "")
         {
             if (success)
             {
@@ -248,8 +248,8 @@ namespace RainMeadow
             else
             {
                 LeaveLobby();
-                RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
+                RainMeadow.Debug($"Failed to join local game. {failReason}");
+                OnLobbyJoinedEvent(false, Utils.Translate(failReason));
             }
         }
 

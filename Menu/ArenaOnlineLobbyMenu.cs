@@ -1,18 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
-using MoreSlugcats;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
-using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI;
 
@@ -116,7 +109,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         
         RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
 
-        ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
+        ChatLogManager.MessageLogged += arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         Arena.ResetOnReturnMenu(manager);
@@ -364,7 +357,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out _))
             Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
-        ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
+        ChatLogManager.MessageLogged -= arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
 
         bool owner = OnlineManager.lobby?.isOwner == true;
         if (owner)
@@ -566,7 +559,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "scug select")
             {
                 if (OnlineManager.lobby?.isOwner == true)
-                    return Translate("Press grab to toggle active slugcats");
+                    return Translate("Press shift + click to toggle active slugcats");
                 else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
                     return Translate("You aren't allowed to play as this slugcat");
             }
@@ -608,13 +601,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (selectedObject is ButtonScroller.SideButton sideBtn)
         {
             string id = sideBtn.signalText;
-            if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)
+            if (id == "THUMBS" && sideBtn.owner is ArenaLevelSelector.PlaylistSelector playSelector)
                 return Translate(
                     playSelector.ShowThumbsStatus
                         ? "Showing level thumbnails"
                         : "Showing level names"
                 );
-            if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
+            if (id == "SHUFFLE" && sideBtn.owner is ArenaLevelSelector.PlaylistHolder playHolder)
                 return Translate(
                     playHolder.ShuffleStatus
                         ? "Playing levels in random order"

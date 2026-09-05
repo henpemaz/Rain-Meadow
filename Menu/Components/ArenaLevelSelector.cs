@@ -6,7 +6,6 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
-using Newtonsoft.Json.Linq;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
@@ -197,6 +196,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             float desiredSquashFactor = 1;
             if (fadeAway > 0)
             {
+                MyPlaylistSelector?.buttonsDirty = true;
                 fadeAway += 0.1f;
                 if (fadeAway >= 1)
                 {
@@ -371,7 +371,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             lastShowThumbsTransitionState = showThumbsTransitionState;
             showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, ShowThumbsStatus ? 1f : 0f, 0.015f, 1f / 30f);
 
-            if (showThumbsTransitionState > 0 && showThumbsTransitionState < 1) ConstrainScroll();
+            if (showThumbsTransitionState != lastShowThumbsTransitionState) ConstrainScroll();
 
             buttonHeight = Mathf.Lerp(20, 30 + ThumbHeight, ShowThumbsTransitionState(1f));
             buttonSpacing = (buttonHeight - 20) / 6;
@@ -479,7 +479,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 searchBox.OnChange += () => { FilterLevelsList(searchBox.value); };
                 size.y -= decreaseSizeY;
                 new PatchedUIelementWrapper(tabWrapper, searchBox);
-
+                searchBox._KeyboardOn = true;
+                searchBox._cursor.isVisible = true;
+                searchBox._cursorAlpha = 1f;
+                menu.selectedObject = searchBox.wrapper;
             };
         }
         public void AddLevelItem(LevelItem item) => AddScrollObjects(item);

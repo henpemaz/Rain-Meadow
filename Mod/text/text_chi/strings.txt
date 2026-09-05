@@ -364,7 +364,6 @@ Am I Cat Searching for many, or a Mouse searching for one?|我是寻找众多的
 <LINE>I do not know, for I am not one. I am many.|<LINE>我不知道，因为我并非独自，也非唯一。
 Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|循一条路的人可能发现宝藏，<LINE>而探多条路的人会找到真相。
 With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.|再无依凭，唯有撤退。<LINE>在一切被夺走之前，隐匿行踪，谨慎出击。
-Press grab to toggle active slugcats|按“抓”来选择使用的蛞蝓猫
 
 // 怪猫姓名和简介
 Paincat|怪猫
