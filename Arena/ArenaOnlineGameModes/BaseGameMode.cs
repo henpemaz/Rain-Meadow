@@ -251,7 +251,7 @@ namespace RainMeadow
                 [
                     .. OnlineManager.players.Where(x =>
                         ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe
-                    ),
+                    ).OrderBy(x => x.inLobbyId),
                 ];
 
                 self.players.Clear();
@@ -285,16 +285,22 @@ namespace RainMeadow
                     {
                         if (player != null) // always gotta check in case something happened to them
                         {
-                            if (
-                                !arenaOnline.arenaSittingOnlineOrder.Contains(player.inLobbyId)
-                                && OnlineManager.lobby.isOwner
-                            )
+                            int sittingIndex = arenaOnline.arenaSittingOnlineOrder.IndexOf(
+                                player.inLobbyId
+                            );
+                            if (sittingIndex < 0)
                             {
                                 arenaOnline.arenaSittingOnlineOrder.Add(player.inLobbyId);
+                                sittingIndex = arenaOnline.arenaSittingOnlineOrder.Count - 1;
                             }
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new(
-                                arenaOnline.arenaSittingOnlineOrder.Count - 1
-                            )
+                            if (self.players.Any(p => p.playerNumber == sittingIndex))
+                            {
+                                RainMeadow.Error(
+                                    $"Arena: duplicate player number {sittingIndex} for {player}"
+                                );
+                                continue;
+                            }
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new(sittingIndex)
                             {
                                 playerClass = ArenaHelpers
                                     .GetArenaClientSettings(player)!

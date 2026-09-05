@@ -764,7 +764,7 @@ namespace RainMeadow
             [
                 .. OnlineManager.players.Where(x =>
                     ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe
-                ),
+                ).OrderBy(x => x.inLobbyId),
             ];
             arenaSitting.players.Clear();
             for (int i = 0; i < arenaSittingOnlineOrder.Count; i++)
@@ -798,16 +798,20 @@ namespace RainMeadow
                 {
                     if (player != null) // always gotta check in case something happened to them
                     {
-                        if (
-                            !arenaSittingOnlineOrder.Contains(player.inLobbyId)
-                            && OnlineManager.lobby.isOwner
-                        )
+                        int sittingIndex = arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
+                        if (sittingIndex < 0)
                         {
                             arenaSittingOnlineOrder.Add(player.inLobbyId);
+                            sittingIndex = arenaSittingOnlineOrder.Count - 1;
                         }
-                        ArenaSitting.ArenaPlayer newArenaPlayer = new(
-                            arenaSittingOnlineOrder.Count - 1
-                        )
+                        if (arenaSitting.players.Any(p => p.playerNumber == sittingIndex))
+                        {
+                            RainMeadow.Error(
+                                $"Arena: duplicate player number {sittingIndex} for {player}"
+                            );
+                            continue;
+                        }
+                        ArenaSitting.ArenaPlayer newArenaPlayer = new(sittingIndex)
                         {
                             playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
                             hasEnteredGameArea = true,
