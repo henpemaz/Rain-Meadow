@@ -46,7 +46,8 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             pos,
             5,
             550,
-            (80, 10),
+            (80, 10), 
+            sliderPosOffset:new(0, 10),
             sliderSizeAxisOffset: -40,
             startEndWithSpacing: true
         )
@@ -56,10 +57,10 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
         tabWrapper = new MenuTabWrapper(menu, this);
 
         greyOutWhenNoScroll = true;
-        AddScrollUpDownButtons(100, 24);
+        AddScrollUpDownButtons(100, 34);
         CreateSideButtonLines();
 
-        searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(0, size.y - 10), 500)
+        searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(0, size.y), 500)
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
@@ -80,7 +81,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             this,
             "Menu_Symbol_Repeats",
             "",
-            new Vector2(534, size.y - 10),
+            new Vector2(534, size.y),
             menu.Translate("Refresh lobbies list")
         );
         refreshButton.OnClick += (btn) => RefreshLobbies?.Invoke();
@@ -90,7 +91,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             this,
             "Meadow_Menu_Sort_A-Z",
             "",
-            new Vector2(505, size.y - 10),
+            new Vector2(505, size.y),
             menu.Translate("Sort A to Z")
         );
         sortButton.OnClick += CycleSortingOrder;
