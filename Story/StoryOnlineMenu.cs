@@ -498,7 +498,7 @@ namespace RainMeadow
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 StoryMenuPlayerButton playerButton = new(this, playerScrollBox, player, OnlineManager.lobby.isOwner && player != OnlineManager.lobby.owner);
-                playerScrollBox.AddScrollObjects(playerButton);
+                playerScrollBox.AddButtons(playerButton);
             }
             playerScrollBox.ConstrainScroll();
 

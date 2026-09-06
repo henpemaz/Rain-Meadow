@@ -49,9 +49,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             LevelItem? levelItem = null;
             if (MyPlaylistSelector?.ShowThumbsTransitionState(1) == 0)
             {
-                for (int i = 0; i < MyPlaylistSelector.scrollObjects.Count; i++)
+                for (int i = 0; i < MyPlaylistSelector.buttons.Count; i++)
                 {
-                    var scrollObj = MyPlaylistSelector.scrollObjects[i];
+                    var scrollObj = MyPlaylistSelector.buttons[i];
                     if (scrollObj.Selected)
                     {
                         levelItem = scrollObj as LevelItem;
@@ -155,7 +155,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override void Clicked()
         {
             if (fade < 1 || fadeAway > 0) return;
-            if (MyPlaylistSelector?.scrollObjects?.Contains(this) == true)
+            if (MyPlaylistSelector?.buttons?.Contains(this) == true)
                 MyPlaylistSelector.LevelItemClicked(this);
 
         }
@@ -335,6 +335,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         // 5, 120, new(80, 10)
         public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, new GridScrollSystem(new(120, 80), new(0, 10), 5, startEndWithSpacing: true), sliderPosOffset: new(0, 9), sliderSizeAxisOffset: -40)
         {
+            gridSystem.ScrollPosAnchor = ScrollSystem.Anchor.BottomLeft;
             greyOutWhenNoScroll = true;
             showThumbsTransitionState = ShowThumbsStatus ? 1 : 0;
             AddScrollUpDownButtons(upButtonYPosOffset: 20, downButtonYPosOffset: -44);
@@ -371,9 +372,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
             int indexToRef = gridSystem.IndexToRef;
-            int currentIndex = Math.Min(index, scrollObjects.Count - 1);
-            var menuObj = scrollObjects.GetValueOrDefault(currentIndex);
-            var prevMenuObj = scrollObjects.GetValueOrDefault(currentIndex - 1);
+            int currentIndex = Math.Min(index, buttons.Count - 1);
+            var menuObj = buttons.GetValueOrDefault(currentIndex);
+            var prevMenuObj = buttons.GetValueOrDefault(currentIndex - 1);
             (Vector2, Vector2) posSizeOfElement = (origPosition, menuObj?.GetScrollObject().Size ?? default);
             (Vector2, Vector2)? prevPosSizeOfElement = null;
             if (prevMenuObj != null)
@@ -396,11 +397,11 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             float scrollPos = base.GetCurrentScrollOffset();
             int intScrollPos = (int)scrollPos;
-            if (intScrollPos > 0 && intScrollPos == Math.Max(0, scrollObjects.Count - gridSystem.cachedVisibleItemsShown))
+            if (intScrollPos > 0 && intScrollPos == Math.Max(0, buttons.Count - gridSystem.cachedVisibleItemsShown))
             {
-                for (int i = intScrollPos; i < scrollObjects.Count; i++)
+                for (int i = intScrollPos; i < buttons.Count; i++)
                 {
-                    if (scrollObjects[i] is LevelItem lvlItem) scrollPos -= lvlItem.fadeAway;
+                    if (buttons[i] is LevelItem lvlItem) scrollPos -= lvlItem.fadeAway;
                 }
             }
             return scrollPos;
@@ -408,8 +409,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public float StepsDownOfItem(int itemIndex)
         {
             float num = 0f;
-            for (int i = 0; i <= Math.Min(itemIndex, scrollObjects.Count - 1); i++)
-                num += ((i > 0) ? Mathf.Pow(Custom.SCurve(1 - (scrollObjects[i - 1] is LevelItem lvlItem ? lvlItem.fadeAway : 0), 0.3f), 0.5f) : 1);
+            for (int i = 0; i <= Math.Min(itemIndex, buttons.Count - 1); i++)
+                num += ((i > 0) ? Mathf.Pow(Custom.SCurve(1 - (buttons[i - 1] is LevelItem lvlItem ? lvlItem.fadeAway : 0), 0.3f), 0.5f) : 1);
             return num;
         }
         public override float AlphaOfObject(Vector2 combinedPos, Vector2 elementSize)
@@ -421,10 +422,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public virtual void LoadLevelsInit()
         {
             if (MyLevelSelector == null) return;
-            AddScrollObjects([..MyLevelSelector.allLevels.Select(CreateLevelItem)]);
-            for (int i = 0; i < scrollObjects.Count - 1; i++)
+            AddButtons([..MyLevelSelector.allLevels.Select(CreateLevelItem)]);
+            for (int i = 0; i < buttons.Count - 1; i++)
             {
-                if (scrollObjects[i] is not LevelItem levelItem || scrollObjects[i + 1] is not LevelItem nextLevelItem)
+                if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
                 if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
                     levelItem.AddDividers(nextLevelItem);
@@ -435,13 +436,13 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector == null) return;
             bool isSearchEmpty = string.IsNullOrEmpty(search);
             IEnumerable<string> searchList = MyLevelSelector.allLevels.Where(x => isSearchEmpty || LevelDisplayName(x).StartsWith(search, StringComparison.CurrentCultureIgnoreCase)),
-                currentList = scrollObjects.OfType<LevelItem>().Select(x => x.name);
+                currentList = buttons.OfType<LevelItem>().Select(x => x.name);
             if (searchList.Count() == currentList.Count() && searchList.SequenceEqual(currentList)) return;
             RemoveAllButtons(false);
-            AddScrollObjects([.. searchList.Select(CreateLevelItem)]);
-            for (int i = 0; i < scrollObjects.Count - 1; i++)
+            AddButtons([.. searchList.Select(CreateLevelItem)]);
+            for (int i = 0; i < buttons.Count - 1; i++)
             {
-                if (scrollObjects[i] is not LevelItem levelItem || scrollObjects[i + 1] is not LevelItem nextLevelItem)
+                if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
                 if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
                     levelItem.AddDividers(nextLevelItem);
@@ -452,7 +453,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public virtual void HandleLevelItemFade(LevelItem item) { }
         public virtual void LevelItemClicked(LevelItem item)
         {
-            if (scrollObjects.Contains(item))
+            if (buttons.Contains(item))
                 MyLevelSelector?.AddItemToSelectedList(item.name);
         }
         public void AddSearchBar(float sizeX = 150, float decreaseSizeY = 20)
@@ -567,16 +568,16 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         public override void LevelItemClicked(LevelItem lvlItem)
         {
-            if (MyLevelSelector == null || !scrollObjects.Contains(lvlItem)) return;
+            if (MyLevelSelector == null || !buttons.Contains(lvlItem)) return;
             int index = lvlItem.GetScrollObject().indexInScroller;
             MyLevelSelector.RemoveLevelFromPlayList(index);
             menu.selectedObject = null;
             if (!menu.manager.menuesMouseMode)
             {
                 int num = index - 1;
-                while (num >= 0 && num < scrollObjects.Count)
+                while (num >= 0 && num < buttons.Count)
                 {
-                    if (scrollObjects[num] is LevelItem item && lvlItem.fadeAway == 0)
+                    if (buttons[num] is LevelItem item && lvlItem.fadeAway == 0)
                     {
                         menu.selectedObject = item;
                         break;
@@ -586,9 +587,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (menu.selectedObject == null)
                 {
                     int num2 = index + 1;
-                    while (num2 >= 0 && num2 < scrollObjects.Count)
+                    while (num2 >= 0 && num2 < buttons.Count)
                     {
-                        if (scrollObjects[num2] is LevelItem item && lvlItem.fadeAway == 0)
+                        if (buttons[num2] is LevelItem item && lvlItem.fadeAway == 0)
                         {
                             menu.selectedObject = item;
                             break;
@@ -599,11 +600,11 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             }
             lvlItem.StartFadeAway();
         }
-        public override void HandleLevelItemFade(LevelItem item) => RemoveScrollObject(item, true);
+        public override void HandleLevelItemFade(LevelItem item) => RemoveButton(item, true);
         public override void LoadLevelsInit()
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
-            AddScrollObjects([.. MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
+            AddButtons([.. MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
         }
         public override LevelItem CreateLevelItem(string levelName)
         {
@@ -611,20 +612,20 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         public void UpdatePlaylist()
         {
-            clearButton.buttonBehav.greyedOut = scrollObjects.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true;
+            clearButton.buttonBehav.greyedOut = buttons.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true;
             shuffleButton.buttonBehav.greyedOut = MyLevelSelector?.ForceGreyOutAll == true;
             if (clearAllCounter > 0)
             {
                 if (searchBox != null)
                     searchBox.value = "";
                 clearAllCounter--;
-                if (clearAllCounter < 1 && scrollObjects.Count > 0)
+                if (clearAllCounter < 1 && buttons.Count > 0)
                 {
                     clearAllCounter = 4;
                     bool isClearingObj = false;
-                    for (int i = scrollObjects.Count - 1; i >= 0; i--)
+                    for (int i = buttons.Count - 1; i >= 0; i--)
                     {
-                        var menuObj = scrollObjects[i];
+                        var menuObj = buttons[i];
                         if (menuObj is LevelItem lvlItem && lvlItem.fadeAway == 0)
                         {
                             isClearingObj = true;
@@ -645,9 +646,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public void ResolvePlaylistMismatch()
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
-            for (int i = scrollObjects.Count - 1; i >= 0; i--)
-                if (scrollObjects[i] is LevelItem item)
-                RemoveScrollObject(item, false);
+            for (int i = buttons.Count - 1; i >= 0; i--)
+                if (buttons[i] is LevelItem item)
+                RemoveButton(item, false);
             MyLevelSelector.SelectedPlayList.Select(CreateLevelItem);
             ConstrainScroll();
             mismatchCounter = 0;
@@ -752,8 +753,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     {
         SelectedPlayList.Add(name);
         LevelItem item = new(menu, selectedLevelsPlaylist, name, menu.Translate("Remove level from playlist"));
-        selectedLevelsPlaylist.AddScrollObjects(item);
-        selectedLevelsPlaylist.DownScrollOffset = selectedLevelsPlaylist.MaxDownScroll;
+        selectedLevelsPlaylist.AddButtons(item);
+        selectedLevelsPlaylist.MoveToBoundary(ScrollSystem.Direction.Bottom, false);
         selectedLevelsPlaylist.ConstrainScroll();
         menu.PlaySound(SoundID.MENU_Add_Level);
     }
@@ -826,7 +827,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         loadedThumbTextures.Add(thumbToBeLoaded);
         HeavyTexturesCache.LoadAndCacheAtlasFromTexture($"{thumbToBeLoaded}_Thumb", texture2D, textureFromAsset: false);
 
-        MenuObject[] levelItems = [.. allLevelsPlaylist.scrollObjects, .. selectedLevelsPlaylist.scrollObjects];
+        MenuObject[] levelItems = [.. allLevelsPlaylist.buttons, .. selectedLevelsPlaylist.buttons];
         for (int i = 0; i < levelItems.Length; i++)
         {
             if (levelItems[i] is not LevelItem levelItem || levelItem.name != thumbToBeLoaded) continue;

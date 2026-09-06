@@ -42,7 +42,7 @@ namespace RainMeadow
             if (scroller != null)
             {
                 scroller.RemoveAllButtons(false);
-                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
+                scroller.AddButtons(populateList?.Invoke(this, scroller));
                 scroller.ConstrainScroll();
             }
         }
@@ -67,7 +67,7 @@ namespace RainMeadow
             {
                 var gridSystem = new GridScrollSystem(size, new(0, buttonSpacing), NumberOfButtonsToShow - 1);
                 scroller = new(menu, this, new(0, StartingYPoint), gridSystem);
-                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
+                scroller.AddButtons(populateList?.Invoke(this, scroller));
                 subObjects.Add(scroller);
                 if (playSound)
                 {

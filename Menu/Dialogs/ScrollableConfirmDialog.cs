@@ -57,14 +57,14 @@ namespace RainMeadow
             foreach (Line line in lines)
             {
                 var label = new AlignedMenuLabel(this, scroller, line.text,
-                    scroller.PositionOfObject(scroller.scrollObjects.Count), new Vector2(scrollWidth, LineHeight), false)
+                    scroller.PositionOfObject(scroller.buttons.Count), new Vector2(scrollWidth, LineHeight), false)
                 {
                     labelPosAlignment = line.header ? FLabelAlignment.Center : FLabelAlignment.Left
                 };
                 label.label.color = line.header ? MenuColorEffect.rgbWhite : MenuColorEffect.rgbMediumGrey;
                 label.label.alignment = label.labelPosAlignment;
                 label.label.anchorX = line.header ? 0.5f : 0f;
-                scroller.AddScrollObjects(label);
+                scroller.AddButtons(label);
             }
 
             float buttonY = pos.y + 15f;

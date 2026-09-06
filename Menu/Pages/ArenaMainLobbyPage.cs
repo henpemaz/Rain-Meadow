@@ -360,7 +360,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         );
 
         TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];
-        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.scrollObjects)
+        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.buttons)
             lvlBtn.TryBind(tabBtnToBind.wrapper, left: true);
     }
 
@@ -616,7 +616,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
-            foreach (MenuObject button in playerDisplayer.scrollObjects)
+            foreach (MenuObject button in playerDisplayer.buttons)
                 UpdatePlayerButtons(button);
         }
 
