@@ -169,7 +169,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return resultMenu.Translate("IT'S A DRAW!");
 
             string filteredTeamName = MatchmakingManager.currentInstance.FilterTeamName(
-                teamNames[0].ToUpper()
+                teamNames[BestTeamIndexes[0]].ToUpper()
             );
 
             return resultMenu.Translate("<TEAMNAME> WINS!")
