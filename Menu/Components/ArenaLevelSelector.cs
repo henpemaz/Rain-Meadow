@@ -332,10 +332,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             }
         }
         public ArenaLevelSelector? MyLevelSelector => owner as ArenaLevelSelector;
-        // 5, 120, new(80, 10)
+
         public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, new GridScrollSystem(new(120, 80), new(0, 10), 5, startEndWithSpacing: true), sliderPosOffset: new(0, 9), sliderSizeAxisOffset: -40)
         {
-            gridSystem.ScrollPosAnchor = ScrollSystem.Anchor.BottomLeft;
             greyOutWhenNoScroll = true;
             showThumbsTransitionState = ShowThumbsStatus ? 1 : 0;
             AddScrollUpDownButtons(upButtonYPosOffset: 20, downButtonYPosOffset: -44);
