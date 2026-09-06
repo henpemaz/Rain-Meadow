@@ -92,7 +92,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override void OnUIUpdate(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIUpdate(menu);
-            foreach (MenuObject button in menu.arenaMainLobbyPage.playerDisplayer?.scrollObjects ?? [])
+            foreach (MenuObject button in menu.arenaMainLobbyPage.playerDisplayer?.buttons ?? [])
             {
                 if (button is ArenaPlayerBox playerBox)
                 {

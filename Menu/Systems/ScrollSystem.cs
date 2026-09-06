@@ -93,6 +93,11 @@ namespace RainMeadow.UI.Systems
                 return inverse? Direction.Top : Direction.Bottom;
             return inverse? Direction.Bottom : Direction.Top;
         }
+        public bool CanScrollToBoundary(Direction boundary, float scrollOffset)
+        {
+            if (!TryGetScrollNeededForBounds(boundary, out float desiredScrollOffset)) return false;
+            return (desiredScrollOffset == 0 && scrollOffset > 0) || (scrollOffset < desiredScrollOffset);
+        }
         public bool TryGetScrollNeededForBounds(Direction boundary, out float scrollOffset)
         {
             scrollOffset = 0;

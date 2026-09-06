@@ -132,7 +132,7 @@ namespace RainMeadow.UI.Components
             {
                 scrollableContainer = new(menu, this, Vector2.zero, new(450, 475));
                 scrollableContainer.camSizeOffset = new(-10, -10);
-                scrollable = scrollableContainer.CreateNewContentObject(9000);
+                scrollable = scrollableContainer.CreateAndAttachScrollable(9000);
                 scrollable.defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.TopLeft;
                 tabWrapper = new(menu, scrollable);
                 Vector2 positioner = new(360, 420);
@@ -545,7 +545,7 @@ namespace RainMeadow.UI.Components
                     color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey)
                 };
                 Container.AddChild(titleDivider);
-                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeYOffset: -40);
+                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeAxisOffset: -40);
                 scroller.CreateSideButtonLines();
                 KeyValuePair<string, SettingsPage>[] array = [.. allSettings];
                 for (int i = 0; i < array.Length; i++)
@@ -554,7 +554,7 @@ namespace RainMeadow.UI.Components
                     SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, scroller.PositionOfObject(i), new(290, 45));
                     if (i > 0)
                         btn.CreateTopDivider();
-                    scroller.AddScrollObjects(btn);
+                    scroller.AddButtons(btn);
                 }
                 this.SafeAddSubobjects(scroller);
             }
@@ -593,7 +593,7 @@ namespace RainMeadow.UI.Components
                 public float Alpha { get; set; } = 1;
                 public Vector2 Pos { get => pos; set => pos = value; }
                 public Vector2 Size { get => size; set => size = value; }
-                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.scrollObjects.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
+                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
                 public FSprite? topDivSprite;
                 public FSprite arrowSprite;
                 public SettingsPage settingsPage;

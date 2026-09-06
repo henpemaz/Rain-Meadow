@@ -44,7 +44,7 @@ public class TextScroller : ButtonScroller
                 menu,
                 this,
                 textLines[i],
-                PositionOfObject(i + scrollObjects.Count),
+                PositionOfObject(i + buttons.Count),
                 new Vector2(size.x, buttonHeight),
                 false
             )
@@ -59,17 +59,17 @@ public class TextScroller : ButtonScroller
 
             labels[i] = label;
         }
-        AddScrollObjects(labels);
+        AddButtons(labels);
     }
 
     public void AddBlankLine()
     {
-        AddScrollObjects(
+        AddButtons(
             new AlignedMenuLabel(
                 menu,
                 this,
                 "",
-                PositionOfObject(scrollObjects.Count),
+                PositionOfObject(buttons.Count),
                 new Vector2(0, buttonHeight),
                 false
             )

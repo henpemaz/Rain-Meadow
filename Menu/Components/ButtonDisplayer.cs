@@ -46,7 +46,7 @@ namespace RainMeadow.UI.Components
         public void CallForRefresh()
         {
             RemoveAllButtons(false);
-            AddScrollObjects(refreshDisplayButtons?.Invoke(this, IsCurrentlyLargeDisplay));
+            AddButtons(refreshDisplayButtons?.Invoke(this, IsCurrentlyLargeDisplay));
             ConstrainScroll();
         }
         public virtual string DescriptionOfDisplayButton() => "";

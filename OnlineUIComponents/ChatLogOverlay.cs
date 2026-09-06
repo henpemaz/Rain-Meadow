@@ -54,7 +54,7 @@ namespace RainMeadow
             scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new Vector2(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
-                textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
+                SetTextAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
                     ? ButtonScroller.TextAnchor.Bottom 
                     : ButtonScroller.TextAnchor.Top 
             };
@@ -93,8 +93,8 @@ namespace RainMeadow
             /// Obtains the first visible button index on the scroller
             int GetFirstIndex()
             {
-                for (int i = 0; i < scroller.scrollObjects.Count; ++i)
-                    if (scroller.scrollObjects[i].GetScrollObject().LocalAlpha >= 0.5f && scroller.scrollObjects[i].GetScrollObject().LocalPos.y >= 0)
+                for (int i = 0; i < scroller.buttons.Count; ++i)
+                    if (scroller.buttons[i].GetScrollObject().LocalAlpha >= 0.5f && scroller.buttons[i].GetScrollObject().LocalPos.y >= 0)
                         return i;
                 return 0;
             }
@@ -121,11 +121,11 @@ namespace RainMeadow
             for (int i = 0; i < chatBg.Length; ++i)
             {
                 int j = firstIndex + i;
-                if (j >= 0 && j < scroller.scrollObjects.Count)
+                if (j >= 0 && j < scroller.buttons.Count)
                 {
                     // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
                     // messages fading out work as intended.
-                    if (scroller.scrollObjects[j] is AlignedMenuLabel label)
+                    if (scroller.buttons[j] is AlignedMenuLabel label)
                     {
                         label.label.alpha = tOpacity;
                         foreach(var subObj in label.subObjects)
@@ -133,7 +133,7 @@ namespace RainMeadow
                             if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
                         }
                     }
-                    var scroll = scroller.scrollObjects[j].GetScrollObject();
+                    var scroll = scroller.buttons[j].GetScrollObject();
                     chatBg[i].x = scroller.pos.x + scroll.LocalPos.x - 4f;
                     chatBg[i].y = scroller.pos.y + scroll.LocalPos.y;
                     chatBg[i].scaleX = msgExtents[j] + 8f;
@@ -209,14 +209,14 @@ namespace RainMeadow
                     splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
                     for (int i = 0; i < splitMessages.Count; i++)
                     {
-                        float yPos = scroller.PositionOfObject(scroller.scrollObjects.Count).y + textOffsetSquishFix;
+                        float yPos = scroller.PositionOfObject(scroller.buttons.Count).y + textOffsetSquishFix;
                         string s = splitMessages[i];
                         if (isSystemMessage)
                         {
                             AlignedMenuLabel systemMessageLabel = new(this.menu, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             systemMessageLabel.label.alignment = FLabelAlignment.Left;
                             systemMessageLabel.label.color = ChatLogManager.GetColorOfSystemMessage(systemMessageType);
-                            scroller.AddScrollObjects(systemMessageLabel);
+                            scroller.AddButtons(systemMessageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 2f);
                         }
                         else if (i == 0)
@@ -229,14 +229,14 @@ namespace RainMeadow
                             { labelPosAlignment = FLabelAlignment.Left };
                             messagewithUserLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.subObjects.Add(messagewithUserLabel);
-                            scroller.AddScrollObjects(usernameLabel);
+                            scroller.AddButtons(usernameLabel);
                             msgExtents.Add(LabelTest.GetWidth($"{username}: {s}") + 4f + (usernameLabel.Host ? 14f : 0));
                         }
                         else
                         {
                             AlignedMenuLabel messageLabel = new(this.menu, scroller, s, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             messageLabel.label.alignment = FLabelAlignment.Left;
-                            scroller.AddScrollObjects(messageLabel);
+                            scroller.AddButtons(messageLabel);
                             msgExtents.Add(LabelTest.GetWidth(s) + 4f);
                         }
                     }

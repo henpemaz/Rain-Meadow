@@ -11,7 +11,7 @@ namespace RainMeadow.UI.Systems
     {
         public int elementCountInOppositeAxis = 1;
         public Vector2 _elementSpacing, _elementSize;
-        public bool _startEndWithSpacing;
+        public bool _startEndWithSpacingInAxis, _automaticallyCalculateElementOppositeSize;
         public float cachedVisibleItemsShown;
         public int elementCount;
         public float ElementSpacingInAxis => ElementSpacing[IndexToRef];
@@ -35,20 +35,31 @@ namespace RainMeadow.UI.Systems
             set
             {
                 if (_elementSize == value) return;
-                bool shouldRefresh = _elementSize[IndexToRef] != value[IndexToRef];
+                bool shouldRefresh = ElementCountInOppositeAxis != -1 ||  _elementSize[IndexToRef] != value[IndexToRef];
                 _elementSize = value;
                 if (shouldRefresh)
                     CacheMaxVisibleItemsShownInAxis();
                 MarkDirtyForScrollObjects?.Invoke();
             }
         }
-        public bool StartEndWithSpacing
+        public bool AutomaticallyCalculateElementOppositeSize
         {
-            get =>_startEndWithSpacing;
+            get => _automaticallyCalculateElementOppositeSize;
             set
             {
-                if (_startEndWithSpacing == value) return;
-                _startEndWithSpacing = value;
+                if (_automaticallyCalculateElementOppositeSize == value) return;
+                _automaticallyCalculateElementOppositeSize = value;
+                if (ElementCountInOppositeAxis != 1 && AutomaticallyCalculateElementOppositeSize)
+                    AdjustElementOppositeAxisSize();
+            }
+        }
+        public bool StartEndWithSpacingInAxis
+        {
+            get =>_startEndWithSpacingInAxis;
+            set
+            {
+                if (_startEndWithSpacingInAxis == value) return;
+                _startEndWithSpacingInAxis = value;
                 CacheMaxVisibleItemsShownInAxis();
                 MarkDirtyForScrollObjects?.Invoke();
             }
@@ -61,6 +72,7 @@ namespace RainMeadow.UI.Systems
                 int newVal = Mathf.Max(1, value);
                 if (elementCountInOppositeAxis != newVal)
                 elementCountInOppositeAxis = newVal;
+                CacheMaxVisibleItemsShownInAxis();
                 MarkDirtyForScrollObjects?.Invoke();
             }
         }
@@ -68,20 +80,20 @@ namespace RainMeadow.UI.Systems
         {
             _elementSize = elementSize;
             _elementSpacing = elementSpacing;
-            _startEndWithSpacing = startEndWithSpacing;
+            _startEndWithSpacingInAxis = startEndWithSpacing;
             elementCount = Mathf.Max(1, visibleElementsShownInAxis);
             elementCountInOppositeAxis = Mathf.Max(1, visibleElementsInOppositeAxis);
         }
         public GridScrollSystem(Axis scrollingAxis = Axis.Vertical) : base(scrollingAxis)
         {
-            OnViewSizeChanged += () => CacheMaxVisibleItemsShownInAxis();
+            OnViewSizeChanged += ViewSizeChanged;
         }
         public Vector2 CalculateCustomViewSize()
         {
             Vector2 newViewSize = new(0, 0);
             int index = IndexToRef, oppIndex = OppositeIndexToRef;
-            newViewSize[index] = ButtonScroller.CalculateHeightBasedOnAmtOfButtons(elementCount, ElementSize[index], ElementSpacing[index], StartEndWithSpacing);
-            newViewSize[oppIndex] = ButtonScroller.CalculateHeightBasedOnAmtOfButtons(elementCountInOppositeAxis, ElementSize[oppIndex], ElementSpacing[index]);
+            newViewSize[index] = ButtonScroller.CalculateHeightBasedOnAmtOfButtons(elementCount, ElementSize[index], ElementSpacing[index], StartEndWithSpacingInAxis);
+            newViewSize[oppIndex] = ButtonScroller.CalculateHeightBasedOnAmtOfButtons(ElementCountInOppositeAxis, ElementSize[oppIndex], ElementSpacing[index]);
             return newViewSize;
         }
         public Vector2 CalculatePositionOnHorizontalMode(int index, (Vector2, Vector2) posSizeOfElement, (Vector2, Vector2)? posSizeOfPrevElement)
@@ -90,7 +102,7 @@ namespace RainMeadow.UI.Systems
             int indexInAxis = index / ElementCountInOppositeAxis;
             int indexInOppositeAxis = index % ElementCountInOppositeAxis;
             int prevIndexInOppositeAxis = (index - 1) % ElementCountInOppositeAxis;
-            int firstElementSpacingMultipler = StartEndWithSpacing ? 0 : 1;
+            int firstElementSpacingMultipler = StartEndWithSpacingInAxis ? 0 : 1;
             float posX = elementOrigPos.x;
             float posY = elementOrigPos.y;
             if (IsHorizontal)
@@ -116,7 +128,7 @@ namespace RainMeadow.UI.Systems
             var (elementOrigPos, elementSize) = posSizeOfElement;
             int indexInAxis = index / ElementCountInOppositeAxis;
             int indexInOppositeAxis = index % ElementCountInOppositeAxis;
-            int firstElementSpacingMultipler = StartEndWithSpacing ? 1 : 0;
+            int firstElementSpacingMultipler = StartEndWithSpacingInAxis ? 1 : 0;
             float boundaryOffset = ElementSpacing.y * firstElementSpacingMultipler;
             float posX = elementOrigPos.x;
             float posY = elementOrigPos.y;
@@ -131,7 +143,7 @@ namespace RainMeadow.UI.Systems
                 if (ScrollStartsFromLeft)
                     posX = indexInOppositeAxis * (elementSize.x + ElementSpacing.x);
                 else
-                    posX = (elementCountInOppositeAxis - 1 - indexInOppositeAxis) * (elementSize.x + ElementSpacing.x);
+                    posX = (ElementCountInOppositeAxis - 1 - indexInOppositeAxis) * (elementSize.x + ElementSpacing.x);
             }
 
             if (ScrollStartsFromTop)
@@ -149,11 +161,32 @@ namespace RainMeadow.UI.Systems
             }
             return new(posX, posY);
         }
+        public void ViewSizeChanged()
+        {
+            CacheMaxVisibleItemsShownInAxis();
+            if (ElementCountInOppositeAxis != 1 && AutomaticallyCalculateElementOppositeSize)
+                AdjustElementOppositeAxisSize();
+        }
+        public void AdjustElementOppositeAxisSize()
+        {
+            int oppIndex = OppositeIndexToRef;
+            var elementCountInoppAxis = ElementCountInOppositeAxis;
+            var sizeToRefer = ViewSize[oppIndex] - (elementCountInoppAxis - 1) * ElementSpacing[oppIndex];
+            var newElementSize = ElementSize;
+            newElementSize[oppIndex] = sizeToRefer / elementCountInoppAxis;
+            ElementSize = newElementSize;
+        }
         public void CacheMaxVisibleItemsShownInAxis()
         {
-            float offSet = _startEndWithSpacing ? 1 : -1;
+            float offSet = _startEndWithSpacingInAxis ? 1 : -1;
             int indexToRef = IndexToRef;
             cachedVisibleItemsShown = Mathf.Max(0, (ViewSize[indexToRef] - ElementSpacing[indexToRef] * offSet) / Mathf.Max(1, (ElementSize[indexToRef] + ElementSpacing[indexToRef])));
+        }
+        public void SetElementCount(int elementCount)
+        {
+            if (this.elementCount == elementCount) return;
+            this.elementCount = elementCount;
+            MarkDirtyForScrollObjects?.Invoke();
         }
         public override float GetMaxScroll()
         {
@@ -181,12 +214,6 @@ namespace RainMeadow.UI.Systems
             else if (IsHorizontal && !ScrollStartsFromLeft)
                 return inverse ? Direction.Left : Direction.Right;
             return base.GetElementPosDirection(inverse);
-        }
-        public void SetElementCount(int elementCount)
-        {
-            if (this.elementCount == elementCount) return;
-            this.elementCount = elementCount;
-            MarkDirtyForScrollObjects?.Invoke();
         }
         public override Vector2 ScrollOffsetToPosOffset(float scrollOffset)
         {

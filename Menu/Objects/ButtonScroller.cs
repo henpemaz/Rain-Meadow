@@ -13,7 +13,7 @@ using UnityEngine;
 namespace RainMeadow
 {
     //a scroller just for predetermined buttons, intended for buttons' owner to be ButtonScroller
-    //Could support horizontal but built to be vertical most of the time
+    //Could support horizontal but it's mostly built to be vertical
     public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME, IScrollObjectHolder
     {
         public bool sliderDefaultIsDown, greyOutWhenNoScroll, isScrolling, buttonsDirty, lastButtonsDirty;
@@ -22,7 +22,7 @@ namespace RainMeadow
         public Slider scrollSlider;
         public ScrollSystem.Direction sliderAnchor;
         public EventfulScrollButton? scrollUpButton, scrollDownButton;
-        public ObservableCollection<MenuObject> scrollObjects = [];
+        public ObservableCollection<MenuObject> buttons = [];
         public FContainer itemContainer;
         public List<SideButton> sideButtons = [];
         public FSprite[] sideButtonLines = [];
@@ -53,15 +53,13 @@ namespace RainMeadow
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
         public bool StartEndWithSpacing
         {
-            get => gridSystem.StartEndWithSpacing;
-            set => gridSystem.StartEndWithSpacing = value;
+            get => gridSystem.StartEndWithSpacingInAxis;
+            set => gridSystem.StartEndWithSpacingInAxis = value;
         }
-        public bool CanScrollUp => DownScrollOffset > 0;
-        public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
         public bool CanScroll => !menu.FreezeMenuFunctions;
         public bool ScrollObjectsDirty => lastButtonsDirty;
         public virtual FContainer ItemContainer => itemContainer;
-        public TextAnchor textAnchor { set => gridSystem.ScrollPosAnchor = value == TextAnchor.Top ? ScrollSystem.Anchor.TopLeft : ScrollSystem.Anchor.BottomLeft; }
+        public TextAnchor SetTextAnchor { set => gridSystem.ScrollPosAnchor = value == TextAnchor.Top ? ScrollSystem.Anchor.TopLeft : ScrollSystem.Anchor.BottomLeft; }
         public bool IsHidden { get; set; }
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, GridScrollSystem gridScrollSystem, ScrollSystem.Direction sliderAnchor = ScrollSystem.Direction.Left, Vector2 sliderPosOffset = default, float sliderSizeAxisOffset = 0) :
           this(menu, owner, pos, gridScrollSystem.CalculateCustomViewSize(), gridScrollSystem, sliderAnchor, sliderPosOffset, sliderSizeAxisOffset)
@@ -87,7 +85,7 @@ namespace RainMeadow
                 scrollSlider = new HorizontalSlider(menu, this, "Scroller", sliderPosOffset + new Vector2(0, sliderAnchor is ScrollSystem.Direction.Top ? size.y : -32), new(size.x + sliderSizeAxisOffset, 30), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
             subObjects.Add(scrollSlider);
 
-            scrollObjects.CollectionChanged += (_, collectionChangedArgs) => OnButtonListChanged(collectionChangedArgs);
+            buttons.CollectionChanged += (_, collectionChangedArgs) => OnButtonListChanged(collectionChangedArgs);
 
             gridSystem = gridScrollSystem ?? 
                 new(ScrollSystem.Axis.Vertical)
@@ -103,15 +101,15 @@ namespace RainMeadow
         {
             if (args.Action is NotifyCollectionChangedAction.Remove)
             {
-                for (int i = args.OldStartingIndex; i < scrollObjects.Count; i++)
-                    scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
+                for (int i = args.OldStartingIndex; i < buttons.Count; i++)
+                    buttons[i].GetScrollObject().UpdateIndexFromScroller(this, i);
             }
             else if (args.Action is NotifyCollectionChangedAction.Add)
             {
-                if (args.NewStartingIndex != scrollObjects.Count - args.NewItems.Count)
+                if (args.NewStartingIndex != buttons.Count - args.NewItems.Count)
                 {
-                    for (int i = args.NewStartingIndex + args.NewItems.Count; i < scrollObjects.Count; i++)
-                        scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);
+                    for (int i = args.NewStartingIndex + args.NewItems.Count; i < buttons.Count; i++)
+                        buttons[i].GetScrollObject().UpdateIndexFromScroller(this, i);
                 }
             }
             else if (args.Action is NotifyCollectionChangedAction.Move or NotifyCollectionChangedAction.Replace)
@@ -121,18 +119,23 @@ namespace RainMeadow
                 for (int i = toStart; i < scrollObjects.Count; i++)
                     scrollObjects[i].GetScrollObject().UpdateIndexFromScroller(this, i);*/
             }
-            gridSystem.SetElementCount(scrollObjects.Count);
+            gridSystem.SetElementCount(buttons.Count);
         }
+        public bool CanScrollToBoundary(ScrollSystem.Direction boundary) => gridSystem.CanScrollToBoundary(boundary, DownScrollOffset);
         public bool IsAtBoundary(ScrollSystem.Direction boundary)
         {
             if (gridSystem.TryGetScrollNeededForBounds(boundary, out float desiredScrollOffset))
                 return desiredScrollOffset == DownScrollOffset;
             return false;
         }
-        public void MoveToBoundary(ScrollSystem.Direction boundary)
+        public void MoveToBoundary(ScrollSystem.Direction boundary, bool setScrollImmediately = false)
         {
             if (gridSystem.TryGetScrollNeededForBounds(boundary, out float desiredScrollOffset))
-                SetScrollImmediately(desiredScrollOffset);
+            {
+                if (setScrollImmediately)
+                    SetScrollImmediately(desiredScrollOffset);
+                else DownScrollOffset = desiredScrollOffset;
+            }
         }
         public void SetScrollImmediately(float scrollOffset)
         {
@@ -141,7 +144,7 @@ namespace RainMeadow
         public void UpdateGridSystem()
         {
             gridSystem.ViewSize = size;
-            gridSystem.StartEndWithSpacing = StartEndWithSpacing;
+            gridSystem.StartEndWithSpacingInAxis = StartEndWithSpacing;
         }
         public override void RemoveSprites()
         {
@@ -172,7 +175,7 @@ namespace RainMeadow
             floatScrollSpeed = Mathf.Clamp(floatScrollSpeed, -maxScrollSpeed, maxScrollSpeed);
             scrollOffset += floatScrollSpeed;
 
-            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, scrollObjects.Count / 40f);
+            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, buttons.Count / 40f);
 
             if (MaxDownScroll == 0) scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, sliderDefaultIsDown? 1 : 0, scrollSliderCapLerp, scrollSliderCapTick);
             else scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, Mathf.InverseLerp(0f, scrollSliderValueCap, scrollOffset), isScrolling?  Mathf.Max(0.9f, scrollSliderCapLerp) : scrollSliderCapLerp, scrollSliderCapTick);
@@ -180,8 +183,8 @@ namespace RainMeadow
             if (isScrolling && scrollOffset == currentScrollOffset) isScrolling = false;
 
             scrollSlider.buttonBehav.greyedOut = greyOutWhenNoScroll && MaxDownScroll == 0;
-            if (scrollDownButton != null) scrollDownButton.buttonBehav.greyedOut = !CanScrollDown;
-            if (scrollUpButton != null) scrollUpButton.buttonBehav.greyedOut = !CanScrollUp;
+            if (scrollDownButton != null) scrollDownButton.buttonBehav.greyedOut = !CanScrollToBoundary(ScrollSystem.Direction.Bottom);
+            if (scrollUpButton != null) scrollUpButton.buttonBehav.greyedOut = !CanScrollToBoundary(ScrollSystem.Direction.Top); ;
 
             if (scrollOffset != prevScrollOffset)
                 buttonsDirty = true;
@@ -231,9 +234,12 @@ namespace RainMeadow
                 isScrolling = true;
             }
         }
-        public void AddScroll(float addDir)
+        public void AddScroll(float addDir, bool setScrollImmediately = false)
         {
-            DownScrollOffset += addDir * gridSystem.ScrollStepDir[gridSystem.IndexToRef];
+            float newScrolloffset = DownScrollOffset + addDir * gridSystem.ScrollStepDir[gridSystem.IndexToRef];
+            if (setScrollImmediately)
+                SetScrollImmediately(newScrolloffset);
+            else DownScrollOffset = newScrolloffset;
         }
         public void ConstrainScroll(bool constrainImmediately = false)
         {
@@ -244,23 +250,23 @@ namespace RainMeadow
         }
         public List<T> GetSpecificButtons<T>() where T : MenuObject
         {
-            return [.. scrollObjects.OfType<T>()];
+            return [.. buttons.OfType<T>()];
         }
-        public void RemoveScrollObject(int index, bool constrainScroll = true) => RemoveScrollObject(scrollObjects.GetValueOrDefault(index), constrainScroll);
-        public void RemoveScrollObject(MenuObject? scrollObj, bool constrainScroll = true)
+        public void RemoveButton(int index, bool constrainScroll = true) => RemoveButton(buttons.GetValueOrDefault(index), constrainScroll);
+        public void RemoveButton(MenuObject? scrollObj, bool constrainScroll = true)
         {
-            if (!scrollObjects.Contains(scrollObj)) return;
+            if (!buttons.Contains(scrollObj)) return;
             scrollObj.GetScrollObject().RemovedFromScroller();
             this.ClearMenuObject(scrollObj);
 
-            scrollObjects.Remove(scrollObj);
+            buttons.Remove(scrollObj);
 
             if (constrainScroll) ConstrainScroll();
         }
         public void RemoveAllButtons(bool constrainScroll = true)
         {
-            this.ClearMenuObjectIList(scrollObjects);
-            scrollObjects.Clear();
+            this.ClearMenuObjectIList(buttons);
+            buttons.Clear();
             if (constrainScroll) ConstrainScroll();
         }
 
@@ -269,16 +275,16 @@ namespace RainMeadow
         /// Add scrollButtons first before adding scroll objects when wanted. Slider won't be accessible if scroll buttons were added.
         /// </summary>
         /// <param name="scrollBoxButtons"></param>
-        public void AddButtons(params IPartOfButtonScroller[]? scrollBoxButtons)
+        public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons)
         {
             if (scrollBoxButtons == null) return;
-            AddScrollObjects([..scrollBoxButtons.Where(x => x is MenuObject).Cast<MenuObject>()]);
+            AddButtons([..scrollBoxButtons.Where(x => x is MenuObject).Cast<MenuObject>()]);
         }
-        public void AddScrollObjects(params MenuObject[]? scrollObjects) => AddScrollObjects(-1, scrollObjects);
-        public void AddScrollObjects(int startingIndex, MenuObject[]? scrollObjects)
+        public void AddButtons(params MenuObject[]? scrollObjects) => AddButtons(-1, scrollObjects);
+        public void AddButtons(int startingIndex, MenuObject[]? scrollObjects)
         {
             if (scrollObjects == null) return;
-            int actualStartingIndex = startingIndex == -1? this.scrollObjects.Count : startingIndex;
+            int actualStartingIndex = startingIndex == -1? this.buttons.Count : startingIndex;
             int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(scrollObjects[startingIndex]);
             for (int i = 0; i < scrollObjects.Length; i++)
             {
@@ -286,7 +292,7 @@ namespace RainMeadow
                 int indexInsert = actualStartingIndex + i;
                 OnAddMenuScrollObject(obj, indexInsert);
                 subObjects.Insert(subObjectIndexToInsert + i, obj);
-                this.scrollObjects.Insert(actualStartingIndex + i, obj);
+                this.buttons.Insert(actualStartingIndex + i, obj);
             }
         }
         public virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt)
@@ -296,8 +302,8 @@ namespace RainMeadow
         public virtual Vector2 SizeOfObject(Vector2 origSize) => new(origSize.x, buttonHeight);
         public virtual Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
-            var prevScrollObj = scrollObjects.GetValueOrDefault(index - 1)?.GetScrollObject();
-            (Vector2, Vector2) posSizeOfElement = (origPosition, scrollObjects.GetValueOrDefault(index)?.GetScrollObject()?.Size ?? SizeOfObject(size));
+            var prevScrollObj = buttons.GetValueOrDefault(index - 1)?.GetScrollObject();
+            (Vector2, Vector2) posSizeOfElement = (origPosition, buttons.GetValueOrDefault(index)?.GetScrollObject()?.Size ?? SizeOfObject(size));
             (Vector2, Vector2)? prevPosSizeOfElement = prevScrollObj == null ? null : (prevScrollObj.LocalPos, prevScrollObj.Size);
 
             return gridSystem.PositionOfElementWithScroll(index, posSizeOfElement, prevPosSizeOfElement, scrollOffset);

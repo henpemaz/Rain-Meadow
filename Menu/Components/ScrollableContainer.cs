@@ -22,7 +22,7 @@ namespace RainMeadow.UI.Components
         public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, maxScrollSpeed = 1.2f, floatScrollMultipler = 100f;
         public bool scrollableDirty = true, lastScrollableDirty = true, cameraDirty = true, sliderDefaultIsDown, isScrolling;
         public float scrollSliderValueCap, scrollSliderValue, scrollSpeed, desiredScrollPosOffset, floatScrollPosOffset, prevFloatScrollPosOffset;
-        public Scrollable? _content;
+        public MenuScrollObject? _content;
         public readonly ContentScrollSystem contentSystem;
 
         public Slider? scrollSlider;
@@ -37,7 +37,7 @@ namespace RainMeadow.UI.Components
         public bool IsHidden { get; set; }
         public bool ScrollObjectsDirty => lastScrollableDirty;
         public FContainer ItemContainer => itemMaskContainer;
-        public Scrollable? ContentObject
+        public MenuScrollObject? ContentObject
         {
             get => _content;
             set
@@ -45,12 +45,12 @@ namespace RainMeadow.UI.Components
                 if (value == null || _content == value) return;
                 if (_content != null)
                 {
-                    _content.GetScrollObject().RemovedFromScroller();
-                    this.ClearMenuObject(_content);
+                    _content.RemovedFromScroller();
+                    this.ClearMenuObject(_content.menuObject);
                 }
                 _content = value;
-                this.SafeAddSubobjects(_content);
-                _content.GetScrollObject().AddedIntoScroller(this, 0);
+                this.SafeAddSubobjects(_content.menuObject);
+                _content.menuObject.GetScrollObject().AddedIntoScroller(this, 0);
                 scrollableDirty = true;
             }
         }
@@ -113,11 +113,11 @@ namespace RainMeadow.UI.Components
         {
             scrollableDirty = true;
         }
-        public Scrollable CreateNewContentObject(float contentSize)
+        public Scrollable CreateAndAttachScrollable(float contentSize)
         {
             Vector2 sizeofcontent = contentSystem.IsHorizontal ? new(contentSize, size.y) : new(size.x, contentSize);
             Scrollable scrollable = new(menu, this, Vector2.zero, sizeofcontent);
-            ContentObject = scrollable;
+            ContentObject = scrollable.GetScrollObject();
             return scrollable;
         }
         public void DestroyRender()
@@ -184,7 +184,7 @@ namespace RainMeadow.UI.Components
             contentSystem.ViewSize = size;
             var contentObj = ContentObject;
             if (contentObj != null)
-                contentSystem.ContentSize = contentObj.size[contentSystem.IndexToRef];
+                contentSystem.ContentSize = contentObj.Size[contentSystem.IndexToRef];
         }
         public void UpdateScroll()
         {
@@ -268,7 +268,7 @@ namespace RainMeadow.UI.Components
         }
         public Vector2 PositionOfObject(int index, Vector2 origPosition)
         {
-            Vector2 contentSize = ContentObject == null ? Vector2.zero : ContentObject.size;
+            Vector2 contentSize = ContentObject == null ? Vector2.zero : ContentObject.Size;
             return contentSystem.PositionOfElementWithScroll(index, (origPosition, contentSize), null, floatScrollPosOffset);
         }
         public float AlphaOfObject(Vector2 posOfContent, Vector2 sizeofContent)
@@ -279,7 +279,8 @@ namespace RainMeadow.UI.Components
         {
             public ScrollableContainer myScrollContainer;
             public Dictionary<WeakReference<PositionedMenuObject>, ScrollSystem.Anchor> subObjectsForcedAnchor = [];
-            public ScrollSystem.Anchor defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.BottomLeft; //this is default positioning of menuObjs
+            //this is default positioning of menuObjs, you can remove this implementation of anchoring as this originally was made in case for Slugcat abilities extended ui
+            public ScrollSystem.Anchor defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.BottomLeft; 
             public bool checkSubobjectsOnly = true;
             public Vector2 ScreenPosOffset => Vector2.Max(size - myScrollContainer.size, Vector2.zero);
             public Scrollable(Menu.Menu menu, ScrollableContainer owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)

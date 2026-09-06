@@ -170,7 +170,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
                 ),
         ];
 
-        AddScrollObjects(lobbyCards);
+        AddButtons(lobbyCards);
         OnLobbyCardsUpdated?.Invoke();
     }
 
