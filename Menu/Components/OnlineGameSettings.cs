@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components.Configurables;
 using UnityEngine;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 

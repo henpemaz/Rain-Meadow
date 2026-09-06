@@ -5,7 +5,7 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
 
-namespace RainMeadow.UI.Components;
+namespace RainMeadow.UI.Components.Configurables;
 
 public class OnlineSettingButtons : OnlineSettingElement
 {
