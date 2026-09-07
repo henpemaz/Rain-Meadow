@@ -559,7 +559,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "scug select")
             {
                 if (OnlineManager.lobby?.isOwner == true)
-                    return Translate("Press grab to toggle active slugcats");
+                    return Translate("Press shift + click to toggle active slugcats");
                 else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
                     return Translate("You aren't allowed to play as this slugcat");
             }

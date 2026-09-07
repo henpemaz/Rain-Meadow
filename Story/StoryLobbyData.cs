@@ -76,6 +76,8 @@ namespace RainMeadow
             public float maximumRippleLevel;
             [OnlineField]
             public List<int> spinningTopEncounters;
+            [OnlineField]
+            public uint campaignGeneration;
 
             [OnlineField(nullable = true)]
             public MenuSaveStateState? currentMenuSaveState;
@@ -123,6 +125,7 @@ namespace RainMeadow
                 minimumRippleLevel = storyGameMode.minimumRippleLevel;
                 maximumRippleLevel = storyGameMode.maximumRippleLevel;
                 spinningTopEncounters = new(storyGameMode.spinningTopEncounters); // copy, the state outlives this tick
+                campaignGeneration = storyGameMode.campaignGeneration;
 
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -153,6 +156,7 @@ namespace RainMeadow
                 story.minimumRippleLevel = minimumRippleLevel;
                 story.maximumRippleLevel = maximumRippleLevel;
                 story.spinningTopEncounters = new(spinningTopEncounters);
+                story.campaignGeneration = campaignGeneration;
 
                 if (currentGameState is not null)
                 {
@@ -200,11 +204,18 @@ namespace RainMeadow
                     {
                         if (!localEncounters.Contains(encounter)) localEncounters.Add(encounter);
                     }
-                    foreach (int encounter in localEncounters)
+                    bool saveSynced = story.appliedSaveStateString != null
+                        && saveStateString != null
+                        && story.appliedSaveStateString == saveStateString;
+
+                    if (saveSynced)
                     {
-                        if (spinningTopEncounters.Contains(encounter)) continue;
-                        if (!story.spinningTopEncounters.Contains(encounter)) story.spinningTopEncounters.Add(encounter);
-                        lobby.owner.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, encounter);
+                        foreach (int encounter in localEncounters)
+                        {
+                            if (spinningTopEncounters.Contains(encounter)) continue;
+                            if (!story.spinningTopEncounters.Contains(encounter)) story.spinningTopEncounters.Add(encounter);
+                            lobby.owner.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, story.campaignGeneration, encounter);
+                        }
                     }
 
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;

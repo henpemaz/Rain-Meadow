@@ -430,41 +430,52 @@ namespace RainMeadow
             }
         }
 
-        // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
+
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
-            orig(room);
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) { orig(room); return; }
+            if (room.game.session is not StoryGameSession storySession)
             {
-                if (room.game.session is not StoryGameSession storySession)
-                {
-                    Error("echo raised ripple level outside of a story session?");
-                    return;
-                }
-                var deathPersistentSaveData = storySession.saveState.deathPersistentSaveData;
-                var vector = new UnityEngine.Vector2(
-                    deathPersistentSaveData.minimumRippleLevel,
-                    deathPersistentSaveData.maximumRippleLevel
-                );
+                Error("echo raised ripple level outside of a story session?");
+                orig(room);
+                return;
+            }
 
-                if (OnlineManager.lobby.isOwner)
-                {
-                    story.rippleLevel = deathPersistentSaveData.rippleLevel;
-                    story.minimumRippleLevel = deathPersistentSaveData.minimumRippleLevel;
-                    story.maximumRippleLevel = deathPersistentSaveData.maximumRippleLevel;
-                }
-                else if (story.rippleLevel < vector.y)
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
-                }
+            int spinningTopID = StoryHelpers.ResolveSpinningTopID(room);
+            if (spinningTopID != -1 && story.spinningTopEncounters.Contains(spinningTopID))
+            {
+                Debug($"skipping duplicate ripple raise for spinning top {spinningTopID}");
+                StoryRPCs.ApplyRippleLevelToSaveState(storySession,
+                    new UnityEngine.Vector2(story.minimumRippleLevel, story.maximumRippleLevel));
+                return; // block orig
+            }
 
+            if (spinningTopID != -1)
+            {
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
-                    if (!player.isMe)
-                    {
-                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
-                    }
+                    if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, story.campaignGeneration, spinningTopID);
                 }
+            }
+            else
+            {
+                Error("could not resolve spinning top id for ripple raise; skipping duplicate-encounter dedupe and echo bookkeeping for this raise");
+            }
+
+            DeathPersistentSaveData d = storySession.saveState.deathPersistentSaveData;
+
+            orig(room);
+
+            Vector2 vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                StoryRPCs.DetermineRippleRaise(story, spinningTopID, vector, trustVector: true);
+            }
+            else if (story.maximumRippleLevel < vector.y) // max vs max, not current vs max — see 06
+            {
+                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevelRequest, spinningTopID, vector);
             }
         }
 
@@ -1812,6 +1823,7 @@ namespace RainMeadow
                 var hostSaveState = new SaveState(self.currentSaveState.saveStateNumber, self);
                 hostSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 self.currentSaveState = ApplyClientSaveState(hostSaveState, self.currentSaveState);
+                storyGameMode.appliedSaveStateString = storyGameMode.saveStateString;
             }
 
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
@@ -2100,9 +2112,12 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
+                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening)
+                        {
+                            story.storyClientData.readyForTransition = true;
+                            return true;
+                        }
                         story.storyClientData.readyForTransition = false;
-                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
-
                     }
                     return false;
                 });
@@ -2117,7 +2132,7 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-
+                        return false;
                     }
                     return true;
 
