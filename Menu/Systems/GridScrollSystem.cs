@@ -205,16 +205,6 @@ namespace RainMeadow.UI.Systems
                 return CalculatePositionOnHorizontalMode(index, posSizeOfElement, posSizeOfPrevElement);
             return CalculatePositionOnVerticalMode(index, posSizeOfElement, posSizeOfPrevElement);
         }
-        public override Direction GetElementPosDirection(bool inverse = false)
-        {
-            if (!IsHorizontal && !ScrollStartsFromTop)
-            {
-                return inverse ? Direction.Top : Direction.Bottom;
-            }
-            else if (IsHorizontal && !ScrollStartsFromLeft)
-                return inverse ? Direction.Left : Direction.Right;
-            return base.GetElementPosDirection(inverse);
-        }
         public override Vector2 ScrollOffsetToPosOffset(float scrollOffset)
         {
             Vector2 elementSpacing = new(0, 0), elementSize = new(0, 0);

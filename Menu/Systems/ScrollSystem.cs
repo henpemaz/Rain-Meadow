@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static RainMeadow.UI.Systems.ScrollSystem;
 
 namespace RainMeadow.UI.Systems
 {
@@ -27,6 +28,15 @@ namespace RainMeadow.UI.Systems
         public Action? MarkDirtyForScrollObjects => MarkScrollObjectsDirty;
         public int IndexToRef => IsHorizontal ? 0 : 1;
         public int OppositeIndexToRef => IsHorizontal ? 1 : 0;
+        public Direction ScrollDirection
+        {
+            get
+            {
+                if (IsHorizontal)
+                    return ScrollStartsFromLeft ? Direction.Right : Direction.Left;
+                return ScrollStartsFromTop ? Direction.Bottom : Direction.Top;
+            }
+        }
         public Vector2 ScrollStepDir
         {
             get
@@ -81,17 +91,14 @@ namespace RainMeadow.UI.Systems
             this.scrollingAxis = scrollingAxis;
 
         }
-        public virtual Direction GetElementPosDirection(bool inverse = false)
+        public bool IsDirectionHorizontal(Direction direction) => direction is Direction.Left or Direction.Right;
+        public float GetStepDirFromDirection(Direction direction)
         {
-            if (IsHorizontal)
-            {
-                if (ScrollStartsFromLeft)
-                    return inverse ? Direction.Left : Direction.Right;
-                return inverse? Direction.Right : Direction.Left;
-            }
-            if (ScrollStartsFromTop)
-                return inverse? Direction.Top : Direction.Bottom;
-            return inverse? Direction.Bottom : Direction.Top;
+            float scrollStepDir = ScrollStepDir[IsDirectionHorizontal(direction)? 0 : 1];
+            float multipler = 1;
+            if (direction != ScrollDirection)
+                multipler = -1;
+            return scrollStepDir * multipler;
         }
         public bool CanScrollToBoundary(Direction boundary, float scrollOffset)
         {
@@ -100,20 +107,14 @@ namespace RainMeadow.UI.Systems
         }
         public bool TryGetScrollNeededForBounds(Direction boundary, out float scrollOffset)
         {
+            bool dirIsHorizontal = IsDirectionHorizontal(boundary);
             scrollOffset = 0;
-            if (IsHorizontal && boundary is Direction.Left or Direction.Right)
+            if (IsHorizontal == dirIsHorizontal)
             {
-                if (boundary is Direction.Left != ScrollStartsFromLeft)
+                if (boundary == ScrollDirection)
                     scrollOffset = GetMaxScroll();
                 return true;
             }
-            else if (!IsHorizontal && boundary is Direction.Top or Direction.Bottom)
-            {
-                if (boundary is Direction.Top != ScrollStartsFromTop)
-                    scrollOffset = GetMaxScroll();
-                return true;
-            }
-
             return false;
         }
         public bool TryAddScrollThroughWheel(float scrollOffset, ref float desiredScrollPosOffset)
@@ -122,8 +123,10 @@ namespace RainMeadow.UI.Systems
             scrollPosOffset *= ScrollStepDir[IndexToRef];
             return TryAddScroll(scrollPosOffset, ref desiredScrollPosOffset);
         }
-        public bool TryAddScroll(float scrollPosOffset, ref float desiredScrollPosOffset)
+        public bool TryAddScroll(float scrollPosOffset, ref float desiredScrollPosOffset, Direction? direction = null)
         {
+            if (direction != null)
+                scrollPosOffset *= GetStepDirFromDirection(direction.Value);
             if (scrollPosOffset != 0)
             {
                 var maxScroll = GetMaxScroll();
@@ -138,7 +141,7 @@ namespace RainMeadow.UI.Systems
         }
         public float GetSliderValue(float origSliderValue)
         {
-            if (scrollingAxis == Axis.Horizontal)
+            if (IsHorizontal)
                 return ScrollStartsFromLeft ? origSliderValue : 1 - origSliderValue;
             return ScrollStartsFromTop ? 1 - origSliderValue : origSliderValue;
         }
