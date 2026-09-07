@@ -648,7 +648,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             for (int i = buttons.Count - 1; i >= 0; i--)
                 if (buttons[i] is LevelItem item)
                 RemoveButton(item, false);
-            MyLevelSelector.SelectedPlayList.Select(CreateLevelItem);
+            AddButtons([..MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
             ConstrainScroll();
             mismatchCounter = 0;
 
