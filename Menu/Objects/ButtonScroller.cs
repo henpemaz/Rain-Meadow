@@ -234,13 +234,15 @@ namespace RainMeadow
                 isScrolling = true;
             }
         }
-        public void AddScroll(float addDir, bool setScrollImmediately = false)
+        public void AddScroll(float dir, ScrollSystem.Direction? direction, bool setScrollImmediately = false)
         {
-            float newScrolloffset = DownScrollOffset + addDir * gridSystem.ScrollStepDir[gridSystem.IndexToRef];
+            float newScrollOffset = DownScrollOffset;
+            if (!gridSystem.TryAddScroll(dir, ref newScrollOffset, direction)) return;
             if (setScrollImmediately)
-                SetScrollImmediately(newScrolloffset);
-            else DownScrollOffset = newScrolloffset;
+                SetScrollImmediately(newScrollOffset);
+            else DownScrollOffset = newScrollOffset;
         }
+        public void AddScroll(float addDir, bool setScrollImmediately = false) => AddScroll(addDir, null, setScrollImmediately);
         public void ConstrainScroll(bool constrainImmediately = false)
         {
             UpdateGridSystem();
@@ -327,12 +329,12 @@ namespace RainMeadow
             if (scrollUpButton == null)
             {
                 scrollUpButton = new(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, size.y + upButtonYPosOffset), 0, scrollButtonWidth);
-                scrollUpButton.OnClick += _ => AddScroll(-1);
+                scrollUpButton.OnClick += _ => AddScroll(1, ScrollSystem.Direction.Top);
             }
             if (scrollDownButton == null)
             {
                 scrollDownButton = new(menu, this, new Vector2(scrollUpButton.pos.x, downButtonYPosOffset), 2, scrollButtonWidth);
-                scrollDownButton.OnClick += _ => AddScroll(1);
+                scrollDownButton.OnClick += _ => AddScroll(1, ScrollSystem.Direction.Bottom);
             }
             this.SafeAddSubobjects(scrollUpButton, scrollDownButton);
         }

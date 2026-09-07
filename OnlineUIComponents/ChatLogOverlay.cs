@@ -109,7 +109,7 @@ namespace RainMeadow
             }
 
             float tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
-
+            scroller.itemContainer.alpha = tOpacity; //modify the container holding the labels
             // Make everything "invisible" by default (just 0-sized)
             for (int i = 0; i < chatBg.Length; ++i)
             {
@@ -125,14 +125,14 @@ namespace RainMeadow
                 {
                     // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
                     // messages fading out work as intended.
-                    if (scroller.buttons[j] is AlignedMenuLabel label)
+                    /*if (scroller.buttons[j] is AlignedMenuLabel label)
                     {
                         label.label.alpha = tOpacity;
                         foreach(var subObj in label.subObjects)
                         {
                             if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
                         }
-                    }
+                    }*/
                     var scroll = scroller.buttons[j].GetScrollObject();
                     chatBg[i].x = scroller.pos.x + scroll.LocalPos.x - 4f;
                     chatBg[i].y = scroller.pos.y + scroll.LocalPos.y;
