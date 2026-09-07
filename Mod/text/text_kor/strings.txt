@@ -674,7 +674,6 @@ Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|관찰자의 잔�
 /// no translation in the list?
 
 /// arena slugcat select
-Press grab to toggle active slugcats|잡기 버튼을 눌러 활성화할 슬러그캣을 선택
 
 /// arena back button description
 Exit to Lobby Select|로비 선택 화면으로 돌아간다

@@ -272,6 +272,13 @@ namespace RainMeadow
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    storyGameMode.campaignGeneration++;
+                    storyGameMode.spinningTopEncounters.Clear();
+                    storyGameMode.hostRippleRaiser.Clear();
+                }
             }
 
             else

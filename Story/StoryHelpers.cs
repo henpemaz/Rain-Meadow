@@ -37,6 +37,27 @@ namespace RainMeadow
             return added;
         }
 
+
+        public static int ResolveSpinningTopID(Room room)
+        {
+            if (room?.updateList == null) return -1;
+
+            Watcher.SpinningTop? found = null;
+            int count = 0;
+            foreach (UpdatableAndDeletable uad in room.updateList)
+            {
+                if (uad is Watcher.SpinningTop spinningTop)
+                {
+                    count++;
+                    found ??= spinningTop;
+                }
+            }
+            if (count > 1) RainMeadow.Error($"multiple SpinningTops found in room {room.abstractRoom?.name}, using the first");
+
+            if (found?.SpecialData is Watcher.SpinningTopData specialData) return specialData.spawnIdentifier;
+            return -1;
+        }
+
         public static void SaveEchoWarp(RainWorldGame game, WarpPoint warpPoint, bool saveRoomWarp = false, bool saveString = false)
         {
             var warpData = warpPoint.overrideData ?? warpPoint.Data;
