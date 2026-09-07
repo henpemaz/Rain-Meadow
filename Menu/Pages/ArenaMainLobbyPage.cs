@@ -218,7 +218,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         ]);
     }
 
-    public ButtonScroller.IPartOfButtonScroller GetPlayerButton(
+    public MenuObject GetPlayerButton(
         PlayerDisplayer playerDisplay,
         bool isLargeDisplay,
         OnlinePlayer player,
@@ -360,7 +360,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         );
 
         TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];
-        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.LevelItems)
+        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.buttons)
             lvlBtn.TryBind(tabBtnToBind.wrapper, left: true);
     }
 
@@ -423,7 +423,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         slugcatAbilitiesInterface?.SaveAllInterfaceOptions(saveOwnerOptions);
     }
 
-    public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
+    public void UpdatePlayerButtons(MenuObject button)
     {
         if (button is ArenaPlayerBox playerBox)
         {
@@ -574,7 +574,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
-            foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
+            foreach (MenuObject button in playerDisplayer.buttons)
                 UpdatePlayerButtons(button);
         }
 

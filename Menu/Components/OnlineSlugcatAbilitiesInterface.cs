@@ -1,6 +1,9 @@
 using Menu;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
+using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Systems;
 using RWCustom;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,8 +113,8 @@ namespace RainMeadow.UI.Components
                 SettingsPage settings = settingSignals[message];
                 SettingsPage? prevSettings = activeSettings;
                 if (prevSettings == settings) return;
-                OnSwitchSettingsTab(settings, prevSettings);
                 SwitchTab(settings);
+                OnSwitchSettingsTab(settings, prevSettings);
             }
         }
         public class SelectSettingsPage : SettingsPage
@@ -135,16 +138,16 @@ namespace RainMeadow.UI.Components
                     color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey)
                 };
                 Container.AddChild(titleDivider);
-                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeYOffset: -40);
+                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeAxisOffset: -40);
                 scroller.CreateSideButtonLines();
                 KeyValuePair<string, SettingsPage>[] array = [.. allSettings];
                 for (int i = 0; i < array.Length; i++)
                 {
                     KeyValuePair<string, SettingsPage> pair = array[i];
-                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, new(0, scroller.GetIdealYPosWithScroll(i)), new(290, 45));
+                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, scroller.PositionOfObject(i), new(290, 45));
                     if (i > 0)
                         btn.CreateTopDivider();
-                    scroller.AddScrollObjects(btn);
+                    scroller.AddButtons(btn);
                 }
                 this.SafeAddSubobjects(scroller);
             }
@@ -178,12 +181,12 @@ namespace RainMeadow.UI.Components
                 titleDivider.x = titleLabel.x;
                 titleDivider.y = titleLabel.y - titleLabel.textRect.height - 3;
             }
-            public class SettingsButton : BigSimpleButton, ButtonScroller.IPartOfButtonScroller
+            public class SettingsButton : BigSimpleButton, IOwnMenuScrollObject
             {
                 public float Alpha { get; set; } = 1;
                 public Vector2 Pos { get => pos; set => pos = value; }
                 public Vector2 Size { get => size; set => size = value; }
-                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(scroller.buttons.IndexOf(this) - 1)?.Alpha ?? 0 : 0;
+                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
                 public FSprite? topDivSprite;
                 public FSprite arrowSprite;
                 public SettingsPage settingsPage;
