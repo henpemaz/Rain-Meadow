@@ -70,9 +70,26 @@ public readonly struct SettingsConfigData
             if (string.IsNullOrWhiteSpace(attributeName)) return;
             if (GetAttributeOwnerDict[attributeOwnerType]() is object data)
             {
+                object? converted;
+                if (value is string strVal)
+                {
+                    if (AttributeType != typeof(string) && string.IsNullOrWhiteSpace(strVal)) return;
+                    try
+                    {
+                        converted = ValueConverter.ConvertToValue(strVal, AttributeType);
+                    }
+                    catch (FormatException)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    converted = value;
+                }
                 try
                 {
-                    attributeOwnerType.GetField(attributeName).SetValue(data, value is string strVal ? ValueConverter.ConvertToValue(strVal, AttributeType) : value);
+                    attributeOwnerType.GetField(attributeName).SetValue(data, converted);
                 }
                 catch (Exception ex)
                 {

@@ -209,9 +209,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            spearHitScore = 0;
-            killScore = 0;
-            survivalScore = 0;
             hostLoadedOverlay = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()

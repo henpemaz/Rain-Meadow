@@ -11,7 +11,7 @@ namespace RainMeadow.UI.Components
 {
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
-        public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
+        public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", VANILLASETTINGS = "VANILLASETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
         public MSCSlugcatSettings? mscSettingsTab;
@@ -70,6 +70,7 @@ namespace RainMeadow.UI.Components
         }
         public void AddAllSettings(string paincatName)
         {
+            AddSettingsTab(new VanillaSetting(menu, this), VANILLASETTINGS);
             if (ModManager.MSC)
             {
                 mscSettingsTab = new(menu, this, paincatName);
