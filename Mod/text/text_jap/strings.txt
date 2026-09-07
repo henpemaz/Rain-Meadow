@@ -143,7 +143,7 @@ PASSAGE|通路
 Passage to another shelter|雨宿り場内から知っている雨宿り場へ移動します
 UNSTUCK|スタック解消
 Teleport to a nearby pipe|直近のパイプへワープしてスタックを解消します
-LOBBY|メドウロビーに戻る
+LOBBY|ロビーに戻る
 Go back to the charater selection screen|キャラクター選択画面に戻ります
 QUIT|終了
 Exit back to the main menu|メインメニューに戻ります
@@ -178,6 +178,7 @@ Got All<LINE>ScugSlots!!|スロットは<LINE>満員です!!
 Joining<LINE>soon!|参加中!
 Ready!|準備完了!
 Selecting<LINE>Slugcat|プレイヤーを<LINE>選択中
+Press shift + click to toggle active slugcats|「シフト」キーとクリックして有効/無効にするナメクジネコを選択
 In Game!|プレイ中!
 Showing players in thumbnail view|サムネイル表示
 Showing players in list view|リスト表示
@@ -825,6 +826,9 @@ SESSION RESULTS|セッション結果
 SESSION ENDED!|セッションエンド!
 IT'S A DRAW!|引き分けだ!
 How long Wacher's abilities last for. Default: 12s|ウォッチャーの能力の持続時間
+Full Invisibility In Ripple Space:|リップル完全な不可視:
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|ウォッチャーは輝きを残し、他のウオッチャーは目を見ることができる
+Watcher will be fully invisible to everyone when in ripple space|ウォッチャーは完全に見えなくなる
 Survive,|生き残る
 Item Stealing|アイテム盗む
 Join In Progress|進行中<LINE>マッチへ参加
