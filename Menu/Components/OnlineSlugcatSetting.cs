@@ -137,8 +137,8 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             {
                 sel.RemoveBind(bottom:true, top:true);
             });
-            backButton.RemoveBind(right:true, top:true, bottom:true);
-            resetButton.RemoveBind(left:true, top:true, bottom:true);
+            backButton?.RemoveBind(right:true, top:true, bottom:true);
+            resetButton?.RemoveBind(left:true, top:true, bottom:true);
         }
         else
         {

@@ -792,6 +792,7 @@ public partial class RainMeadow
             {
                 if (self.grasps[i]?.grabbed is PhysicalObject other
                     && other != obj
+                    && !ArenaHelpers.IsArenaShieldFruit(self, other)
                     && orig(self, other))
                 {
                     return false;
@@ -812,27 +813,29 @@ public partial class RainMeadow
             }
             orig(self);
 
-            // keep fruit outward facing
             int dir = player.ThrowDirection;
             if (dir != 0
                 && self.limbNumber >= 0
                 && self.limbNumber < player.grasps.Length)
             {
-                if (player.grasps[self.limbNumber]?.grabbed is PhysicalObject held && ArenaHelpers.IsArenaShieldFruit(player, held))
+                int shieldLimb = -1;
+                for (int i = 0; i < player.grasps.Length; i++)
+                {
+                    if (player.grasps[i]?.grabbed is PhysicalObject candidate
+                        && ArenaHelpers.IsArenaShieldFruit(player, candidate))
+                    {
+                        shieldLimb = i;
+                        break;
+                    }
+                }
+
+                if (shieldLimb == self.limbNumber)
                 {
                     self.relativeHuntPos.x = Mathf.Abs(self.relativeHuntPos.x) * dir;
                 }
-                else
+                else if (shieldLimb >= 0 && player.grasps[self.limbNumber]?.grabbed != null)
                 {
-                    int otherLimb = 1 - self.limbNumber;
-                    if (otherLimb >= 0
-                        && otherLimb < player.grasps.Length
-                        && player.grasps[self.limbNumber]?.grabbed != null
-                        && player.grasps[otherLimb]?.grabbed is PhysicalObject otherHeld
-                        && ArenaHelpers.IsArenaShieldFruit(player, otherHeld))
-                    {
-                        self.relativeHuntPos.x = -Mathf.Abs(self.relativeHuntPos.x) * dir;
-                    }
+                    self.relativeHuntPos.x = -Mathf.Abs(self.relativeHuntPos.x) * dir;
                 }
             }
         }
