@@ -184,6 +184,9 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> playersLateWaitingInLobby;
 
+            [OnlineField(group = "arenaGameplay")]
+            public List<ushort> playersQuitMidRound;
+
             [OnlineField(nullable = true, group = "arenaGameplay")]
             public Generics.DynamicOrderedPlayerIDs reigningChamps;
 
@@ -282,6 +285,7 @@ namespace RainMeadow
                 );
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
+                playersQuitMidRound = new List<ushort>(arenaOnline.playersQuitMidRound);
 
                 playersChoosingSlugs = new Dictionary<string, int>(arenaOnline.playersInLobbyChoosingSlugs);
                 countdownSafetyCatchTimer = arenaOnline.countdownSafetyCatchTimer;
@@ -402,6 +406,7 @@ namespace RainMeadow
                 );
 
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
+                arenaOnline.playersQuitMidRound = playersQuitMidRound;
 
                 arenaOnline.countdownSafetyCatchTimer = countdownSafetyCatchTimer;
                 arenaOnline.countdownInitiatedHoldFire = countdownInitiatedHoldFire;
