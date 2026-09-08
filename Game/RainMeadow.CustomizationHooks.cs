@@ -16,6 +16,7 @@ namespace RainMeadow
         public void CustomizationHooks()
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
+            IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SaintTongue;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.FFacetNode.PopulateRenderLayer += FFacetNode_PopulateRenderLayer;
             On.FSprite.PopulateRenderLayer += FSprite_PopulateRenderLayer;
@@ -145,6 +146,23 @@ namespace RainMeadow
                         RainMeadow.Trace("color became " + originalBodyColor);
                     }
                 });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void PlayerGraphics_ApplyPalette_SaintTongue(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchCall<PlayerGraphics>("get_useJollyColor"),
+                    i => i.MatchBrtrue(out _),
+                    i => i.MatchCall(typeof(PlayerGraphics), nameof(PlayerGraphics.CustomColorsEnabled)));
+                c.EmitDelegate((bool enabled) => enabled && hackySlugcatCustomization is null);
             }
             catch (Exception e)
             {
