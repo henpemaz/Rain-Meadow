@@ -241,7 +241,15 @@ namespace RainMeadow.UI.Components
         public override void RemoveSprites()
         {
             DestroyRender();
-            UnityEngine.Object.Destroy(cam?.gameObject);
+            try
+            {
+                if (cam?.gameObject is not null)
+                    UnityEngine.Object.Destroy(cam?.gameObject);
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error($"Error while destroying cam game object : {ex}");
+            }
             contentSystem.MarkScrollObjectsDirty -= MarkScrollObjectsDirty;
             contentSystem.OnViewSizeChanged -= ViewSizeChanged;
             contentSystem.OnContentSizeChanged -= ContentSizeChanged;

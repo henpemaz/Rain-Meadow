@@ -36,7 +36,7 @@ public class OnlineSettingTab : OnlineSettingElement
         }
         else
         {
-            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false));
+            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false){anchorX = 0.5f, anchorY = 0.5f});
         }
 
         if (data.name is not null && data.color is not null)
