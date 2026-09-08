@@ -15,7 +15,7 @@ public class OnlineSettingKeycode : OnlineSettingUIconfig
     public bool lastHeld = false; // ok the feedback was so bad i'm making my own;
     public int dotCycle;
     public OnlineSettingKeycode(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
-         : this(menu, owner, owner.tabWrapper, config, tab) {}
+         : this(menu, owner.scroller, owner.tabWrapper, config, tab) {}
     public OnlineSettingKeycode(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
          : base(menu,
             owner,

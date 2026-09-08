@@ -37,7 +37,7 @@ namespace RainMeadow.UI.Systems
             float posY = elementOrigPos.y;
             if (IsHorizontal)
             {
-                    if (ScrollStartsFromLeft)
+                if (ScrollStartsFromLeft)
                     posX = posSizeOfPrevElement != null ? posSizeOfPrevElement.Value.Item1.x + posSizeOfPrevElement.Value.Item2.x : 0;
                 else
                     posX = posSizeOfPrevElement != null ? posSizeOfPrevElement.Value.Item1.x - elementSize.x  : (ViewSize.x - elementSize.x);

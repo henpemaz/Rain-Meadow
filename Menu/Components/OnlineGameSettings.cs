@@ -125,13 +125,9 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             new("Import", "Load match settings from your clipboard", true, ImportSettings));
 
         int insertAt = tab is not null ? elements.IndexOf(tab) + 1 : elements.Count;
-        elements.Insert(insertAt, playlistButtons);
-        elements.Insert(insertAt + 1, settingsButtons);
-        this.SafeAddSubobjects(playlistButtons, settingsButtons);
 
-        UpdateElementsPosition();
-        playlistButtons.HardSetPosition(playlistButtons.WantedPosition);
-        settingsButtons.HardSetPosition(settingsButtons.WantedPosition);
+        AddElement(settingsButtons, insertAt, false);
+        AddElement(playlistButtons, insertAt + 1, true);
     }
 
     private void ExportPlaylist(OnlineSettingButtons row)
@@ -258,14 +254,11 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
 
     public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
     {
-        if (resetButton is null)
-        {
-            resetButton = new(menu, this, menu.Translate("RESET"), new(settingsBoxSize.x - 40, 20), new(80, 30));
-            resetButton.OnClick += (b) => ResetSettings();
-            AddObjects(resetButton);
-        }
+        AddResetButton();
 
         BindSettingsButtons(IsActuallyHidden);
-        if (forceSelectedObject) menu.selectedObject = elements.FirstOrDefault()?.selectable ?? resetButton;
+
+        if (forceSelectedObject)
+            menu.selectedObject = elements.FirstOrDefault()?.selectable ?? backButton;
     }
 }

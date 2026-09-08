@@ -3,11 +3,12 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components.Configurables;
 
-public class OnlineSettingButtons : OnlineSettingElement
+public class OnlineSettingButtons : OnlineSettingElement, IPLEASEUPDATEME
 {
     public const float boxMargin = 5f;
     public const float buttonGap = 6f;
@@ -29,15 +30,17 @@ public class OnlineSettingButtons : OnlineSettingElement
     public string defaultText;
     public int messageTimer;
     public int messageDuration = 120;
+    public bool IsHidden {get; set;} // avoid click through
+    public bool active = true;
 
     public override MenuObject selectable => buttons[0].wrapper;
 
     public OnlineSettingButtons(Menu.Menu menu, OnlineSlugcatSettingsBase owner, OnlineSettingTab? tab, string labelText, params ButtonDef[] defs)
-         : base(menu, owner, tab)
+         : base(menu, owner.scroller, tab)
     {
         tabWrapper = owner.tabWrapper;
         defaultText = labelText;
-        elementSize = new Vector2(settingsBoxSize.x - (tab is null ? 0 : tabMargin), elementHeight);
+        size = new Vector2(ownerBoxSize.x - (tab is null ? 0 : tabMargin), elementHeight);
 
         label = new(menu, this, menu.Translate(labelText), Vector2.zero, new(textSpacing, elementHeight), false);
         label.label.alignment = FLabelAlignment.Left;
@@ -55,7 +58,7 @@ public class OnlineSettingButtons : OnlineSettingElement
                 button.description = menu.Translate(def.description);
 
             Action<OnlineSettingButtons> onClick = def.onClick;
-            button.OnClick += _ => onClick(this);
+            button.OnClick += _ => {if (active && !IsHidden) onClick(this);};
             new PatchedUIelementWrapper(tabWrapper, button);
             buttons[i] = button;
         }
@@ -77,13 +80,13 @@ public class OnlineSettingButtons : OnlineSettingElement
 
         label.pos = Vector2.left * textSpacing / 2f;
 
-        float x = elementSize.x - boxMargin;
+        float x = size.x - boxMargin;
         for (int i = buttons.Length - 1; i >= 0; i--)
         {
             x -= buttons[i].size.x;
             buttons[i].pos = pos
                 + Vector2.right * x
-                + Vector2.up * (elementSize.y - buttons[i].size.y) / 2f;
+                + Vector2.up * (size.y - buttons[i].size.y) / 2f;
             x -= buttonGap;
             buttons[i].greyedOut = ownerOnly[i] && grayedOut;
         }

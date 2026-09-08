@@ -57,7 +57,7 @@ namespace RainMeadow.UI.Components
         public ScrollableContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, ContentScrollSystem? scrollingSystem = null, ScrollSystem.Anchor horiVertSliderAnchor = ScrollSystem.Anchor.BottomRight) : base(menu, owner, pos, size)
         {
             (owner?.Container ?? menu.container).AddChild(myContainer = new());
-            myContainer.AddChild(itemMaskContainer = new()); 
+            myContainer.AddChild(itemMaskContainer = new());
             myContainer.AddChild(camContainer = new());
             this.contentSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
             this.contentSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
@@ -280,7 +280,7 @@ namespace RainMeadow.UI.Components
             public ScrollableContainer myScrollContainer;
             public Dictionary<WeakReference<PositionedMenuObject>, ScrollSystem.Anchor> subObjectsForcedAnchor = [];
             //this is default positioning of menuObjs, you can remove this implementation of anchoring as this originally was made in case for Slugcat abilities extended ui
-            public ScrollSystem.Anchor defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.BottomLeft; 
+            public ScrollSystem.Anchor defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.BottomLeft;
             public bool checkSubobjectsOnly = true;
             public Vector2 ScreenPosOffset => Vector2.Max(size - myScrollContainer.size, Vector2.zero);
             public Scrollable(Menu.Menu menu, ScrollableContainer owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)

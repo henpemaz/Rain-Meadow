@@ -241,7 +241,7 @@ namespace RainMeadow
         }
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
-            return orig(self) && 
+            return orig(self) &&
                 !(MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject scrollObject) && ((scrollObject.ContainedAlpha < 1) || (scrollObject.scroller != null && !scrollObject.scroller.MouseOver)));
         }
         private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
@@ -265,7 +265,7 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu sOM)
             {
-                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system. 
+                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system.
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
@@ -754,7 +754,7 @@ namespace RainMeadow
             }, self.mainMenuButtons.Count - 2);
         }
 
-        // while the host scrolls  campaigns (or someone joins mid-scroll) 
+        // while the host scrolls  campaigns (or someone joins mid-scroll)
         // SlugcatPageContinue can Update itself for a frame
         // after its data is gone and nullref.
         private bool SlugcatPageContinue_SaveDataFlag(Func<SlugcatSelectMenu.SlugcatPageContinue, bool> orig, SlugcatSelectMenu.SlugcatPageContinue self)

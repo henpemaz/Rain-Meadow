@@ -163,19 +163,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         matchSettingsTab.AddObjects(arenaSettingsInterface);
         tabContainer.AddTab(matchSettingsTab, menu.Translate("Match Settings"));
 
-        if (ShouldOpenSlugcatAbilitiesTab())
-        {
-            slugabilitiesTab = new(menu, tabContainer);
-            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(
-                menu,
-                slugabilitiesTab,
-                new(0, 0),
-                menu.Translate(painCatName)
-            );
-            slugcatAbilitiesInterface.CallForSync();
-            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
-            tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
-        }
+        slugabilitiesTab = new(menu, tabContainer);
+        slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(
+            menu,
+            slugabilitiesTab,
+            new(0, 0),
+            menu.Translate(painCatName)
+        );
+        slugcatAbilitiesInterface.CallForSync();
+        slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
+        tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
 
         this.SafeAddSubobjects(
             readyButton,
@@ -190,8 +187,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 
         menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
     }
-
-    public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
 
     public void BuildPlayerDisplay()
     {

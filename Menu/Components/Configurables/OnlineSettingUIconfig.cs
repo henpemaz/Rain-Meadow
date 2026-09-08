@@ -16,7 +16,7 @@ public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
         set => uiConfig.size = new Vector2(value, uiConfig.size.y);
     }
     public OnlineSettingUIconfig(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, UIconfig uiConfig, OnlineSettingTab? tab = null)
-         : this(menu, owner, owner.tabWrapper, config, uiConfig, tab) {}
+         : this(menu, owner.scroller, owner.tabWrapper, config, uiConfig, tab) {}
     public OnlineSettingUIconfig(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, UIconfig uiConfig, OnlineSettingTab? tab = null)
          : base(menu, owner, tabWrapper, config, tab)
     {
@@ -60,8 +60,8 @@ public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
         base.Update();
 
         uiConfig.pos = pos
-            + Vector2.right * (elementSize.x - uiConfig.size.x - BoxMargin)
-            + Vector2.up * (elementSize.y - uiConfig.size.y)/2f;
+            + Vector2.right * (size.x - uiConfig.size.x - BoxMargin)
+            + Vector2.up * (size.y - uiConfig.size.y)/2f;
         if (data.AttributeValue is not object value) return;
         if (!visible) return;
         if (isClient) SyncValueToAttribute();

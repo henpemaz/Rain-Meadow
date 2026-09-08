@@ -7,22 +7,29 @@ using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 using System;
 using HarmonyLib;
 using RainMeadow.UI.Components.Configurables;
+using RainMeadow.UI.Systems;
 
 namespace RainMeadow.UI.Components;
 
 public abstract class OnlineSlugcatSettingsBase : SettingsPage
 {
-    public static Vector2 defaultBoxSize = new(450, 440);
+    public static readonly Vector2 fullSize = new(450, 475);
+    public static readonly Vector2 defaultBoxSize = new(450, 440);
     public Vector2 settingsBoxSize;
+    public Vector2 offset;
     public float margin;
     public SimpleButton? backButton;
     public SimplerButton? resetButton;
     public MenuTabWrapper tabWrapper;
+    public ScrollableContainer scrollableContainer;
+    public ScrollableContainer.Scrollable scroller;
     protected List<OnlineSettingElement> elements;
     public float spacing;
     public float textSpacing;
     public bool wasHidden = true;
     public int lastVisibleElementCount = 0;
+
+    private int position;
 
     public OnlineSettingTab? GetSettingTab(SlugcatStats.Name slugcatTab)
     {
@@ -64,16 +71,108 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
     protected OnlineSlugcatSettingsBase(Menu.Menu menu, MenuObject owner, float spacing = 5f, float margin = 30f, float textSpacing = 300) : base(menu, owner)
     {
-        tabWrapper = new(menu, this);
+        offset = fullSize - defaultBoxSize;
+        offset.x /= 2f;
+        scrollableContainer = new(menu, this, offset, defaultBoxSize)
+        {
+            camSizeOffset = new Vector2(-10, -10) - offset + Vector2.up * 0.01f
+        };
+        scroller = scrollableContainer.CreateAndAttachScrollable(1000);
+        scroller.defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.TopLeft;
+
+        tabWrapper = new(menu, scroller);
+
         elements = [];
         this.spacing = spacing;
         this.textSpacing = textSpacing;
         this.margin = margin;
 
         settingsBoxSize = defaultBoxSize - Vector2.right * margin * 2;
-        this.SafeAddSubobjects(tabWrapper);
+        this.SafeAddSubobjects(scrollableContainer);
+        scroller.subObjects.Add(tabWrapper);
     }
 
+    public void AddElement(OnlineSettingElement? el, int index = -1, bool updatePosition = true)
+    {
+        if (el is not null)
+        {
+            if (!elements.Contains(el))
+            {
+                if (index < 0 || index > elements.Count)
+                    elements.Add(el);
+                else
+                    elements.Insert(index, el);
+            }
+
+            if (!scroller.subObjects.Contains(el))
+            {
+                scroller.subObjects.Add(el);
+            }
+
+            if (updatePosition)
+            {
+                UpdateElementsPosition();
+            }
+
+            el.HardSetPosition(el.WantedPosition);
+        }
+    }
+    public void AddElements(params OnlineSettingElement?[] els)
+    {
+        els.Do(el => AddElement(el, -1, false));
+        UpdateElementsPosition();
+    }
+    public void AddBackButton()
+    {
+        if (backButton is null)
+        {
+            backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(margin, 20), new(80, 30));
+            scroller.subObjects.Add(backButton);
+            scroller.ForceAnchor(backButton, ScrollSystem.Anchor.BottomLeft);
+        }
+    }
+    public void AddResetButton()
+    {
+        if (resetButton is null)
+        {
+            resetButton = new(menu, this, menu.Translate("RESET"), new(settingsBoxSize.x - 40 - 20, 20), new(80, 30));
+            resetButton.OnClick += (b) => ResetSettings();
+            scroller.subObjects.Add(resetButton);
+            scroller.ForceAnchor(resetButton, ScrollSystem.Anchor.BottomRight);
+        }
+    }
+
+    public void ReorderTabAndElements()
+    {
+        List<OnlineSettingTab> tabs = [];
+        List<OnlineSettingElement> els = [];
+        foreach (var el in elements)
+        {
+            if (el is OnlineSettingTab tab)
+                tabs.Add(tab);
+            else
+                els.Add(el);
+        }
+
+        List<OnlineSettingElement> newElementsList = [];
+        foreach (var tab in tabs)
+        {
+            newElementsList.Add(tab);
+            foreach (var el in els)
+            {
+                if (el.tab == tab) newElementsList.Add(el);
+            }
+        }
+
+        foreach (var el in els)
+        {
+            if (el.tab is null) newElementsList.Add(el);
+        }
+
+        elements = newElementsList;
+        UpdateElementsVisibility();
+        UpdateElementsPosition();
+    }
     public void UpdateElementsVisibility()
     {
         int visibleElementCount = 0;
@@ -105,18 +204,50 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     }
     public void UpdateElementsPosition()
     {
-        int position = 0;
+        position = 0;
         for (int i = 0; i < elements.Count; i++)
         {
             elements[i].position = position;
+            elements[i].offsetPos = -Vector2.up * offset.y;
             if (elements[i].visible)
             {
                 position++;
                 if (elements[i].additionalPositionsTaken > 0)
                     position += elements[i].additionalPositionsTaken;
             }
+
+            if (elements[i].tab is OnlineSettingTab tab && tab.position > position)
+            {
+                RainMeadow.Debug($"Tab {tab.data.name} is after element <{i}>{elements[i]} ! Reordering...");
+                ReorderTabAndElements();
+                return;
+            }
         }
     }
+    public virtual void UpdateScrollerSize()
+    {
+        float? minY = null, maxY = null;
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (minY is null || minY > elements[i].pos.y)
+                minY = elements[i].pos.y;
+            if (maxY is null || maxY < elements[i].pos.y)
+                maxY = elements[i].pos.y;
+        }
+
+        if (maxY is not null && minY is not null)
+        {
+            float idealPos = Mathf.Max(
+                scrollableContainer.size.y,
+                offset.y + (float)maxY - (float)minY + 2 * (spacing + OnlineSettingElement.elementHeight)
+            );
+
+            // Ease does stop the menu from jumping when closing tabs
+            scroller.size.y = Mathf.Lerp(scroller.size.y, idealPos, 0.1f);
+            scrollableContainer.contentSystem.ContentSize = scroller.size.y;
+        }
+    }
+
     public void ResetSettings()
     {
         menu.PlaySound(SoundID.MENU_Button_Successfully_Assigned);
@@ -161,20 +292,13 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
     public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
     {
-        if (backButton is null)
-        {
-            backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(margin, 20), new(80, 30));
-            AddObjects(backButton);
-        }
-        if (resetButton is null)
-        {
-            resetButton = new(menu, this, menu.Translate("RESET"), new(settingsBoxSize.x - 40, 20), new(80, 30));
-            resetButton.OnClick += (b) => ResetSettings();
-            AddObjects(resetButton);
-        }
+        AddBackButton();
+        AddResetButton();
 
         BindSettingsButtons(IsActuallyHidden);
-        if (forceSelectedObject) menu.selectedObject = elements.FirstOrDefault()?.selectable ?? backButton;
+
+        if (forceSelectedObject)
+            menu.selectedObject = elements.FirstOrDefault()?.selectable ?? backButton;
     }
     public override void Update()
     {
@@ -203,8 +327,10 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
                 ? greyoutAll
                 : greyoutNonClient;
         }
+
         UpdateElementsVisibility();
         UpdateElementsPosition();
+        UpdateScrollerSize();
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -252,10 +378,10 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 }
 public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase where TSelf : class
 {
-    protected static List<SettingsConfigData> onlineConfigurables = [];
-    protected static List<SettingsTabData> onlineConfigurableTabs = [];
+    protected static List<OnlineSettingConfigurable.SettingsConfigData> onlineConfigurables = [];
+    protected static List<OnlineSettingTab.SettingsTabData> onlineConfigurableTabs = [];
 
-    public static void AddSlugcatSettingsTab(SettingsTabData tab)
+    public static void AddSlugcatSettingsTab(OnlineSettingTab.SettingsTabData tab)
     {
         if (onlineConfigurableTabs.Exists(x => x == tab))
         {
@@ -264,7 +390,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
         }
         onlineConfigurableTabs.Add(tab);
     }
-    public static void AddSlugcatSettingsConfigurable(SettingsConfigData config)
+    public static void AddSlugcatSettingsConfigurable(OnlineSettingConfigurable.SettingsConfigData config)
     {
         if (string.IsNullOrWhiteSpace(config.attributeName))
         {
@@ -277,7 +403,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
                 RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} is already in the page !");
                 return;
             }
-            if (!SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
+            if (!OnlineSettingConfigurable.SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
             {
                 RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name} is not registered and has no GET function !");
                 return;
@@ -303,9 +429,9 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
         onlineConfigurables.Add(config);
     }
 
-    private static List<SettingsConfigData> GetAllConfigurablesFromTab(SettingsTabData? tab = null)
+    private static List<OnlineSettingConfigurable.SettingsConfigData> GetAllConfigurablesFromTab(OnlineSettingTab.SettingsTabData? tab = null)
     {
-        if (tab is SettingsTabData onlineConfigurableTab)
+        if (tab is OnlineSettingTab.SettingsTabData onlineConfigurableTab)
         {
             if (onlineConfigurableTab.name is null)
             {
@@ -318,11 +444,11 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
         }
         return onlineConfigurables.FindAll(x => x.tabName is null && x.slugcatTab is null);
     }
-    private OnlineSettingTab GetElementFromConfig(SettingsTabData tab)
+    private OnlineSettingTab GetElementFromConfig(OnlineSettingTab.SettingsTabData tab)
     {
         return new OnlineSettingTab(menu, this, tab);
     }
-    private OnlineSettingConfigurable? GetElementFromConfig(SettingsConfigData configurable, OnlineSettingTab? tab = null)
+    private OnlineSettingConfigurable? GetElementFromConfig(OnlineSettingConfigurable.SettingsConfigData configurable, OnlineSettingTab? tab = null)
     {
         if (configurable.AttributeType == typeof(int))
         {
@@ -388,6 +514,6 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
         {
             elements[i].HardSetPosition(elements[i].WantedPosition);
         }
-        this.SafeAddSubobjects([.. elements]);
+        scroller.subObjects.AddRange([.. elements]);
     }
 }
