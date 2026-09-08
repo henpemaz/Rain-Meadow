@@ -3158,16 +3158,15 @@ namespace RainMeadow
             if (!isArenaMode(out ArenaOnlineGameMode arenaOnline)
                 || !TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
                 || !teamBattle.showTeamScoreTotals
-                || box.player is null
                 || box.menu is not PlayerResultMenu resultMenu
-                || resultMenu.ArenaSitting?.players is null)
+                || resultMenu.result is null)
             {
                 return false;
             }
 
             teamTotal = teamBattle.SumTeamValue(
                 arenaOnline,
-                resultMenu.ArenaSitting.players,
+                resultMenu.result,
                 box.player,
                 valueSelector
             );
