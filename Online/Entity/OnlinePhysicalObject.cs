@@ -318,7 +318,7 @@ namespace RainMeadow
                             if (topos.TileDefined)
                             {
                                 apo.MoveOnly(topos);
-                                bool addToRoom = newRoom.absroom.realizedRoom.shortCutsReady && apo.realizedObject is not null && room.updateList.Contains(apo.realizedObject);
+                                bool addToRoom = newRoom.absroom.realizedRoom.shortCutsReady && (apo.realizedObject is null || !room.updateList.Contains(apo.realizedObject));
                                 if (apo.realizedObject is Creature crit)
                                 {
                                     crit.RemoveFromShortcuts();
