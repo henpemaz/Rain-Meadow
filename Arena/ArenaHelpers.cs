@@ -407,11 +407,5 @@ namespace RainMeadow
             hSLColor.lightness = inOtherRipple ? RainWorld.RippleGold.ToHSL().lightness / 2 : RainWorld.RippleColor.ToHSL().lightness;
             return hSLColor.rgb;
         }
-
-        public static bool IsArenaShieldFruit(Player player, PhysicalObject obj)
-        {
-            return RainMeadow.isArenaMode(out _) && obj is DangleFruit
-                && !player.isNPC;
-        }
     }
 }
