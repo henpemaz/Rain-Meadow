@@ -291,12 +291,12 @@ namespace RainMeadow
                     RainMeadow.Debug($"topos Tile defined? {topos.TileDefined}");
                     RainMeadow.Debug($"topos Node defined? {topos.NodeDefined}");
 
-                    newRoom.absroom.AddEntity(apo);
+                    if (!newRoom.absroom.entities.Contains(apo) )newRoom.absroom.AddEntity(apo);
 
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
                     {
-                        if (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
+                        if (newRoom.absroom.realizedRoom is not Room room || (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(room)))
                         {
                             RainMeadow.Debug($"early creature");
                             apo.MoveOnly(topos);
@@ -318,11 +318,14 @@ namespace RainMeadow
                             if (topos.TileDefined)
                             {
                                 apo.MoveOnly(topos);
+                                bool addToRoom = newRoom.absroom.realizedRoom.shortCutsReady && apo.realizedObject is not null && room.updateList.Contains(apo.realizedObject);
                                 if (apo.realizedObject is Creature crit)
                                 {
                                     crit.RemoveFromShortcuts();
+                                    addToRoom = addToRoom && crit.abstractCreature.AllowedToExistInRoom(room);
                                 }
-                                if (newRoom.absroom.realizedRoom.shortCutsReady)
+
+                                if (addToRoom)
                                 {
                                     RainMeadow.Debug($"spawning in room");
                                     apo.RealizeInRoom(); // placesinroom
