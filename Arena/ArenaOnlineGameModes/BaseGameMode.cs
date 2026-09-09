@@ -55,7 +55,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.friendlyFire)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.itemSteal)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.killScore)),
-            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.monkFruitSpawn)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.arenaMonkShield)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatEgg)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatLizard)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatThrows)),
@@ -832,7 +832,7 @@ namespace RainMeadow
             {
                 player.slugcatStats.throwingSkill = 1;
             }
-            if (player.SlugCatClass == SlugcatStats.Name.Yellow && arenaOnline.monkFruitSpawn)
+            if (player.SlugCatClass == SlugcatStats.Name.Yellow && arenaOnline.arenaMonkShield)
             {
                 int freeHand = player.FreeHand();
 

@@ -10,8 +10,8 @@ public class VanillaSetting : OnlineSlugcatSettings<VanillaSetting>
         AddSlugcatSettingsConfigurable(new(
             "Monk Spawns With Fruit",
             SlugcatStats.Name.Yellow,
-            RainMeadow.rainMeadowOptions.ArenaMonkFruitSpawn,
-            nameof(ArenaOnlineGameMode.monkFruitSpawn),
+            RainMeadow.rainMeadowOptions.ArenaMonkShield,
+            nameof(ArenaOnlineGameMode.arenaMonkShield),
             "Monk starts each arena round holding a dangle fruit")
         );
     }

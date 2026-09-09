@@ -786,16 +786,22 @@ public partial class RainMeadow
 
     private bool Player_IsObjectThrowable(On.Player.orig_IsObjectThrowable orig, Player self, PhysicalObject obj)
     {
-        if (ArenaHelpers.IsArenaShieldFruit(self, obj))
+        if (isArenaMode(out var arenaOnline)
+            && arenaOnline.arenaMonkShield
+            && self.SlugCatClass == SlugcatStats.Name.Yellow)
         {
-            for (int i = 0; i < self.grasps.Length; i++)
+            // if we got two of them bad boys
+            if (obj is DangleFruit && !self.isNPC)
             {
-                if (self.grasps[i]?.grabbed is PhysicalObject other
-                    && other != obj
-                    && !ArenaHelpers.IsArenaShieldFruit(self, other)
-                    && orig(self, other))
+                for (int i = 0; i < self.grasps.Length; i++)
                 {
-                    return false;
+                    if (self.grasps[i]?.grabbed is PhysicalObject other
+                        && other != obj
+                        && other is not DangleFruit
+                        && orig(self, other))
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -816,13 +822,16 @@ public partial class RainMeadow
             int dir = player.ThrowDirection;
             if (dir != 0
                 && self.limbNumber >= 0
-                && self.limbNumber < player.grasps.Length)
+                && self.limbNumber < player.grasps.Length
+                && isArenaMode(out var arenaOnline)
+                && arenaOnline.arenaMonkShield
+                && player.SlugCatClass == SlugcatStats.Name.Yellow
+                && !player.isNPC)
             {
                 int shieldLimb = -1;
                 for (int i = 0; i < player.grasps.Length; i++)
                 {
-                    if (player.grasps[i]?.grabbed is PhysicalObject candidate
-                        && ArenaHelpers.IsArenaShieldFruit(player, candidate))
+                    if (player.grasps[i]?.grabbed is DangleFruit)
                     {
                         shieldLimb = i;
                         break;
