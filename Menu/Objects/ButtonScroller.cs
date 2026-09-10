@@ -324,6 +324,7 @@ namespace RainMeadow
                 elementPosWithSizeInAxis > endSize ? Mathf.InverseLerp(endSize + boundaryOffset, endSize, elementPosWithSizeInAxis) : 1;
             //if button starts crossing the bound, calculate the alpha else alpha = 1
         }
+        public bool WithinBounds(Vector2 screenPos, Vector2 size) => true; //let alpha handle it
         public void AddScrollUpDownButtons(float scrollButtonWidth = 24, float upButtonYPosOffset = 10, float downButtonYPosOffset = -34f)
         {
             if (scrollUpButton == null)

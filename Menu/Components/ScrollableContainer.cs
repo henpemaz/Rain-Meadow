@@ -19,7 +19,7 @@ namespace RainMeadow.UI.Components
     {
         public readonly string IDForTexture;
 
-        public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, maxScrollSpeed = 1.2f, floatScrollMultipler = 100f;
+        public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, floatScrollMultipler = 100f;
         public bool scrollableDirty = true, lastScrollableDirty = true, cameraDirty = true, sliderDefaultIsDown, isScrolling;
         public float scrollSliderValueCap, scrollSliderValue, scrollSpeed, desiredScrollPosOffset, floatScrollPosOffset, prevFloatScrollPosOffset;
         public MenuScrollObject? _content;
@@ -76,7 +76,7 @@ namespace RainMeadow.UI.Components
             }
             if (index == -1)
             {
-                index = OpScrollBox._cameras.Count;
+                index = OpScrollBox._cameras.Count - 1;
                 OpScrollBox._cameras.Add(cam);
             }
             IDForTexture = "Scrollable" + index;
@@ -106,7 +106,7 @@ namespace RainMeadow.UI.Components
         }
         public void ViewSizeChanged()
         {
-            ConstrainScroll(true);
+                ConstrainScroll(true);
             cameraDirty = true;
         }
         public void MarkScrollObjectsDirty()
@@ -211,6 +211,7 @@ namespace RainMeadow.UI.Components
         }
         public void ConstrainScroll(bool immediatelyApplyConstrainedScroll = false)
         {
+            UpdateScrollingSystemComponents();
             desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset, 0, contentSystem.GetMaxScroll());
             if (immediatelyApplyConstrainedScroll)
                 floatScrollPosOffset = desiredScrollPosOffset;
@@ -262,8 +263,16 @@ namespace RainMeadow.UI.Components
                 return;
             }
         }
+        public bool WithinBounds(Vector2 screenPos, Vector2 screenSize)
+        {
+            Vector2 myScreenPos = ScreenPos, endScreenpos = myScreenPos + size;
+            Vector2 startPos = screenPos, endPos = startPos + screenSize;
+            return startPos.x >= myScreenPos.x && endPos.x <= endScreenpos.x
+                && startPos.y >= myScreenPos.y && endPos.y <= endScreenpos.y;
+        }
         public Vector2 SizeOfObject(Vector2 origSize)
         {
+            origSize[contentSystem.IndexToRef] = Mathf.Max(origSize[contentSystem.IndexToRef], contentSystem.ViewSize[contentSystem.IndexToRef]);
             return origSize;
         }
         public Vector2 PositionOfObject(int index, Vector2 origPosition)

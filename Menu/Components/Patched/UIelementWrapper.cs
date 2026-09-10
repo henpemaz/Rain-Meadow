@@ -5,6 +5,11 @@ namespace RainMeadow.UI.Components.Patched;
 
 public class PatchedUIelementWrapper(MenuTabWrapper tabWrapper, UIelement element) : UIelementWrapper(tabWrapper, element)
 {
+    public override void Update()
+    {
+        base.Update();
+        pos = thisElement.pos;
+    }
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);
