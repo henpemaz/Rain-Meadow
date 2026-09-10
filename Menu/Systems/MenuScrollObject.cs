@@ -13,6 +13,7 @@ namespace RainMeadow.UI.Systems
     public class MenuScrollObject
     {
         public static ConditionalWeakTable<MenuObject, MenuScrollObject> menuScrollObjects = new();
+        public MenuScrollObject? parentInScroller;
         public readonly MenuObject menuObject;
         public IScrollObjectHolder? myScroller;
         public int indexInScroller;

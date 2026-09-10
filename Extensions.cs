@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -559,6 +560,13 @@ namespace RainMeadow
         public static bool TryTranslate(this Menu.Menu menu, string text, out string trad)
         {
             return menu.manager.rainWorld.inGameTranslator.TryTranslate(text, out trad);
+        }
+
+        // Get scrollable
+        extension(MenuObject menuObject)
+        {
+            public ScrollableContainer.Scrollable? scrollable
+                => menuObject.GetScrollObject().parentInScroller?.menuObject as ScrollableContainer.Scrollable;
         }
     }
 }

@@ -306,7 +306,7 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu sOM)
             {
-                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system. 
+                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system.
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
@@ -795,7 +795,7 @@ namespace RainMeadow
             }, self.mainMenuButtons.Count - 2);
         }
 
-        // while the host scrolls  campaigns (or someone joins mid-scroll) 
+        // while the host scrolls  campaigns (or someone joins mid-scroll)
         // SlugcatPageContinue can Update itself for a frame
         // after its data is gone and nullref.
         private bool SlugcatPageContinue_SaveDataFlag(Func<SlugcatSelectMenu.SlugcatPageContinue, bool> orig, SlugcatSelectMenu.SlugcatPageContinue self)

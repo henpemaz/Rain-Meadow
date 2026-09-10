@@ -178,7 +178,7 @@ namespace RainMeadow
             public bool artiParryLeniency;
 
             [OnlineField(group = "arenaSetup")]
-            public bool monkFruitSpawn;
+            public bool arenaMonkShield;
 
 
             [OnlineField(group = "arenaGameplay")]
@@ -339,7 +339,7 @@ namespace RainMeadow
                 artiExplosionCapacity = arenaOnline.artiExplosionCount;
                 artiParryDistance = arenaOnline.artiParryDistanceMult;
                 artiParryLeniency = arenaOnline.artiParryLeniency;
-                monkFruitSpawn = arenaOnline.monkFruitSpawn;
+                arenaMonkShield = arenaOnline.arenaMonkShield;
                 enableMeadowCosmetics = arenaOnline.enableMeadowCosmetics;
 
             }
@@ -465,7 +465,7 @@ namespace RainMeadow
                 arenaOnline.artiExplosionCount = artiExplosionCapacity;
                 arenaOnline.artiParryDistanceMult = artiParryDistance;
                 arenaOnline.artiParryLeniency = artiParryLeniency;
-                arenaOnline.monkFruitSpawn = monkFruitSpawn;
+                arenaOnline.arenaMonkShield = arenaMonkShield;
                 arenaOnline.enableMeadowCosmetics = enableMeadowCosmetics;
             }
 

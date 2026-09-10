@@ -33,7 +33,7 @@ public class OnlineSettingIntValue : OnlineSettingTextBoxValue
 {
     public int valueInt => textBox.valueInt;
     public OnlineSettingIntValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
-         : this(menu, owner, owner.tabWrapper, config, tab) {}
+         : this(menu, owner.scroller, owner.tabWrapper, config, tab) {}
     public OnlineSettingIntValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
          : base(
             menu,
@@ -52,7 +52,7 @@ public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
 {
     public float valueFloat => textBox.valueFloat;
     public OnlineSettingFloatValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
-         : this(menu, owner, owner.tabWrapper, config, tab) {}
+         : this(menu, owner.scroller, owner.tabWrapper, config, tab) {}
     public OnlineSettingFloatValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
          : base(
             menu,
@@ -71,7 +71,7 @@ public class OnlineSettingStringValue : OnlineSettingTextBoxValue
 {
     public string valueString => textBox.value;
     public OnlineSettingStringValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
-         : this(menu, owner, owner.tabWrapper, config, tab) {}
+         : this(menu, owner.scroller, owner.tabWrapper, config, tab) {}
     public OnlineSettingStringValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OnlineSettingTab? tab = null)
          : base(
             menu,

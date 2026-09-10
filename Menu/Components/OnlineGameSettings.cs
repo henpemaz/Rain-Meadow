@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Configurables;
 using UnityEngine;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
@@ -14,12 +15,19 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
     public const string SCORING = "Scoring", DENS = "Dens", IMPORTEXPORT = "Import & Export";
     public override string Name => "Game Settings";
 
-    private OnlineSettingIntValue? spearHitScoreSetting;
+    private readonly OnlineSettingTab? scoreTab;
+    private readonly OnlineSettingTab? denTab;
+    private readonly OnlineSettingIntValue? spearHitScoreSetting;
     private OnlineSettingButtons? playlistButtons;
     private OnlineSettingButtons? settingsButtons;
 
+
     static GameSettings()
     {
+        AddSlugcatSettingsTab(new(SCORING, "Kill_Bat", new(1f, 0.95f, 0.45f)));
+        AddSlugcatSettingsTab(new(DENS, "ShortcutShelter", new(0.45f, 0.55f, 1f)));
+        AddSlugcatSettingsTab(new(IMPORTEXPORT, new(0.95f, 0.95f, 0.95f)));
+
         AddSlugcatSettingsConfigurable(new(
             "Food Score",
             SCORING,
@@ -102,6 +110,10 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             }
         }
 
+        scoreTab = GetSettingTab(SCORING);
+        denTab = GetSettingTab(DENS);
+        (denTab?.icon as PositionedSprite)?.Sprite.scale = 1.4f;
+
         spearHitScoreSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSpearHitScore) as OnlineSettingIntValue;
 
         if (GetSettingParameter(RainMeadow.rainMeadowOptions.ChallengeDenEjection) is OnlineSettingCheckBox denEjection)
@@ -125,13 +137,9 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             new("Import", "Load match settings from your clipboard", true, ImportSettings));
 
         int insertAt = tab is not null ? elements.IndexOf(tab) + 1 : elements.Count;
-        elements.Insert(insertAt, playlistButtons);
-        elements.Insert(insertAt + 1, settingsButtons);
-        this.SafeAddSubobjects(playlistButtons, settingsButtons);
 
-        UpdateElementsPosition();
-        playlistButtons.HardSetPosition(playlistButtons.WantedPosition);
-        settingsButtons.HardSetPosition(settingsButtons.WantedPosition);
+        AddElement(settingsButtons, insertAt, false);
+        AddElement(playlistButtons, insertAt + 1, true);
     }
 
     private void ExportPlaylist(OnlineSettingButtons row)
@@ -254,18 +262,21 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
         base.Update();
 
         if (!ModManager.MSC) spearHitScoreSetting?.grayedOut = true;
+
+        // adjust those darn uncentered icons
+        scoreTab?.icon.pos.x -= 3;
+        scoreTab?.icon.pos.y += 5;
+        denTab?.icon.pos.x += 3.5f;
+        denTab?.icon.pos.y += 5;
     }
 
     public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
     {
-        if (resetButton is null)
-        {
-            resetButton = new(menu, this, menu.Translate("RESET"), new(settingsBoxSize.x - 40, 20), new(80, 30));
-            resetButton.OnClick += (b) => ResetSettings();
-            AddObjects(resetButton);
-        }
+        AddResetButton();
 
         BindSettingsButtons(IsActuallyHidden);
-        if (forceSelectedObject) menu.selectedObject = elements.FirstOrDefault()?.selectable ?? resetButton;
+
+        if (forceSelectedObject)
+            menu.selectedObject = elements.FirstOrDefault()?.selectable ?? backButton;
     }
 }
