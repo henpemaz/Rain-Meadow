@@ -36,7 +36,7 @@ public class OnlineSettingTab : OnlineSettingElement
         }
         else
         {
-            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false){anchorX = 0.5f, anchorY = 0.5f});
+            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false));
         }
 
         if (data.name is not null && data.color is not null)
@@ -100,13 +100,17 @@ public class OnlineSettingTab : OnlineSettingElement
         {
             positionedSprite.Sprite.isVisible = visible;
             positionedSprite.Sprite.alpha = currentAlpha;
+            positionedSprite.Sprite.x = positionedSprite.DrawX(timeStacker) + iconSize / 2f;
+            positionedSprite.Sprite.y = positionedSprite.DrawY(timeStacker) + iconSize / 2f;
         }
         else if (icon is PositionedSlugIcon slugicon)
         {
-            slugicon.slugIcon.sprites.Do(x =>
+            slugicon.slugIcon.sprites.Do(sprite =>
             {
-                x.isVisible = visible;
-                x.alpha = currentAlpha;
+                sprite.isVisible = visible;
+                sprite.alpha = currentAlpha;
+                sprite.x = slugicon.DrawX(timeStacker) + iconSize / 2f;
+                sprite.y = slugicon.DrawY(timeStacker) + iconSize / 2f;
             });
         }
 
@@ -171,53 +175,53 @@ public class OnlineSettingTab : OnlineSettingElement
     }
 
     public readonly struct SettingsTabData
-{
-    public readonly SlugcatStats.Name? slugcatIcon;
-    public readonly string? name;
-    public readonly string? icon;
-    public readonly Color? color;
-    public readonly bool isClient;
-    public SettingsTabData(SlugcatStats.Name slugcat, bool isClient = false)
     {
-        slugcatIcon = slugcat;
-        this.isClient = isClient;
-    }
-    public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color, bool isClient = false)
-    {
-        this.slugcatIcon = slugcatIcon;
-        this.name = name;
-        this.color = color;
-        this.isClient = isClient;
-    }
-    public SettingsTabData(string name, Color color, bool isClient = false)
-    {
-        this.name = name;
-        this.color = color;
-        this.isClient = isClient;
-    }
-    public SettingsTabData(string name, string icon, Color color, bool isClient = false)
-    {
-        this.icon = icon;
-        this.name = name;
-        this.color = color;
-        this.isClient = isClient;
-    }
+        public readonly SlugcatStats.Name? slugcatIcon;
+        public readonly string? name;
+        public readonly string? icon;
+        public readonly Color? color;
+        public readonly bool isClient;
+        public SettingsTabData(SlugcatStats.Name slugcat, bool isClient = false)
+        {
+            slugcatIcon = slugcat;
+            this.isClient = isClient;
+        }
+        public SettingsTabData(string name, SlugcatStats.Name slugcatIcon, Color color, bool isClient = false)
+        {
+            this.slugcatIcon = slugcatIcon;
+            this.name = name;
+            this.color = color;
+            this.isClient = isClient;
+        }
+        public SettingsTabData(string name, Color color, bool isClient = false)
+        {
+            this.name = name;
+            this.color = color;
+            this.isClient = isClient;
+        }
+        public SettingsTabData(string name, string icon, Color color, bool isClient = false)
+        {
+            this.icon = icon;
+            this.name = name;
+            this.color = color;
+            this.isClient = isClient;
+        }
 
-    public static bool operator== (SettingsTabData left, SettingsTabData right)
-    {
-        return left.name == right.name && left.slugcatIcon == right.slugcatIcon;
+        public static bool operator== (SettingsTabData left, SettingsTabData right)
+        {
+            return left.name == right.name && left.slugcatIcon == right.slugcatIcon;
+        }
+        public static bool operator!= (SettingsTabData left, SettingsTabData right)
+        {
+            return !(left == right);
+        }
+        public override bool Equals(object obj)
+        {
+            return obj is SettingsTabData tab && tab == this;
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
-    public static bool operator!= (SettingsTabData left, SettingsTabData right)
-    {
-        return !(left == right);
-    }
-    public override bool Equals(object obj)
-    {
-        return obj is SettingsTabData tab && tab == this;
-    }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-}
 }

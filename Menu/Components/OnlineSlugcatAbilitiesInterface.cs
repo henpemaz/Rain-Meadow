@@ -17,6 +17,7 @@ namespace RainMeadow.UI.Components
         public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", VANILLASETTINGS = "VANILLASETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
+        public VanillaSetting? vanillaSettingsTab;
         public MSCSlugcatSettings? mscSettingsTab;
         public WatcherSlugcatSetting? watcherSettingsTab;
         public SelectSettingsPage? selectSettings;
@@ -73,7 +74,8 @@ namespace RainMeadow.UI.Components
         }
         public void AddAllSettings(string paincatName)
         {
-            AddSettingsTab(new VanillaSetting(menu, this), VANILLASETTINGS);
+            vanillaSettingsTab = new(menu, this);
+            AddSettingsTab(vanillaSettingsTab, VANILLASETTINGS);
             if (ModManager.MSC)
             {
                 mscSettingsTab = new(menu, this, paincatName);
