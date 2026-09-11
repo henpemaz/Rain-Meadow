@@ -17,8 +17,8 @@ namespace RainMeadow {
     public class LANMatchmakingManager : MatchmakingManager {
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
-            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "") : 
-                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline) {
+            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "", bool whitelistMode = false) :
+                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline, whitelistMode) {
                 this.endPoint = endPoint;
             }
             public override string GetLobbyJoinCode(string? password = null)
@@ -166,7 +166,8 @@ namespace RainMeadow {
                         OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count,
                         RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()),
                         RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()),
-                        OnlineManager.lobby.ActiveTimeline
+                        OnlineManager.lobby.ActiveTimeline,
+                        RainMeadowModManager.IsWhitelistActive()
                     );
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
