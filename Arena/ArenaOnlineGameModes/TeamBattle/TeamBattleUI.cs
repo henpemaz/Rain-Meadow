@@ -26,6 +26,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
 
+        public bool showTeamScoreTotals = RainMeadow.rainMeadowOptions.ShowTeamScoreTotals.Value;
+
         public enum TeamSpawnPoints
         {
             martyrsTeamName,

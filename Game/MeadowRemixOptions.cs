@@ -72,6 +72,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> DragonSlayersTeamName;
     public readonly Configurable<string> ChieftainTeamName;
     public readonly Configurable<float> TeamColorLerp;
+    public readonly Configurable<bool> ShowTeamScoreTotals;
 
     public readonly Configurable<float> ScrollSpeed, ChatBgOpacity, ChatInactivityOpacity;
     public readonly Configurable<bool> ShowPing;
@@ -246,6 +247,7 @@ public class RainMeadowOptions : OptionInterface
         DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
         ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
         TeamColorLerp = config.Bind("TeamColorLerp", 1f);
+        ShowTeamScoreTotals = config.Bind("ShowTeamScoreTotals", false);
 
 
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
