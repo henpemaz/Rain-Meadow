@@ -76,17 +76,26 @@
 			{"x":0,"y":0,"w":20,"h":20},
 			"sourceSize":{"w":20,"h":20}
 		},
-		"Meadow_Menu_DisketteLight.png":
+		"Meadow_Menu_ShelterIconBig.png":
 		{
 			"frame":{"x":60,"y":20,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":
+			{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
+		"Meadow_Menu_Diskette.png":
+		{
+			"frame":{"x":80,"y":20,"w":20,"h":20},
 			"rotated":false,
 			"trimmed":false,
 			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
 			"sourceSize":{"w":20,"h":20}
 		},
-		"Meadow_Menu_DisketteDark.png":
+		"Meadow_Menu_DisketteBig.png":
 		{
-		   	"frame":{"x":80,"y":20,"w":20,"h":20},
+		   	"frame":{"x":100,"y":20,"w":20,"h":20},
 		   	"rotated":false,
 		   	"trimmed":false,
 		   	"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},

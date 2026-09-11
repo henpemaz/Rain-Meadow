@@ -13,7 +13,6 @@ namespace RainMeadow.UI.Components;
 public class GameSettings : OnlineSlugcatSettings<GameSettings>
 {
     public const string SCORING = "Scoring", DENS = "Dens", IMPORTEXPORT = "Import & Export";
-    public static readonly Color iconColor = new(0.663f, 0.643f, 0.698f); // ALEX's favorite purple
     public override string Name => "Game Settings";
     private readonly OnlineSettingIntValue? spearHitScoreSetting;
     private OnlineSettingButtons? playlistButtons;
@@ -23,8 +22,8 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
     static GameSettings()
     {
         AddSlugcatSettingsTab(new(SCORING, "Kill_Bat", new(1f, 0.95f, 0.45f)));
-        AddSlugcatSettingsTab(new(DENS, "Meadow_Menu_ShelterIcon", new(0.45f, 0.55f, 1f)));
-        AddSlugcatSettingsTab(new(IMPORTEXPORT, "Meadow_Menu_DisketteLight", new(0.95f, 0.95f, 0.95f)));
+        AddSlugcatSettingsTab(new(DENS, "Meadow_Menu_ShelterIconBig", new(0.45f, 0.55f, 1f)));
+        AddSlugcatSettingsTab(new(IMPORTEXPORT, "Meadow_Menu_DisketteBig", new(0.95f, 0.95f, 0.95f)));
 
         AddSlugcatSettingsConfigurable(new(
             "Food Score",
@@ -108,8 +107,12 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             }
         }
 
-        (GetSettingTab(SCORING)?.icon as PositionedSprite)?.Sprite.color = iconColor;
-        (GetSettingTab(IMPORTEXPORT)?.icon as PositionedSprite)?.Sprite.scale = 1.25f;
+        var scoreTab = GetSettingTab(SCORING);
+        var denTab = GetSettingTab(DENS);
+        var ioTab = GetSettingTab(IMPORTEXPORT);
+        (scoreTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)scoreTab!.data.color!, Color.white, 0.35f);
+        (denTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)denTab!.data.color!, Color.white, 0.35f);
+        (ioTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)ioTab!.data.color!, Color.white, 0.35f);
 
         spearHitScoreSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSpearHitScore) as OnlineSettingIntValue;
 
