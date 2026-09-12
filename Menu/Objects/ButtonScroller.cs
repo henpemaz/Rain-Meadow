@@ -27,6 +27,7 @@ namespace RainMeadow
         public List<SideButton> sideButtons = [];
         public FSprite[] sideButtonLines = [];
         public readonly GridScrollSystem gridSystem;
+        public bool MouseOverItemBounds => MouseOver;
         public static float CalculateHeightBasedOnAmtOfButtons(int amtOfButtonsView, float buttonHeight, float spacing, bool startEndSpacing = false)
         {
             //remember it goes by buttonsize + button spacing not the buttonSpacing + buttonsize. button size plus first as there will be not extra spacing

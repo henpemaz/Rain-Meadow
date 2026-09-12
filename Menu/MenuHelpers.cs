@@ -15,7 +15,52 @@ namespace RainMeadow
 {
     public static class MenuHelpers
     {
-        public static MenuScrollObject GetScrollObject(this MenuObject menuObject) => MenuScrollObject.menuScrollObjects.GetValue(menuObject, x => MenuScrollObject.GetScrollObjectFromMenuObject(x));
+        extension (MenuObject menuObj)
+        {
+            public MenuObject? ParentWithScrollObject
+            {
+                get
+                {
+                    var owner = menuObj.owner;
+                    if (owner != null)
+                    {
+                        if (MenuScrollObject.menuScrollObjects.TryGetValue(owner, out MenuScrollObject obj))
+                            return owner;
+                        return owner.ParentWithScrollObject;
+                    }
+                    return null;
+                }
+            }
+            public MenuObject? ObjectInScroller
+            {
+                get
+                {
+                    if (MenuScrollObject.menuScrollObjects.TryGetValue(menuObj, out MenuScrollObject obj))
+                    {
+                        if (obj.IsDirectlyInScroller)
+                            return menuObj;
+                        if (obj.cachedParentInScroller != null)
+                            return obj.cachedParentInScroller.menuObject;
+                    }
+                    return menuObj.owner?.ObjectInScroller;
+                }
+            }
+        }
+        public static MenuScrollObject? TryGetOrAddScrollObject(this MenuObject menuObject)
+        {
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(menuObject, out MenuScrollObject? obj))
+                return obj;
+
+            if (MenuScrollObject.TryGetScrollObjectFromMenuObject(menuObject, out obj))
+                MenuScrollObject.menuScrollObjects.Add(menuObject, obj!);
+            else if (menuObject.ObjectInScroller is MenuObject ownerInScroller)
+            {
+                MenuScrollObject.menuScrollObjects.Add(menuObject, obj = MenuScrollObject.GetScrollObjectFromMenuObject(menuObject));
+                obj.ParentAddedIntoScroller(ownerInScroller.GetScrollObject());
+            }
+                return obj;
+        }
+        public static MenuScrollObject GetScrollObject(this MenuObject menuObject) => MenuScrollObject.menuScrollObjects.GetValue(menuObject, MenuScrollObject.GetScrollObjectFromMenuObject);
         public static void CallEveryDynamicBindHandler(this MenuObject obj)
         {
             MenuObject owner = obj;
@@ -82,6 +127,13 @@ namespace RainMeadow
                     return menuObject.nextSelectable[3];
             }
             return null;
+        }
+        public static void TransformDirectionToBool(ScrollSystem.Direction direction, out bool left, out bool right, out bool top, out bool bottom)
+        {
+            left = direction is ScrollSystem.Direction.Left;
+            right = direction is ScrollSystem.Direction.Right;
+            top = direction is ScrollSystem.Direction.Top; 
+            bottom = direction is ScrollSystem.Direction.Bottom;
         }
         public static string LongTranslate(this Menu.Menu menu, string s) => Custom.ReplaceLineDelimeters(menu.Translate(s));
         public static void SafeAddSubobjects(this MenuObject container, params MenuObject?[] subObjectsToAdd)

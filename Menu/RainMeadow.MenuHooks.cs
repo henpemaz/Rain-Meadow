@@ -7,6 +7,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Menus;
 using RainMeadow.UI.Systems;
@@ -57,6 +58,7 @@ namespace RainMeadow
             HookSelectableMenuObject<ButtonTemplate>();
             HookSelectableMenuObject<UIelementWrapper>();
             new Hook(typeof(UIelement).GetProperty("MousePos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetMethod, UiElement_MousePos);
+            new Hook(typeof(UIelement).GetProperty("IsInactive", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, UiElement_IsInactive);
 
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
             new Hook(typeof(PositionedMenuObject).GetProperty("ScreenPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
@@ -77,14 +79,20 @@ namespace RainMeadow
             IL.ProcessManager.InitFadeSprite += ProcessManager_InitFadeSprite_SwitchTextSide;
 
         }
+        private bool UiElement_IsInactive(Func<UIelement, bool> orig, UIelement self)
+        {
+            if (self.wrapper is PatchedUIelementWrapper wrapper && wrapper.IsHidden)
+                return true;
+            return orig(self);
+        }
         private Vector2 UiElement_MousePos(Func<UIelement, Vector2> orig, UIelement element)
         {
             var origMousePos = orig(element);
-            if (element.wrapper is UIelementWrapper wrapper)
+            if (element.wrapper is UIelementWrapper wrapper && MenuScrollObject.menuScrollObjects.TryGetValue(wrapper, out MenuScrollObject obj))
             {
-                if (wrapper.GetScrollObject().ContainedAlpha < 1 || (wrapper.GetScrollObject().ScrollerInAncestory is IScrollObjectHolder holder && !holder.MouseOver))
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
                 {
-                    return new Vector2(-600000, -600000); //banish to the shadow realm i swear why doesnt it work sometimes
+                    return new Vector2(-600000, -600000);
                 }
             }
             return origMousePos;
@@ -245,30 +253,27 @@ namespace RainMeadow
         void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
         {
             orig(self, menu, owner);
-            if (MenuScrollObject.TryGetScrollObjectFromMenuObject(self, out var scrollObject))
-                MenuScrollObject.menuScrollObjects.Add(self, scrollObject!);
+            self.TryGetOrAddScrollObject();
         }
         void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
         {
             orig(self);
-            if (self.GetScrollObject() is MenuScrollObject scrollObject)
-                scrollObject.UpdateInObject();
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+                obj.UpdateInObject();
 
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
-            if (self.GetScrollObject() is MenuScrollObject scrollObject)
-                scrollObject.GrafUpdateInObject(timestacker);
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+                obj.GrafUpdateInObject(timestacker);
         }
         bool On_SelectableMenuObj_MouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
             bool origSelect = orig(self);
-            if (self.GetScrollObject() is MenuScrollObject scrollObject)
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
             {
-                if (scrollObject.ContainedAlpha < 1)
-                    origSelect = false;
-                else if (scrollObject.ScrollerInAncestory is IScrollObjectHolder holder && !holder.MouseOver)
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
                     origSelect = false;
             }
             return origSelect;
@@ -276,11 +281,9 @@ namespace RainMeadow
         bool On_SelectableMenuObj_NonMouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
             bool origSelect = orig(self);
-            if (self.GetScrollObject() is MenuScrollObject scrollObject)
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
             {
-                if (scrollObject.ContainedAlpha < 1)
-                    origSelect = false;
-                else if (scrollObject.ScrollerInAncestory is IScrollObjectHolder holder && !holder.WithinBounds(scrollObject.ScreenPos, scrollObject.Size))
+                if (obj.ContainedAlpha < 1 || !obj.IsWithinBounds)
                     origSelect = false;
             }
             return origSelect;
