@@ -16,6 +16,7 @@ public class InputDialog : Dialog
         ProcessManager manager,
         string text,
         Vector2 size,
+        Action<string>? onConfirm = null,
         bool forceWrapping = false
     )
         : base(manager)
@@ -60,6 +61,8 @@ public class InputDialog : Dialog
 
         new UIelementWrapper(tabWrapper, textBox);
         dialogPage.subObjects.AddRange([dialogBox, tabWrapper, continueButton, cancelButton]);
+
+        OnConfirm += onConfirm;
     }
     private void HasPressedEnter(char input)
     {
