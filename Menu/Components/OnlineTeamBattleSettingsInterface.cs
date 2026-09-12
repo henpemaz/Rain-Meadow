@@ -24,11 +24,13 @@ namespace RainMeadow.UI.Components
         public MenuLabel teamColorLerpLabel;
 
         public MenuLabel friendlyFireLabel;
+        public MenuLabel teamScoreTotalsLabel;
         public EventfulScrollButton? prevButton,
             nextButton;
         public OpTextBox teamLerpTextBox;
 
         public OpCheckBox friendlyFireCheckbox;
+        public OpCheckBox teamScoreTotalsCheckbox;
 
         public float dividerX = 50,
             dividerY = 160;
@@ -106,8 +108,25 @@ namespace RainMeadow.UI.Components
                 arena.friendlyFire = friendlyFireCheckbox.GetValueBool();
                 RainMeadow.Debug($"Setting friendly fire to: {arena.friendlyFire}");
             };
+            teamScoreTotalsCheckbox = new(
+                new Configurable<bool>(teamBattleMode.showTeamScoreTotals),
+                new(teamLerpTextBox.pos.x * 2 - friendlyFireCheckbox.pos.x, 20)
+            )
+            {
+                description = menu.Translate(
+                    "Show each player's team total instead of their own score in the results"
+                ),
+            };
+            teamScoreTotalsCheckbox.OnValueUpdate += (config, value, oldValue) =>
+            {
+                teamBattleMode.showTeamScoreTotals = teamScoreTotalsCheckbox.GetValueBool();
+                RainMeadow.rainMeadowOptions.ShowTeamScoreTotals.Value =
+                    teamBattleMode.showTeamScoreTotals;
+            };
+
             new PatchedUIelementWrapper(tabWrapper, teamLerpTextBox);
             new PatchedUIelementWrapper(tabWrapper, friendlyFireCheckbox);
+            new PatchedUIelementWrapper(tabWrapper, teamScoreTotalsCheckbox);
             teamColorLerpLabel = new(
                 menu,
                 this,
@@ -127,7 +146,23 @@ namespace RainMeadow.UI.Components
                 new(friendlyFireCheckbox.size.x, 0),
                 false
             );
-            this.SafeAddSubobjects(tabWrapper, teamColorLerpLabel, friendlyFireLabel);
+            teamScoreTotalsLabel = new(
+                menu,
+                this,
+                menu.Translate("Team Totals:"),
+                new(
+                    teamScoreTotalsCheckbox.pos.x,
+                    teamScoreTotalsCheckbox.pos.y + teamScoreTotalsCheckbox.size.y + 10
+                ),
+                new(teamScoreTotalsCheckbox.size.x, 0),
+                false
+            );
+            this.SafeAddSubobjects(
+                tabWrapper,
+                teamColorLerpLabel,
+                friendlyFireLabel,
+                teamScoreTotalsLabel
+            );
         }
 
         public void PopulatePage(int offset)
@@ -333,6 +368,7 @@ namespace RainMeadow.UI.Components
             divider.color = MenuColorEffect.rgbDarkGrey;
             teamColorLerpLabel.label.color = teamLerpTextBox.rect.colorEdge;
             friendlyFireLabel.label.color = friendlyFireCheckbox.rect.colorEdge;
+            teamScoreTotalsLabel.label.color = teamScoreTotalsCheckbox.rect.colorEdge;
         }
 
         public override void Update()
@@ -350,6 +386,11 @@ namespace RainMeadow.UI.Components
             {
                 friendlyFireCheckbox.SetValueBool(this.arenaMode.friendlyFire);
                 friendlyFireCheckbox.greyedOut = OwnerSettingsDisabled;
+            }
+            if (teamScoreTotalsCheckbox != null)
+            {
+                teamScoreTotalsCheckbox.SetValueBool(teamBattleMode.showTeamScoreTotals);
+                teamScoreTotalsCheckbox.greyedOut = AllSettingsDisabled;
             }
             teamLerpTextBox.greyedOut = OwnerSettingsDisabled;
             for (int i = 0; i < teamButtons.Length; i++)

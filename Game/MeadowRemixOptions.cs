@@ -73,6 +73,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> DragonSlayersTeamName;
     public readonly Configurable<string> ChieftainTeamName;
     public readonly Configurable<float> TeamColorLerp;
+    public readonly Configurable<bool> ShowTeamScoreTotals;
 
     public readonly Configurable<float> ScrollSpeed, ChatBgOpacity, ChatInactivityOpacity;
     public readonly Configurable<bool> ShowPing;
@@ -248,6 +249,7 @@ public class RainMeadowOptions : OptionInterface
         DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
         ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
         TeamColorLerp = config.Bind("TeamColorLerp", 1f);
+        ShowTeamScoreTotals = config.Bind("ShowTeamScoreTotals", false);
 
 
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
@@ -469,6 +471,7 @@ public class RainMeadowOptions : OptionInterface
 
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
+            OpSimpleButton editWhitelistModsButton;
 
             OpLabel devOptions;
 
@@ -480,9 +483,10 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(440f, 535f, Translate("Nightsky Skin")),
 
 
-                new OpLabel(10f, 490f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
+                new OpLabel(10f, 490f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists."))),
                 editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 450f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),
                 editBannedModsButton = new OpSimpleButton(new Vector2(185f, 450f), new Vector2(150f, 30f), Translate("Edit Banned Mods")),
+                editWhitelistModsButton = new OpSimpleButton(new Vector2(360f, 450f), new Vector2(150f, 30f), Translate("Edit Whitelist")),
 
 
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
@@ -576,6 +580,18 @@ public class RainMeadowOptions : OptionInterface
                 {
                     RainMeadowModManager.GetBannedMods();
                     System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            };
+            editWhitelistModsButton.OnClick += _ =>
+            {
+                try
+                {
+                    RainMeadowModManager.GetWhitelistedMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.WhitelistedModsFileName));
                 }
                 catch (Exception e)
                 {
