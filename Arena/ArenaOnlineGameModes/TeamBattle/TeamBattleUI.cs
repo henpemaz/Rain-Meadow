@@ -26,6 +26,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
 
+        public bool showTeamScoreTotals = RainMeadow.rainMeadowOptions.ShowTeamScoreTotals.Value;
+
         public enum TeamSpawnPoints
         {
             martyrsTeamName,
@@ -168,8 +170,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             if (BestTeamIndexes.Count > 1)
                 return resultMenu.Translate("IT'S A DRAW!");
 
+            if (!teamNames.TryGetValue(BestTeamIndexes[0], out string? bestTeamName))
+            {
+                isSpecific = false;
+                return nonSpecificText;
+            }
+
             string filteredTeamName = MatchmakingManager.currentInstance.FilterTeamName(
-                teamNames[0].ToUpper()
+                bestTeamName.ToUpper()
             );
 
             return resultMenu.Translate("<TEAMNAME> WINS!")

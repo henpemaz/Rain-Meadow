@@ -14,9 +14,6 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
 {
     public const string SCORING = "Scoring", DENS = "Dens", IMPORTEXPORT = "Import & Export";
     public override string Name => "Game Settings";
-
-    private readonly OnlineSettingTab? scoreTab;
-    private readonly OnlineSettingTab? denTab;
     private readonly OnlineSettingIntValue? spearHitScoreSetting;
     private OnlineSettingButtons? playlistButtons;
     private OnlineSettingButtons? settingsButtons;
@@ -25,8 +22,8 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
     static GameSettings()
     {
         AddSlugcatSettingsTab(new(SCORING, "Kill_Bat", new(1f, 0.95f, 0.45f)));
-        AddSlugcatSettingsTab(new(DENS, "ShortcutShelter", new(0.45f, 0.55f, 1f)));
-        AddSlugcatSettingsTab(new(IMPORTEXPORT, new(0.95f, 0.95f, 0.95f)));
+        AddSlugcatSettingsTab(new(DENS, "Meadow_Menu_ShelterIconBig", new(0.45f, 0.55f, 1f)));
+        AddSlugcatSettingsTab(new(IMPORTEXPORT, "Meadow_Menu_DisketteBig", new(0.95f, 0.95f, 0.95f)));
 
         AddSlugcatSettingsConfigurable(new(
             "Food Score",
@@ -110,9 +107,12 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             }
         }
 
-        scoreTab = GetSettingTab(SCORING);
-        denTab = GetSettingTab(DENS);
-        (denTab?.icon as PositionedSprite)?.Sprite.scale = 1.4f;
+        var scoreTab = GetSettingTab(SCORING);
+        var denTab = GetSettingTab(DENS);
+        var ioTab = GetSettingTab(IMPORTEXPORT);
+        (scoreTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)scoreTab!.data.color!, Color.white, 0.35f);
+        (denTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)denTab!.data.color!, Color.white, 0.35f);
+        (ioTab?.icon as PositionedSprite)?.Sprite.color = Color.Lerp((Color)ioTab!.data.color!, Color.white, 0.35f);
 
         spearHitScoreSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaSpearHitScore) as OnlineSettingIntValue;
 
@@ -262,12 +262,6 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
         base.Update();
 
         if (!ModManager.MSC) spearHitScoreSetting?.grayedOut = true;
-
-        // adjust those darn uncentered icons
-        scoreTab?.icon.pos.x -= 3;
-        scoreTab?.icon.pos.y += 5;
-        denTab?.icon.pos.x += 3.5f;
-        denTab?.icon.pos.y += 5;
     }
 
     public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
