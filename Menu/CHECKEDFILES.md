@@ -1,0 +1,110 @@
+# State of Refactoring for Every File in `/Menu`
+
+Things checked off on this list are done completely done reviewing and refactoring. These files may still change if components within them are refactored and have different APIs which need to be adjusted for. Items crossed off on the list either mean they were obsolete or moved/renamed.
+
+Objects may be refactored after being marked as "done" if better practices, implementations, or standards are put into use in other objects at a later date.
+
+Documentation will most likely be done separately.
+
+- Components/
+  - Base/
+    - [ ] PositionedSprite.cs
+  - Patched/
+    - [ ] SafeKeyBinder.cs
+    - [ ] UIelementWrapper.cs
+    - [ ] VerticalSlider.cs
+  - [ ] ArenaLevelSelector.cs
+  - [ ] ButtonDisplayer.cs
+  - [ ] ChatMenuBox.cs
+  - [ ] ChatTextBox2.cs
+  - [ ] LobbyCardSelector.cs
+  - [ ] OnlineArenaChallengeSettingsInterface.cs
+  - [ ] OnlineArenaSettingsInferface.cs
+  - [ ] OnlineSlugcatAbilitiesInterface.cs
+  - [ ] OnlineTeamBattleSettingsInterface.cs
+  - [ ] OpTypeBox.cs
+  - [ ] PlayerDisplayer.cs
+  - [ ] RestorableCheckbox.cs
+  - [ ] RestorableMenuLabel.cs
+  - [ ] RestorableMenuTabWrapper.cs
+  - [ ] RestorableMultipleChoiceArray.cs
+  - [ ] RestorableUIelementWrapper.cs
+  - [ ] SimplerCheckbox.cs
+  - [ ] SimplerMultipleChoiceArray.cs
+  - [ ] SlugcatColorableButton.cs
+  - [ ] SlugIcon.cs
+  - [ ] Tab.cs
+  - [ ] TeamBattlePlayerBox.cs
+  - [ ] TextScroller.cs
+  - [ ] UiLineConnector.cs
+- Dialogs/
+  - [ ] ArenaPostGameStatsDialog.cs
+  - [ ] ColorMultipleSlugcatsDialog.cs
+  - [ ] ColorSlugcatDialog.cs
+  - [x] ConfirmCancelDialog.cs
+  - [x] DialogAsyncWait.cs
+  - [x] DialogAsyncWaitCancellable.cs
+  - [x] DialogBox.cs
+  - [x] DirectConnectionDialog.cs
+  - [x] InputDialog.cs
+  - [x] NotifyDialog.cs
+  - [x] NotLocalDialog.cs
+  - [ ] ~~ScrollableConfirmDialog.cs~~
+  - [ ] ScrollableDialog.cs
+  - [ ] SlugcatSelector.cs
+  - [ ] ~~UpdateDialog.cs~~
+- Interfaces/
+  - [ ] IDyanicBindHandler.cs
+  - [ ] IPLEASEUPDATEME.cs
+  - [ ] IRestorableMenuObject.cs
+- Menus/
+  - Panels/
+    - [ ] LobbySelectFiltersPanel.cs
+    - [ ] LobbySelectMetadataPanel.cs
+    - [ ] LobbySelectNetworkPanel.cs
+  - [ ] LobbySelectMenu.cs
+- Objects/
+  - [ ] ButtonScroller.cs
+  - [ ] ButtonScrollerObjects.cs
+  - [ ] ButtonSelector.cs
+  - [ ] ButtonTypingHandler.cs
+  - [ ] ChatTemplate.cs
+  - [ ] ChatTextBox.cs
+  - [ ] ColorSlugcatBodyButtons.cs
+  - [ ] EventfulBigArrowButton.cs
+  - [ ] EventfulHoldButton.cs
+  - [ ] EventfulScrollButton.cs
+  - [ ] EventfulSelectOneButton.cs
+  - [ ] Floater.cs
+  - [ ] FSpriteWrap.cs
+  - [ ] HorizontalSlider2.cs
+  - [ ] IHaveADescription.cs
+  - [ ] IllustrationButton.cs
+  - [ ] MenuDarkSprite.cs
+  - [ ] MenuSprite.cs
+  - [ ] MusicTitleDisplay.cs
+  - [ ] OpComboBox2.cs
+  - [ ] OpTinyColorPicker.cs
+  - [ ] ProperlyAlignedMenuLabel.cs
+  - [ ] SimplerButton.cs
+  - [ ] SimplerSymbolButton.cs
+  - [ ] SlugcatCustomizationSelector.cs
+  - [ ] SubtleSlider2.cs
+  - [ ] TokenMenuDisplayer.cs
+- Pages/
+  - [ ] ArenaMainLobbyPage.cs
+  - [ ] ArenaSlugcatSelectPage.cs
+- [ ] ArenaOnlineLobbyMenu.cs
+- [ ] ColorHelpers.cs
+- [ ] CustomLobbyMenu.cs
+- [ ] IntroRollReplacement.cs
+- [ ] LobbyCreateMenu.cs
+- [ ] LobbyInfo.cs
+- [ ] MeadowCharacterSelectPage.cs
+- [ ] MeadowCredits.cs
+- [ ] MeadowMenu.cs
+- [ ] MenuHelpers.cs
+- [ ] PlayerInfo.cs
+- [ ] RainMeadow.MenuHooks.cs
+- [ ] SmartMenu.cs
+- [ ] UIUtils.cs

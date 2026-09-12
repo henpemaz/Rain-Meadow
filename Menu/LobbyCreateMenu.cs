@@ -11,6 +11,7 @@ using System.Linq;
 using UnityEngine;
 using Menu.Remix.MixedUI.ValueTypes;
 using Steamworks;
+using RainMeadow.UI.Components.Base;
 
 namespace RainMeadow;
 
@@ -25,7 +26,7 @@ public class LobbyCreateMenu : SmartMenu
 
     private OpComboBox2 meadowTimelineDropdown;
 
-    private SimplerButton createButton;
+    private EventfulButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
     private ProperlyAlignedMenuLabel timelineDescription;
@@ -42,8 +43,10 @@ public class LobbyCreateMenu : SmartMenu
         this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
         // creation button in bottom right
-        createButton = new SimplerButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-        createButton.OnClick += CreateLobby;
+        createButton = new EventfulButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f), onClick: CreateLobby)
+        {
+            SoundOnClick = SoundID.MENU_Switch_Page_In
+        };
         mainPage.subObjects.Add(createButton);
 
         // game mode selection in top center
@@ -178,7 +181,7 @@ public class LobbyCreateMenu : SmartMenu
         versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
         mainPage.subObjects.Add(versionLabel);
 
-        if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
+        (backObject as EventfulButton)?.menuLabel.text = Translate("CANCEL");
 
         UpdateModeDescription();
         CreateElementBindings();
@@ -249,7 +252,7 @@ public class LobbyCreateMenu : SmartMenu
         Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
     }
 
-    private void CreateLobby(SimplerButton obj)
+    private void CreateLobby(EventfulButton obj)
     {
         ShowLoadingDialog("Creating lobby...");
         ApplyLobbyLimit();

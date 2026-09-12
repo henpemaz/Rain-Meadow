@@ -5,14 +5,15 @@ namespace RainMeadow.UI.Components.Base;
 
 public class PositionedSprite : PositionedMenuObject
 {
-    public FSprite Sprite { get; set; }
-    public Vector2 Size { get; set; }
+    public Vector2 size;
+
+    public FSprite Sprite;
 
     public PositionedSprite(Menu.Menu menu, MenuObject owner, Vector2 pos, FSprite sprite)
         : base(menu, owner, pos)
     {
         Sprite = sprite;
-        Size = new Vector2(sprite.width, sprite.height);
+        size = new Vector2(sprite.width, sprite.height);
         Container.AddChild(sprite);
     }
 

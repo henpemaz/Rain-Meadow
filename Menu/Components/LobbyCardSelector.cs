@@ -11,11 +11,17 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButtonOwner
+public class LobbyCardSelector
+    : ButtonScroller,
+        EventfulSelectOneButton.IEventfulSelectOneButtonOwner
 {
+    public const string LobbyCardGroupKey = "lobbycards",
+        NotLobbyCardError =
+            "LobbyCardSelector is being sent EventfulSelectOneButtons that aren't LobbyCards? (unrecognized group key/wrong object type)";
+
     public MenuTabWrapper tabWrapper;
     public OpTextBox searchBar;
-    public SimplerSymbolButton refreshButton,
+    public EventfulSymbolButton refreshButton,
         sortButton;
     public LobbyInfo[] lobbyInfos = [];
     public LobbyCard[] lobbyCards = [];
@@ -26,17 +32,8 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
     public event Action? OnLobbyCardsUpdated;
     public event Action<LobbyInfo>? OnLobbyCardClicked;
 
-    public int selectedLobbyIndex = -1;
-
-    public LobbyInfo? SelectedLobby
-    {
-        get
-        {
-            if (selectedLobbyIndex < 0)
-                return null;
-            return lobbyCards[selectedLobbyIndex].lobbyInfo;
-        }
-    }
+    public LobbyInfo? SelectedLobby => SelectedLobbyCard?.lobbyInfo;
+    public LobbyCard? SelectedLobbyCard { get; private set; }
 
     public LobbyCardSelector(Menu.Menu menu, MenuObject owner, Vector2 pos)
         : base(
@@ -74,32 +71,30 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             UpdateLobbyCards();
         };
 
-        refreshButton = new SimplerSymbolButton(
+        refreshButton = new EventfulSymbolButton(
             menu,
             this,
             "Menu_Symbol_Repeats",
-            "",
             new Vector2(534, size.y - 10),
-            menu.Translate("Refresh lobbies list")
+            menu.Translate("Refresh lobbies list"),
+            (btn) => RefreshLobbies?.Invoke()
         );
-        refreshButton.OnClick += (btn) => RefreshLobbies?.Invoke();
 
-        sortButton = new SimplerSymbolButton(
+        sortButton = new EventfulSymbolButton(
             menu,
             this,
             "Meadow_Menu_Sort_A-Z",
-            "",
             new Vector2(505, size.y - 10),
-            menu.Translate("Sort A to Z")
+            menu.Translate("Sort A to Z"),
+            CycleSortingOrder
         );
-        sortButton.OnClick += CycleSortingOrder;
         sortingOrder = SortingOrder.AtoZ;
 
         new PatchedUIelementWrapper(tabWrapper, searchBar);
         this.SafeAddSubobjects(tabWrapper, refreshButton, sortButton);
     }
 
-    public void CycleSortingOrder(SymbolButton btn)
+    public void CycleSortingOrder(EventfulSymbolButton btn)
     {
         // ignore dumb casting cases like (SortingOrder)1290467 as a possible branch. Will still create warnings if new
         // entries are added to the SortingOrder enum properly.
@@ -125,7 +120,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
 
     public void ClearLobbyCards()
     {
-        selectedLobbyIndex = -1;
+        SelectedLobbyCard = null;
         RemoveAllButtons();
     }
 
@@ -160,9 +155,9 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             .. SortCards(pinnedCards)
                 .Concat(SortCards(regularCards))
                 .Select(
-                    (lobbyInfo, index) =>
+                    (lobbyInfo) =>
                     {
-                        LobbyCard card = new(menu, this, lobbyInfo, lobbyCards, index);
+                        LobbyCard card = new(menu, this, lobbyInfo);
                         card.OnLobbyCardClicked += OnLobbyCardClicked;
                         return card;
                     }
@@ -195,18 +190,28 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
         UpdateLobbyCards();
     }
 
-    public int GetCurrentlySelectedOfSeries(string series) => selectedLobbyIndex;
-
-    public void SetCurrentlySelectedOfSeries(string series, int to)
+    public void SetSelectedSelectOneButton(string groupKey, EventfulSelectOneButton button)
     {
-        if (selectedLobbyIndex != -1)
+        if (groupKey != LobbyCardGroupKey || button is not LobbyCard card)
         {
-            LobbyCard prevCard = lobbyCards[selectedLobbyIndex];
-            prevCard.Description = menu.Translate("Click to view <LOBBY>")
-                .Replace("<LOBBY>", prevCard.lobbyInfo.name);
+            RainMeadow.Warn(NotLobbyCardError);
+            return;
         }
 
-        selectedLobbyIndex = to;
+        LobbyCard? prevCard = SelectedLobbyCard;
+        prevCard?.Description = menu.Translate("Click to view <LOBBY>")
+            .Replace("<LOBBY>", prevCard.lobbyInfo.name);
+
+        SelectedLobbyCard = card;
+    }
+
+    public EventfulSelectOneButton? GetSelectedSelectOneButton(string groupKey)
+    {
+        if (groupKey == LobbyCardGroupKey)
+            return SelectedLobbyCard;
+
+        RainMeadow.Warn(NotLobbyCardError);
+        return null;
     }
 
     public enum SortingOrder
@@ -235,24 +240,15 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
             set => size = value;
         }
 
-        public LobbyCard(
-            Menu.Menu menu,
-            MenuObject owner,
-            LobbyInfo lobbyInfo,
-            EventfulSelectOneButton[] lobbyCards,
-            int lobbyCardIndex
-        )
+        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo)
             : base(
                 menu,
                 owner,
                 "",
-                "LOBBY_CARDS",
                 Vector2.zero,
                 new Vector2(550, 80),
-                lobbyCards,
-                lobbyCardIndex,
-                description: menu.Translate("Click to view <LOBBY>")
-                    .Replace("<LOBBY>", lobbyInfo.name)
+                LobbyCardGroupKey,
+                menu.Translate("Click to view <LOBBY>").Replace("<LOBBY>", lobbyInfo.name)
             )
         {
             this.lobbyInfo = lobbyInfo;
@@ -341,7 +337,7 @@ public class LobbyCardSelector : ButtonScroller, SelectOneButton.SelectOneButton
                     new Vector2(0, 10),
                     new FSprite(iconName)
                 );
-                icons.Add((sprite, sprite.Size.x));
+                icons.Add((sprite, sprite.size.x));
                 accountedModCount += 1;
             }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
@@ -55,8 +56,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         forceFlatIllu = !manager.rainWorld.flatIllustrations;
-        if (backObject is SimplerButton btn)
-            btn.description = Translate("Exit to Lobby Select");
+        (backObject as EventfulButton)?.Description = Translate("Exit to Lobby Select");
         if (Arena.myArenaSetup == null)
             manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");

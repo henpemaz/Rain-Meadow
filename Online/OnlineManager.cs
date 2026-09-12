@@ -1,4 +1,6 @@
 ﻿using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -390,8 +392,15 @@ namespace RainMeadow
             if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)
             {
                 instance.manager.upcomingProcess = null;
+                // this ensures you don't linger in whatever prior process you were in and instantly boots you to menu
                 instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                instance.manager.ShowDialog(new Menu.DialogNotify(v, Utils.Translate("Leaving Lobby"), new Vector2(240, 320), instance.manager, () => { }));
+                instance.manager.ShowDialog(
+                    new NotifyDialog(
+                        instance.manager,
+                        "Leaving Lobby",
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE
+                    )
+                );
                 LeaveLobby();
                 throw new Exception(v);
             }

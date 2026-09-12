@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RWCustom;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace RainMeadow.UI
     public class ArenaPostGameStatsDialog : Dialog
     {
         public StoredResults[] storedResults;
-        public SimplerButton closeButton;
+        public EventfulButton closeButton;
         public AlignedMenuLabel postGameStatsLabel;
         public ArenaOnlineGameMode arenaMode;
         public float spacing = 20;
@@ -23,18 +24,16 @@ namespace RainMeadow.UI
             arenaMode = arena;
             postGameStatsLabel = new(this, pages[0], Translate("POST-GAME STATS"), new(pos.x + size.x * 0.5f, pos.y + size.y + 10), new(0, 0), true);
             postGameStatsLabel.label.anchorY = 0;
-            closeButton = new(this, pages[0], Translate("BACK"), new(roundedRect.pos.x + roundedRect.size.x - 80, roundedRect.pos.y - 40), new(80, 30));
-            closeButton.OnClick += _ =>
+            closeButton = new(this, pages[0], Translate("BACK"), new(roundedRect.pos.x + roundedRect.size.x - 80, roundedRect.pos.y - 40), new(80, 30), onClick: (btn) => manager.StopSideProcess(this))
             {
-                manager.StopSideProcess(this);
-                PlaySound(SoundID.MENU_Remove_Level);
+                SoundOnClick = SoundID.MENU_Remove_Level
             };
             arenaMode.PersistentWinsByOPlayer ??= [];
             arenaMode.PersistentDeathsByOPlayer ??= [];
             arenaMode.PersistentTotalScoreByOPlayer ??= [];
             arenaMode.PersistentAllKillsByOPlayer ??= [];
 
-            var resetButton = new SimplerButton(this, pages[0], Translate("RESET"), new(roundedRect.pos.x + roundedRect.size.x - 180, roundedRect.pos.y - 40), new(80, 30));
+            var resetButton = new EventfulButton(this, pages[0], Translate("RESET"), new(roundedRect.pos.x + roundedRect.size.x - 180, roundedRect.pos.y - 40), new(80, 30));
             resetButton.OnClick += _ =>
             {
                 arenaMode.PersistentDeathsByOPlayer.Clear();
