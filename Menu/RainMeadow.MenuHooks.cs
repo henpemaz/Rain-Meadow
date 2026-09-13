@@ -88,7 +88,7 @@ namespace RainMeadow
         private Vector2 UiElement_MousePos(Func<UIelement, Vector2> orig, UIelement element)
         {
             var origMousePos = orig(element);
-            if (element.wrapper is UIelementWrapper wrapper && MenuScrollObject.menuScrollObjects.TryGetValue(wrapper, out MenuScrollObject obj))
+            if (element.wrapper is UIelementWrapper wrapper && wrapper.TryGetScrollObject() is MenuScrollObject obj)
             {
                 if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
                 {
@@ -258,20 +258,20 @@ namespace RainMeadow
         void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
         {
             orig(self);
-            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
                 obj.UpdateInObject();
 
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
-            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
                 obj.GrafUpdateInObject(timestacker);
         }
         bool On_SelectableMenuObj_MouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
             bool origSelect = orig(self);
-            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
             {
                 if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
                     origSelect = false;
@@ -281,7 +281,7 @@ namespace RainMeadow
         bool On_SelectableMenuObj_NonMouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
             bool origSelect = orig(self);
-            if (MenuScrollObject.menuScrollObjects.TryGetValue(self, out MenuScrollObject obj))
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
             {
                 if (obj.ContainedAlpha < 1 || !obj.IsWithinBounds)
                     origSelect = false;

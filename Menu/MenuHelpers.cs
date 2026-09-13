@@ -24,7 +24,7 @@ namespace RainMeadow
                     var owner = menuObj.owner;
                     if (owner != null)
                     {
-                        if (MenuScrollObject.menuScrollObjects.TryGetValue(owner, out MenuScrollObject obj))
+                        if (TryGetScrollObject(menuObj) is MenuScrollObject)
                             return owner;
                         return owner.ParentWithScrollObject;
                     }
@@ -35,7 +35,7 @@ namespace RainMeadow
             {
                 get
                 {
-                    if (MenuScrollObject.menuScrollObjects.TryGetValue(menuObj, out MenuScrollObject obj))
+                    if (TryGetScrollObject(menuObj) is MenuScrollObject obj)
                     {
                         if (obj.IsDirectlyInScroller)
                             return menuObj;
@@ -48,10 +48,9 @@ namespace RainMeadow
         }
         public static MenuScrollObject? TryGetOrAddScrollObject(this MenuObject menuObject)
         {
-            if (MenuScrollObject.menuScrollObjects.TryGetValue(menuObject, out MenuScrollObject? obj))
+            if (TryGetScrollObject(menuObject) is MenuScrollObject obj)
                 return obj;
-
-            if (MenuScrollObject.TryGetScrollObjectFromMenuObject(menuObject, out obj))
+            if (MenuScrollObject.TryGetScrollObjectFromMenuObject(menuObject, out obj!))
                 MenuScrollObject.menuScrollObjects.Add(menuObject, obj!);
             else if (menuObject.ObjectInScroller is MenuObject ownerInScroller)
             {
@@ -59,6 +58,12 @@ namespace RainMeadow
                 obj.ParentAddedIntoScroller(ownerInScroller.GetScrollObject());
             }
                 return obj;
+        }
+        public static MenuScrollObject? TryGetScrollObject(this MenuObject menuObject)
+        {
+            if (MenuScrollObject.menuScrollObjects.TryGetValue(menuObject, out MenuScrollObject? obj))
+                return obj;
+            return null;
         }
         public static MenuScrollObject GetScrollObject(this MenuObject menuObject) => MenuScrollObject.menuScrollObjects.GetValue(menuObject, MenuScrollObject.GetScrollObjectFromMenuObject);
         public static void CallEveryDynamicBindHandler(this MenuObject obj)

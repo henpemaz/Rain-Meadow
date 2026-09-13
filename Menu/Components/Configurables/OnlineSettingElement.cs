@@ -34,7 +34,7 @@ public abstract class OnlineSettingElement : RectangularMenuObject
 
     public readonly OnlineSettingTab? tab;
     public OnlineSlugcatSettingsBase? slugcatSettingPage => settingsPage as OnlineSlugcatSettingsBase;
-    public SettingsPage? settingsPage => owner as SettingsPage ?? this.scrollable?.owner?.owner as SettingsPage;
+    public SettingsPage? settingsPage => owner as SettingsPage ?? owner?.owner?.owner as SettingsPage;
 
     public Vector2 ownerBoxSize = new(390, 430);
     public float spacing = 5f;

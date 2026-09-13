@@ -14,13 +14,32 @@ namespace RainMeadow.UI.Components
 {
     public class UIMask : RectangularMenuObject
     {
+        public static bool debug = false;
         public readonly string IDForTexture;
+        public bool dirty = true;
         public UICamera uiCam;
         public FTexture? insideTexture;
         public FContainer camContainer, maskContainer;
-        public Vector2 initialCamPos, camViewSizeOffset, lastCamViewSizeOffset;
-        public Vector2 camOffsetSizeAnchor = new(0.5f, 0.5f), lastCamOffsetSizeAnchor = new(0.5f, 0.5f);
-        public Vector3 camViewPosOffset;
+        public FSprite? maskRect, camRect;
+        public Vector2 initialCamPos, _camViewSizeOffset, _camViewPosOffset;
+        public Vector2 CamViewPosOffset
+        {
+            get => _camViewPosOffset; set
+            {
+                if (value == _camViewPosOffset) return;
+                _camViewPosOffset = value;
+                dirty = true;
+            }
+        }
+        public Vector2 CamViewSizeOffset
+        {
+            get => _camViewSizeOffset; set
+            {
+                if (value == _camViewSizeOffset) return;
+                _camViewSizeOffset = value;
+                dirty = true;
+            }
+        }
         public bool MouseOverTexture => WithinBounds(menu.mousePosition, default);
         public bool IsHidden { get; set; }
         public UIMask(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, FContainer itemMaskContainer) : base(menu, owner, pos, size)
@@ -38,6 +57,22 @@ namespace RainMeadow.UI.Components
 
             subObjects.Add(uiCam);
             uiCam.OnCameraRenderTextureMade += SetMaskTexture;
+
+            if (!debug) return;
+            maskRect = new("pixel")
+            {
+                anchorX = 0,
+                anchorY = 0,
+                color = Color.red,
+            };
+            camRect = new("pixel")
+            {
+                anchorX = 0,
+                anchorY = 0,
+                color = Color.blue,
+            };
+            Container.AddChild(maskRect);
+            Container.AddChild(camRect);
         }
         public bool WithinBounds(Vector2 screenPos, Vector2 size)
         {
@@ -55,8 +90,8 @@ namespace RainMeadow.UI.Components
             {
                 insideTexture = new FTexture(rt, IDForTexture)
                 {
-                    anchorX = 0.5f,
-                    anchorY = 0.5f
+                    anchorX = 0,
+                    anchorY = 0
                 };
                 camContainer.AddChild(insideTexture);
                 return;
@@ -71,13 +106,10 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (camViewSizeOffset != lastCamViewSizeOffset || lastSize != size || camOffsetSizeAnchor != lastCamOffsetSizeAnchor)
+            if (dirty || lastSize != size)
             {
-                lastCamViewSizeOffset = camViewSizeOffset;
-                lastCamOffsetSizeAnchor = camOffsetSizeAnchor;
-
-                uiCam.size = camViewSizeOffset + size;
-                uiCam.pos = initialCamPos + camViewSizeOffset * camOffsetSizeAnchor;
+                uiCam.size = CamViewSizeOffset + size;
+                uiCam.pos = initialCamPos + CamViewPosOffset;
             }
             base.Update();
         }
@@ -85,14 +117,20 @@ namespace RainMeadow.UI.Components
         {
             base.GrafUpdate(timeStacker);
             Vector2 screenPos = DrawPos(timeStacker);
+            Vector2 camScreenPos = uiCam.ScreenPos, camSize = uiCam.size;
+            Vector2 insideTexPos = camScreenPos - initialCamPos;
             maskContainer.SetPosition(initialCamPos);
             if (insideTexture != null)
-            {
-                Vector2 camScreenPos = uiCam.ScreenPos, camSize = uiCam.size;
-                insideTexture.SetPosition(camScreenPos - initialCamPos + camSize * camOffsetSizeAnchor);
-                insideTexture.anchorX = camOffsetSizeAnchor.x;
-                insideTexture.anchorY = camOffsetSizeAnchor.y;
-            }
+                insideTexture.SetPosition(insideTexPos);
+            if (maskRect == null) return;
+            maskRect.alpha = 0.25f;
+            maskRect.SetPosition(screenPos);
+            maskRect.scaleX = size.x;
+            maskRect.scaleY = size.y;
+            camRect!.alpha = 0.25f;
+            camRect.SetPosition(insideTexPos);
+            camRect.scaleX = camSize.x;
+            camRect.scaleY = camSize.y;
         }
         public class UICamera : RectangularMenuObject, IPLEASEUPDATEME
         {

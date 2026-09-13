@@ -561,12 +561,5 @@ namespace RainMeadow
         {
             return menu.manager.rainWorld.inGameTranslator.TryTranslate(text, out trad);
         }
-
-        // Get scrollable
-        extension(MenuObject menuObject)
-        {
-            public ScrollableContainer.Scrollable? scrollable
-                => menuObject.GetScrollObject().parentInScroller?.menuObject as ScrollableContainer.Scrollable;
-        }
     }
 }
