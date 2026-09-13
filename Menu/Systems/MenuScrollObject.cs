@@ -13,10 +13,10 @@ namespace RainMeadow.UI.Systems
     public class MenuScrollObject
     {
         public static ConditionalWeakTable<MenuObject, MenuScrollObject> menuScrollObjects = new();
-        public MenuScrollObject? parentInScroller;
         public readonly MenuObject menuObject;
-        public IScrollObjectHolder? scroller;
-        public int indexInScroller;
+        public MenuScrollObject? cachedParentInScroller;
+        public IScrollObjectHolder? scroller; //you could have a parent in scroller but have access to this
+        public int indexInScroller = -1;
         public bool isValidForScroller;
         public FContainer objectContainer; //default is myContainer, you can change this
         public float desiredAlpha = 1;
@@ -25,11 +25,26 @@ namespace RainMeadow.UI.Systems
             get
             {
                 float alpha = LocalAlpha;
-                if (parentInScroller != null)
-                    alpha *= parentInScroller.LocalAlpha;
+                if (cachedParentInScroller != null)
+                    alpha *= cachedParentInScroller.LocalAlpha;
                 return alpha;
             }
         }
+        public bool IsDirectlyInScroller => scroller != null && cachedParentInScroller == null;
+        public MenuScrollObject? ParentInScroller
+        {
+            get
+            {
+                var parentMenuObj = menuObject.owner?.GetScrollObject();
+                if (parentMenuObj == null) return null;
+                if (parentMenuObj.scroller != null && parentMenuObj.IsDirectlyInScroller)
+                    return parentMenuObj;
+                return parentMenuObj.ParentInScroller;
+            }
+        }
+        public bool IsMouseWithinBounds => scroller == null || scroller.MouseOverItemBounds;
+        public bool IsWithinBounds => scroller == null || scroller.WithinBounds(ScreenPos, Size);
+        public Vector2 ScreenPos => menuObject is PositionedMenuObject posObj ? posObj.ScreenPos : default;
         public virtual float LocalAlpha { get => desiredAlpha; set => desiredAlpha = value; }
         public virtual Vector2 LocalPos 
         {
@@ -48,8 +63,9 @@ namespace RainMeadow.UI.Systems
         {
             get
             {
-                if (menuObject is not RectangularMenuObject rectMenuObj) return Vector2.zero;
-                return rectMenuObj.size;
+                if (menuObject is  RectangularMenuObject rectMenuObj)
+                    return rectMenuObj.size;
+                return default;
             }
             set
             {
@@ -74,8 +90,8 @@ namespace RainMeadow.UI.Systems
         }
         public static MenuScrollObject GetScrollObjectFromMenuObject(MenuObject menuObject)
         {
-            if (TryGetScrollObjectFromMenuObject(menuObject, out MenuScrollObject scrollObj))
-                return scrollObj;
+            if (TryGetScrollObjectFromMenuObject(menuObject, out MenuScrollObject? scrollObj))
+                return scrollObj!;
             return new MenuScrollObject(menuObject, false);
         }
         public void AddRemoveSubobjectsToScroller(MenuObject parent, MenuScrollObject owner, bool add)
@@ -85,7 +101,7 @@ namespace RainMeadow.UI.Systems
                 var sub = parent.subObjects[i];
                 if (add)
                     sub.GetScrollObject().ParentAddedIntoScroller(owner);
-                else 
+                else
                     sub.GetScrollObject().ParentRemovedFromScroller(owner);
             }
         }
@@ -96,9 +112,13 @@ namespace RainMeadow.UI.Systems
         }
         public virtual void UpdateInObject()
         {
-            if (scroller == null) return;
+            if ((cachedParentInScroller != null && (!cachedParentInScroller.IsDirectlyInScroller || cachedParentInScroller.scroller != scroller)))
+            {
+                cachedParentInScroller = ParentInScroller;
+                scroller = cachedParentInScroller?.scroller;
+            }
+            if (scroller == null || cachedParentInScroller != null) return;
             if (!scroller.ScrollObjectsDirty) return;
-            if (parentInScroller != null) return;
             Size = scroller.SizeOfObject(Size);
             var pos = LocalPos = scroller.PositionOfObject(indexInScroller, LocalPos);
             LocalAlpha = scroller.AlphaOfObject(pos, Size);
@@ -131,11 +151,12 @@ namespace RainMeadow.UI.Systems
         {
             if (!isValidForScroller)
             {
-                throw new InvalidOperationException("This menuobject is invalid for scroller, please check if its IOwnMenuObject else if your item is fully compatible, set isValidForScroller as true");
+                throw new InvalidOperationException("This menuobject is invalid for scroller, please check if its IOwnMenuObject else if your item is fully compatible, set isValidForScroller as true.");
             }
             this.scroller = scroller;
+            cachedParentInScroller = null;
             indexInScroller = index;
-            scroller.ItemContainer.AddChild(objectContainer);
+            this.scroller.ItemContainer.AddChild(objectContainer);
             AddRemoveSubobjectsToScroller(menuObject, this, true);
         }
         public virtual void RemovedFromScroller() //assuming this gets destroyed immediately
@@ -146,21 +167,20 @@ namespace RainMeadow.UI.Systems
                 objectContainer.RemoveFromContainer();
             }
             scroller = null;
-            parentInScroller = null;
-            indexInScroller = 0;
+            indexInScroller = -1;
             LocalAlpha = 1;
             AddRemoveSubobjectsToScroller(menuObject, this, false);
         }
         public virtual void ParentAddedIntoScroller(MenuScrollObject parentInScroller)
         {
-            this.scroller = parentInScroller.scroller;
-            this.parentInScroller = parentInScroller;
+            scroller = parentInScroller.scroller;
+            cachedParentInScroller = parentInScroller;
             AddRemoveSubobjectsToScroller(menuObject, parentInScroller, true);
         }
         public virtual void ParentRemovedFromScroller(MenuScrollObject parentInScroller)
         {
             scroller = null;
-            this.parentInScroller = null;
+            cachedParentInScroller = null;
             AddRemoveSubobjectsToScroller(menuObject, parentInScroller, false);
         }
     }

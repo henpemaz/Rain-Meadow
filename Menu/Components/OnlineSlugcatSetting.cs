@@ -73,10 +73,9 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     {
         offset = fullSize - defaultBoxSize;
         offset.x /= 2f;
-        scrollableContainer = new(menu, this, offset, defaultBoxSize)
-        {
-            camSizeOffset = new Vector2(-10, -10) - offset + Vector2.up * 0.01f
-        };
+        scrollableContainer = new(menu, this, offset, defaultBoxSize);
+        scrollableContainer.uiMask.CamViewSizeOffset = (new Vector2(0, -2) + Vector2.up * 0.01f);
+        scrollableContainer.uiMask.CamViewPosOffset = new(0, 22.5f);
         scroller = scrollableContainer.CreateAndAttachScrollable(1000);
         scroller.defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.TopLeft;
 

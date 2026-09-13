@@ -27,6 +27,7 @@ namespace RainMeadow
         public List<SideButton> sideButtons = [];
         public FSprite[] sideButtonLines = [];
         public readonly GridScrollSystem gridSystem;
+        public bool MouseOverItemBounds => MouseOver;
         public static float CalculateHeightBasedOnAmtOfButtons(int amtOfButtonsView, float buttonHeight, float spacing, bool startEndSpacing = false)
         {
             //remember it goes by buttonsize + button spacing not the buttonSpacing + buttonsize. button size plus first as there will be not extra spacing
@@ -324,6 +325,7 @@ namespace RainMeadow
                 elementPosWithSizeInAxis > endSize ? Mathf.InverseLerp(endSize + boundaryOffset, endSize, elementPosWithSizeInAxis) : 1;
             //if button starts crossing the bound, calculate the alpha else alpha = 1
         }
+        public bool WithinBounds(Vector2 screenPos, Vector2 size) => true; //let alpha handle it
         public void AddScrollUpDownButtons(float scrollButtonWidth = 24, float upButtonYPosOffset = 10, float downButtonYPosOffset = -34f)
         {
             if (scrollUpButton == null)

@@ -15,25 +15,22 @@ using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 
 namespace RainMeadow.UI.Components
 {
+    /// <summary>
+    /// Use this if you need a dynamic more flexible way of scrollsizing<para></para>
+    /// If you are using indexing for positioning of ur objects, PLEASE BUTTONSCROLLER EXISTED FOR THIS REASON
+    /// </summary>
     public class ScrollableContainer : RectangularMenuObject, IScrollObjectHolder, IPLEASEUPDATEME, Slider.ISliderOwner
     {
-        public readonly string IDForTexture;
-
-        public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, maxScrollSpeed = 1.2f, floatScrollMultipler = 100f;
-        public bool scrollableDirty = true, lastScrollableDirty = true, cameraDirty = true, sliderDefaultIsDown, isScrolling;
+        public float scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f, floatScrollMultipler = 100f;
+        public bool scrollableDirty = true, lastScrollableDirty = true, sliderDefaultIsDown, isScrolling;
         public float scrollSliderValueCap, scrollSliderValue, scrollSpeed, desiredScrollPosOffset, floatScrollPosOffset, prevFloatScrollPosOffset;
         public MenuScrollObject? _content;
         public readonly ContentScrollSystem contentSystem;
 
         public Slider? scrollSlider;
-
-        public Camera cam;
-        public RenderTexture? cameraRT;
-        public FTexture? insideTexture;
+        public UIMask uiMask;
         public FContainer itemMaskContainer;
-        public FContainer camContainer;
-        public Vector2 initialCamPos, camSizeOffset;
-        public Vector3 camPosOffset;
+        public bool MouseOverItemBounds => uiMask.MouseOverTexture;
         public bool IsHidden { get; set; }
         public bool ScrollObjectsDirty => lastScrollableDirty;
         public FContainer ItemContainer => itemMaskContainer;
@@ -54,117 +51,51 @@ namespace RainMeadow.UI.Components
                 scrollableDirty = true;
             }
         }
-        public ScrollableContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, ContentScrollSystem? scrollingSystem = null, ScrollSystem.Anchor horiVertSliderAnchor = ScrollSystem.Anchor.BottomRight) : base(menu, owner, pos, size)
+        public ScrollableContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, ContentScrollSystem? scrollingSystem = null, ScrollSystem.Anchor horiVertSliderAnchor = ScrollSystem.Anchor.BottomRight, Vector2 sliderPosOffset = default, float sliderSizeoffset = 0) : base(menu, owner, pos, size)
         {
             (owner?.Container ?? menu.container).AddChild(myContainer = new());
             myContainer.AddChild(itemMaskContainer = new());
-            myContainer.AddChild(camContainer = new());
-            this.contentSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
-            this.contentSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
-            this.contentSystem.OnViewSizeChanged += ViewSizeChanged;
-            this.contentSystem.OnContentSizeChanged += ContentSizeChanged;
-            cam = new GameObject().AddComponent<Camera>();
-            int index = -1;
-            for (int i = 0; i < OpScrollBox._cameras.Count; i++)
-            {
-                if (OpScrollBox._cameras[i] == null)
-                {
-                    index = i;
-                    OpScrollBox._cameras[i] = cam;
-                    break;
-                }
-            }
-            if (index == -1)
-            {
-                index = OpScrollBox._cameras.Count;
-                OpScrollBox._cameras.Add(cam);
-            }
-            IDForTexture = "Scrollable" + index;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            initialCamPos = new Vector2(10000f + 10300f * index, 10000f);
-            BuildSliders(horiVertSliderAnchor);
-            itemMaskContainer.SetPosition(initialCamPos);
+
+            uiMask = new(menu, this, new(0, 0), size, itemMaskContainer);
+            contentSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
+            contentSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
+            contentSystem.OnViewSizeChanged += ViewSizeChanged;
+            contentSystem.OnContentSizeChanged += ContentSizeChanged;
+
+            subObjects.Add(uiMask);
+            BuildSliders(horiVertSliderAnchor, sliderPosOffset, sliderSizeoffset);
         }
-        public void BuildSliders(ScrollSystem.Anchor horiVertSliderAnchor)
+        public void BuildSliders(ScrollSystem.Anchor horiVertSliderAnchor, Vector2 sliderPosOffset, float sliderSizeOffset)
         {
             if (contentSystem.IsHorizontal)
             {
                 bool sliderOnTop = horiVertSliderAnchor is ScrollSystem.Anchor.TopRight or ScrollSystem.Anchor.TopLeft;
-                scrollSlider = new HorizontalSlider(menu, this, null, new Vector2(20, sliderOnTop? size.y : -32), new(size.x - 40, 30f), new("Test"), true);
+                scrollSlider = new HorizontalSlider(menu, this, null, new Vector2(20, sliderOnTop? size.y : -32) + sliderPosOffset, new(size.x - 40 + sliderSizeOffset, 30f), new("Test"), true);
             }
             else
             {
                 bool sliderOnRight = horiVertSliderAnchor is ScrollSystem.Anchor.TopRight or ScrollSystem.Anchor.BottomRight;
-                scrollSlider = new PatchedVerticalSlider(menu, this, null, new Vector2(sliderOnRight ? size.x - 32 : 0, 10), new(30, size.y - 40), new("Test"), true);
+                scrollSlider = new PatchedVerticalSlider(menu, this, null, new Vector2(sliderOnRight ? size.x - 32 : 0, 10) + sliderPosOffset, new(30, size.y - 40 + sliderSizeOffset), new("Test"), true);
             }
             subObjects.Add(scrollSlider);
         }
-        public void ContentSizeChanged()
-        {
-            ConstrainScroll(false);
-        }
-        public void ViewSizeChanged()
-        {
-            ConstrainScroll(true);
-            cameraDirty = true;
-        }
+        public void ContentSizeChanged() => ConstrainScroll(false);
+        public void ViewSizeChanged() => ConstrainScroll(true);
         public void MarkScrollObjectsDirty()
         {
             scrollableDirty = true;
         }
+        public void AttachScrollable(Scrollable scrollable, float desiredContentSize)
+        {
+            scrollable.size = size;
+            scrollable.size[contentSystem.IndexToRef] = desiredContentSize;
+            ContentObject = scrollable.GetScrollObject();
+        }
         public Scrollable CreateAndAttachScrollable(float contentSize)
         {
-            Vector2 sizeofcontent = contentSystem.IsHorizontal ? new(contentSize, size.y) : new(size.x, contentSize);
-            Scrollable scrollable = new(menu, this, Vector2.zero, sizeofcontent);
-            ContentObject = scrollable.GetScrollObject();
+            Scrollable scrollable = new(menu, this, Vector2.zero, default);
+            AttachScrollable(scrollable, contentSize);
             return scrollable;
-        }
-        public void DestroyRender()
-        {
-            if (cameraRT)
-            {
-                cameraRT.Release();
-                UnityEngine.Object.Destroy(cameraRT);
-            }
-        }
-        public void RefreshCamera()
-        {
-            cam.enabled = true;
-            cameraDirty = false;
-            float posXOffset = camSizeOffset.x * -0.5f;
-            float posYOffset = camSizeOffset.y * -0.5f;
-            float sizeX = size.x + camSizeOffset.x;
-            float sizeY = size.y + camSizeOffset.y;
-                ;
-            cam.aspect = sizeX / sizeY;
-            cam.orthographic = true;
-            cam.orthographicSize = sizeY / 2f;
-            cam.nearClipPlane = 1f;
-            cam.farClipPlane = 100f;
-            camPosOffset = new Vector3(posXOffset + sizeX * 0.5f, posYOffset + sizeY * 0.5f, -50f) + (Vector3)initialCamPos;
-            cam.depth = -1000f;
-
-            int width = Mathf.CeilToInt(sizeX);
-            int height = Mathf.CeilToInt(sizeY);
-            DestroyRender();
-            cameraRT = new RenderTexture(width, height, 8, RenderTextureFormat.ARGB32)
-            {
-                filterMode = FilterMode.Point
-            };
-            cam.targetTexture = cameraRT;
-            if (insideTexture == null)
-            {
-                insideTexture = new FTexture(cameraRT, IDForTexture)
-                {
-                    anchorX = 0.5f,
-                    anchorY = 0.5f
-                };
-                camContainer.AddChild(insideTexture);
-            }
-            else
-                insideTexture.SetTexture(cameraRT);
-
         }
         public void SetScrollImmediately(float scrollOffset)
         {
@@ -211,6 +142,7 @@ namespace RainMeadow.UI.Components
         }
         public void ConstrainScroll(bool immediatelyApplyConstrainedScroll = false)
         {
+            UpdateScrollingSystemComponents();
             desiredScrollPosOffset = Mathf.Clamp(desiredScrollPosOffset, 0, contentSystem.GetMaxScroll());
             if (immediatelyApplyConstrainedScroll)
                 floatScrollPosOffset = desiredScrollPosOffset;
@@ -218,10 +150,8 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
+            uiMask.size = size;
             UpdateScrollingSystemComponents();
-            if (cameraDirty)
-                RefreshCamera();
-            cam?.enabled = !IsHidden;
             lastScrollableDirty = scrollableDirty;
             scrollableDirty = false;
             base.Update();
@@ -230,26 +160,8 @@ namespace RainMeadow.UI.Components
                 AddScroll(menu.mouseScrollWheelMovement);
             UpdateScroll();
         }
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-            var screenPos = DrawPos(timeStacker);
-            cam?.transform.position = camPosOffset + (Vector3)screenPos;
-            itemMaskContainer.SetPosition(initialCamPos);
-            insideTexture?.SetPosition(screenPos + (size * 0.5f));
-        }
         public override void RemoveSprites()
         {
-            DestroyRender();
-            try
-            {
-                if (cam?.gameObject is not null)
-                    UnityEngine.Object.Destroy(cam?.gameObject);
-            }
-            catch (Exception ex)
-            {
-                RainMeadow.Error($"Error while destroying cam game object : {ex}");
-            }
             contentSystem.MarkScrollObjectsDirty -= MarkScrollObjectsDirty;
             contentSystem.OnViewSizeChanged -= ViewSizeChanged;
             contentSystem.OnContentSizeChanged -= ContentSizeChanged;
@@ -270,8 +182,14 @@ namespace RainMeadow.UI.Components
                 return;
             }
         }
+        public bool WithinBounds(Vector2 screenPos, Vector2 screenSize)
+        {
+            return uiMask.WithinBounds(screenPos, screenSize);
+        }
         public Vector2 SizeOfObject(Vector2 origSize)
         {
+            origSize[contentSystem.IndexToRef] = Mathf.Max(origSize[contentSystem.IndexToRef], contentSystem.ViewSize[contentSystem.IndexToRef]);
+            origSize[contentSystem.OppositeIndexToRef] = contentSystem.ViewSize[contentSystem.OppositeIndexToRef];
             return origSize;
         }
         public Vector2 PositionOfObject(int index, Vector2 origPosition)

@@ -12,7 +12,8 @@ namespace RainMeadow.UI.Interfaces
     {
         public bool ScrollObjectsDirty { get; }
         public FContainer ItemContainer { get; }
-        public bool MouseOver { get; }
+        public bool MouseOverItemBounds { get; }
+        public bool WithinBounds(Vector2 screenPosition, Vector2 screenSize);
         public float AlphaOfObject(Vector2 position, Vector2 size);
         public Vector2 PositionOfObject(int index, Vector2 origPosition);
         public Vector2 SizeOfObject(Vector2 origSize);
