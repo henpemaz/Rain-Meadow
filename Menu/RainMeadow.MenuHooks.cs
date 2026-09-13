@@ -1,10 +1,16 @@
 using HarmonyLib;
 using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
+using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Menus;
+using RainMeadow.UI.Systems;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,9 +54,15 @@ namespace RainMeadow
             On.Menu.MenuObject.ctor += On_MenuObject_Ctor;
             On.Menu.MenuObject.Update += On_MenuObject_Update;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
-            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
-            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
+
+            HookSelectableMenuObject<ButtonTemplate>();
+            HookSelectableMenuObject<UIelementWrapper>();
+            new Hook(typeof(UIelement).GetProperty("MousePos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetMethod, UiElement_MousePos);
+            new Hook(typeof(UIelement).GetProperty("IsInactive", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, UiElement_IsInactive);
+
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenLastPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
@@ -65,8 +77,31 @@ namespace RainMeadow
             _ = Ext_HUD_OwnerType.RainMeadowOverlay;
             On.ProcessManager.Update += ProcessManager_Update_UpdateOverlay;
             IL.ProcessManager.InitFadeSprite += ProcessManager_InitFadeSprite_SwitchTextSide;
-        }
 
+        }
+        private bool UiElement_IsInactive(Func<UIelement, bool> orig, UIelement self)
+        {
+            if (self.wrapper is PatchedUIelementWrapper wrapper && wrapper.IsHidden)
+                return true;
+            return orig(self);
+        }
+        private Vector2 UiElement_MousePos(Func<UIelement, Vector2> orig, UIelement element)
+        {
+            var origMousePos = orig(element);
+            if (element.wrapper is UIelementWrapper wrapper && wrapper.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
+                {
+                    return new Vector2(-600000, -600000);
+                }
+            }
+            return origMousePos;
+        }
+        private void HookSelectableMenuObject<T>() where T : MenuObject, SelectableMenuObject
+        {
+            new Hook(typeof(T).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_SelectableMenuObj_MouseSelectable<T>);
+            new Hook(typeof(T).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_SelectableMenuObj_NonMouseSelectable<T>);
+        }
         private void ProcessManager_InitFadeSprite_SwitchTextSide(ILContext il)
         {
             try
@@ -218,29 +253,40 @@ namespace RainMeadow
         void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
         {
             orig(self, menu, owner);
-            if (self is ButtonScroller.IPartOfButtonScroller && self.myContainer == null)
-            {
-                self.myContainer = new();
-                (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
-            }
+            self.TryGetOrAddScrollObject();
         }
         void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
         {
             orig(self);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                foreach (ButtonScroller.IPartOfButtonScroller subObj in self.subObjects.OfType<ButtonScroller.IPartOfButtonScroller>())
-                    subObj.Alpha = buttonScroll.Alpha;
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+                obj.UpdateInObject();
 
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                self.myContainer.alpha = self.owner is not ButtonScroller.IPartOfButtonScroller ? buttonScroll.Alpha : 1;
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+                obj.GrafUpdateInObject(timestacker);
         }
-        bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
+        bool On_SelectableMenuObj_MouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
-            return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1);
+            bool origSelect = orig(self);
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
+                    origSelect = false;
+            }
+            return origSelect;
+        }
+        bool On_SelectableMenuObj_NonMouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
+        {
+            bool origSelect = orig(self);
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsWithinBounds)
+                    origSelect = false;
+            }
+            return origSelect;
         }
         private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
         {
@@ -252,11 +298,18 @@ namespace RainMeadow
             }
             return orig(self);
         }
+        private Vector2 PositionedMenuObject_GetScreenPos(Func<PositionedMenuObject,Vector2> orig, PositionedMenuObject self)
+        {
+            var origScreenPos = orig(self);
+            if (self.owner is ScrollableContainer.Scrollable scrollable)
+                origScreenPos = scrollable.GetNewScreenPos(self, origScreenPos);
+            return origScreenPos;
+        }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
             if (self is StoryOnlineMenu sOM)
             {
-                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system. 
+                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system.
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
@@ -745,7 +798,7 @@ namespace RainMeadow
             }, self.mainMenuButtons.Count - 2);
         }
 
-        // while the host scrolls  campaigns (or someone joins mid-scroll) 
+        // while the host scrolls  campaigns (or someone joins mid-scroll)
         // SlugcatPageContinue can Update itself for a frame
         // after its data is gone and nullref.
         private bool SlugcatPageContinue_SaveDataFlag(Func<SlugcatSelectMenu.SlugcatPageContinue, bool> orig, SlugcatSelectMenu.SlugcatPageContinue self)
