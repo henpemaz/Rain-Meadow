@@ -155,6 +155,8 @@ namespace RainMeadow
 
         private void PlayerGraphics_ApplyPalette_SaintTongue(ILContext il)
         {
+            // was:  if (useJollyColor || CustomColorsEnabled())
+            // now:  if (useJollyColor || (CustomColorsEnabled() && hackySlugcatCustomization is null))
             try
             {
                 var c = new ILCursor(il);
@@ -193,7 +195,7 @@ namespace RainMeadow
                 orig(self, sLeaser, rCam);
 
                 // dev nightsky skin
-                if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
+                if (customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
                     if (customization.overlaySkin is OverlaySkin skin && skin.Available(entity))
                     {
