@@ -75,6 +75,8 @@ namespace RainMeadow
 
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
+            On.Menu.FinalResultbox.Update += FinalResultbox_Update;
+            On.Menu.ArenaOverlayResultBox.Update += ArenaOverlayResultBox_Update;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
             IL.Menu.ArenaOverlay.Update += IL_Arena_Overlay_Update;
@@ -1050,15 +1052,21 @@ namespace RainMeadow
             }
             if (!self.IsLocal()) return;
 
-            float requiredCharge = self.usableCamoLimit / 2;
+            float requiredCharge = self.usableCamoLimit * voidSpawnTax;
 
             if (self.camoCharge >= requiredCharge)
             {
                 self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
                 return;
             }
-
             var room = self.room;
+
+            if (room.voidSpawns.Find(x => x.IsLocal() && x.behavior != null && x.timeUntilFadeout > 0) is not null)
+            {
+                self.FailToSpawnWarpPoint(Player.BlackListReason.HideReasoning);
+                return;
+            }
+
 
             RainMeadow.sSpawningNonTransferable = true;
             AbstractPhysicalObject apo = new(
@@ -1662,6 +1670,7 @@ namespace RainMeadow
         }
 
         private const float voidSpawnTax = 0.5f; //change it when tax changes
+        private const int dynamicWarpMaxCooldown = 200;
         public void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
             if (isArenaMode(out var arena))
@@ -1702,10 +1711,22 @@ namespace RainMeadow
                             ? 1f
                             : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
-                    if (arena.voidMasterEnabled && self.full > voidSpawnTax)
+                    if (arena.voidMasterEnabled)
                     {
-                        self.percentLimited = 1;
-                        self.animSpeed = 2f;
+                        VoidSpawn? voidSpawn = self.Player.room?.voidSpawns?.Find(x => x.IsLocal() && x.behavior != null);
+                        float summonCooldown = Mathf.Clamp01((dynamicWarpMaxCooldown - self.Player.dynamicWarpCooldown)/(float)dynamicWarpMaxCooldown);
+                        float amoebaCooldown = voidSpawn is not null
+                            ? Mathf.Clamp01((arena.amoebaDuration * 40f - voidSpawn.timeUntilFadeout)/(arena.amoebaDuration * 40f))
+                            : 1;
+                        float taxPaid = self.full > voidSpawnTax ? 1 : 0;
+
+                        float overhaulCooldown = Mathf.Min(summonCooldown, amoebaCooldown, taxPaid);
+
+                        self.percentLimited = Mathf.Lerp(self.percentLimited, self.full * overhaulCooldown, 0.25f);
+                        self.animSpeed = Mathf.Lerp(
+                            self.animSpeed,
+                            (overhaulCooldown < 0.95f ? 0.2f : 1.5f) * (self.Player.isCamo ? 1.5f : -1f),
+                            0.05f);
                     }
                     else
                     {
@@ -2243,26 +2264,30 @@ namespace RainMeadow
                         return;
                     }
 
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                            arena.arenaSittingOnlineOrder[i]
-                        );
-
-                        if (onlinePlayer != null && !onlinePlayer.isMe)
+                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                         {
-                            if (OnlineManager.lobby.isOwner)
+                            ushort lobbyId = arena.arenaSittingOnlineOrder[i];
+                            if (arena.playersQuitMidRound.Contains(lobbyId))
+                            {
+                                continue; // already left the round; they have no session to end
+                            }
+
+                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(lobbyId);
+
+                            if (onlinePlayer != null && !onlinePlayer.isMe)
                             {
                                 onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                             }
-                            else
-                            {
-                                onlinePlayer.InvokeOnceRPC(
-                                    ArenaRPCs.Arena_RemovePlayerWhoQuit,
-                                    OnlineManager.mePlayer
-                                );
-                            }
                         }
+                    }
+                    else
+                    {
+                        OnlineManager.lobby.owner.InvokeOnceRPC(
+                            ArenaRPCs.Arena_RemovePlayerWhoQuit,
+                            OnlineManager.mePlayer
+                        );
                     }
 
                     if (OnlineManager.lobby.isOwner)
@@ -3073,6 +3098,79 @@ namespace RainMeadow
             {
                 orig(self, menu, owner, pos, size, player, index);
             }
+        }
+
+        public void ArenaOverlayResultBox_Update(
+            On.Menu.ArenaOverlayResultBox.orig_Update orig,
+            ArenaOverlayResultBox self)
+        {
+            if (!TryGetTeamScoreTotal(self, plr => plr.score, out int teamTotal))
+            {
+                orig(self);
+                return;
+            }
+
+            int ownScore = self.player.score;
+            self.player.score = teamTotal;
+            try
+            {
+                orig(self);
+            }
+            finally
+            {
+                self.player.score = ownScore;
+            }
+        }
+
+        public void FinalResultbox_Update(
+            On.Menu.FinalResultbox.orig_Update orig,
+            FinalResultbox self)
+        {
+            if (!TryGetTeamScoreTotal(self, plr => plr.totScore, out int teamTotal))
+            {
+                orig(self);
+                return;
+            }
+
+            int ownTotScore = self.player.totScore;
+            self.player.totScore = teamTotal;
+            try
+            {
+                orig(self);
+            }
+            finally
+            {
+                self.player.totScore = ownTotScore;
+            }
+        }
+
+        /// <summary>
+        /// Gets the total of <paramref name="valueSelector"/> across the team of
+        /// <paramref name="box"/>'s player, when team battle is displaying team totals.
+        /// </summary>
+        private bool TryGetTeamScoreTotal(
+            PlayerResultBox box,
+            Func<ArenaSitting.ArenaPlayer, int> valueSelector,
+            out int teamTotal)
+        {
+            teamTotal = 0;
+
+            if (!isArenaMode(out ArenaOnlineGameMode arenaOnline)
+                || !TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
+                || !teamBattle.showTeamScoreTotals
+                || box.menu is not PlayerResultMenu resultMenu
+                || resultMenu.result is null)
+            {
+                return false;
+            }
+
+            teamTotal = teamBattle.SumTeamValue(
+                arenaOnline,
+                resultMenu.result,
+                box.player,
+                valueSelector
+            );
+            return true;
         }
 
         public void IL_PlayerResultBox_GrafUpdate(ILContext il)

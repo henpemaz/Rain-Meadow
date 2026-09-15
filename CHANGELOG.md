@@ -9,6 +9,22 @@
   - Fixed positioning logic for far away players
   - Improved positioning for players really close to edges of the screen
 
+## Story
+- Fixed gates starting region transitions before all players are ready and closing the middle door before all players have crossed
+
+## Arena
+- Fixed infinite tinnitus again
+
+## Chat
+
+### Modders
+- Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
+## Engine
+- Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
+## Arena
+- Watcher's camo bar will now show the Voidmaster ability's cooldown with the purple fill
+- Watcher cannot summon more than one Amoeba at a time
+
 # Release 1.15.2
 
 ## Arena 

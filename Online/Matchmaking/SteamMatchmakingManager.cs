@@ -10,8 +10,8 @@ namespace RainMeadow
 {
     public class SteamLobbyInfo : LobbyInfo {
         public CSteamID iD;
-        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "") : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline) {
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "", bool whitelistMode = false) :
+            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline, whitelistMode) {
             iD = id;
 
 
@@ -137,14 +137,15 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         
-                        lobbies[i] = new SteamLobbyInfo(id, 
-                            Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), 
-                            SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), 
-                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY), out var hasPass) && hasPass, 
-                            SteamMatchmaking.GetLobbyMemberLimit(id), 
-                            SteamMatchmaking.GetLobbyData(id, MODS_KEY), 
+                        lobbies[i] = new SteamLobbyInfo(id,
+                            Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)),
+                            SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id),
+                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY), out var hasPass) && hasPass,
+                            SteamMatchmaking.GetLobbyMemberLimit(id),
+                            SteamMatchmaking.GetLobbyData(id, MODS_KEY),
                             SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY),
-                            SteamMatchmaking.GetLobbyData(id, CAMPAIGN_KEY)
+                            SteamMatchmaking.GetLobbyData(id, CAMPAIGN_KEY),
+                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, WHITELIST_KEY), out var isWhitelist) && isWhitelist
                         );
                     }
                 }
@@ -281,6 +282,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
+                    SteamMatchmaking.SetLobbyData(lobbyID, WHITELIST_KEY, RainMeadowModManager.IsWhitelistActive() ? "true" : "false");
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);

@@ -1,16 +1,16 @@
-using Menu;
-using Menu.Remix.MixedUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RWCustom;
-using UnityEngine;
 using System.Text.RegularExpressions;
+using Menu;
+using Menu.Remix.MixedUI;
+using RWCustom;
 using Steamworks;
+using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryOnlineMenu : SlugcatSelectMenu, IChatSubscriber
+    public class StoryOnlineMenu : SlugcatSelectMenu
     {
         //private CheckBox clientWantsToOverwriteSave;
         private CheckBox friendlyFire;
@@ -139,7 +139,7 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
             ChatTextBox.OnShutDownRequest += ResetChatInput;
-            ChatLogManager.Subscribe(this);
+            ChatLogManager.MessageLogged += OnMessageLogged;
         }
 
         public void SetupSelectableSlugcats()
@@ -272,6 +272,13 @@ namespace RainMeadow
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    storyGameMode.campaignGeneration++;
+                    storyGameMode.spinningTopEncounters.Clear();
+                    storyGameMode.hostRippleRaiser.Clear();
+                }
             }
 
             else
@@ -472,7 +479,7 @@ namespace RainMeadow
             this.isChatToggled = false;
             ResetChatInput(); //ensure chat input is properly shutdown
             ChatTextBox.OnShutDownRequest -= ResetChatInput;
-            ChatLogManager.Unsubscribe(this);
+            ChatLogManager.MessageLogged -= OnMessageLogged;
 
             RainMeadow.DebugMe();
             if ((manager.upcomingProcess != ProcessManager.ProcessID.Game) &&
@@ -720,8 +727,11 @@ namespace RainMeadow
             }
         }
 
-        public void AddMessage(string user, string message)
+        public void OnMessageLogged(string user, string message)
         {
+            if (!Active)
+                return;
+
             if (OnlineManager.lobby == null) return;
             if (ChatLogManager.ShouldMuteMessageFromUser(user)) return;
 

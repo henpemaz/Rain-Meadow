@@ -9,7 +9,8 @@ public abstract class LobbyInfo(
     int? maxPlayerCount,
     string highImpactMods = "",
     string bannedMods = "",
-    string activeTimeline = ""
+    string activeTimeline = "",
+    bool whitelistMode = false
 )
 {
     public string name = name,
@@ -20,7 +21,8 @@ public abstract class LobbyInfo(
     public int playerCount = playerCount,
         maxPlayerCount = maxPlayerCount ?? 0;
     public bool hasPassword = hasPassword,
-        pinned;
+        pinned,
+        whitelistMode = whitelistMode;
 
     public abstract string GetLobbyJoinCode(string? password = null);
 }

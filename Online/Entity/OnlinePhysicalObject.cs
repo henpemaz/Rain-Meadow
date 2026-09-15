@@ -434,7 +434,7 @@ namespace RainMeadow
             RainMeadow.Debug("Removing entity from game: " + this);
             if (apo.stuckObjects != null)
             {
-                foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                foreach (var stick in apo.stuckObjects.FindAll(x => x is not null))
                 {
                     if (stick.A.realizedObject is Weapon weapon)
                     {
@@ -455,7 +455,7 @@ namespace RainMeadow
                 {
                     if (creature.grasps != null)
                     {
-                        foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                        foreach (Creature.Grasp grabbing in creature.grasps.Where(x => x is not null).ToList())
                         {
                             grabbing.Release();
                         }
