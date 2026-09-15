@@ -351,8 +351,10 @@ namespace RainMeadow
                 RainMeadow.Debug("page refresh");
                 storyGameMode.needMenuSaveUpdate = false;
                 
-                if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.isOwner && storyGameMode.shouldMineForSaveData)
                 {
+                    RainMeadow.Debug("mine for saveData");
+                    storyGameMode.shouldMineForSaveData = false;
                     for (int i = 0; i < slugcatColorOrder.Count; i++)
                     {
                         saveGameData[slugcatColorOrder[i]] = MineForSaveData(manager, slugcatColorOrder[i]);

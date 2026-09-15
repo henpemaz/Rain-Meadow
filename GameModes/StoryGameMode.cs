@@ -62,6 +62,7 @@ namespace RainMeadow
         public StoryLobbyData.MenuSaveStateState? menuSaveState;
         public SlugcatSelectMenu.SaveGameData? menuSaveGameData;
         public bool needMenuSaveUpdate = false;
+        public bool shouldMineForSaveData;
 
 
         public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
@@ -273,6 +274,7 @@ namespace RainMeadow
                 {
                     OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.StoryMenu);
                 }
+                if (!lobby.isOwner) shouldMineForSaveData = true;
             }
 
             if (lobby.isOwner)

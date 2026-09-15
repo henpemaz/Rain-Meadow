@@ -109,7 +109,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             
             c.GotoNext(MoveType.After,
-                x => x.MatchCallvirt("System.Collections.Generic.Dictionary`2<SlugcatStats/Name,Menu.SlugcatSelectMenu/SaveGameData>", "set_Item")
+                x => x.MatchCallvirt(typeof(Dictionary<SlugcatStats.Name,SlugcatSelectMenu.SaveGameData>).GetMethod("set_Item"))
                 );
 
             c.MarkLabel(skip);           
