@@ -247,7 +247,8 @@ public class LobbySelectMenu : SmartMenu
             lobbyInfo.bannedMods.Split('\n'),
             () => RequestJoinLobby(lobbyInfo, password),
             false,
-            lobbyInfo.GetLobbyJoinCode(password)
+            lobbyInfo.GetLobbyJoinCode(password),
+            lobbyInfo.whitelistMode
         );
     }
 
