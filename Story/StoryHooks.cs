@@ -2077,20 +2077,28 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
-                {
-                    self.continueButton.signalText = "CONTINUE";
-                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled)
-                    {
-                        self.Singal(self.continueButton, "CONTINUE");
-                        self.continueButton.toggled = false;
-                    }
-                }
                 else
                 {
-                    self.continueButton.signalText = "READY";
-                    self.continueButton.menuLabel.text = self.Translate("READY");
+                    if (storyGameMode.isInGame)
+                    {
+                        self.continueButton.buttonBehav.greyedOut = false; // unblock watcher ripple screens
+                    }
+
+                    if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                    {
+                        self.continueButton.signalText = "CONTINUE";
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        if (self.continueButton.toggled)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                            self.continueButton.toggled = false;
+                        }
+                    }
+                    else
+                    {
+                        self.continueButton.signalText = "READY";
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
                 }
             }
         }
