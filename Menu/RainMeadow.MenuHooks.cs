@@ -72,47 +72,53 @@ namespace RainMeadow
 
         private void SlugcatSelectMenu_ctor(ILContext il)
         {
-            // this.saveGameData[this.slugcatColorOrder[i]] = global::Menu.SlugcatSelectMenu.MineForSaveData(manager, this.slugcatColorOrder[i]);
-            ILCursor c = new ILCursor(il);
+            try
+            {
+                // this.saveGameData[this.slugcatColorOrder[i]] = global::Menu.SlugcatSelectMenu.MineForSaveData(manager, this.slugcatColorOrder[i]);
+                ILCursor c = new ILCursor(il);
 
-            ILLabel skip = c.DefineLabel();
+                ILLabel skip = c.DefineLabel();
 
-            c.GotoNext(MoveType.After,                
-                x => x.MatchLdcI4(0),
-                x => x.MatchStloc(5),
-                x => x.MatchBr(out _),
-                x => x.MatchLdarg(0)
-                );
+                c.GotoNext(MoveType.After,
+                    x => x.MatchLdcI4(0),
+                    x => x.MatchStloc(5),
+                    x => x.MatchBr(out _),
+                    x => x.MatchLdarg(0)
+                    );
 
-            c.Emit(OpCodes.Ldloc, 5);
-            c.EmitDelegate((Menu.SlugcatSelectMenu self, int index)=> {
-                if (isStoryMode(out var story) && !OnlineManager.lobby.isOwner)
+                c.Emit(OpCodes.Ldloc, 5);
+                c.EmitDelegate((Menu.SlugcatSelectMenu self, int index) =>
                 {
-                    var pageIndex = self.indexFromColor(story.currentCampaign);
-                    if (index == pageIndex)
+                    if (isStoryMode(out var story) && !OnlineManager.lobby.isOwner)
                     {
-                        self.saveGameData[self.slugcatColorOrder[index]] = story.menuSaveGameData;
-                        self.slugcatPageIndex = index;
+                        var pageIndex = self.indexFromColor(story.currentCampaign);
+                        if (index == pageIndex)
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = story.menuSaveGameData;
+                            self.slugcatPageIndex = index;
+                        }
+                        else
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = null;
+                        }
+                        return true;
                     }
-                    else
-                    {
-                        self.saveGameData[self.slugcatColorOrder[index]] = null;
-                    }
-                    return true;                    
-                }
-                return false;
-            });
-            c.Emit(OpCodes.Brtrue, skip);
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
 
+                c.Emit(OpCodes.Ldarg_0);
 
+                c.GotoNext(MoveType.After,
+                    x => x.MatchCallvirt(typeof(Dictionary<SlugcatStats.Name, SlugcatSelectMenu.SaveGameData>).GetMethod("set_Item"))
+                    );
 
-            c.Emit(OpCodes.Ldarg_0);
-            
-            c.GotoNext(MoveType.After,
-                x => x.MatchCallvirt(typeof(Dictionary<SlugcatStats.Name,SlugcatSelectMenu.SaveGameData>).GetMethod("set_Item"))
-                );
-
-            c.MarkLabel(skip);           
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Error($"Error while IL hooking : {e}");
+            }
         }
 
         private void ProcessManager_InitFadeSprite_SwitchTextSide(ILContext il)
