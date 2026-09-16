@@ -66,6 +66,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.CurrentFood)).GetGetMethod(), SlugcatPageContinue_SaveDataInt);         
 
             On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
@@ -77,7 +78,58 @@ namespace RainMeadow
             _ = Ext_HUD_OwnerType.RainMeadowOverlay;
             On.ProcessManager.Update += ProcessManager_Update_UpdateOverlay;
             IL.ProcessManager.InitFadeSprite += ProcessManager_InitFadeSprite_SwitchTextSide;
+            IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
+        }
 
+        private void SlugcatSelectMenu_ctor(ILContext il)
+        {
+            try
+            {
+                // this.saveGameData[this.slugcatColorOrder[i]] = global::Menu.SlugcatSelectMenu.MineForSaveData(manager, this.slugcatColorOrder[i]);
+                ILCursor c = new ILCursor(il);
+
+                ILLabel skip = c.DefineLabel();
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchLdcI4(0),
+                    x => x.MatchStloc(5),
+                    x => x.MatchBr(out _),
+                    x => x.MatchLdarg(0)
+                    );
+
+                c.Emit(OpCodes.Ldloc, 5);
+                c.EmitDelegate((Menu.SlugcatSelectMenu self, int index) =>
+                {
+                    if (isStoryMode(out var story) && !OnlineManager.lobby.isOwner)
+                    {
+                        var pageIndex = self.indexFromColor(story.currentCampaign);
+                        if (index == pageIndex)
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = story.menuSaveGameData;
+                            self.slugcatPageIndex = index;
+                        }
+                        else
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = null;
+                        }
+                        return true;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+
+                c.Emit(OpCodes.Ldarg_0);
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchCallvirt(typeof(Dictionary<SlugcatStats.Name, SlugcatSelectMenu.SaveGameData>).GetMethod("set_Item"))
+                    );
+
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Error($"Error while IL hooking : {e}");
+            }
         }
         private bool UiElement_IsInactive(Func<UIelement, bool> orig, UIelement self)
         {
@@ -806,12 +858,17 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self.saveGameData == null) return false;
             return orig(self);
         }
+        private int SlugcatPageContinue_SaveDataInt(Func<SlugcatSelectMenu.SlugcatPageContinue, int> orig, SlugcatSelectMenu.SlugcatPageContinue self)
+        {
+            if (OnlineManager.lobby != null && self.saveGameData == null) return 0;
+            return orig(self);
+        }
 
         private Menu.SlugcatSelectMenu.SaveGameData? SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
             {
-                if (isStoryMode(out var story) && story.menuSaveGameData != null)
+                if (isStoryMode(out var story))// && story.menuSaveGameData != null)
                 {
                     return story.menuSaveGameData; // we will get this from the owner  if null next lobby tick
                 }
