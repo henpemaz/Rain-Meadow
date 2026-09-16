@@ -2090,10 +2090,6 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (storyGameMode.isInGame)
-                    {
-                        self.continueButton.buttonBehav.greyedOut = false; // unblock watcher ripple screens
-                    }
 
                     if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
                     {
