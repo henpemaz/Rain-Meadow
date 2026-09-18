@@ -4,6 +4,7 @@ using RainMeadow.UI.Components.Configurables;
 namespace RainMeadow.UI.Components;
 public class MSCSlugcatSettings : OnlineSlugcatSettings<MSCSlugcatSettings>
 {
+    public const string paincatName = "<PAINCATNAME>";
     public override string Name => "MSC Settings";
     private readonly OnlineSettingCheckBox? sainotSetting;
     private readonly OnlineSettingIntValue? ascendSetting;
@@ -85,11 +86,18 @@ public class MSCSlugcatSettings : OnlineSlugcatSettings<MSCSlugcatSettings>
     }
     public MSCSlugcatSettings(Menu.Menu menu, MenuObject owner, string painCatName) : base(menu, owner)
     {
+        string translPainCatName = menu.Translate(painCatName);
         for (int i = 0; i < elements.Count; i++)
         {
             if (elements[i] is OnlineSettingConfigurable param)
             {
-                param.label.text = param.label.text.Replace("<PAINCATNAME>", menu.Translate(painCatName));
+                param.label.text = param.label.text.Replace(paincatName, translPainCatName);
+
+                if (param is OnlineSettingUIconfig paramUiConfig)
+                    paramUiConfig.uiConfig.description = paramUiConfig.uiConfig.description.Replace(paincatName, translPainCatName);
+
+                if (param is OnlineSettingCheckBox paramCheckBox && paramCheckBox.altDescription is not null)
+                    paramCheckBox.altDescription = paramCheckBox.altDescription.Replace(paincatName, translPainCatName);
             }
         }
 

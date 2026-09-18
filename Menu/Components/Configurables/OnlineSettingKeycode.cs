@@ -54,18 +54,10 @@ public class OnlineSettingKeycode : OnlineSettingUIconfig
             }
         }
     }
-
-    protected override void ShowSyncInUIConfig(bool grayedOut, object value)
-        => ShowSyncInGenericUIConfig(keyBinder, grayedOut, value);
     public override void GrafUpdate(float timeStacker)
     {
         if (color is not null) keyBinder.colorEdge = (Color)color;
         base.GrafUpdate(timeStacker);
         label.label.color = keyBinder.rect.colorEdge;
-
-        keyBinder._sprite.isVisible = false;
-        keyBinder._label.isVisible = visible;
-        keyBinder._label.alpha = currentAlpha * (keyBinder.held ? 0.5f : 1f);
-        HandleRectAlpha(keyBinder.rect);
     }
 }

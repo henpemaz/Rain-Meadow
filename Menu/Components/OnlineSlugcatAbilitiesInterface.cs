@@ -31,32 +31,6 @@ namespace RainMeadow.UI.Components
                 SwitchTab(selectSettings);
             }
         }
-        public static void ShowSyncInRemixCheckbox(OpCheckBox config, bool greyout, bool tosync)
-        {
-            config.greyedOut = greyout;
-            if (!config.held)
-                config.SetValueBool(tosync);
-        }
-        public static void ShowSyncInTextbox(OpTextBox textbox, bool greyout, object obj)
-        {
-
-            textbox.greyedOut = greyout;
-            textbox.held = textbox._KeyboardOn;
-
-            if (textbox.held) return;
-
-            if (textbox.accept == OpTextBox.Accept.Int)
-                textbox.valueInt = (int)obj;
-            else if (textbox.accept == OpTextBox.Accept.Float)
-                textbox.valueFloat = (float)obj;
-            else textbox.value = (string)obj;
-        }
-        public static void ShowSyncInGenericUIConfig(UIconfig uiConfig, bool greyout, object obj)
-        {
-            uiConfig.greyedOut = greyout;
-            if (!uiConfig.held)
-                uiConfig.value = obj.ToString();
-        }
         public void SaveAllInterfaceOptions(bool isOwner)
         {
             foreach (SettingsPage settings in settingSignals.Values)

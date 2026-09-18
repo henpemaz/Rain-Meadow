@@ -31,18 +31,11 @@ public class OnlineSettingCheckBox : OnlineSettingUIconfig
         };
     }
 
-    protected override void ShowSyncInUIConfig(bool grayedOut, object value)
-        => ShowSyncInRemixCheckbox(checkBox, grayedOut, (bool)value);
-
     public override void GrafUpdate(float timeStacker)
     {
         if (color is not null) checkBox.colorEdge = (Color)color;
         base.GrafUpdate(timeStacker);
         label.label.color = checkBox.rect.colorEdge;
-
-        checkBox.symbolSprite.isVisible = visible;
-        checkBox.symbolSprite.alpha *= currentAlpha;
-        HandleRectAlpha(checkBox.rect);
     }
     public override void SyncValueToAttribute()
     {

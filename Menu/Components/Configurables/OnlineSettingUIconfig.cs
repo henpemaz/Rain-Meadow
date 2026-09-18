@@ -3,9 +3,10 @@ using Menu.Remix;
 using UnityEngine;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
+using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components.Configurables;
-public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
+public class OnlineSettingUIconfig : OnlineSettingConfigurable
 {
     public override MenuObject selectable => uiConfig.wrapper;
     public override object Value => uiConfig.value;
@@ -31,27 +32,22 @@ public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
         uiConfig.Change();
     }
 
-    protected abstract void ShowSyncInUIConfig(bool grayedOut, object value);
-    protected void HandleRectAlpha(DyeableRect? dyeableRect)
+    protected virtual void ShowSyncInUIConfig(bool grayedOut, object value)
     {
-        if (dyeableRect is not null)
+        uiConfig.greyedOut = grayedOut;
+
+        if (uiConfig is OpTextBox textBox)
+            textBox.held = textBox._KeyboardOn;
+
+        if (!uiConfig.held)
         {
-            int[] hiddenSides = dyeableRect.SideSprites();
-            for (int i = 0; i < dyeableRect.sprites.Length; i++)
+            if (uiConfig is OpCheckBox checkBox && value is bool b)
             {
-                if (dyeableRect._filled && i < 9)
-                {
-                    dyeableRect.sprites[i].alpha *= currentAlpha;
-                }
-                else
-                {
-                    dyeableRect.sprites[i].alpha = currentAlpha;
-                }
-                dyeableRect.sprites[i].isVisible = visible && !dyeableRect.isHidden;
+                checkBox.SetValueBool(b);
             }
-            for (int i = 0; i < hiddenSides.Length; i++)
+            else
             {
-                dyeableRect.sprites[hiddenSides[i]].isVisible = false;
+                uiConfig.value = value.ToString();
             }
         }
     }
@@ -64,7 +60,7 @@ public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
             + Vector2.up * (size.y - uiConfig.size.y)/2f;
         if (data.AttributeValue is not object value) return;
         if (!visible) return;
-        if (isClient) SyncValueToAttribute();
+        // if (isClient) SyncValueToAttribute();
         ShowSyncInUIConfig(grayedOut, value);
     }
     public override void GrafUpdate(float timeStacker)
@@ -72,6 +68,11 @@ public abstract class OnlineSettingUIconfig : OnlineSettingConfigurable
         base.GrafUpdate(timeStacker);
         if (!visible && uiConfig.held) uiConfig.held = false;
         uiConfig.Hidden = !visible;
+
+        uiConfig.myContainer.alpha = currentAlpha;
+        uiConfig.myContainer.isVisible = visible;
+
+        if (color is Color c) label.label.color = c;
     }
     public override void ResetValueToDefault()
     {

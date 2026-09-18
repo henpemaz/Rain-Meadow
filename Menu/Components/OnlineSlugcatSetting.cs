@@ -28,6 +28,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     public float textSpacing;
     public bool wasHidden = true;
     public int lastVisibleElementCount = 0;
+    public int lastEndPosition = 0;
 
     private int position;
 
@@ -74,7 +75,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         offset = fullSize - defaultBoxSize;
         offset.x /= 2f;
         scrollableContainer = new(menu, this, offset, defaultBoxSize);
-        scrollableContainer.uiMask.CamViewSizeOffset = (new Vector2(0, -2) + Vector2.up * 0.01f);
+        scrollableContainer.uiMask.CamViewSizeOffset = new Vector2(0, -2) + Vector2.up * 0.01f - offset;
         scrollableContainer.uiMask.CamViewPosOffset = new(0, 22.5f);
         scroller = scrollableContainer.CreateAndAttachScrollable(1000);
         scroller.defaultSubObjectAnchorRelativeToScrollable = ScrollSystem.Anchor.TopLeft;
@@ -197,6 +198,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         }
         if (lastVisibleElementCount != visibleElementCount)
         {
+            // Update only if there's a change in buttons
             lastVisibleElementCount = visibleElementCount;
             BindSettingsButtons(IsActuallyHidden);
         }
@@ -221,6 +223,13 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
                 ReorderTabAndElements();
                 return;
             }
+
+            if (lastEndPosition != position)
+            {
+                // Update only if there's a change in position
+                lastEndPosition = position;
+                UpdateScrollerSize();
+            }
         }
     }
     public virtual void UpdateScrollerSize()
@@ -238,7 +247,8 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         {
             float idealPos = Mathf.Max(
                 scrollableContainer.size.y,
-                offset.y + (float)maxY - (float)minY + 2 * (spacing + OnlineSettingElement.elementHeight)
+                offset.y +
+                (float)maxY - (float)minY + 2 * (spacing + OnlineSettingElement.elementHeight)
             );
 
             // Ease does stop the menu from jumping when closing tabs
@@ -329,7 +339,6 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
         UpdateElementsVisibility();
         UpdateElementsPosition();
-        UpdateScrollerSize();
     }
     public override void GrafUpdate(float timeStacker)
     {

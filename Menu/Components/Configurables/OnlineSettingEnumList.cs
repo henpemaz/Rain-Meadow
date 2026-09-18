@@ -75,30 +75,11 @@ public class OnlineSettingEnumList : OnlineSettingUIconfig
 
         comboBox._Initialize(data.configurable.defaultValue);
     }
-    protected override void ShowSyncInUIConfig(bool grayedOut, object value)
-        => ShowSyncInGenericUIConfig(comboBox, grayedOut, value);
 
     public override void GrafUpdate(float timeStacker)
     {
         if (color is not null) comboBox.colorEdge = (Color)color;
         base.GrafUpdate(timeStacker);
         label.label.color = comboBox._rect.colorEdge;
-
-        comboBox._glowFocus?.sprite.isVisible = visible && !comboBox._glowFocus.isHidden;
-        comboBox._glowFocus?.sprite.alpha *= currentAlpha;
-        comboBox._lblText.isVisible = visible;
-        comboBox._lblText.alpha = currentAlpha;
-        comboBox._sprArrow?.isVisible = visible;
-        comboBox._sprArrow?.alpha = currentAlpha;
-        comboBox._searchCursor?.isVisible = visible;
-        comboBox._searchCursor?.alpha *= currentAlpha;
-        comboBox._lblList.Do(x =>
-        {
-            x.isVisible = visible;
-            x.alpha = currentAlpha;
-        });
-        HandleRectAlpha(comboBox._rect);
-        HandleRectAlpha(comboBox._rectList);
-        HandleRectAlpha(comboBox._rectScroll);
     }
 }

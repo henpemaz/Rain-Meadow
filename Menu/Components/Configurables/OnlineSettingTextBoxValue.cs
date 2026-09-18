@@ -13,19 +13,11 @@ public abstract class OnlineSettingTextBoxValue : OnlineSettingUIconfig
     public OnlineSettingTextBoxValue(Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, SettingsConfigData config, OpTextBox textBox, OnlineSettingTab? tab = null)
          : base(menu, owner, tabWrapper, config, textBox, tab) {}
 
-    protected override void ShowSyncInUIConfig(bool grayedOut, object value)
-        => ShowSyncInTextbox(textBox, grayedOut, value);
     public override void GrafUpdate(float timeStacker)
     {
         if (color is not null) textBox.colorEdge = (Color)color;
         base.GrafUpdate(timeStacker);
         label.label.color = textBox.rect.colorEdge;
-
-        textBox.label.isVisible = visible;
-        textBox.label.alpha = currentAlpha;
-        textBox._cursor.isVisible = visible;
-        textBox._cursor.alpha *= currentAlpha;
-        HandleRectAlpha(textBox.rect);
     }
 }
 

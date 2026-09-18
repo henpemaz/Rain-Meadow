@@ -81,8 +81,6 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
             nameof(ArenaOnlineGameMode.challengeDenEjection),
             "Dens eject and block players after some time")
         );
-
-        AddSlugcatSettingsTab(new(IMPORTEXPORT, Color.gray));
     }
 
     public GameSettings(Menu.Menu menu, MenuObject owner) : base(menu, owner, 2f)
