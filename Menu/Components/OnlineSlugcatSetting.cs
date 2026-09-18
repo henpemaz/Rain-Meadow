@@ -411,7 +411,7 @@ public abstract class OnlineSlugcatSettings<TSelf> : OnlineSlugcatSettingsBase w
                 RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name}.{config.attributeName} is already in the page !");
                 return;
             }
-            if (!OnlineSettingConfigurable.SettingsConfigData.GetAttributeOwnerDict.ContainsKey(config.attributeOwnerType))
+            if (!OnlineSettingConfigurable.SettingsConfigData.HasASupportedGetFunction(config.attributeOwnerType))
             {
                 RainMeadow.Error($"Could not add online configurable {config.name} : {config.attributeOwnerType.Name} is not registered and has no GET function !");
                 return;

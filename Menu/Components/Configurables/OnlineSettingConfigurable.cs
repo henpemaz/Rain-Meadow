@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Menu;
 using Menu.Remix;
 using UnityEngine;
@@ -62,7 +63,7 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
 
     public readonly struct SettingsConfigData
     {
-        internal static Dictionary<Type, Func<object?>> GetAttributeOwnerDict = [];
+        private static readonly Dictionary<Type, Func<object?>> GetAttributeOwnerDict = [];
         public readonly string name;
         public readonly string attributeName;
         public readonly Type attributeOwnerType;
@@ -72,6 +73,10 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
         public readonly string description;
         public readonly bool isClient;
 
+        private readonly FieldInfo? attributeField;
+        private readonly Func<object?>? getAttributeOwner;
+
+        public static bool HasASupportedGetFunction(Type type) => GetAttributeOwnerDict.ContainsKey(type);
         public static void AddNewGetAttributeOwnerFunction<T>(Func<T?> getAttributeOwnerFunc) where T : class
         {
             GetAttributeOwnerDict[typeof(T)] = getAttributeOwnerFunc;
@@ -90,6 +95,32 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
             this.description = description;
             this.attributeOwnerType = attributeOwnerType;
             this.isClient = isClient;
+
+            FieldInfo? field = attributeOwnerType.GetField(arenaOnlineAttributeName);
+            if (field is not null && field.FieldType == configurable.settingType)
+            {
+                attributeField = field;
+            }
+            else
+            {
+                if (field is null)
+                    RainMeadow.Error($"Field {arenaOnlineAttributeName} of type {attributeOwnerType.Name} couldn't be found.");
+                else
+                    RainMeadow.Error($"Field {arenaOnlineAttributeName} of type {attributeOwnerType.Name} does not have the same type as the configurable ! Configurable has type {configurable.settingType} while field has type {field.FieldType}");
+                RainMeadow.Error($"This SettingsConfigData of {attributeOwnerType.Name}.{arenaOnlineAttributeName} won't save the attribute !");
+                attributeField = null;
+            }
+
+            if (GetAttributeOwnerDict.TryGetValue(attributeOwnerType, out var selector))
+            {
+                getAttributeOwner = selector;
+            }
+            else
+            {
+                RainMeadow.Error($"Type {attributeOwnerType.Name} does not have a Get function ! Please add a Get function with SettingsConfigData.AddNewGetAttributeOwnerFunction.");
+                RainMeadow.Error($"This SettingsConfigData of {attributeOwnerType.Name}.{arenaOnlineAttributeName} won't save the attribute !");
+                getAttributeOwner = null;
+            }
         }
         public SettingsConfigData(string name, ConfigurableBase configurable, string arenaOnlineAttributeName, string description = "", bool isClient = false)
             : this(name, configurable, typeof(ArenaOnlineGameMode), arenaOnlineAttributeName, description, isClient) {}
@@ -115,15 +146,15 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(attributeName)) return null;
-                return GetAttributeOwnerDict[attributeOwnerType]() is object data
-                    ? attributeOwnerType.GetField(attributeName)?.GetValue(data)
+                if (attributeField is null || getAttributeOwner is null) return null;
+                return getAttributeOwner() is object data
+                    ? attributeField.GetValue(data)
                     : null;
             }
             set
             {
-                if (string.IsNullOrWhiteSpace(attributeName)) return;
-                if (GetAttributeOwnerDict[attributeOwnerType]() is object data)
+                if (attributeField is null || getAttributeOwner is null) return;
+                if (getAttributeOwner() is object data)
                 {
                     object? converted;
                     if (value is string strVal)
@@ -133,8 +164,9 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
                         {
                             converted = ValueConverter.ConvertToValue(strVal, AttributeType);
                         }
-                        catch (FormatException)
+                        catch (FormatException ex)
                         {
+                            RainMeadow.Error($"Exception while formatting the value : {ex}");
                             return;
                         }
                     }
@@ -142,6 +174,7 @@ public abstract class OnlineSettingConfigurable : OnlineSettingElement
                     {
                         converted = value;
                     }
+
                     try
                     {
                         attributeOwnerType.GetField(attributeName).SetValue(data, converted);
