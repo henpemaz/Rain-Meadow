@@ -36,7 +36,13 @@ public class OnlineSettingTab : OnlineSettingElement
         }
         else
         {
-            icon = new PositionedSprite(menu, this, Vector2.zero, new(data.icon, false));
+            string iconName = data.icon;
+            if (!Futile.atlasManager.DoesContainElementWithName(iconName))
+            {
+                RainMeadow.Error($"Could not find icon name {iconName} in the atlas manager. Default icon will be used.");
+                iconName = "Futile_White";
+            }
+            icon = new PositionedSprite(menu, this, Vector2.zero, new(iconName, false));
         }
 
         if (data.name is not null && data.color is not null)
