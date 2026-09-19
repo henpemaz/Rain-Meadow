@@ -42,7 +42,7 @@ namespace RainMeadow.UI.Systems
                 return parentMenuObj.ParentInScroller;
             }
         }
-        public bool IsMouseWithinBounds => scroller == null || scroller.MouseOverItemBounds;
+        public bool IsMouseWithinBounds => scroller == null || scroller.MouseOver;
         public bool IsWithinBounds => scroller == null || scroller.WithinBounds(ScreenPos, Size);
         public Vector2 ScreenPos => menuObject is PositionedMenuObject posObj ? posObj.ScreenPos : default;
         public virtual float LocalAlpha { get => desiredAlpha; set => desiredAlpha = value; }
