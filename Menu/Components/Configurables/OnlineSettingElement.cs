@@ -82,8 +82,16 @@ public abstract class OnlineSettingElement : RectangularMenuObject
 
         targetPos = forcePos ?? WantedPosition;
 
-        pos = Vector2.Lerp(pos, targetPos, posTween);
-        currentAlpha = Mathf.Lerp(currentAlpha, alpha, alphaTween);
+        if (menu.manager.rainWorld.options.quality == Options.Quality.LOW)
+        {
+            pos = targetPos;
+            currentAlpha = alpha;
+        }
+        else
+        {
+            pos = Vector2.Lerp(pos, targetPos, posTween);
+            currentAlpha = Mathf.Lerp(currentAlpha, alpha, alphaTween);
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {
