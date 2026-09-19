@@ -16,7 +16,6 @@ namespace RainMeadow.UI.Components
     {
         public static bool debug = false;
         public readonly string IDForTexture;
-        public bool dirty = true;
         public UICamera uiCam;
         public FTexture? insideTexture;
         public FContainer camContainer, maskContainer;
@@ -28,7 +27,6 @@ namespace RainMeadow.UI.Components
             {
                 if (value == _camViewPosOffset) return;
                 _camViewPosOffset = value;
-                dirty = true;
             }
         }
         public Vector2 CamViewSizeOffset
@@ -37,7 +35,6 @@ namespace RainMeadow.UI.Components
             {
                 if (value == _camViewSizeOffset) return;
                 _camViewSizeOffset = value;
-                dirty = true;
             }
         }
         public bool MouseOverTexture => WithinBounds(menu.mousePosition, default);
@@ -106,11 +103,10 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (dirty || lastSize != size)
+            if (lastSize != size)
             {
                 uiCam.size = CamViewSizeOffset + size;
                 uiCam.pos = initialCamPos + CamViewPosOffset;
-                dirty = false;
             }
 
             base.Update();
@@ -221,6 +217,8 @@ namespace RainMeadow.UI.Components
                 // int height = Mathf.CeilToInt(sizeY);
                 DestroyRender();
                 CreateRender();
+
+                camDirty = false;
             }
             public override void RemoveSprites()
             {
@@ -239,7 +237,6 @@ namespace RainMeadow.UI.Components
 
                 base.Update();
 
-                camDirty = false;
             }
             public override void GrafUpdate(float timeStacker)
             {
