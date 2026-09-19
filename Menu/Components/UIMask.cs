@@ -110,7 +110,9 @@ namespace RainMeadow.UI.Components
             {
                 uiCam.size = CamViewSizeOffset + size;
                 uiCam.pos = initialCamPos + CamViewPosOffset;
+                dirty = false;
             }
+
             base.Update();
         }
         public override void GrafUpdate(float timeStacker)
@@ -141,7 +143,7 @@ namespace RainMeadow.UI.Components
             public Vector3 camPos;
             public bool camDirty = true, _isHidden;
             public event Action<RenderTexture> OnCameraRenderTextureMade;
-            public bool IsHidden 
+            public bool IsHidden
             { get => _isHidden;
                 set
                 {
@@ -187,6 +189,7 @@ namespace RainMeadow.UI.Components
                 {
                     filterMode = FilterMode.Point
                 };
+
                 cam.targetTexture = cameraRT;
                 OnCameraRenderTextureMade?.Invoke(cameraRT);
             }
@@ -214,11 +217,10 @@ namespace RainMeadow.UI.Components
                 camPos = new Vector3(posXOffset, posYOffset, -50f);
                 cam.depth = -1000f;
 
-                int width = Mathf.CeilToInt(sizeX);
-                int height = Mathf.CeilToInt(sizeY);
+                // int width = Mathf.CeilToInt(sizeX);
+                // int height = Mathf.CeilToInt(sizeY);
                 DestroyRender();
                 CreateRender();
-
             }
             public override void RemoveSprites()
             {
@@ -231,9 +233,13 @@ namespace RainMeadow.UI.Components
             {
                 if (lastSize != size)
                     camDirty = true;
+
                 if (camDirty)
                     RefreshCamera();
+
                 base.Update();
+
+                camDirty = false;
             }
             public override void GrafUpdate(float timeStacker)
             {

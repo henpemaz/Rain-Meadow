@@ -6,6 +6,7 @@ using RainMeadow.UI.Systems;
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -152,12 +153,17 @@ namespace RainMeadow.UI.Components
         {
             uiMask.size = size;
             UpdateScrollingSystemComponents();
-            lastScrollableDirty = scrollableDirty;
-            scrollableDirty = false;
-            base.Update();
+
+            if (!IsHidden)
+            {
+                lastScrollableDirty = scrollableDirty;
+                scrollableDirty = false;
+                base.Update();
+            }
 
             if (!menu.FreezeMenuFunctions && !IsHidden && MouseOver && menu.manager.menuesMouseMode)
                 AddScroll(menu.mouseScrollWheelMovement);
+
             UpdateScroll();
         }
         public override void RemoveSprites()

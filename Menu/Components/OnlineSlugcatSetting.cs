@@ -29,7 +29,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
     public bool wasHidden = true;
     public int lastVisibleElementCount = 0;
     public int lastEndPosition = 0;
-
+    public bool updateScroll = true;
     private int position;
 
     public OnlineSettingTab? GetSettingTab(SlugcatStats.Name slugcatTab)
@@ -228,7 +228,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             {
                 // Update only if there's a change in position
                 lastEndPosition = position;
-                UpdateScrollerSize();
+                updateScroll = true;
             }
         }
     }
@@ -237,10 +237,11 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         float? minY = null, maxY = null;
         for (int i = 0; i < elements.Count; i++)
         {
-            if (minY is null || minY > elements[i].pos.y)
-                minY = elements[i].pos.y;
-            if (maxY is null || maxY < elements[i].pos.y)
-                maxY = elements[i].pos.y;
+            var posY = elements[i].forcePos is not null ? elements[i].forcePos!.Value.y : elements[i].WantedPosition.y;
+            if (minY is null || minY > posY)
+                minY = posY;
+            if (maxY is null || maxY < posY)
+                maxY = posY;
         }
 
         if (maxY is not null && minY is not null)
@@ -251,9 +252,17 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
                 (float)maxY - (float)minY + 2 * (spacing + OnlineSettingElement.elementHeight)
             );
 
-            // Ease does stop the menu from jumping when closing tabs
-            scroller.size.y = Mathf.Lerp(scroller.size.y, idealPos, 0.1f);
-            scrollableContainer.contentSystem.ContentSize = scroller.size.y;
+            if (Mathf.Abs(idealPos - scroller.size.y) > 1)
+            {
+                // Ease does stop the menu from jumping when closing tabs
+                scroller.size.y = Mathf.Lerp(scroller.size.y, idealPos, 0.1f);
+                scrollableContainer.contentSystem.ContentSize = scroller.size.y;
+            }
+            else
+            {
+                // stop updating the scroll
+                updateScroll = false;
+            }
         }
     }
 
@@ -339,6 +348,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
 
         UpdateElementsVisibility();
         UpdateElementsPosition();
+        if (updateScroll) UpdateScrollerSize();
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -347,7 +357,7 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         {
             for (int i = 0; i < elements.Count; i++)
             {
-                elements[i].pos = elements[i].targetPos + Vector2.up * 5f;
+                elements[i].pos = elements[i].targetPos + Vector2.up * 15f;
                 elements[i].HardSetAlpha(0);
             }
         }

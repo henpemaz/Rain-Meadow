@@ -76,6 +76,18 @@ public class OnlineSettingButtons : OnlineSettingElement, IPLEASEUPDATEME
 
     public override void Update()
     {
+        if (messageTimer > 0)
+        {
+            messageTimer--;
+            if (messageTimer == 0)
+            {
+                label.text = menu.Translate(defaultText);
+                label.label.color = Color.white;
+            }
+        }
+
+        if (IsHidden) return;
+
         base.Update();
 
         label.pos = Vector2.left * textSpacing / 2f;
@@ -91,15 +103,6 @@ public class OnlineSettingButtons : OnlineSettingElement, IPLEASEUPDATEME
             buttons[i].greyedOut = ownerOnly[i] && grayedOut;
         }
 
-        if (messageTimer > 0)
-        {
-            messageTimer--;
-            if (messageTimer == 0)
-            {
-                label.text = menu.Translate(defaultText);
-                label.label.color = Color.white;
-            }
-        }
     }
 
     public override void GrafUpdate(float timeStacker)
