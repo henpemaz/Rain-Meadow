@@ -35,6 +35,7 @@ namespace RainMeadow
             On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
+            On.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_GetDataFromGame;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
             On.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor;
             IL.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor_ClientDontFilterRegions;
@@ -1594,6 +1595,16 @@ namespace RainMeadow
             orig(self, buttonBlack);
         }
 
+        // never, ever have a reason to force grey our buttons. We need those to move on
+        private void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, Menu.SleepAndDeathScreen self, Menu.KarmaLadderScreen.SleepDeathScreenDataPackage package)
+        {
+            orig(self, package);
+            if (isStoryMode(out _) && self.RippleLadderMode)
+            {
+                self.forceWatchAnimation = false;
+            }
+        }
+
         private void CustomEndGameScreen_GetDataFromSleepScreen(On.Menu.CustomEndGameScreen.orig_GetDataFromSleepScreen orig, Menu.CustomEndGameScreen self, WinState.EndgameID endGameID)
         {
             if (isStoryMode(out _) && OnlineManager.lobby.isOwner)
@@ -2077,20 +2088,24 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
-                {
-                    self.continueButton.signalText = "CONTINUE";
-                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled)
-                    {
-                        self.Singal(self.continueButton, "CONTINUE");
-                        self.continueButton.toggled = false;
-                    }
-                }
                 else
                 {
-                    self.continueButton.signalText = "READY";
-                    self.continueButton.menuLabel.text = self.Translate("READY");
+
+                    if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                    {
+                        self.continueButton.signalText = "CONTINUE";
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        if (self.continueButton.toggled)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                            self.continueButton.toggled = false;
+                        }
+                    }
+                    else
+                    {
+                        self.continueButton.signalText = "READY";
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
                 }
             }
         }
