@@ -8,6 +8,7 @@
 
 ## Arena
 - Fixed infinite tinnitus again
+- Overhauled the Slugcat Ability menu and the Arena Settings menu
 
 ## Chat
 
