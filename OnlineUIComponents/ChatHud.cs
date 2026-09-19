@@ -146,16 +146,23 @@ namespace RainMeadow
                 }
             }
 
-            if (chatInputActive)
-            {
-                if (chatLogOverlay != null)
-                {
-                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Top))
-                        chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Top, true);
-                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Bottom));
-                    chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Bottom, true);
-                }
-            }
+            // Would need a fix later
+
+            // if (chatInputActive)
+            // {
+            //     if (chatLogOverlay != null)
+            //     {
+            //         bool lastBlockInput = ChatTextBox.blockInput;
+            //         ChatTextBox.blockInput = false;
+
+            //         if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Top))
+            //             chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Top, true);
+            //         else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Bottom))
+            //             chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Bottom, true);
+
+            //         ChatTextBox.blockInput = lastBlockInput;
+            //     }
+            // }
 
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
