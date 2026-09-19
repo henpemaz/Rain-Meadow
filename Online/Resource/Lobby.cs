@@ -116,7 +116,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Requesting lobby enum list");
             enumSyncAttempts++;
-            joiningEvent = owner.InvokeRPC(ExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
+            joiningEvent = owner.InvokeRPC(ExtEnumSync.CompressedExtEnumsRequested).Then(ResolveEnumCompression);
         }
         public void ResolveEnumCompression(GenericResult requestResult)
         {

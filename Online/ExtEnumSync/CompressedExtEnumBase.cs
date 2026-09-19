@@ -32,6 +32,27 @@ public abstract class CompressedExtEnumBase
         }
         ++this.version;
     }
+    public void AddEntryToMap(string entry, int index = -1)
+    {
+        if (!entriesMap.ContainsKey(entry))
+        {
+            bool insert = index >= 0 && index <= entriesMap.Count;
+            RainMeadow.Debug($"New entry \"{entry}\" added to enum map of {enumType.FullName} at place {(insert ? index : entriesMap.Count)} !");
+            if (insert)
+            {
+                foreach (var extEnumEntry in entriesMap)
+                {
+                    if (extEnumEntry.Value >= index) entriesMap[extEnumEntry.Key]++;
+                }
+                entriesMap.Add(entry, index);
+            }
+            else
+            {
+                entriesMap.Add(entry, entriesMap.Count);
+            }
+            ++this.version;
+        }
+    }
     public int GetIndex(string value) => entriesMap[value];
     public int GetIndex<T>(T extEnum) where T : ExtEnum<T> => GetIndex(extEnum.value);
     public string? GetValueFromIndex(int index)
@@ -55,7 +76,7 @@ public abstract class CompressedExtEnumBase
     internal string[] storedCompressedValues = [];
     internal byte clarificationAttempt = 0;
     internal const byte Patience = 3; // max clarification attempt
-    public bool IsLongTable => entriesMap.Count >= byte.MaxValue + 1; // TODO : maybe add something to allow 256+ items enums to be synced ?
+    public bool IsLongTable => entriesMap.Count >= byte.MaxValue; // TODO : maybe add something to allow 256+ items enums to be synced ?
 
     // Compress the entries into whatever shape you find best
     protected abstract string[] GetCompressedEntries();

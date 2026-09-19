@@ -9,7 +9,7 @@ public static partial class ExtEnumSync
     // Heh, this is for the greater good.
 
     [RPCMethod(security = RPCSecurity.NoSecurity)] // Asking the owner for the compressed list of the enums. Client -> Owner
-    public static void RequestCompressedExtEnums(RPCEvent request)
+    public static void CompressedExtEnumsRequested(RPCEvent request)
     {
         if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner)
         {
@@ -29,17 +29,17 @@ public static partial class ExtEnumSync
                 );
             }
         }
-        catch (System.Exception er)
+        catch (Exception er)
         {
             RainMeadow.Error("Failed to send compressed enums : " + er);
             request.from.QueueEvent(new GenericResult.Error(request));
             return;
         }
         request.from.QueueEvent(new GenericResult.Ok(request));
-        request.from.InvokeRPC(SendToSyncCompressedExtEnums, compressedExtEnumTable);
+        request.from.InvokeRPC(ProcessCompressedExtEnums, compressedExtEnumTable);
     }
     [RPCMethod(security = RPCSecurity.NoSecurity)] // Checking and syncing the enums recieved, also ask for clarification if necessary. Owner -> Client
-    public static void SendToSyncCompressedExtEnums(RPCEvent rpc, Dictionary<string, string> compressedExtEnumTable)
+    public static void ProcessCompressedExtEnums(RPCEvent rpc, Dictionary<string, string> compressedExtEnumTable)
     {
         if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner || OnlineManager.lobby.enumsChecked) { return; }
 
@@ -69,7 +69,7 @@ public static partial class ExtEnumSync
         if (clarificationTable.Count > 0)
         {
             RainMeadow.Info($"Asking clarification for {clarificationTable.Count} enums : [{string.Join(", ", clarificationTable.Select(x => x.TypeFullName))}]");
-            rpc.from.InvokeRPC(AskFromClarification, clarificationTable);
+            rpc.from.InvokeRPC(ClarifyDecompressionResults, clarificationTable);
         }
         else
         {
@@ -77,7 +77,7 @@ public static partial class ExtEnumSync
         }
     }
     [RPCMethod(security = RPCSecurity.NoSecurity)] // Asking the owner for clarification on some enums in their compressed form. The owner will send them back in full. Client -> Owner
-    public static void AskFromClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> clarificationTable)
+    public static void ClarifyDecompressionResults(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> clarificationTable)
     {
         if (OnlineManager.lobby is null || OnlineManager.mePlayer != OnlineManager.lobby.owner) { return; }
 
@@ -116,10 +116,10 @@ public static partial class ExtEnumSync
             }
         }
         RainMeadow.Info($"Sending clarification for {thingsThatShoubldBeClearerTable.Count} enums : [{string.Join(", ", thingsThatShoubldBeClearerTable.Select(x => x.TypeFullName))}]");
-        rpc.from.InvokeRPC(SendToSyncClarification, thingsThatShoubldBeClearerTable);
+        rpc.from.InvokeRPC(ProcessClarifiedExtEnum, thingsThatShoubldBeClearerTable);
     }
     [RPCMethod(security = RPCSecurity.NoSecurity)]  // Checking and syncing (again) the enums clarified. If everything goes right, the client should have everything clear and done here. Owner -> Client
-    public static void SendToSyncClarification(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable)
+    public static void ProcessClarifiedExtEnum(RPCEvent rpc, List<CompressedExtEnumBase.DecompressionResult> thingsThatShoubldBeClearerTable)
     {
         if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner || OnlineManager.lobby.enumsChecked) { return; }
         List<CompressedExtEnumBase.DecompressionResult> reclarificationTable = [];
@@ -177,11 +177,22 @@ public static partial class ExtEnumSync
         if (reclarificationTable.Count > 0)
         {
             RainMeadow.Info($"Asking clarification again for {reclarificationTable.Count} enums : [{string.Join(", ", reclarificationTable.Select(x => x.TypeFullName))}]");
-            rpc.from.InvokeRPC(AskFromClarification, reclarificationTable);
+            rpc.from.InvokeRPC(ClarifyDecompressionResults, reclarificationTable);
         }
         else
         {
             OnlineManager.lobby.OnEnumSyncSuccessful();
+        }
+    }
+
+    [RPCMethod]
+    public static void AddNewExtEnumEntry(RPCEvent rpc, string entry, byte index, string extEnumTypeFullName)
+    {
+        if (OnlineManager.lobby is null || rpc.from != OnlineManager.lobby.owner || !OnlineManager.lobby.enumsChecked) { return; }
+
+        if (SyncedExtEnumList.Find(x => x.enumType.FullName == extEnumTypeFullName) is CompressedExtEnumBase compressedExtEnum)
+        {
+            compressedExtEnum.AddEntryToMap(entry);
         }
     }
 }
