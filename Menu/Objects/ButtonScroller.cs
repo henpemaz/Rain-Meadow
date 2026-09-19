@@ -286,15 +286,15 @@ namespace RainMeadow
         public void AddButtons(int startingIndex, MenuObject[]? scrollObjects)
         {
             if (scrollObjects == null) return;
-            int actualStartingIndex = startingIndex == -1? this.buttons.Count : startingIndex;
-            int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(scrollObjects[startingIndex]);
+            int actualStartingIndex = startingIndex == -1? buttons.Count : startingIndex;
+            int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(buttons[startingIndex]);
             for (int i = 0; i < scrollObjects.Length; i++)
             {
                 var obj = scrollObjects[i];
                 int indexInsert = actualStartingIndex + i;
                 OnAddMenuScrollObject(obj, indexInsert);
                 subObjects.Insert(subObjectIndexToInsert + i, obj);
-                this.buttons.Insert(actualStartingIndex + i, obj);
+                buttons.Insert(actualStartingIndex + i, obj);
             }
         }
         public virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt)
