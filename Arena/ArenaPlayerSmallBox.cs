@@ -5,17 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
 using Menu;
+using RainMeadow.UI.Interfaces;
 using UnityEngine;
 using static RainMeadow.ButtonScroller;
 
 namespace RainMeadow.UI.Components
 {
-    public class ArenaPlayerSmallBox : RectangularMenuObject, IPartOfButtonScroller
+    public class ArenaPlayerSmallBox : RectangularMenuObject, IOwnMenuScrollObject
     {
         public static Vector2 DefaultSize => new(ArenaPlayerBox.DefaultSize.x, 40);
-        public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = value; }
-        public float Alpha { get; set; } = 1;
         public ArenaPlayerSmallBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;
