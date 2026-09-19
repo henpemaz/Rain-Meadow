@@ -43,6 +43,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiParryLeniency)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.challengeDenEjection)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denEntryRule)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.disableMaul)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.emptyDeathScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableMeadowCosmetics)),
@@ -54,6 +55,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.friendlyFire)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.itemSteal)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.killScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.arenaMonkShield)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatEgg)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatLizard)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatThrows)),
@@ -89,7 +91,7 @@ namespace RainMeadow
             self.survivalScore = arenaOnline.survivalScore;
             self.KillScore = arenaOnline.killScore;
             self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore = arenaOnline.spearHitScore;
+            self.spearHitScore = ModManager.MSC ? arenaOnline.spearHitScore : 0;
             self.foodScore = arenaOnline.foodScore;
 
             self.repeatSingleLevelForever = false;
@@ -836,6 +838,41 @@ namespace RainMeadow
             )
             {
                 player.slugcatStats.throwingSkill = 1;
+            }
+            if (player.SlugCatClass == SlugcatStats.Name.Yellow && arenaOnline.arenaMonkShield)
+            {
+                int freeHand = player.FreeHand();
+
+                if (freeHand >= 0)
+                {
+                    AbstractPhysicalObject monkFruit = new DangleFruit.AbstractDangleFruit(
+                        room.world,
+                        null,
+                        abstractCreature.pos,
+                        room.world.game.GetNewID(),
+                        -1,
+                        -1,
+                        false,
+                        null
+                    );
+                    room.abstractRoom.AddEntity(monkFruit);
+                    monkFruit.RealizeInRoom();
+
+
+                    // remove the stalk
+                    if (monkFruit.realizedObject is DangleFruit spawnedFruit && spawnedFruit.stalk != null)
+                    {
+                        spawnedFruit.stalk.fruit = null;
+                        spawnedFruit.stalk.Destroy();
+                        spawnedFruit.stalk = null;
+                    }
+
+                    self.room.world.GetResource().ApoEnteringWorld(monkFruit);
+                    self.room.abstractRoom.GetResource()
+                        ?.ApoEnteringRoom(monkFruit, monkFruit.pos);
+
+                    player.SlugcatGrab(monkFruit.realizedObject, freeHand);
+                }
             }
             if (ModManager.MSC)
             {
@@ -1967,6 +2004,14 @@ namespace RainMeadow
                     return list;
                 }
                 return elements;
+            }
+            else if (settingType.IsExtEnum())
+            {
+                if (ExtEnumBase.TryParse(settingType, value, false, out ExtEnumBase extEnum))
+                {
+                    return extEnum;
+                }
+                RainMeadow.Debug($"Value {value} is not a registered entry of ExtEnum {settingType}");
             }
             else if (TryParseSimpleType(value, settingType, out var result) && result is not null)
             {
