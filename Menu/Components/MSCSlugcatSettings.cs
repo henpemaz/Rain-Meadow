@@ -93,8 +93,14 @@ public class MSCSlugcatSettings : OnlineSlugcatSettings<MSCSlugcatSettings>
             {
                 param.label.text = param.label.text.Replace(paincatName, translPainCatName);
 
+
                 if (param is OnlineSettingUIconfig paramUiConfig)
+                {
                     paramUiConfig.uiConfig.description = paramUiConfig.uiConfig.description.Replace(paincatName, translPainCatName);
+
+                    if (paramUiConfig is OnlineSettingFloatValue paramFloat)
+                        paramFloat.roundoffDecimals = 2;
+                }
 
                 if (param is OnlineSettingCheckBox paramCheckBox && paramCheckBox.altDescription is not null)
                     paramCheckBox.altDescription = paramCheckBox.altDescription.Replace(paincatName, translPainCatName);

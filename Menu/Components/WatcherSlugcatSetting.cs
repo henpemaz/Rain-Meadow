@@ -110,6 +110,9 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
         voidMasterSetting?.tabIndependant = true;
         voidMasterSetting?.altDescription = "Summon amoebas at the cost of your camo timer";
 
+        (GetSettingParameter(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor) as OnlineSettingFloatValue)?
+            .roundoffDecimals = 1;
+
         (GetSettingParameter(RainMeadow.rainMeadowOptions.AmoebaControl) as OnlineSettingCheckBox)?
             .altDescription = "Amoeba's direction is influenced by pointing";
     }
