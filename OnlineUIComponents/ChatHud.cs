@@ -145,22 +145,25 @@ namespace RainMeadow
                     }
                 }
             }
-            if (chatInputActive)
-            {
-                if (chatLogOverlay != null)
-                {
-                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollUp)
-                    {
-                        chatLogOverlay.scroller.AddScroll(-1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                    }
-                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollDown)
-                    {
-                        chatLogOverlay.scroller.AddScroll(1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                    }
-                }
-            }
+
+            // Probably best if we fix it sooner or later
+            // if (chatInputActive)
+            // {
+            //     if (chatLogOverlay != null)
+            //     {
+            //         if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollUp)
+            //         {
+            //             chatLogOverlay.scroller.AddScroll(-1);
+            //             chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+            //         }
+            //         else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollDown)
+            //         {
+            //             chatLogOverlay.scroller.AddScroll(1);
+            //             chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+            //         }
+            //     }
+            // }
+
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
         }
