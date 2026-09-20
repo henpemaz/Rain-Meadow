@@ -15,6 +15,7 @@
 - Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
 ## Engine
 - Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
+- Fixed synced ExtEnum added mid-game making Rain Meadow throw
 ## Arena
 - Watcher's camo bar will now show the Voidmaster ability's cooldown with the purple fill
 - Watcher cannot summon more than one Amoeba at a time
