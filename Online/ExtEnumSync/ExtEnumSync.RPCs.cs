@@ -192,6 +192,8 @@ public static partial class ExtEnumSync
 
         if (SyncedExtEnumList.Find(x => x.enumType.FullName == extEnumTypeFullName) is CompressedExtEnumBase compressedExtEnum)
         {
+            RainMeadow.Info($"Entry {entry} of ExtEnum {extEnumTypeFullName} was added to the map in place {index}, at the request of the host.");
+            if (compressedExtEnum.IsEntryMapped(entry)) compressedExtEnum.RemoveEntry(entry);
             compressedExtEnum.AddEntryToMap(entry);
         }
     }

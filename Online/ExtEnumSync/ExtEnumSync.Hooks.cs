@@ -14,31 +14,34 @@ public static partial class ExtEnumSync
     private static void ExtEnumType_AddEntry_AddEntryToMap(On.ExtEnumType.orig_AddEntry orig, ExtEnumType self, string name)
     {
         bool newEntryAdded = !self.entries.Contains(name);
-        orig(self, name);
-        if (OnlineManager.lobby is not null && OnlineManager.lobby.isOwner && newEntryAdded)
-        {
-            foreach (var extEnumData in ExtEnumBase.valueDictionary)
-            {
-                if (extEnumData.Value == self)
-                {
-                    if (IsSyncedExtEnum(extEnumData.Key, out var compressedExtEnum))
-                    {
-                        RainMeadow.Warn($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game! Adding to the map immediatly!");
-                        compressedExtEnum.AddEntryToMap(name);
 
-                        foreach (var player in OnlineManager.lobby.participants)
-                        {
-                            if (!player.isMe)
-                            {
-                                player.InvokeRPC(AddNewExtEnumEntry,
-                                    name,
-                                    (byte)(compressedExtEnum.entriesMap.Count - 1),
-                                    compressedExtEnum.enumType.FullName);
-                            }
-                        }
+        orig(self, name);
+
+        if (OnlineManager.lobby is not null
+            && newEntryAdded
+            && self.TryGetExtEnumType(out var type)
+            && IsSyncedExtEnum(type, out var compressedExtEnum)
+            && !compressedExtEnum.IsEntryMapped(name))
+        {
+            if (OnlineManager.lobby.isOwner)
+            {
+                RainMeadow.Warn($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game! Adding to the map immediatly!");
+                compressedExtEnum.AddEntryToMap(name);
+
+                foreach (var player in OnlineManager.lobby.participants)
+                {
+                    if (!player.isMe)
+                    {
+                        player.InvokeRPC(AddNewExtEnumEntry,
+                            name,
+                            (byte)(compressedExtEnum.entriesMap.Count - 1),
+                            compressedExtEnum.enumType.FullName);
                     }
-                    return;
                 }
+            }
+            else
+            {
+                RainMeadow.Error($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game while not host ! This enum won't be synced until the host tells us to add it.");
             }
         }
     }
