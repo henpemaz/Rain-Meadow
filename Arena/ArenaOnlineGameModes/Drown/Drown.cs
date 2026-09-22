@@ -35,6 +35,8 @@ namespace RainMeadow
         }
         public override bool ShowAddedScoreBetweenRoundsInOnlinePlayerUI { get => false; set { } }
 
+        public override string GameModeInfo => "Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op";
+
         public int spearCost = RainMeadow.rainMeadowOptions.DrownPointsForSpear.Value;
         public int explosiveSpearCost = RainMeadow.rainMeadowOptions.DrownPointsForExplSpear.Value;
         public int bombCost = RainMeadow.rainMeadowOptions.DrownPointsForBomb.Value;

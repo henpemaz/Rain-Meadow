@@ -1,38 +1,50 @@
-﻿using Menu;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Menu;
 using UnityEngine;
 
-namespace RainMeadow
+namespace RainMeadow.UI.Dialogs;
+
+public class DialogAsyncWait : Dialog
 {
-    public class DialogAsyncWait : Dialog
+    public AtlasAnimator loadingSpinner;
+
+    public DialogAsyncWait(ProcessManager manager, string description, Vector2 size)
+        : base(description, size, manager)
     {
-        public DialogAsyncWait(Menu.Menu menu, string description, Vector2 size)
-            : base(description, size, menu.manager)
+        loadingSpinner = new AtlasAnimator(
+            0,
+            new Vector2(
+                ((int)(pos.x + size.x / 2f)) - HorizontalMoveToGetCentered(manager),
+                (int)(pos.y + size.y / 2f - 32f)
+            ),
+            "sleep",
+            "sleep",
+            20,
+            true,
+            false
+        )
         {
-            loadingSpinner = new AtlasAnimator(0, new Vector2((float)((int)(pos.x + size.x / 2f)) - HorizontalMoveToGetCentered(manager), (float)((int)(pos.y + size.y / 2f - 32f))), "sleep", "sleep", 20, true, false);
-            loadingSpinner.animSpeed = 0.25f;
-            loadingSpinner.specificSpeeds = new Dictionary<int, float>();
-            loadingSpinner.specificSpeeds[1] = 0.0125f;
-            loadingSpinner.specificSpeeds[13] = 0.0125f;
-            loadingSpinner.AddToContainer(container);
-        }
+            animSpeed = 0.25f,
+            specificSpeeds = new Dictionary<int, float>(),
+        };
+        loadingSpinner.specificSpeeds[1] = 0.0125f;
+        loadingSpinner.specificSpeeds[13] = 0.0125f;
+        loadingSpinner.AddToContainer(container);
+    }
 
-        public override void Update()
-        {
-            base.Update();
-            loadingSpinner.Update();
-        }
+    public override void Update()
+    {
+        base.Update();
+        loadingSpinner.Update();
+    }
 
-        public virtual void RemoveSprites()
-        {
-            loadingSpinner.RemoveFromContainer();
-        }
+    public virtual void RemoveSprites()
+    {
+        loadingSpinner.RemoveFromContainer();
+    }
 
-        public void SetText(string caption)
-        {
-            descriptionLabel.text = caption;
-        }
-
-        private readonly AtlasAnimator loadingSpinner;
+    public void SetText(string caption)
+    {
+        descriptionLabel.text = caption;
     }
 }

@@ -73,6 +73,8 @@ namespace RainMeadow
             new ExternalArenaGameModeInterfaceMultiChoiceSetting(OnlineArenaSettingsInferface.WILDLIFE),
         ];
 
+        public virtual string GameModeInfo => "This game mode doesn't have any info to give";
+
         public virtual bool ShouldWinByScore(ArenaSetup.GameTypeSetup gameTypeSetup)
         {
             return gameTypeSetup.survivalScore > 0
