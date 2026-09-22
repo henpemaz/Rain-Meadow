@@ -105,7 +105,7 @@ namespace RainMeadow
         {
             return requiredMods.Split('\n');
         }
-      
+
         public static string[] GetBannedMods()
         {
             if (IsWhitelistActive())
@@ -259,7 +259,8 @@ namespace RainMeadow
                 RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
                 RainMeadow.Debug($"reorder: {reorder}");
 
-                if (!reorder) {
+                if (!reorder)
+                {
                     onFinish?.Invoke();
                     return;
                 }
@@ -333,9 +334,12 @@ namespace RainMeadow
                         missingDLC.Add(ModManager.InstalledMods[i].LocalizedName);
 
                 ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
+                modApplier.forcedRestart = modsRequiringForcedRestart
+                    .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
+                    .Any();
 
                 //mod applier code moved to a task so the game doesn't get frozen?
-                
+
                 Task.Run(() =>
                 {
                     RainMeadow.Debug("Showing mod check popups");
@@ -350,13 +354,19 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Finished applying");
 
-                        if (modApplier.requiresRestart || 
-                        modsRequiringForcedRestart
-                                .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
-                                .Any())
+                        if (modApplier.WillRestart)
                         {
                             RainMeadow.Debug($"Restarting game with code {restartCode}");
-                            Utils.Restart(restartCode);
+                            try
+                            {
+                                Utils.Restart(restartCode);
+                            }
+                            catch (Exception ex)
+                            {
+                                RainMeadow.Error("Failed to restart the game");
+                                RainMeadow.Error(ex);
+                                modApplier.RestartFailed();
+                            }
                         }
                         else if (modApplier.WasSuccessful())
                         {

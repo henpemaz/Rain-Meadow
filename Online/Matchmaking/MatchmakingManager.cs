@@ -100,58 +100,84 @@ namespace RainMeadow
         public abstract void JoinLobby(bool success, string failReason = "");
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
-        public static void JoinLobbyUsingCode(string code) {
-            RainMeadow.Debug($"Attempting to join lobby with code: {code}");
 
-            string[] args = code.Split(' ');
-            
-            int connect_steam_idx = Array.IndexOf(args, "+connect_lobby"),
-                connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"),
-                password_idx = Array.IndexOf(args, "+lobby_password");
+        public static string? pendingJoinCode;
+
+        public static bool ConsumePendingJoinCode(out string code)
+        {
+            code = pendingJoinCode ?? "";
+            pendingJoinCode = null;
+            return !string.IsNullOrEmpty(code);
+        }
+
+        public static string EncodeJoinPassword(string password)
+        {
+            return Uri.EscapeDataString(password);
+        }
+
+        public static string DecodeJoinPassword(string encoded)
+        {
+            return Uri.UnescapeDataString(encoded);
+        }
+
+        public static bool TryParseJoinCode(string code, out MatchMakingDomain domain, out string?[] args, out string? password)
+        {
+            domain = MatchMakingDomain.LAN;
+            args = Array.Empty<string?>();
+            password = null;
+
+            string[] parts = code.Split(' ');
+
+            int connect_steam_idx = Array.IndexOf(parts, "+connect_lobby"),
+                connect_lan_idx = Array.IndexOf(parts, "+connect_lan_lobby"),
+                password_idx = Array.IndexOf(parts, "+lobby_password");
 
             //find password, if it exists
-            string? password = null;
-            if (password_idx >= 0 && args.Length > password_idx + 1)
-                password = args[password_idx + 1];
+            if (password_idx >= 0 && parts.Length > password_idx + 1)
+                password = DecodeJoinPassword(parts[password_idx + 1]);
 
             //connect to lobby
             if (connect_steam_idx >= 0)
             {
-                if (args.Length > connect_steam_idx + 1)
+                if (parts.Length > connect_steam_idx + 1)
                 {
-                    foreach (var domain in supported_matchmakers)
-                    {
-                        if (domain == MatchMakingDomain.Steam)
-                        {
-                            //switch domain if necessary
-                            if (currentDomain != domain)
-                                currentDomain = domain;
-                            instances[domain].JoinLobbyUsingArgs(args[connect_steam_idx + 1], password);
-                            return;
-                        }
-                    }
+                    domain = MatchMakingDomain.Steam;
+                    args = new string?[] { parts[connect_steam_idx + 1], password };
+                    return true;
                 }
-                else
-                    RainMeadow.Error("found +connect_lobby but no valid lobby id in the command line");
+                RainMeadow.Error("found +connect_lobby but no valid lobby id in the command line");
+                return false;
             }
-            else if (connect_lan_idx >= 0)
+            if (connect_lan_idx >= 0)
             {
-                if (args.Length > connect_lan_idx + 2)
+                if (parts.Length > connect_lan_idx + 2)
                 {
-                    foreach (var domain in supported_matchmakers)
+                    domain = MatchMakingDomain.LAN;
+                    args = new string?[] { parts[connect_lan_idx + 1], parts[connect_lan_idx + 2], password };
+                    return true;
+                }
+                RainMeadow.Error("found +connect_lan_lobby but no valid lobby address and port in the command line");
+                return false;
+            }
+            return false;
+        }
+
+        public static void JoinLobbyUsingCode(string code) {
+            RainMeadow.Debug($"Attempting to join lobby with code: {code}");
+
+            if (TryParseJoinCode(code, out var domain, out var args, out _))
+            {
+                foreach (var supported in supported_matchmakers)
+                {
+                    if (supported == domain)
                     {
-                        if (domain == MatchMakingDomain.LAN)
-                        {
-                            //switch domain if necessary
-                            if (currentDomain != domain)
-                                currentDomain = domain;
-                            instances[domain].JoinLobbyUsingArgs(args[connect_lan_idx + 1], args[connect_lan_idx + 2], password);
-                            return;
-                        }
+                        //switch domain if necessary
+                        if (currentDomain != domain)
+                            currentDomain = domain;
+                        instances[domain].JoinLobbyUsingArgs(args);
+                        return;
                     }
                 }
-                else
-                    RainMeadow.Error("found +connect_lan_lobby but no valid lobby address and port in the command line");
             }
             RainMeadow.Debug("No lobby found in that code.");
         }

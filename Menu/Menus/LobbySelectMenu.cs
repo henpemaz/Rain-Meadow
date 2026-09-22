@@ -18,6 +18,7 @@ public class LobbySelectMenu : SmartMenu
     public LobbyInfo? lastSelectedLobbyInfo;
 
     private int joiningTimeoutCount = 0;
+    private bool joinResolved = false;
     private const int FastTimeoutCount = 200;
     private int TimeoutTicks = RainMeadow.rainMeadowOptions.JoiningTimeout.Value * 40;
     private const string ERROR_Unexpected = "Something went wrong...";
@@ -202,6 +203,24 @@ public class LobbySelectMenu : SmartMenu
             SteamNetworkingUtils.InitRelayNetworkAccess();
         MatchmakingManager.currentInstance.RequestLobbyList();
 
+        if (MatchmakingManager.ConsumePendingJoinCode(out var joinCode)
+            && MatchmakingManager.TryParseJoinCode(joinCode, out var pendingDomain, out var joinArgs, out var joinPassword))
+        {
+            LobbyInfo? pendingLobbyInfo = null;
+
+            if (pendingDomain == MatchmakingManager.MatchMakingDomain.Steam
+                && joinArgs.Length >= 1 && ulong.TryParse(joinArgs[0], out var steamId))
+                pendingLobbyInfo = new SteamLobbyInfo(new CSteamID(steamId), "", "", 0, false, 4);
+            else if (pendingDomain == MatchmakingManager.MatchMakingDomain.LAN
+                && joinArgs.Length >= 2 && long.TryParse(joinArgs[0], out var address) && int.TryParse(joinArgs[1], out var port))
+                pendingLobbyInfo = new LANMatchmakingManager.LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4);
+
+            if (pendingLobbyInfo != null)
+                RequestJoinLobby(pendingLobbyInfo, joinPassword);
+            else
+                RainMeadow.Error($"Failed to resolve pending join code: {joinCode}");
+        }
+
         if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
             manager.ShowDialog(new UpdateDialog(manager));
     }
@@ -263,6 +282,7 @@ public class LobbySelectMenu : SmartMenu
             )
         );
         joiningTimeoutCount = 0;
+        joinResolved = false;
         MatchmakingManager.currentInstance.RequestJoinLobby(lobbyInfo, password);
     }
 
@@ -315,6 +335,8 @@ public class LobbySelectMenu : SmartMenu
 
     public void OnLobbyJoined(bool ok, string error)
     {
+        joinResolved = true;
+
         if (joiningDialog != null)
             manager.StopSideProcess(joiningDialog);
 
@@ -337,7 +359,16 @@ public class LobbySelectMenu : SmartMenu
     {
         base.Update();
         joinButton.buttonBehav.greyedOut = lobbyCardSelector.SelectedLobby == null;
-        if (joiningDialog is not null && OnlineManager.lobby is not null)
+
+        if (joinResolved)
+        {
+            if (joiningDialog is not null && manager.dialog == joiningDialog)
+            {
+                RainMeadow.Warn("Joining dialog was shown after the join resolved, closing it");
+                manager.StopSideProcess(joiningDialog);
+            }
+        }
+        else if (joiningDialog is not null && OnlineManager.lobby is not null)
         {
             if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
             {

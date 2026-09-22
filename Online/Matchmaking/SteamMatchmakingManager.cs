@@ -27,7 +27,7 @@ namespace RainMeadow
         public override string GetLobbyJoinCode(string? password = null)
         {
             if (password != null)
-                return $"+connect_lobby {iD.m_SteamID} +lobby_password {password}";
+                return $"+connect_lobby {iD.m_SteamID} +lobby_password {MatchmakingManager.EncodeJoinPassword(password)}";
             return $"+connect_lobby {iD.m_SteamID}";
         }
     }
@@ -307,9 +307,11 @@ namespace RainMeadow
 
         private void LobbyConnected(LobbyEnter_t param, bool bIOFailure)
         {
+            var enterResponse = (EChatRoomEnterResponse)param.m_EChatRoomEnterResponse;
+
             try
             {
-                if (!bIOFailure)
+                if (!bIOFailure && enterResponse == EChatRoomEnterResponse.k_EChatRoomEnterResponseSuccess)
                 {
                     RainMeadow.Debug("success");
                     lobbyID = new CSteamID(param.m_ulSteamIDLobby);
@@ -327,9 +329,9 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug("failure");
+                    RainMeadow.Debug($"failure, IO failure: {bIOFailure}, response: {enterResponse}");
                     OnlineManager.lobby = null;
-                    OnLobbyJoinedEvent(false, ((EChatRoomEnterResponse)param.m_EChatRoomEnterResponse).ToString());
+                    OnLobbyJoinedEvent(false, bIOFailure ? "Steam IO failure" : enterResponse.ToString());
                 }
             }
             catch (Exception e)
@@ -516,10 +518,11 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
-                Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                var pendingLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
+                OnlineManager.currentlyJoiningLobby = pendingLobby;
+                pendingJoinCode = pendingLobby.GetLobbyJoinCode();
 
-                m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
+                Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             }
             catch (Exception e)
             {

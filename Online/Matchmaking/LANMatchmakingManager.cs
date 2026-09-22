@@ -24,7 +24,7 @@ namespace RainMeadow {
             public override string GetLobbyJoinCode(string? password = null)
             {
                 if (password != null)
-                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {password}";
+                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {MatchmakingManager.EncodeJoinPassword(password)}";
                 return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port}";
             }
         }   

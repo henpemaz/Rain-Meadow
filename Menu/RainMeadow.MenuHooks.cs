@@ -54,7 +54,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
             new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
-            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.CurrentFood)).GetGetMethod(), SlugcatPageContinue_SaveDataInt);         
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.CurrentFood)).GetGetMethod(), SlugcatPageContinue_SaveDataInt);
 
             On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
@@ -718,6 +718,8 @@ namespace RainMeadow
             orig(self, ID);
         }
 
+        private static bool consumedCommandLineJoinCode; // for rejoins on restart
+
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
             if (ID == Ext_ProcessID.LobbySelectMenu) self.currentMainLoop = new LobbySelectMenu(self);
@@ -727,13 +729,22 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-            if (ID == ProcessManager.ProcessID.IntroRoll)
+            if (ID == ProcessManager.ProcessID.IntroRoll && !consumedCommandLineJoinCode)
             {
+                consumedCommandLineJoinCode = true;
                 try
                 {
                     var args = System.Environment.GetCommandLineArgs();
+                    var code = string.Join(" ", args);
 
-                    MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
+                    if (MatchmakingManager.TryParseJoinCode(code, out var domain, out _, out _)
+                        && MatchmakingManager.supported_matchmakers.Contains(domain))
+                    {
+                        MatchmakingManager.pendingJoinCode = code;
+                        if (MatchmakingManager.currentDomain != domain)
+                            MatchmakingManager.currentDomain = domain;
+                        self.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
+                    }
                 }
                 catch (Exception ex)
                 {
