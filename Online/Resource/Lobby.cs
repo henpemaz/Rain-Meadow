@@ -210,6 +210,7 @@ namespace RainMeadow
             else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
             {
                 RainMeadow.Error("locked request for " + this);
+                MatchmakingManager.lastJoinFailWasWrongPassword = true;
                 MatchmakingManager.currentInstance.JoinLobby(false, ERROR_WrongPassword);
             }
             else if (requestResult is GenericResult.Error) // I should retry
@@ -373,8 +374,10 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
+                    string rejoinCode = MatchmakingManager.currentInstance.GetCurrentLobbyJoinCode(lobby.password ?? lobby.enteredPassword);
+
                     //Made asyncronous so that the game doesn't get totally frozen
-                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, whitelistMode: whitelistmode));
+                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, rejoinCode, whitelistmode));
 
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;

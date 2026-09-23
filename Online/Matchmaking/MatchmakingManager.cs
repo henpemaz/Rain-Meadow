@@ -99,7 +99,9 @@ namespace RainMeadow
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success, string failReason = "");
 
-        public abstract void JoinLobbyUsingArgs(params string?[] args);
+        public abstract string GetCurrentLobbyJoinCode(string? password);
+
+        public static bool lastJoinFailWasWrongPassword;
 
         public static string? pendingJoinCode;
 
@@ -160,26 +162,6 @@ namespace RainMeadow
                 return false;
             }
             return false;
-        }
-
-        public static void JoinLobbyUsingCode(string code) {
-            RainMeadow.Debug($"Attempting to join lobby with code: {code}");
-
-            if (TryParseJoinCode(code, out var domain, out var args, out _))
-            {
-                foreach (var supported in supported_matchmakers)
-                {
-                    if (supported == domain)
-                    {
-                        //switch domain if necessary
-                        if (currentDomain != domain)
-                            currentDomain = domain;
-                        instances[domain].JoinLobbyUsingArgs(args);
-                        return;
-                    }
-                }
-            }
-            RainMeadow.Debug("No lobby found in that code.");
         }
 
         /// <remarks>

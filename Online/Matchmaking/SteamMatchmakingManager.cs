@@ -26,8 +26,8 @@ namespace RainMeadow
         }
         public override string GetLobbyJoinCode(string? password = null)
         {
-            if (password != null)
-                return $"+connect_lobby {iD.m_SteamID} +lobby_password {MatchmakingManager.EncodeJoinPassword(password)}";
+            if (!string.IsNullOrEmpty(password))
+                return $"+connect_lobby {iD.m_SteamID} +lobby_password {MatchmakingManager.EncodeJoinPassword(password!)}";
             return $"+connect_lobby {iD.m_SteamID}";
         }
     }
@@ -254,15 +254,14 @@ namespace RainMeadow
             }
         }
 
-        public override void JoinLobbyUsingArgs(params string?[] args)
+        public override string GetCurrentLobbyJoinCode(string? password)
         {
-            if (args.Length >= 1 && ulong.TryParse(args[0], out var id))
+            if (lobbyID == default)
             {
-                RainMeadow.Debug($"joining lobby with id {id} from the command line");
-                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length > 1 ? args[1] : null);
+                RainMeadow.Error("asked for a join code with no steam lobby");
+                return "";
             }
-            else
-                RainMeadow.Error($"failed to parse id: {string.Join(" ", args)}");
+            return new SteamLobbyInfo(lobbyID, "", "", 0, false, MAX_LOBBY).GetLobbyJoinCode(password);
         }
 
         private static string creatingWithMode;

@@ -23,8 +23,8 @@ namespace RainMeadow {
             }
             public override string GetLobbyJoinCode(string? password = null)
             {
-                if (password != null)
-                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {MatchmakingManager.EncodeJoinPassword(password)}";
+                if (!string.IsNullOrEmpty(password))
+                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {MatchmakingManager.EncodeJoinPassword(password!)}";
                 return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port}";
             }
         }   
@@ -307,15 +307,14 @@ namespace RainMeadow {
             }
         }
 
-        public override void JoinLobbyUsingArgs(params string?[] args)
+        public override string GetCurrentLobbyJoinCode(string? password)
         {
-            if (args.Length >= 2 && long.TryParse(args[0], out var address) && int.TryParse(args[1], out var port))
+            if ((OnlineManager.lobby?.owner?.id as LANPlayerId)?.endPoint is not IPEndPoint endPoint)
             {
-                RainMeadow.Debug($"joining lobby with address {address} and port {port} from the command line");
-                RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), args.Length > 2 ? args[2] : null);
+                RainMeadow.Error("asked for a join code with no lan lobby owner");
+                return "";
             }
-            else
-                RainMeadow.Error($"invalid address and port: {string.Join(" ", args)}");
+            return new LANLobbyInfo(endPoint, "", "", 0, false, maxplayercount).GetLobbyJoinCode(password);
         }
 
         /// <inheritdoc/>

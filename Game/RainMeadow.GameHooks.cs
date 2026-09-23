@@ -495,7 +495,19 @@ namespace RainMeadow
 
         private void Futile_OnApplicationQuit(On.Futile.orig_OnApplicationQuit orig, Futile self)
         {
-            //TODO: Impliment graceful exist
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    RainMeadow.Info("Leaving lobby on application quit");
+                    MatchmakingManager.currentInstance.LeaveLobby();
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+
             orig(self);
         }
 

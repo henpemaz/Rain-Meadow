@@ -729,7 +729,9 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-            if (ID == ProcessManager.ProcessID.IntroRoll && !consumedCommandLineJoinCode)
+            orig(self, ID);
+
+            if (ID == ProcessManager.ProcessID.MainMenu && !consumedCommandLineJoinCode)
             {
                 consumedCommandLineJoinCode = true;
                 try
@@ -740,6 +742,7 @@ namespace RainMeadow
                     if (MatchmakingManager.TryParseJoinCode(code, out var domain, out _, out _)
                         && MatchmakingManager.supported_matchmakers.Contains(domain))
                     {
+                        RainMeadow.Info($"Rejoining lobby from the command line: {domain}");
                         MatchmakingManager.pendingJoinCode = code;
                         if (MatchmakingManager.currentDomain != domain)
                             MatchmakingManager.currentDomain = domain;
@@ -751,7 +754,6 @@ namespace RainMeadow
                     RainMeadow.Debug(ex);
                 }
             }
-            orig(self, ID);
         }
 
         private static void IL_MainMenu_AddMainMenuButton(ILContext il)

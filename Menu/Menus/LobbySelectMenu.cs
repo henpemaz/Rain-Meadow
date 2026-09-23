@@ -19,6 +19,7 @@ public class LobbySelectMenu : SmartMenu
 
     private int joiningTimeoutCount = 0;
     private bool joinResolved = false;
+    private LobbyInfo? lastJoinAttempt;
     private const int FastTimeoutCount = 200;
     private int TimeoutTicks = RainMeadow.rainMeadowOptions.JoiningTimeout.Value * 40;
     private const string ERROR_Unexpected = "Something went wrong...";
@@ -283,6 +284,8 @@ public class LobbySelectMenu : SmartMenu
         );
         joiningTimeoutCount = 0;
         joinResolved = false;
+        lastJoinAttempt = lobbyInfo;
+        MatchmakingManager.lastJoinFailWasWrongPassword = false;
         MatchmakingManager.currentInstance.RequestJoinLobby(lobbyInfo, password);
     }
 
@@ -344,8 +347,19 @@ public class LobbySelectMenu : SmartMenu
             return;
 
         string errorMessage = "Failed to join lobby:<LINE>" + error;
-        if (error != ERROR_Cancelled) manager.ShowDialog(new NotifyDialog(manager, errorMessage, UIUtils.DIALOG_SIZE));
         RainMeadow.Error(errorMessage);
+
+        if (MatchmakingManager.lastJoinFailWasWrongPassword && lastJoinAttempt is LobbyInfo retryLobby)
+        {
+            MatchmakingManager.lastJoinFailWasWrongPassword = false;
+            InputDialog passwordDialog = new(manager, "Password Required", UIUtils.DIALOG_SIZE);
+            passwordDialog.OnConfirm += (password) => RequestJoinLobby(retryLobby, password);
+            manager.ShowDialog(passwordDialog);
+        }
+        else if (error != ERROR_Cancelled)
+        {
+            manager.ShowDialog(new NotifyDialog(manager, errorMessage, UIUtils.DIALOG_SIZE));
+        }
 
         // Stop any process/menu switch when an error occur 
         if (OnlineManager.instance.manager._processSwitchQueue.Count > 0)
