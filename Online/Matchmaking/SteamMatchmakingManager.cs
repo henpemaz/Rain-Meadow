@@ -24,12 +24,8 @@ namespace RainMeadow
             }
 
         }
-        public override string GetLobbyJoinCode(string? password = null)
-        {
-            if (!string.IsNullOrEmpty(password))
-                return $"+connect_lobby {iD.m_SteamID} +lobby_password {MatchmakingManager.EncodeJoinPassword(password!)}";
-            return $"+connect_lobby {iD.m_SteamID}";
-        }
+        public override MatchmakingManager.MatchMakingDomain domain => MatchmakingManager.MatchMakingDomain.Steam;
+        protected override object[] JoinCodeArgs => new object[] { iD.m_SteamID };
     }
 
     public class SteamMatchmakingManager : MatchmakingManager
@@ -77,6 +73,16 @@ namespace RainMeadow
         public override MeadowPlayerId GetEmptyId()
         {
             return new SteamPlayerId();
+        }
+
+        public override MatchMakingDomain domain => MatchMakingDomain.Steam;
+
+        protected override LobbyInfo? LobbyInfoFromJoinArgs(string[] parts, int argsStart)
+        {
+            if (parts.Length > argsStart && ulong.TryParse(parts[argsStart], out var id))
+                return new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4);
+            RainMeadow.Error("found +connect_lobby but no valid lobby id");
+            return null;
         }
 
         public bool filteringAvailable;

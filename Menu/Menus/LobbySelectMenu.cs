@@ -204,19 +204,10 @@ public class LobbySelectMenu : SmartMenu
             SteamNetworkingUtils.InitRelayNetworkAccess();
         MatchmakingManager.currentInstance.RequestLobbyList();
 
-        if (MatchmakingManager.ConsumePendingJoinCode(out var joinCode)
-            && MatchmakingManager.TryParseJoinCode(joinCode, out var pendingDomain, out var joinArgs, out var joinPassword))
+        if (MatchmakingManager.ConsumePendingJoinCode(out var joinCode))
         {
-            LobbyInfo? pendingLobbyInfo = null;
-
-            if (pendingDomain == MatchmakingManager.MatchMakingDomain.Steam
-                && joinArgs.Length >= 1 && ulong.TryParse(joinArgs[0], out var steamId))
-                pendingLobbyInfo = new SteamLobbyInfo(new CSteamID(steamId), "", "", 0, false, 4);
-            else if (pendingDomain == MatchmakingManager.MatchMakingDomain.LAN
-                && joinArgs.Length >= 2 && long.TryParse(joinArgs[0], out var address) && int.TryParse(joinArgs[1], out var port))
-                pendingLobbyInfo = new LANMatchmakingManager.LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4);
-
-            if (pendingLobbyInfo != null)
+            if (MatchmakingManager.TryParseJoinCode(joinCode, out _, out var pendingLobbyInfo, out var joinPassword)
+                && pendingLobbyInfo != null)
                 RequestJoinLobby(pendingLobbyInfo, joinPassword);
             else
                 RainMeadow.Error($"Failed to resolve pending join code: {joinCode}");
