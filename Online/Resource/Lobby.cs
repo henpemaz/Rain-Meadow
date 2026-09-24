@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -376,8 +375,7 @@ namespace RainMeadow
                 {
                     string rejoinCode = MatchmakingManager.currentInstance.GetCurrentLobbyJoinCode(lobby.password ?? lobby.enteredPassword);
 
-                    //Made asyncronous so that the game doesn't get totally frozen
-                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, rejoinCode, whitelistmode));
+                    RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, rejoinCode, whitelistmode);
 
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
