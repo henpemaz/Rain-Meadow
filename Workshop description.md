@@ -14,7 +14,7 @@ Rain Meadow is a true online multiplayer engine for Rain World! It includes both
 * Remix, More Slugcats, and Watcher are considered content mods, though their load order in particular doesn't matter.
 * Jolly-Coop is supported, but everyone in the lobby will need it active. It lets you connect multiple scugs to a Meadow lobby from a single instance of Rain World
 * Dev Tools is client-side
-* Expedition doesn't conflict with Meadow, but is *not* supported at this time. All other mods may or may not work depending on how they are implemented; for a baseline you can check [this community-maintained compatibility spreadsheet.](https://docs.google.com/spreadsheets/d/1QG1xYPLECkVSMc2vopO-Rw2rSdnn7_fsdlMajhAUOW0/edit?gid=0#gid=0)
+* Expedition is not available at this time. 
 
 ---
 
