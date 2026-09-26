@@ -97,12 +97,13 @@ namespace RainMeadow
 
         public static string JoinCodePrefixFor(MatchMakingDomain domain)
         {
-            switch (domain.value)
+            if (domain.value == nameof(MatchMakingDomain.Steam))
             {
-                case nameof(MatchMakingDomain.Steam):
-                    return "+connect_lobby";
-                default:
-                    return $"+connect_{domain.value.ToLowerInvariant()}_lobby";
+                return "+connect_lobby";
+            }
+            else
+            {
+                return $"+connect_{domain.value.ToLowerInvariant()}_lobby";
             }
         }
 
