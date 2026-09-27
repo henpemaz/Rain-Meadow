@@ -30,6 +30,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
+            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
             On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
@@ -1916,8 +1917,9 @@ namespace RainMeadow
 
                 self.currentSaveState = new SaveState(saveStateNumber, self);
 
+                bool blockClientSaveLoad = !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk;
 
-                if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
+                if (blockClientSaveLoad || self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
                 {
                     self.currentSaveState.LoadGame("", game);
                 }
@@ -1951,6 +1953,25 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.saveToDisk) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
+        }
+
+        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk)
+            {
+                var origLoadInProgress = self.loadInProgress;
+                self.loadInProgress = true;
+                try
+                {
+                    orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+                }
+                finally
+                {
+                    self.loadInProgress = origLoadInProgress;
+                }
+                return;
+            }
+            orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
         }
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
