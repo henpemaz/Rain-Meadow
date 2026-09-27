@@ -25,7 +25,7 @@ public static partial class ExtEnumSync
         {
             if (OnlineManager.lobby.isOwner)
             {
-                RainMeadow.Warn($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game! Adding to the map immediatly!");
+                RainMeadow.Warn($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game! Adding to the map of everyone immediatly!");
                 compressedExtEnum.AddEntryToMap(name);
 
                 foreach (var player in OnlineManager.lobby.participants)
@@ -41,7 +41,7 @@ public static partial class ExtEnumSync
             }
             else
             {
-                RainMeadow.Error($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game while not host ! This enum won't be synced until the host tells us to add it.");
+                RainMeadow.Error($"New entry \"{name}\" of ExtEnum {compressedExtEnum.enumType.FullName} added mid-game, but the player isn't host! This enum won't be synced until the host tells us to add it.");
             }
         }
     }
