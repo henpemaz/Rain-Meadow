@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RWCustom;
 using UnityEngine;
+using RainMeadow.UI.Components.Base;
 
 namespace RainMeadow
 {
@@ -57,15 +58,13 @@ namespace RainMeadow
         {
             if (prevSlugcatButton == null)
             {
-                prevSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Prev{NextPrevSingal}", new(pos.x + size.x * 0.75f - 17.5f, okButton.pos.y + 3));
-                prevSlugcatButton.OnClick += _ => GotoNextPrevSlugcat(false);
+                prevSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", new(pos.x + size.x * 0.75f - 17.5f, okButton.pos.y + 3), onClick: (btn) => GotoNextPrevSlugcat(false));
                 prevSlugcatButton.symbolSprite.rotation = 270;
                 pages[0].subObjects.Add(prevSlugcatButton);
             }
             if (nextSlugcatButton == null)
             {
-                nextSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Next{NextPrevSingal}", new(prevSlugcatButton.pos.x + prevSlugcatButton.size.x + 40, prevSlugcatButton.pos.y));
-                nextSlugcatButton.OnClick += _ => GotoNextPrevSlugcat(true);
+                nextSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", new(prevSlugcatButton.pos.x + prevSlugcatButton.size.x + 40, prevSlugcatButton.pos.y), onClick: (btn) => GotoNextPrevSlugcat(true));
                 nextSlugcatButton.symbolSprite.rotation = 90;
                 pages[0].subObjects.Add(nextSlugcatButton);
             }
@@ -89,10 +88,9 @@ namespace RainMeadow
             pages[0].ClearMenuObject(ref slugcatNameStater);
             pages[0].ClearMenuObject(ref slugcatPageStater);
         }
-        public const string NextPrevSingal = "PageSlugcat_COLORMULTIPLESLUGCATS";
         public List<SlugcatStats.Name> selectableSlugcats;
         public MenuLabel? slugcatNameStater;
         public MenuLabel? slugcatPageStater;
-        public SimplerSymbolButton? prevSlugcatButton, nextSlugcatButton;
+        public EventfulSymbolButton? prevSlugcatButton, nextSlugcatButton;
     }
 }

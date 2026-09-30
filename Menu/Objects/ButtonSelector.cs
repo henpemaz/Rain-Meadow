@@ -1,12 +1,13 @@
 ﻿using System;
 using Menu;
+using RainMeadow.UI.Components.Base;
 using UnityEngine;
 
 namespace RainMeadow
 {
     //now includes the first button as another button to view
     //uses num of buttons to show now, the selector button is counted
-    public class ButtonSelector : SimplerButton
+    public class ButtonSelector : EventfulButton
     {
         public int NumberOfButtonsToShow { get => amtOfButtonsToShow; set => amtOfButtonsToShow = Mathf.Max(value, 2); } //this includes the open list button itself
         public float OrigDistanceBetweenButtonYPos => size.y + buttonSpacing;
