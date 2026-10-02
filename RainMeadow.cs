@@ -232,7 +232,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
-                        if (shader.name == "RippleGlowColored" 
+                        if (shader.name == "RippleGlowColored"
                             || shader.name == "RippleSpawnBodyColored")
                         {
                             RainMeadow.Debug("also registering ripple side variant");
@@ -257,6 +257,8 @@ namespace RainMeadow
                 ItemHooks();
                 ObjectHooks();
                 JollyHooks();
+
+                ExtEnumSync.ApplyHooks();
 
                 CosmeticManager.FetchCosmetics();
                 CosmeticManager.ParseAvailableCosmetics();
@@ -294,7 +296,7 @@ namespace RainMeadow
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     json = JObject.Parse(request.downloadHandler.text);
-                } 
+                }
                 else
                 {
                     Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
@@ -326,7 +328,7 @@ namespace RainMeadow
                         yield break;
                     }
                     NewVersionAvailable = latestVersion;
-                    
+
                 }
             }
         }
