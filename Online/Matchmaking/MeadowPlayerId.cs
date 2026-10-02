@@ -1,5 +1,6 @@
 ﻿using System;
-using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 
 namespace RainMeadow
 {
@@ -12,9 +13,14 @@ namespace RainMeadow
         /// </summary>
         public virtual string DisplayName { get => name; }
         public virtual string GetPersonaName() { return name; }
-        public virtual void OpenProfileLink() {
-            OnlineManager.instance.manager.ShowDialog(new DialogNotify(Utils.Translate("This player does not have a profile."), OnlineManager.instance.manager, null));
-        }
+        public virtual void OpenProfileLink() =>
+            OnlineManager.instance.manager.ShowDialog(
+                new NotifyDialog(
+                    OnlineManager.instance.manager,
+                    "This player does not have a profile.",
+                    UIUtils.SINGLE_LINE_DIALOG_SIZE
+                )
+            );
         public virtual bool canOpenProfileLink { get => false; }
 
         protected MeadowPlayerId() { }

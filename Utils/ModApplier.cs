@@ -1,4 +1,6 @@
 ﻿using Menu;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,7 +11,6 @@ namespace RainMeadow
     internal class ModApplier : ModManager.ModApplyer
     {
         public DialogAsyncWait? dialogBox;
-        public Dialog? checkUserConfirmation;
 
         public bool ended = false;
         public bool cancelled = false;
@@ -41,13 +42,9 @@ namespace RainMeadow
         }
         private void ClearPopups()
         {
-            dialogBox?.RemoveSprites();
-            dialogBox?.HackHide();
+            while (manager.dialog != null)
+                manager.StopSideProcess(manager.dialog);
             dialogBox = null;
-            manager.dialog?.HackHide();
-            manager.dialog = null;
-            checkUserConfirmation?.HackHide();
-            checkUserConfirmation = null;
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
@@ -72,13 +69,19 @@ namespace RainMeadow
                 if (this.applyError != null)
                 {
                     //error popup
-                    Action cancelProceed = () =>
+                    void cancelProceed()
                     {
                         ClearPopups();
                         manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    };
-                    checkUserConfirmation = new DialogNotify(menu.Translate("Error loading mods!"), new Vector2(480f, 320f), manager, cancelProceed);
-                    manager.ShowDialog(checkUserConfirmation);
+                    }
+                    manager.ShowDialog(
+                        new NotifyDialog(
+                            manager,
+                            "Error loading mods!",
+                            UIUtils.SINGLE_LINE_DIALOG_SIZE,
+                            cancelProceed
+                        )
+                    );
                 }
                 else if (!this.requiresRestart)
                 {
@@ -108,60 +111,81 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             }
 
-            var lines = new List<ScrollableConfirmDialog.Line>();
-            AddModSection(lines, menu.Translate("Mods that have to be enabled: "), modsToEnable);
-            AddModSection(lines, menu.Translate("Mods that have to be disabled: "), modsToDisable);
-            if (unknownMods.Count > 0)
-            {
-                AddModSection(lines, menu.Translate("Mods that have to be installed: "), unknownMods);
-            }
-            else
-            {
-                lines.Add(new(""));
-                lines.Add(new(menu.Translate("Apply these changes now?"), true));
-                lines.Add(new(menu.Translate("A restart may take place to sync game objects")));
-            }
-
-            Action confirmProceed = () =>
+            void ConfirmProceed()
             {
                 ClearPopups();
-                dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
+                dialogBox = new DialogAsyncWait(
+                    manager,
+                    menu.Translate("mod_menu_apply_mods"),
+                    new Vector2(480f, 320f)
+                );
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
-            };
+            }
+
+            ScrollableDialog.IScrollableDialog scrollableDialog =
+                unknownMods.Count > 0
+                    ? new ScrollableDialog.Notify(
+                        manager,
+                        "Mod Mismatch!",
+                        new Vector2(520f, 420f),
+                        Cancel,
+                        timeOut: 0f
+                    )
+                    : new ScrollableDialog.Confirm(
+                        manager,
+                        "Mod Mismatch!",
+                        new Vector2(520f, 420f),
+                        ConfirmProceed,
+                        Cancel
+                    );
+
+            if (modsToEnable.Count > 0)
+            {
+                scrollableDialog.TextScroller.AddText(
+                    menu.Translate("Mods that have to be enabled: "),
+                    true
+                );
+                scrollableDialog.TextScroller.AddText(modsToEnable);
+                scrollableDialog.TextScroller.AddBlankLine();
+            }
+
+            if (modsToDisable.Count > 0)
+            {
+                scrollableDialog.TextScroller.AddText(
+                    menu.Translate("Mods that have to be disabled: "),
+                    true
+                );
+                scrollableDialog.TextScroller.AddText(modsToDisable);
+                scrollableDialog.TextScroller.AddBlankLine();
+            }
 
             if (unknownMods.Count > 0)
             {
-                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), Cancel, null, false);
+                scrollableDialog.TextScroller.AddText(
+                    menu.Translate("Mods that have to be installed: "),
+                    true
+                );
+                scrollableDialog.TextScroller.AddText(unknownMods);
             }
             else
             {
-                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), confirmProceed, Cancel, true);
+                scrollableDialog.TextScroller.AddText(
+                    menu.Translate("Apply these changes now?"),
+                    true
+                );
+                scrollableDialog.TextScroller.AddText(
+                    menu.Translate("A restart may take place to sync game objects")
+                );
             }
 
-            manager.ShowDialog(checkUserConfirmation);
-        }
-
-        private static void AddModSection(List<ScrollableConfirmDialog.Line> lines, string header, List<string> mods)
-        {
-            if (mods.Count == 0)
-                return;
-            if (lines.Count > 0)
-                lines.Add(new(""));
-            lines.Add(new(header, true));
-            foreach (string mod in mods)
-                lines.Add(new(mod));
+            manager.ShowDialog(scrollableDialog as Dialog);
         }
 
         public void ConfirmReorder()
         {
             //note: lobby isn't left immediately, because the user still has the option to join
-
-            var modMismatchString = menu.Translate("Warning: Differing Mod Load Orders!")
-                + Environment.NewLine + menu.Translate("This may cause unstable play.")
-                + Environment.NewLine + Environment.NewLine + menu.Translate("Reorder your mods now?");
-
-            Action confirmProceed = () =>
+            void confirmProceed()
             {
                 ClearPopups();
                 if (OnlineManager.lobby != null)
@@ -169,14 +193,20 @@ namespace RainMeadow
                     OnlineManager.LeaveLobby();
                     manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 }
-                dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
+                dialogBox = new DialogAsyncWait(manager, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
-            };
+            }
 
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, EndModApplier);
-
-            manager.ShowDialog(checkUserConfirmation);
+            manager.ShowDialog(
+                new ConfirmCancelDialog(
+                    menu.manager,
+                    "Warning: Differing Mod Load Orders!<LINE>This may cause unstable play.<LINE><LINE>Reorder your mods now?",
+                    UIUtils.DEFAULT_DIALOG_SIZE,
+                    confirmProceed,
+                    EndModApplier
+                )
+            );
         }
 
         public void ShowMissingDLCMessage(List<string> missingDLC)
@@ -192,9 +222,14 @@ namespace RainMeadow
 
             modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC);
 
-            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
-
-            manager.ShowDialog(checkUserConfirmation);
+            manager.ShowDialog(
+                new NotifyDialog(
+                    manager,
+                    modMismatchString,
+                    UIUtils.DEFAULT_DIALOG_SIZE,
+                    Cancel
+                )
+            );
         }
     }
 }
