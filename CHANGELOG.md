@@ -4,12 +4,14 @@
 - Fixed gates starting region transitions before all players are ready and closing the middle door before all players have crossed
 - Fixed client lobby menu UI crashing sometimes when changing from a campaign with a save to an empty campaign
 - fixed client lobby menu getting local save of the current campaign when host doesn't have a save on it
-- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor 
+- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor
+- Entering a story session while in the lobby chat box won't lock you as chatting
 
 ## Arena
 - Fixed infinite tinnitus again
 
 ## Chat
+- Temporaly removed the buggy chat scrolling on the chat HUD of Story and Arena.
 
 ### Modders
 - Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
