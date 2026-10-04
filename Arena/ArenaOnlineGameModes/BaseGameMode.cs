@@ -1184,7 +1184,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (self.killTag is null)
+            if (self.killTag is null || self.killTag == self.abstractCreature)
             {
                 int scoreChange = -arenaSitting.gameTypeSetup.EmptyDeathScore;
 

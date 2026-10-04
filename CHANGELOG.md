@@ -8,6 +8,7 @@
 
 ## Arena
 - Fixed infinite tinnitus again
+- Stopped self-destruct to give kill points (it will be threated as an empty death now)
 
 ## Chat
 
