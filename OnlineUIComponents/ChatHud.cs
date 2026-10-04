@@ -99,9 +99,9 @@ namespace RainMeadow
                         quiet ? 0.7f : 0.6f
                     );
                 }
-                bool shouldGoDown = chatLogOverlay.scroller.IsAtBottom();
+                bool shouldGoDown = chatLogOverlay.scroller.IsAtBoundary(UI.Systems.ScrollSystem.Direction.Bottom);
                 chatLogOverlay.UpdateLogDisplay();
-                if (shouldGoDown) chatLogOverlay.scroller.MoveAtBottom();
+                if (shouldGoDown) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom, true);
             }
         }
 
@@ -149,16 +149,10 @@ namespace RainMeadow
             {
                 if (chatLogOverlay != null)
                 {
-                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollUp)
-                    {
-                        chatLogOverlay.scroller.AddScroll(-1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                    }
-                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollDown)
-                    {
-                        chatLogOverlay.scroller.AddScroll(1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                    }
+                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Top))
+                        chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Top, true);
+                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Bottom));
+                    chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Bottom, true);
                 }
             }
             chatLogOverlay?.GrafUpdate(timeStacker);
@@ -180,7 +174,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatInputOverlay != null)
             {
-                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveAtBottom();
+                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom, true);
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;
