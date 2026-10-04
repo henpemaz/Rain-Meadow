@@ -1,4 +1,5 @@
-﻿using HUD;
+﻿using System;
+using HUD;
 using RainMeadow.Arena.Nightcat;
 using RWCustom;
 using System.Collections.Generic;
@@ -33,14 +34,14 @@ namespace RainMeadow
         public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
 
         public RoomCamera camera;
-        private Rect camrect;
         public Vector2 drawpos;
-        public bool found;
-        public Vector2 pointDir;
+        private PositionState? _targetState;
+        private PositionState? _prevTargetState;
         internal bool needed;
-        private WorldCoordinate lastWorldPos;
-        private int lastCameraPos;
-        private int lastAbstractRoom;
+        private Vector2 _cameraRoomWorldPosInPixels;
+        private Vector2 _targetRoomWorldPosInPixels;
+        private AbstractRoom? _prevCameraRoom;
+        private AbstractRoom? _prevTargetRoom;
         private static readonly IntVector2 outsideArenaDenPos = new IntVector2(-1, -1);
 
         public float DeadFade
@@ -64,7 +65,6 @@ namespace RainMeadow
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
             this.owner = owner;
             this.camera = camera;
-            camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.onlineGameMode = onlineGameMode;
             this.clientSettings = clientSettings;
             this.playerId = playerId;
@@ -107,9 +107,8 @@ namespace RainMeadow
             }
         }
 
-        public override void Update()
+        private void UpdateParts()
         {
-            base.Update();
             for (int i = this.parts.Count - 1; i >= 0; i--)
             {
                 if (this.parts[i].slatedForDeletion)
@@ -136,11 +135,16 @@ namespace RainMeadow
                     this.parts[i].Update();
                 }
             }
+        }
 
-            this.found = false;
+        private void UpdatePlayer()
+        {
+            _prevTargetState = _targetState;
+            _targetState = null;
+
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
-            if (playerId.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
+            if (playerId.FindEntity(true) is OnlineCreature oc)
             {
                 abstractPlayer = oc.abstractCreature;
                 oc.TryGetData<SlugcatCustomization>(out customization);
@@ -156,99 +160,82 @@ namespace RainMeadow
                 this.parts.Add(this.playerDisplay);
             }
 
-            Vector2 rawPos = new();
-            // in this room
-            if (abstractPlayer.Room == camera.room.abstractRoom)
+            if (abstractPlayer.Room != _prevTargetRoom)
             {
-                // in room or in shortcut
-                if (abstractPlayer.realizedCreature is Player player)
-                {
-                    if (player.inShortcut
-                        && player.inShortcutVessel is not null
-                        && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 0,0 shortcut
-                    {
-                        found = true;
-                        rawPos = camera.room.MiddleOfTile(player.inShortcutVessel.pos) - camera.pos;
-                        this.pointDir = Vector2.down;
-                    }
-                    else if (player.room == camera.room)
-                    {
-                        found = true;
-                        rawPos = Vector2.Lerp(player.bodyChunks[0].pos, player.bodyChunks[1].pos, 0.33333334f) - camera.pos;
-                        this.pointDir = Vector2.down;
-                    }
-                    else // unsure if that check is still necessary
-                    {
-                        Vector2? shortcutpos = camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(camera.room, player);
-                        if (shortcutpos != null)
-                        {
-                            found = true;
-                            rawPos = shortcutpos.Value - camera.pos;
-                            this.pointDir = Vector2.down;
-                        }
-                    }
-                }
-
-                if (found)
-                {
-                    this.drawpos = camrect.GetClosestInteriorPoint(rawPos); // gives straight arrows
-                    if (drawpos != rawPos)
-                    {
-                        pointDir = (rawPos - drawpos).normalized;
-                    }
-                }
+                AbstractRoom? abstractRoom = abstractPlayer.Room;
+                if (abstractRoom is not null)
+                    _targetRoomWorldPosInPixels = GetAbstractRoomWorldPosInPixels(abstractRoom);
+                _prevTargetState = null;
             }
-            else // different room
+            _prevTargetRoom = abstractPlayer.Room;
+
+            if (camera.room.abstractRoom != _prevCameraRoom)
             {
-                // neighbor
-                var connections = camera.room.abstractRoom.connections;
+                _cameraRoomWorldPosInPixels = GetAbstractRoomWorldPosInPixels(camera.room.abstractRoom);
+                _prevTargetState = null;
+            }
+            _prevCameraRoom = camera.room.abstractRoom;
+
+            bool isTargetInSameRoom = abstractPlayer.Room == camera.room.abstractRoom;
+
+            if (!isTargetInSameRoom)
+            {
+                // try to find target in neighbor room
+                int[] connections = camera.room.abstractRoom.connections;
                 for (int i = 0; i < connections.Length; i++)
                 {
-                    if (abstractPlayer.pos.room == connections[i])
-                    {
-                        found = true;
-                        var shortcutpos = camera.room.LocalCoordinateOfNode(i);
-                        rawPos = camera.room.MiddleOfTile(shortcutpos) - camera.pos;
-                        pointDir = camera.room.ShorcutEntranceHoleDirection(shortcutpos.Tile).ToVector2() * -1;
-                        break;
-                    }
-                }
-                if (found)
-                {
-                    this.drawpos = camrect.GetClosestInteriorPoint(rawPos);
-                    Vector2 translation = pointDir * 10f; // Vector shift for shortcut viewability
-                    this.drawpos += translation;
-
-                    if (drawpos != rawPos)
-                    {
-                        pointDir = (rawPos - drawpos).normalized * -1; // Point away from the shortcut entrance
-                    }
-                }
-                else // elsewhere, use world pos
-                {
-                    var world = camera.game.world;
-                    if (world.GetAbstractRoom(abstractPlayer.pos.room) is AbstractRoom abstractRoom) // room in region
-                    {
-                        found = true;
-                        if (abstractPlayer.pos != lastWorldPos || camera.currentCameraPosition != lastCameraPos || camera.room.abstractRoom.index != lastAbstractRoom) // cache these maths
-                        {
-                            var worldpos = (abstractRoom.mapPos / 3f + new Vector2(10f, 10f)) * 20f;
-                            if (this.abstractPlayer.realizedCreature is Creature creature) worldpos += creature.mainBodyChunk.pos - abstractRoom.size.ToVector2() * 20f / 2f;
-                            else if (abstractPlayer.pos.TileDefined) worldpos += abstractPlayer.pos.Tile.ToVector2() * 20f - abstractRoom.size.ToVector2() * 20f / 2f;
-
-                            var viewpos = (camera.room.abstractRoom.mapPos / 3f + new Vector2(10f, 10f)) * 20f + camera.pos + this.camera.sSize / 2f - camera.room.abstractRoom.size.ToVector2() * 20f / 2f;
-
-                            pointDir = (worldpos - viewpos).normalized;
-                            drawpos = camrect.GetClosestInteriorPointAlongLineFromCenter(this.camera.sSize / 2f + pointDir * 2048f); // gives angled arrows
-                        }
-                    }
+                    if (abstractPlayer.pos.room != connections[i])
+                        continue;
+                    WorldCoordinate shortcutPos = camera.room.LocalCoordinateOfNode(i);
+                    Vector2 dir = camera.room.ShorcutEntranceHoleDirection(shortcutPos.Tile).ToVector2();
+                    Vector2 pos = camera.ApplyDepth(camera.room.MiddleOfTile(shortcutPos) + dir * 15f, -5f);
+                    _targetState = new PositionState(
+                        Position: _cameraRoomWorldPosInPixels + pos,
+                        Direction: dir,
+                        VisibilityOffset: 20f,
+                        InvertArrow: true, // Point away from the shortcut entrance
+                        PointTowardsDirection: false
+                    );
+                    break;
                 }
             }
+            bool isTargetInNeighborRoom = _targetState.HasValue;
 
-            lastWorldPos = abstractPlayer.pos;
-            lastCameraPos = camera.currentCameraPosition;
-            lastAbstractRoom = camera.room.abstractRoom.index;
+            // in same or far room
+            if (!isTargetInNeighborRoom)
+            {
+                Vector2? pos = null;
 
+                Player? player = (Player?)abstractPlayer.realizedCreature;
+                if (player is not null && (isTargetInSameRoom || DoesPlayerPosMatchPlayerACPos(player)))
+                {
+                    if (player is { inShortcut: true, inShortcutVessel: not null }
+                        && player.inShortcutVessel.pos != outsideArenaDenPos) // avoiding that 0,0 shortcut
+                    {
+                        pos = _targetRoomWorldPosInPixels + camera.room.MiddleOfTile(player.inShortcutVessel.pos);
+                    }
+                    else {
+                        BodyChunk[] chunks = player.bodyChunks;
+                        pos = _targetRoomWorldPosInPixels + Vector2.Lerp(chunks[0].pos, chunks[1].pos, 1f / 3f);
+                    }
+                }
+
+                if (!pos.HasValue && abstractPlayer.pos.TileDefined)
+                {
+                    pos = _targetRoomWorldPosInPixels + camera.room.MiddleOfTile(abstractPlayer.pos);
+                }
+
+                if (pos.HasValue)
+                {
+                    _targetState = new PositionState(
+                        Position: pos.Value,
+                        Direction: Vector2.down,
+                        VisibilityOffset: 45f,
+                        InvertArrow: false,
+                        PointTowardsDirection: !isTargetInSameRoom
+                    );
+                }
+            }
 
             if (this.antiDeathBumpFlicker > 0)
             {
@@ -280,7 +267,10 @@ namespace RainMeadow
                 }
                 this.deadCounter = -1;
                 this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
-                this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
+
+                Vector2? drawPos = GetTargetDrawPos(1f)?.pos;
+                if (drawPos.HasValue)
+                    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, drawPos.Value, this.hud.fContainers[1]));
             }
 
             this.lastDead = this.PlayerConsideredDead;
@@ -316,6 +306,50 @@ namespace RainMeadow
 
         }
 
+        public (Vector2 pos, Vector2 dir)? GetTargetDrawPos(float timeStacker)
+        {
+            PositionState? currentState = PositionState.Lerp(_prevTargetState, _targetState, timeStacker);
+            if (!currentState.HasValue)
+                return null;
+            PositionState state = currentState.Value;
+
+            Vector2 cameraPos = Vector2.Lerp(camera.lastPos, camera.pos, timeStacker);
+            Vector2 cameraWorldPos = GetAbstractRoomWorldPosInPixels(camera.room.abstractRoom) + cameraPos;
+
+            Vector2 targetPos = state.Position - cameraWorldPos;
+
+            Rect cameraBounds = new(Vector2.zero, camera.sSize);
+            Rect positionBounds = cameraBounds.CloneWithExpansion(-30f);
+
+            if (state.PointTowardsDirection)
+            {
+                return (
+                    pos: positionBounds.GetClosestPointOnEdgeAlongLineFromCenter(targetPos),
+                    dir: (targetPos - positionBounds.center).normalized
+                );
+            }
+
+            bool isTargetOnScreen = positionBounds.Contains(targetPos);
+
+            Vector2 dir = isTargetOnScreen
+                ? state.Direction
+                : (targetPos - positionBounds.GetClosestInteriorPoint(targetPos)).normalized;
+
+            targetPos -= dir * state.VisibilityOffset;
+
+            return (
+                pos: positionBounds.GetClosestInteriorPoint(targetPos),
+                dir: isTargetOnScreen ? dir * (state.InvertArrow ? -1 : 1) : dir
+            );
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            UpdatePlayer();
+            UpdateParts();
+        }
+
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
@@ -331,6 +365,101 @@ namespace RainMeadow
             for (int i = 0; i < this.parts.Count; i++)
             {
                 this.parts[i].ClearSprites();
+            }
+        }
+
+        private static bool DoesPlayerPosMatchPlayerACPos(Player player)
+        {
+            AbstractCreature ac = player.abstractCreature;
+
+            if (player is { inShortcut: true, inShortcutVessel: not null }
+                && player.inShortcutVessel.pos != outsideArenaDenPos)
+            {
+                return player.inShortcutVessel.room.index == ac.pos.room;
+            }
+
+            if (!ac.pos.TileDefined || player.room?.abstractRoom.index != ac.pos.room)
+                return false;
+
+            // realizedCreature of a remote player can sometimes not be null when its actually not realized
+            // so no new state for it is being sent, while new state for the abstractPlayer is always sent
+            // so until this is fixed somewhere else in rain meadow,
+            // we just check if the realized player's tile position matches what it should be
+            const float toleranceInPixels = 20f; // up to one tile in each direction
+            Vector2 posDiff = player.room.MiddleOfTile(ac.pos) - GetReferencePlayerACPosInPixels(player);
+            return Math.Abs(posDiff.x) <= toleranceInPixels && Math.Abs(posDiff.y) <= toleranceInPixels;
+        }
+
+        /// <returns>
+        /// The position of <paramref name="player"/>
+        /// that is used to set <paramref name="player"/>'s <see cref="AbstractCreature.pos"/>.
+        /// </returns>
+        private static Vector2 GetReferencePlayerACPosInPixels(Player player)
+        {
+            // from PhysicalObject.Update
+            Vector2 pos = player.FirstChunk().pos;
+
+            if (!ModManager.MSC)
+                return pos;
+
+            // from Player.Update
+            if (player.animation != Player.AnimationIndex.HangFromBeam
+                && player.animation != Player.AnimationIndex.DeepSwim)
+            {
+                pos = player.bodyChunks[1].pos;
+            }
+            else if (player.animation == Player.AnimationIndex.BeamTip
+                || player.animation == Player.AnimationIndex.StandOnBeam)
+            {
+                pos = player.bodyChunks[1].pos - new Vector2(0f, 20f);
+            }
+            else if (player.animation == Player.AnimationIndex.HangUnderVerticalBeam)
+            {
+                pos = player.bodyChunks[0].pos + new Vector2(0f, 20f);
+            }
+
+            return pos;
+        }
+
+        private static Vector2 GetAbstractRoomWorldPosInPixels(AbstractRoom abstractRoom)
+        {
+            return (abstractRoom.mapPos / 3f + new Vector2(10f, 10f) - abstractRoom.size.ToVector2() / 2f) * 20f;
+        }
+
+        private readonly record struct PositionState(
+            Vector2 Position,
+            Vector2 Direction,
+            float VisibilityOffset,
+            bool InvertArrow,
+            bool PointTowardsDirection)
+        {
+            public Vector2 Position { get; } = Position;
+            public Vector2 Direction { get; } = Direction;
+            public float VisibilityOffset { get; } = VisibilityOffset;
+            public bool InvertArrow { get; } = InvertArrow;
+            public bool PointTowardsDirection { get; } = PointTowardsDirection;
+
+            public static PositionState? Lerp(PositionState? a, PositionState? b, float t) => t switch {
+                <= 0f => a ?? b,
+                >= 1f => b,
+                _     => LerpUnclamped(a, b, t)
+            };
+
+            private static PositionState? LerpUnclamped(PositionState? a, PositionState? b, float t)
+            {
+                if (!b.HasValue)
+                    return null;
+                if (!a.HasValue)
+                    return b;
+                PositionState from = a.Value;
+                PositionState to = b.Value;
+                return new PositionState(
+                    Position: Vector2.LerpUnclamped(from.Position, to.Position, t),
+                    Direction: Vector2.LerpUnclamped(from.Direction, to.Direction, t),
+                    VisibilityOffset: Mathf.LerpUnclamped(from.VisibilityOffset, to.VisibilityOffset, t),
+                    InvertArrow: to.InvertArrow,
+                    PointTowardsDirection: to.PointTowardsDirection
+                );
             }
         }
     }
