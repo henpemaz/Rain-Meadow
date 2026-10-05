@@ -554,8 +554,16 @@ namespace RainMeadow
 
             return false;
         }
+        public static bool EqualHalf(this float? f1, float? f2)
+            => f1 is null 
+                ? f2 is null 
+                : f2 is not null && EqualHalf((float)f1, (float)f2);
         public static bool EqualHalf(this float f1, float f2)
             => Mathf.FloatToHalf(f1) == Mathf.FloatToHalf(f2);
+        public static bool EqualHalf(this Vector2? v1, Vector2? v2)
+            => v1 is null 
+                ? v2 is null 
+                : v2 is not null && EqualHalf((Vector2)v1, (Vector2)v2);
         public static bool EqualHalf(this Vector2 v1, Vector2 v2)
             => Mathf.FloatToHalf(v1.x) == Mathf.FloatToHalf(v2.x)
                 && Mathf.FloatToHalf(v1.y) == Mathf.FloatToHalf(v2.y);
