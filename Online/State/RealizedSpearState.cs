@@ -141,7 +141,7 @@ namespace RainMeadow
 
         public override bool Equals(object obj) => obj is AppendageRef other && Equals(other);
 
-        public static bool operator ==(AppendageRef lhs, AppendageRef rhs) => lhs is not null && lhs.Equals(rhs);
+        public static bool operator ==(AppendageRef lhs, AppendageRef rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
 
         public static bool operator !=(AppendageRef lhs, AppendageRef rhs) => !(lhs == rhs);
 

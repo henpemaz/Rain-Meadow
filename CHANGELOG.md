@@ -8,6 +8,7 @@
 
 ## Arena
 - Fixed infinite tinnitus again
+- Fixed part of the spear state being sent every tick no matter what
 - Stopped self-destruct giving kill points (it will be treated as a suicide now)
 
 ## Chat
@@ -16,6 +17,7 @@
 - Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
 ## Engine
 - Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
+- `OnlineFieldHalf` with cut the value in half before comparing it to the last one, reducing the sending rate of floats and some Vector2 values.
 ## Arena
 - Watcher's camo bar will now show the Voidmaster ability's cooldown with the purple fill
 - Watcher cannot summon more than one Amoeba at a time
