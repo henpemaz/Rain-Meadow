@@ -8,7 +8,8 @@
 
 ## Arena
 - Fixed infinite tinnitus again
-- Fixed part of the spear state being sent every tick
+- Fixed part of the spear state being sent every tick no matter what
+- Stopped self-destruct giving kill points (it will be treated as a suicide now)
 
 ## Chat
 
