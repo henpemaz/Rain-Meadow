@@ -1,16 +1,27 @@
 # Release 1.16.0
 
+## General
+- Improved name tag positioning
+  - Fixed name tag position being behind by an extra tick
+  - Fixed name tag being offset incorrectly when pointing at a player in a neighboring room
+  - Fixed incorrect lerping logic
+  - Fixed an edge case in positioning logic that would sometimes cause it to go closer to the edge of the screen than intended
+  - Fixed positioning logic for far away players
+  - Improved positioning for players really close to edges of the screen
+
 ## Story
 - Fixed gates starting region transitions before all players are ready and closing the middle door before all players have crossed
 - Fixed client lobby menu UI crashing sometimes when changing from a campaign with a save to an empty campaign
 - fixed client lobby menu getting local save of the current campaign when host doesn't have a save on it
-- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor 
+- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor
+- Entering a story session while in the lobby chat box won't lock you as chatting
 
 ## Arena
 - Fixed infinite tinnitus again
-- Stopped self-destruct giving kill points (it will be treated as a suicide now)
+- Stopped self-destruct to give kill points (it will be threated as an empty death now)
 
 ## Chat
+- Temporaly removed the buggy chat scrolling on the chat HUD of Story and Arena.
 
 ### Modders
 - Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
