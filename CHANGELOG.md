@@ -18,7 +18,7 @@
 
 ## Arena
 - Fixed infinite tinnitus again
-- Stopped self-destruct to give kill points (it will be threated as an empty death now)
+- Stopped self-destruct giving kill points (it will be treated as a suicide now)
 
 ## Chat
 - Temporaly removed the buggy chat scrolling on the chat HUD of Story and Arena.
