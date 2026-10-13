@@ -114,7 +114,7 @@ namespace RainMeadow
         float offscreen = 0;
         private void UpdateUI()
         {
-            if (ModManager.JollyCoop)
+            if (ModManager.JollyCoop && OnlineManager.lobby.isOwner)
             {
                 expeditionGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
             }

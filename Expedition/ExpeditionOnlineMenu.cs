@@ -19,11 +19,10 @@ namespace RainMeadow
         {
             playerSelectedSlugcats = new SlugcatStats.Name[4];
             SetupSelectableSlugcats();
-            ID = OnlineManager.lobby.gameMode.MenuProcessId(); // conferir
+            ID = OnlineManager.lobby.gameMode.MenuProcessId();
             expeditionGameMode = (ExpeditionGameMode)OnlineManager.lobby.gameMode;
             expeditionGameMode.Sanitize();
 
-            //SetCampaign(ExpeditionData.slugcatPlayer);
             if (OnlineManager.lobby.isOwner)
             {
                 expeditionGameMode.currentCampaign = ExpeditionData.slugcatPlayer;
