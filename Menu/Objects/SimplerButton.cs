@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    [Obsolete]
     public class SimplerButton : SimpleButton, IHaveADescription, IRestorableMenuObject
     {
         public SimplerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : base(menu, owner, displayText, "", pos, size)

@@ -10,6 +10,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
         public static ArenaSetup.GameTypeID ChallengeMode = new("Challenge");
 
         public override ArenaSetup.GameTypeID GetGameModeId => ChallengeMode;
+
+        public override string GameModeInfo => "Pit yourself against a series of challenges";
+
         private int _timerDuration;
         public override int TimerDuration
         {
@@ -139,19 +142,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS
             }
 
             return base.IconColor(arenaOnline, display, owner, customization, player);
-        }
-
-        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arenaOnline, Menu.Menu menu)
-        {
-            return new DialogNotify(
-                menu.LongTranslate("Pit yourself against a series of challenges"),
-                new Vector2(500f, 400f),
-                menu.manager,
-                () =>
-                {
-                    menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                }
-            );
         }
     }
 }

@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Menu;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
@@ -323,7 +324,7 @@ namespace RainMeadow
             public float labelFade, lastLabelFade;
             public new event Action<SideButton>? OnClick;
         }
-        public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : SimplerButton(menu, owner, displayText, pos, size, description), IPartOfButtonScroller
+        public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : EventfulButton(menu, owner, displayText, pos, size, description), IPartOfButtonScroller
         {
             public float Alpha { get; set; } = 1;
             public Vector2 Pos { get => pos; set => pos = value; }

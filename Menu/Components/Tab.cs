@@ -2,6 +2,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using System;
@@ -178,15 +179,13 @@ public class TabContainer : RectangularMenuObject
         {
             if (topArrowButton == null)
             {
-                topArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveUp", new(buttonsOnRight ? 12 : -5, container.size.y));
-                topArrowButton.OnClick += _ => GoPrevPage();
+                topArrowButton = new(menu, this, "Menu_Symbol_Arrow", new(buttonsOnRight ? 12 : -5, container.size.y), onClick: (btn) => GoPrevPage());
                 subObjects.Add(topArrowButton);
             }
             if (bottomArrowButton == null)
             {
-                bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveDown", new(buttonsOnRight ? 12 : -5, -24));
+                bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", new(buttonsOnRight ? 12 : -5, -24), onClick: (btn) => GoNextPage());
                 bottomArrowButton.symbolSprite.rotation = 180f;
-                bottomArrowButton.OnClick += _ => GoNextPage();
                 subObjects.Add(bottomArrowButton);
             }
             menu.MutualVerticalButtonBind(activeTabButtons.First().wrapper, topArrowButton);
@@ -201,7 +200,7 @@ public class TabContainer : RectangularMenuObject
         private int currentOffset = 0;
         private float tabButtonYSize = 125;
         public MenuTabWrapper tabWrapper;
-        public SimplerSymbolButton? topArrowButton, bottomArrowButton;
+        public EventfulSymbolButton? topArrowButton, bottomArrowButton;
         public List<ValueTuple<Tab, string>> registeredTabButtons;
         public readonly List<TabButton> activeTabButtons;
         public TabContainer container;

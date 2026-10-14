@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class EventfulSelectOneButton(
+    [Obsolete]
+    public class LEGACY_EventfulSelectOneButton(
         Menu.Menu menu,
         MenuObject owner,
         string displayText,
@@ -35,6 +36,6 @@ namespace RainMeadow
             OnClick?.Invoke(this);
         }
 
-        public event Action<EventfulSelectOneButton> OnClick;
+        public event Action<LEGACY_EventfulSelectOneButton> OnClick;
     }
 }

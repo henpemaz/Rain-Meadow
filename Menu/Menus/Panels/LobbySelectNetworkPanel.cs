@@ -3,6 +3,7 @@ using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
 
@@ -13,14 +14,14 @@ class LobbySelectNetworkPanel : PositionedMenuObject
     public event Action? OnDirectConnectButtonClick;
     public event Action? OnDomainChanged;
 
-    public SimplerButton directConnectButton;
+    public EventfulButton directConnectButton;
 
     public LobbySelectNetworkPanel(Menu.Menu menu, MenuObject owner, Vector2 pos)
         : base(menu, owner, pos)
     {
         MenuTabWrapper tabWrapper = new(menu, this);
 
-        directConnectButton = new SimplerButton(
+        directConnectButton = new EventfulButton(
             menu,
             this,
             menu.Translate("Direct Connect"),

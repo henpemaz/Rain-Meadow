@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
+using RainMeadow.UI.Components.Base;
 using UnityEngine;
 
 namespace RainMeadow
@@ -69,7 +70,7 @@ namespace RainMeadow
         }
     }
 
-    public abstract class BaseStoreButton : SimplerButton
+    public abstract class BaseStoreButton : EventfulButton
     {
         public string itemName;
         public int cost;

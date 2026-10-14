@@ -2,6 +2,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
+using RainMeadow.UI.Components.Base;
 using RainMeadow.UI.Components.Patched;
 using RWCustom;
 using System.Collections.Generic;
@@ -294,7 +295,7 @@ namespace RainMeadow.UI.Components
         }
         public class WatcherSettingsPage : SettingsPage
         {
-            public SimplerButton? backButton;
+            public EventfulButton? backButton;
             public MenuTabWrapper tabWrapper;
             public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel, amoebaLethalityFactorLabel, fullInvisRippleSpaceLabel;
             public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox, amoebaLethalityFactorTextBox;

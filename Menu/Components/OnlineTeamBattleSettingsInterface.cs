@@ -437,7 +437,7 @@ namespace RainMeadow.UI.Components
         public int GetCurrentlySelectedOfSeries(string id) =>
             arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team;
 
-        public class TeamButton : EventfulSelectOneButton
+        public class TeamButton : LEGACY_EventfulSelectOneButton
         {
             public string teamName;
             public float widthOfText = 190;
@@ -451,7 +451,7 @@ namespace RainMeadow.UI.Components
                 MenuObject owner,
                 Vector2 pos,
                 Vector2 size,
-                EventfulSelectOneButton[] selectButtons,
+                LEGACY_EventfulSelectOneButton[] selectButtons,
                 int index,
                 string teamName,
                 string symbolName,

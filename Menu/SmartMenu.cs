@@ -1,5 +1,6 @@
 ﻿using Menu;
 using Menu.Remix;
+using RainMeadow.UI.Components.Base;
 using System.Linq;
 using UnityEngine;
 
@@ -32,21 +33,27 @@ namespace RainMeadow
             tabWrapper._tab._container.RemoveFromContainer();
             typeof(Menu.Remix.MixedUI.OpTab).GetField("_container", (System.Reflection.BindingFlags)0xFFFFFFF).SetValue(tabWrapper._tab, mainPage.Container);
 
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(this, mainPage, Translate("BACK"), new Vector2(200f, 50f), new Vector2(110f, 30f)));
-            (backObject as SimplerButton).OnClick += Back;
+            backObject = new EventfulButton(
+                this,
+                mainPage,
+                Translate("BACK"),
+                new Vector2(200f, 50f),
+                new Vector2(110f, 30f)
+            )
+            {
+                SoundOnClick = SoundID.MENU_Switch_Page_Out
+            };
+            mainPage.subObjects.Add(backObject);
+            (backObject as EventfulButton)?.OnClick += (btn) => {
+                OnBack(btn);
+                manager.RequestMainProcessSwitch(backTarget);
+            };
 
             isExiting = RWInput.CheckPauseButton(0);
         }
 
         /// Do override this (if you need it)
-        public virtual void OnBack(SimplerButton obj) { }
-        /// Do not override this
-        private void Back(SimplerButton obj)
-        {
-            OnBack(obj);
-            manager.RequestMainProcessSwitch(this.backTarget);
-            base.PlaySound(SoundID.MENU_Switch_Page_Out);
-        }
+        public virtual void OnBack(EventfulButton obj) { }
 
         public override string UpdateInfoText()
         {

@@ -257,11 +257,6 @@ namespace RainMeadow
             }
         }
 
-        public static void SetHandler(SimplerButton[] classButtons, int localIndex)
-        {
-            var button = classButtons[localIndex]; // Get the button you want to pass
-        }
-
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistent)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
