@@ -315,6 +315,11 @@ namespace RainMeadow
                 targetPoint.y >= rect.yMin &&
                 targetPoint.y <= rect.yMax) return targetPoint;
 
+            return rect.GetClosestPointOnEdgeAlongLineFromCenter(targetPoint);
+        }
+
+        public static Vector2 GetClosestPointOnEdgeAlongLineFromCenter(this Rect rect, Vector2 targetPoint)
+        {
             float halfWidth = rect.width * 0.5f;
             float halfHeight = rect.height * 0.5f;
             targetPoint -= rect.center; // from center
