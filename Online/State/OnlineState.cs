@@ -227,6 +227,36 @@ namespace RainMeadow
                 nullable ? m.Name == nameof(Serializer.SerializeHalfNullable)
                 : m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
+            public override Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
+            {
+                Expression? halfComparisonExpression = null;
+                Type halfType = f.FieldType;
+                
+                // Compare field cut in half instead of the full one
+                if (typeof(Extensions).GetMethod(nameof(Extensions.EqualHalf), [halfType, halfType]) is MethodInfo haftComparisonMethod)
+                {
+                    // RainMeadow.Debug($"Found method {haftComparisonMethod} for type {halfType} !");
+                    halfComparisonExpression = Expression.Call(
+                        haftComparisonMethod,
+                        Expression.Convert(currentField, halfType),
+                        Expression.Convert(baselineField, halfType)
+                    );
+                }
+
+                if (halfComparisonExpression is not null)
+                {
+                    return Expression.Condition(
+                        halfComparisonExpression,
+                        Expression.Constant(true),
+                        Expression.Block(Expression.Call(
+                            Expression.Field(null, typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons))),
+                            typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons)).FieldType.GetMethod("Add"),
+                            Expression.Constant(f)
+                        ), Expression.Constant(false))
+                    );
+                }
+                return base.ComparisonMethod(f, currentField, baselineField);
+            }
         }
         /// <summary>
         /// Optimizes sending <see cref="Color"/> data.
