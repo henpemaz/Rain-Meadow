@@ -43,8 +43,8 @@ namespace RainMeadow
             }
             foreach (OnlinePlayer player in newPlayers)
             {
-                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
-                playerScroller.AddScrollObjects(playerButton);
+                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.PositionOfObject(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
+                playerScroller.AddButtons(playerButton);
             }
             playerScroller.ConstrainScroll();
             return true;
