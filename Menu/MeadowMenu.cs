@@ -1,5 +1,7 @@
 using Menu;
 using Menu.Remix;
+using RainMeadow.UI;
+using RainMeadow.UI.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +42,7 @@ namespace RainMeadow
 
         private MenuLabel eyeColorLabel;
 
-        public NullLobbyError nullLobbyError;
+        public bool shownNullLobbyDialog;
 
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
@@ -231,14 +233,24 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (nullLobbyError != null)
-            {
+
+            if (shownNullLobbyDialog)
                 return;
-            }
-            if (OnlineManager.lobby == null && nullLobbyError == null)
+
+            if (OnlineManager.lobby == null)
             {
-                nullLobbyError = new NullLobbyError(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Meadow lobby is null! Exiting...", false);
-                this.pages[0].subObjects.Add(nullLobbyError);
+                manager.ShowDialog(
+                    new NotifyDialog(
+                        manager,
+                        "Lobby is null! Exiting...",
+                        UIUtils.SINGLE_LINE_DIALOG_SIZE,
+                        RainMeadow.Ext_ProcessID.LobbySelectMenu
+                    )
+                    {
+                        OnlyShowInInitialProcess = true,
+                    }
+                );
+                shownNullLobbyDialog = true;
                 return;
             }
             if (this.rainEffect != null)
