@@ -10,7 +10,6 @@ namespace RainMeadow
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)) return;
             if (!(ExpeditionData.challengeList[index] is PinChallenge)) throw new InvalidProgrammerException("not pin challenge");
 
-            //crit.creature.Realize();
             var cl = (PinChallenge)ExpeditionData.challengeList[index];
             if (RainMeadow.isExpeditionMode(out var ex))
             {                
@@ -24,7 +23,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void challengeCreatureKilled(RPCEvent rpc, int index, OnlineCreature crit) // needs suport to custom mod challenges?
+        public static void challengeCreatureKilled(RPCEvent rpc, int index, OnlineCreature crit)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)) return;
             var challenge = ExpeditionData.challengeList[index];

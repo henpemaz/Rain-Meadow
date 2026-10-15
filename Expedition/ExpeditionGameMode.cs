@@ -33,43 +33,52 @@ namespace RainMeadow
         {
             return base.AllowedInMode(item);
         }
+
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             return base.ShouldLoadCreatures(game, worldSession);
         }
+
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
         {
             return base.ShouldSpawnRoomItems(game, roomSession);
         }
+
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
             return base.ShouldRegisterAPO(resource, apo);
         }
+
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             return base.ShouldSyncAPOInRoom(rs, apo);
         }
+
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return base.ShouldSyncAPOInWorld(ws, apo);
         }
+
         public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
         {
             return currentCampaign;
         }
+
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return currentCampaign;
         }
+
         public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
         {
-            return game?.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign); // need to understand what this do
+            return game?.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
         {
             return RainMeadow.Ext_ProcessID.ExpeditionMenu;
         }
+
         public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
         {
             if (resource is Lobby)
@@ -86,6 +95,7 @@ namespace RainMeadow
                 needSlugUpdate = true;
             }
         }
+
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             int avatarsettings_index = 0;
@@ -103,9 +113,9 @@ namespace RainMeadow
         {
             base.Customize(creature, oc);
         }
+
         public override void ResourceAvailable(OnlineResource onlineResource)
         {
-            //base.ResourceAvailable(onlineResource);
             RainMeadow.Debug(onlineResource);
             if (onlineResource is Lobby lobby)
             {
