@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net;
 using Menu;
 using RainMeadow.UI.Components;
@@ -22,6 +23,8 @@ public class LobbySelectMenu : SmartMenu
     private int TimeoutTicks = RainMeadow.rainMeadowOptions.JoiningTimeout.Value * 40;
     private const string ERROR_Unexpected = "Something went wrong...";
     private const string ERROR_Cancelled = "Cancelled";
+    public const string ALBUM_URL = "https://google.com";
+    private const string ALBUM_FILE = "rainmeadowalbum";
 
     public override MenuScene.SceneID GetScene =>
         ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -93,6 +96,43 @@ public class LobbySelectMenu : SmartMenu
             Vector2.zero,
             false
         );
+
+        const float AlbumWidth = 150f;
+        if (
+            !string.IsNullOrEmpty(ALBUM_URL)
+            && File.Exists(AssetManager.ResolveFilePath($"illustrations/{ALBUM_FILE}.png"))
+        )
+        {
+            AlbumButton albumButton = new(
+                this,
+                mainPage,
+                new Vector2(
+                    (1366f - manager.rainWorld.screenSize.x) / 2f + 10f,
+                    manager.rainWorld.screenSize.y - 768f + 45f
+                ),
+                AlbumWidth,
+                ALBUM_FILE,
+                Translate("Listen to the Rain Meadow soundtrack")
+            );
+            albumButton.OnClick += (btn) =>
+            {
+                manager.ShowDialog(
+                    new ScrollableConfirmDialog(
+                        manager,
+                        Translate("Open link?"),
+                        [
+                            new(Translate("This will open the following page in your browser:"), true),
+                            new(ALBUM_URL),
+                        ],
+                        UIUtils.DIALOG_SIZE,
+                        () => Utils.OpenWebPage(ALBUM_URL),
+                        null,
+                        true
+                    )
+                );
+            };
+            mainPage.subObjects.Add(albumButton);
+        }
 
         lobbyCardSelector = new LobbyCardSelector(this, mainPage, new Vector2(225, 115));
 #pragma warning disable IDE0200
