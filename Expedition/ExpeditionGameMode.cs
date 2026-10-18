@@ -19,6 +19,7 @@ namespace RainMeadow
         public bool needUpdateChallenge;
 
         public List<OnlineCreature> pinChallenge_PinList;
+        public int earnedPassages;
 
         public ExpeditionGameMode(Lobby lobby) : base(lobby)
         {

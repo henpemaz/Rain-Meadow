@@ -97,5 +97,13 @@ namespace RainMeadow
                 }
             }
         }
+
+        [RPCMethod]
+        public static void GoToFastTravelScreen()
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is Menu.SleepAndDeathScreen sleepAndDeathScreen && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null)) return;            
+            RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.FastTravelScreen);
+            sleepAndDeathScreen.PlaySound(SoundID.MENU_Passage_Button);
+        }
     }
 }

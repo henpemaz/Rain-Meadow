@@ -37,6 +37,7 @@ namespace RainMeadow
             On.Expedition.ExpeditionProgression.UnlockSprite += ExpeditionProgression_UnlockSprite;
 
             new Hook(typeof(ExpeditionGame).GetProperty(nameof(ExpeditionGame.activeUnlocks)).GetGetMethod(), ExpeditionGame_activeUnlocks);
+            new Hook(typeof(ExpeditionData).GetProperty(nameof(ExpeditionData.earnedPassages)).GetGetMethod(), ExpeditionData_earnedPassages);
 
             IL.Expedition.ExpeditionCoreFile.ToString += ExpeditionCoreFile_ToString;
             On.Expedition.ExpeditionCoreFile.FromString += unlockAllMeadowMusics;            
@@ -55,6 +56,27 @@ namespace RainMeadow
             IL.Menu.ExpeditionGameOver.ctor += ExpeditionGameOver_ctor;
             IL.Menu.ExpeditionMenu.ValidateQuestRewards += ExpeditionMenu_ValidateQuestRewards;
             IL.RainWorldGame.GoToDeathScreen += ExpeditionGameOver;
+            On.Menu.SleepAndDeathScreen.Singal += ExpeditionFastTravel;
+            On.Menu.SleepAndDeathScreen.Update += ExpPassageGreyedOut;
+
+        }
+
+        private void ExpPassageGreyedOut(On.Menu.SleepAndDeathScreen.orig_Update orig, SleepAndDeathScreen self)
+        {
+            orig(self);
+            if (isExpeditionMode(out _) && !OnlineManager.lobby.isOwner && self.expPassage != null) self.expPassage.buttonBehav.greyedOut = true;
+        }
+
+        private void ExpeditionFastTravel(On.Menu.SleepAndDeathScreen.orig_Singal orig, SleepAndDeathScreen self, MenuObject sender, string message)
+        {
+            if (isExpeditionMode(out _) && OnlineManager.lobby.isOwner && message == "EXPPASSAGE")
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!player.isMe) player.InvokeOnceRPC(ExpeditionRPC.GoToFastTravelScreen);
+                }
+            }
+            orig(self, sender, message);
         }
 
         private void ExpeditionGameOver(ILContext il)
@@ -403,6 +425,13 @@ namespace RainMeadow
             if (!isExpeditionMode(out var expedition) || OnlineManager.lobby.isOwner) return orig();
             return expedition.activeUnlocks;
         }
+
+        private int ExpeditionData_earnedPassages(Func<int> orig)
+        {
+            if (!isExpeditionMode(out var expedition) || OnlineManager.lobby.isOwner) return orig();
+            return expedition.earnedPassages;
+        }
+
         private string ExpeditionProgression_UnlockSprite(On.Expedition.ExpeditionProgression.orig_UnlockSprite orig, string key, bool alwaysShow)
         {
             if (OnlineManager.lobby is null || OnlineManager.lobby.isOwner)

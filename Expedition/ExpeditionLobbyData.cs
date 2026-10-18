@@ -52,7 +52,10 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
 
         [OnlineField]
         public int mushroomCounter;
-        
+
+        [OnlineField]
+        public int earnedPassages;
+
         [OnlineFieldHalf]
         public float slowTimeCooldown;
 
@@ -158,6 +161,7 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             activeUnlocks = expeditionGameMode.activeUnlocks;
             activeMission = ExpeditionData.activeMission;
             startingDen = ExpeditionData.startingDen;
+            earnedPassages = ExpeditionData.earnedPassages;
 
             if (currentGameState?.session is StoryGameSession storySession)
             {                
@@ -272,6 +276,7 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             ExpeditionData.startingDen = startingDen;
 
             expedition.activeUnlocks = activeUnlocks;                
+            expedition.earnedPassages = earnedPassages;
 
             if (!ExpeditionGame.expeditionComplete)
             {
