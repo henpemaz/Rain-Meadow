@@ -617,13 +617,14 @@ namespace RainMeadow
         }
 
         private void Challenge_CompleteChallenge(On.Expedition.Challenge.orig_CompleteChallenge orig, Expedition.Challenge self)
-        {            
+        {
             if (isExpeditionMode(out var em))
             {
                 if (!self.completed)
                 {
-
-                    if (!OnlineManager.lobby.isOwner && getChallengeID(self, out var id) && !em.isChallengeCompleted[id])
+                    var getcid = getChallengeID(self, out var id);
+                    RainMeadow.Info($" - getChallengeID: {id}");
+                    if (!OnlineManager.lobby.isOwner && getcid && !em.isChallengeCompleted[id])
                     {
                         OnlineManager.lobby.owner.InvokeRPC(ExpeditionRPC.completeChallenge, id);
                     }

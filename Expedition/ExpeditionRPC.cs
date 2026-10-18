@@ -80,6 +80,7 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)) return;
             ExpeditionData.challengeList[index].CompleteChallenge();
+            RainMeadow.Info($"{ExpeditionData.challengeList[index]} index: {index} complete");
         }
 
         [RPCMethod]

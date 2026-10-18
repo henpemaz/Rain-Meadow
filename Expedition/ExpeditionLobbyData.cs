@@ -318,24 +318,25 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     if (needUpdate)
                     {
                         needUpdate = false;
-                       
-                        bool newCompleteState = challenge[i].completed;
-
-                        if (oldCompleteState != newCompleteState && newCompleteState)
+                        if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
                         {
-                            challenge[i].completed = oldCompleteState;
-                            challenge[i].CompleteChallenge();
-                        }
+                            bool newCompleteState = challenge[i].completed;
 
-                        challenge[i].UpdateDescription();
-                        
+                            if (oldCompleteState != newCompleteState && newCompleteState)
+                            {
+                                challenge[i].completed = oldCompleteState;
+                                challenge[i].CompleteChallenge();
+                            }
+
+                            challenge[i].UpdateDescription();
+                        }
                     }
                 }
-                if(needUpdateeChallengePreview)
-                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is ExpeditionOnlineMenu eom)
-                    {
-                        eom.characterSelect.UpdateChallengePreview();                        
-                    }
+                
+                if (needUpdateeChallengePreview && RWCustom.Custom.rainWorld.processManager.currentMainLoop is ExpeditionOnlineMenu eom)
+                {
+                    eom.characterSelect.UpdateChallengePreview();
+                }
             }                
 
             expedition.isChallengeCompleted = isChallengeCompleted;
