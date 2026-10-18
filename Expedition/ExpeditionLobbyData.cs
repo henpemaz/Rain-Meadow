@@ -18,25 +18,37 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
     public class State : ResourceDataState
     {
         [OnlineField]
-        SlugcatStats.Name currentCampaign;
+        public bool isInGame;
         
         [OnlineField]
-        public int selectedSlugcat;
+        public bool readyForWin;
 
         [OnlineField]
-        byte food; // 0bffffffqq
+        public bool changedRegions;
         
         [OnlineField]
-        bool isInGame;
-        
-        [OnlineField]
-        bool readyForWin;
-        
-        [OnlineField]
-        bool hasSaveState;
+        public bool hasSaveState;
 
+        [OnlineField]
+        public bool malnourished;
+
+        [OnlineField]
+        public bool lastMalnourished;
+
+        [OnlineField]
+        public bool reinforcedKarma;
+
+        [OnlineField]
+        public bool theGlow;
+        
         [OnlineField]
         public byte readyForTransition;
+
+        [OnlineField]
+        public int food;
+
+        [OnlineField]
+        public int quarterfood;
 
         [OnlineField]
         public int mushroomCounter;
@@ -44,51 +56,61 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
         [OnlineFieldHalf]
         public float slowTimeCooldown;
 
-        [OnlineFieldHalf]
-        public float challengeDifficulty;
-        
-        [OnlineField]
-        public bool newGame;
-        
-        [OnlineField]
-        public bool validateQuests;
-
-        [OnlineField]
-        public bool friendlyFire;
-
-        [OnlineField]
-        public bool requireCampaignSlugcat;
-
         [OnlineField(nullable = true)]
-        public string? activeMission;
-        
-        [OnlineField(nullable = true)]
-        public string? startingDen;
+        public string? region;
+
+        [OnlineField]
+        public List<OnlineEntity.EntityId> pups;
+
 
         [OnlineField(group = "saveString", nullable = true)]
         public string? saveStateString;
-
+        
         [OnlineField(group = "menusave", nullable = true)]
         public MenuSaveStateState? currentMenuSaveState;
 
-        [OnlineField(group = "expeditiondata")]
+
+        [OnlineField(group = "expeditiondChallenge")]
         bool[] isChallengeCompleted;
 
-        [OnlineField(group = "expeditiondata", polymorphic = true)]
+        [OnlineField(group = "expeditiondChallenge", polymorphic = true)]
         ChallengeState[] currentChallengeList;
 
-        [OnlineField(group = "activeUnlocks", nullable = true)]
+
+        [OnlineField(group = "expeditionSetup")]
+        public bool friendlyFire;
+
+        [OnlineField(group = "expeditionSetup")]
+        public bool requireCampaignSlugcat;
+
+        [OnlineField(group = "expeditionSetup")]
+        public bool itemSteal;
+
+        [OnlineField(group = "expeditionSetup")]
+        public int selectedSlugcat;
+
+        [OnlineField(group = "expeditionSetup", nullable = true)]
+        public string? activeMission;
+        
+        [OnlineField(group = "expeditionSetup", nullable = true)]
+        public string? startingDen;
+
+        [OnlineField(group = "expeditionSetup")]
+        SlugcatStats.Name currentCampaign;
+
+        [OnlineField(group = "expeditionSetup", nullable = true)]
         public List<string> activeUnlocks = new List<string>();
 
         public State() { }
         public State(ExpeditionLobbyData expeditionLobbyData, OnlineResource onlineResource)
-        {         
+        {
             ExpeditionGameMode expeditionGameMode = (ExpeditionGameMode)((Lobby)onlineResource).gameMode;
             RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-            PlayerState ps = currentGameState?.Players[0].state as PlayerState;            
+            PlayerState ps = currentGameState?.Players[0].state as PlayerState;
 
-            food = (byte)(((ps?.foodInStomach ?? 0) << 2) | ps?.quarterFoodPoints ?? 0 & 3);
+            food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
+            quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
             mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
 
             for (int i = 0; i < ExpeditionGame.unlockTrackers.Count; i++)
@@ -106,6 +128,9 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             currentCampaign = expeditionGameMode.currentCampaign;
             requireCampaignSlugcat = expeditionGameMode.requireCampaignSlugcat;
             friendlyFire = expeditionGameMode.friendlyFire;
+            changedRegions = expeditionGameMode.changedRegions;
+            region = expeditionGameMode.region;
+            itemSteal = expeditionGameMode.itemSteal;
 
             if (currentCampaign is not null)
             {
@@ -131,14 +156,16 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
 
             currentChallengeList = expeditionGameMode.currentChallengeList;
             activeUnlocks = expeditionGameMode.activeUnlocks;
-            challengeDifficulty = ExpeditionData.challengeDifficulty;                
-            newGame = ExpeditionData.newGame;
-            validateQuests = ExpeditionData.validateQuests;
             activeMission = ExpeditionData.activeMission;
             startingDen = ExpeditionData.startingDen;
 
             if (currentGameState?.session is StoryGameSession storySession)
-            {
+            {                
+                theGlow = storySession.saveState.theGlow;
+                reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
+                malnourished = storySession.saveState.malnourished;
+                lastMalnourished = storySession.saveState.lastMalnourished;
+                
                 expeditionGameMode.menuSaveState = new MenuSaveStateState(storySession.saveState);
                 currentMenuSaveState = expeditionGameMode.menuSaveState;
                 hasSaveState = saveStateString != null;
@@ -162,6 +189,15 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             {
                 isChallengeCompleted[i] = expeditionGameMode.isChallengeCompleted[i] = currentChallengeList[i].completed;
             }
+
+            pups = new();
+            foreach (AbstractCreature apo in expeditionGameMode.pups)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                {
+                    pups.Add(oe.id);
+                }
+            }
         }
 
         public override void ReadTo(ResourceData data, OnlineResource resource)
@@ -170,17 +206,21 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             ExpeditionGameMode expedition = (ExpeditionGameMode)lobby.gameMode;
             expedition.currentCampaign = currentCampaign;
 
+            if (expedition.menuSaveState != currentMenuSaveState)
+            {
+                expedition.menuSaveState = currentMenuSaveState;
+                expedition.menuSaveGameData = expedition.menuSaveState?.CreateSaveData();
+                expedition.needMenuSaveUpdate = true;
+            }
+
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame currentGameState)
             {
                 for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
                 {
                     PlayerState ps = (PlayerState)currentGameState.Players[i].state;
 
-                    int _food = food >> 2;
-                    int _quarterfood = food & 3;
-
-                    ps.foodInStomach = _food;
-                    ps.quarterFoodPoints = _quarterfood;
+                    ps.foodInStomach = food;
+                    ps.quarterFoodPoints = quarterfood;
 
                     if ((currentGameState?.Players[i].realizedCreature is Player player))
                     {
@@ -194,6 +234,20 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     if (ExpeditionGame.unlockTrackers[i] is ExpeditionGame.SlowTimeTracker stt)
                         stt.cooldown = slowTimeCooldown;
                 }
+
+                if (currentGameState.session is StoryGameSession storySession)
+                {                    
+                    storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
+                    storySession.saveState.theGlow = theGlow;
+                    storySession.saveState.lastMalnourished = lastMalnourished;
+                    storySession.saveState.malnourished = malnourished;
+
+                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
+                    {
+                        if (currentGameState.Players[i].realizedCreature != null)
+                            (currentGameState.Players[i].realizedCreature as Player).glowing = theGlow;
+                    }
+                }
             }
 
             expedition.isInGame = isInGame;
@@ -202,6 +256,9 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             expedition.saveStateString = saveStateString;
             expedition.requireCampaignSlugcat = requireCampaignSlugcat;
             expedition.friendlyFire = friendlyFire;
+            expedition.changedRegions = changedRegions;
+            expedition.region = region;
+            expedition.itemSteal = itemSteal;           
 
             expedition.hasSaveState = hasSaveState;
 
@@ -211,9 +268,6 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                 expedition.needSlugUpdate = true;
             }
 
-            ExpeditionData.challengeDifficulty = challengeDifficulty;                
-            ExpeditionData.newGame = newGame;
-            ExpeditionData.validateQuests = validateQuests;
             ExpeditionData.activeMission = activeMission;
             ExpeditionData.startingDen = startingDen;
 
@@ -284,14 +338,15 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     }
             }                
 
-            if (expedition.menuSaveState != currentMenuSaveState)
-            {
-                expedition.menuSaveState = currentMenuSaveState;
-                expedition.menuSaveGameData = expedition.menuSaveState?.CreateSaveData();
-                expedition.needMenuSaveUpdate = true;
-            }
-
             expedition.isChallengeCompleted = isChallengeCompleted;
+
+            foreach (OnlineEntity.EntityId pupid in pups)
+            {
+                if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo)
+                {
+                    (lobby.gameMode as ExpeditionGameMode).pups.Add(apo);
+                }
+            }
         }
 
         public ChallengeState GetChallengeState(Challenge challenge) // modders can hook this to custom challenges
