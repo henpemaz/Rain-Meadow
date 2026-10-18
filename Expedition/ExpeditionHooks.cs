@@ -144,7 +144,8 @@ namespace RainMeadow
 
         private void ExpeditionGameOver_Singal(On.Menu.ExpeditionGameOver.orig_Singal orig, ExpeditionGameOver self, MenuObject sender, string message)
         {
-            if (isExpeditionMode(out var expeditionGameMode)) {
+            if (isExpeditionMode(out var expeditionGameMode)) 
+            {
                 if (message == "RETRY")
                 {
                     if (ModManager.CoopAvailable)
@@ -159,6 +160,7 @@ namespace RainMeadow
                         }
                     }
                 }
+                expeditionGameMode.myLastDenPos = null;
              }
             orig(self, sender, message);
         }
