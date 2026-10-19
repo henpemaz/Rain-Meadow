@@ -685,8 +685,8 @@ public class RainMeadowOptions : OptionInterface
                     description = Translate("How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)")
                 },
 
-                new OpLabel(110f, 280, Translate("Arena Score Auto-Scroll")),
-                new OpCheckBox(ArenaScoreAutoScroll, new Vector2(110f, 280)),
+                new OpLabel(210f, 280, Translate("Arena Score Auto-Scroll")),
+                new OpCheckBox(ArenaScoreAutoScroll, new Vector2(210f, 250)),
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
