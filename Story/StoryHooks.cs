@@ -30,11 +30,13 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
+            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
             On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
+            On.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_GetDataFromGame;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
             On.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor;
             IL.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor_ClientDontFilterRegions;
@@ -1594,6 +1596,16 @@ namespace RainMeadow
             orig(self, buttonBlack);
         }
 
+        // never, ever have a reason to force grey our buttons. We need those to move on
+        private void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, Menu.SleepAndDeathScreen self, Menu.KarmaLadderScreen.SleepDeathScreenDataPackage package)
+        {
+            orig(self, package);
+            if (isStoryMode(out _) && self.RippleLadderMode)
+            {
+                self.forceWatchAnimation = false;
+            }
+        }
+
         private void CustomEndGameScreen_GetDataFromSleepScreen(On.Menu.CustomEndGameScreen.orig_GetDataFromSleepScreen orig, Menu.CustomEndGameScreen self, WinState.EndgameID endGameID)
         {
             if (isStoryMode(out _) && OnlineManager.lobby.isOwner)
@@ -1836,7 +1848,8 @@ namespace RainMeadow
             }
             else
             {
-                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                bool isSameRegion = storyGameMode.myLastDenPos?.Split('_')[0] == self.currentSaveState.denPosition.Split('_')[0];
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null || !isSameRegion)
                 {
                     // user is freshly joining the game
                     storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
@@ -1905,8 +1918,9 @@ namespace RainMeadow
 
                 self.currentSaveState = new SaveState(saveStateNumber, self);
 
+                bool blockClientSaveLoad = !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk;
 
-                if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
+                if (blockClientSaveLoad || self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
                 {
                     self.currentSaveState.LoadGame("", game);
                 }
@@ -1940,6 +1954,25 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.saveToDisk) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
+        }
+
+        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk)
+            {
+                var origLoadInProgress = self.loadInProgress;
+                self.loadInProgress = true;
+                try
+                {
+                    orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+                }
+                finally
+                {
+                    self.loadInProgress = origLoadInProgress;
+                }
+                return;
+            }
+            orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
         }
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
@@ -2077,20 +2110,24 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
-                {
-                    self.continueButton.signalText = "CONTINUE";
-                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled)
-                    {
-                        self.Singal(self.continueButton, "CONTINUE");
-                        self.continueButton.toggled = false;
-                    }
-                }
                 else
                 {
-                    self.continueButton.signalText = "READY";
-                    self.continueButton.menuLabel.text = self.Translate("READY");
+
+                    if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                    {
+                        self.continueButton.signalText = "CONTINUE";
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        if (self.continueButton.toggled)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                            self.continueButton.toggled = false;
+                        }
+                    }
+                    else
+                    {
+                        self.continueButton.signalText = "READY";
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
                 }
             }
         }
