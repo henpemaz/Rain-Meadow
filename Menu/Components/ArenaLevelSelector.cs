@@ -6,6 +6,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
+using RainMeadow.LevelsScan;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
@@ -654,6 +655,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public PlaylistSelector allLevelsPlaylist;
     public PlaylistHolder selectedLevelsPlaylist;
     public List<LevelUnlockID> unlockBatchIds = [];
+    private List<ArenaInfo> allLevelsInfo = [];
     public List<string> allLevels = [], thumbsToBeLoaded = [], loadedThumbTextures = [];
     public int thumbLoadDelay;
     public static int ThumbWidth => 100;
@@ -682,23 +684,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             unlockBatchIds.Add(MoreSlugcatsEnums.LevelUnlockID.ChallengeOnly);
         }
 
-        string[] rawLevelDirData = AssetManager.ListDirectory("Levels");
-        for (int j = 0; j < rawLevelDirData.Length; j++)
-        {
-            if (rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 4, 4) != ".txt" ||
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 13, 13) == "_settings.txt" ||
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 10, 10) == "_arena.txt" ||
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 15, 15) == "_properties.txt" ||
-                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 19, 19) == "_meadowsettings.txt" ||
-                rawLevelDirData[j].Contains("unlockall"))
-                continue;
+        allLevelsInfo = ArenaScanner.availableArenas;
+        allLevelsInfo.Sort(LevelInfoSort);
+        allLevels = allLevelsInfo.Select(x => x.levelName).ToList();
 
-            string[] levelName = rawLevelDirData[j].Substring(0, rawLevelDirData[j].Length - 4).Split(Path.DirectorySeparatorChar);
-            allLevels.Add(levelName[levelName.Length - 1]);
-        }
-
-        allLevels.Sort((A, B) => LevelListSortString(A).CompareTo(LevelListSortString(B)));
-
+        RainMeadow.Debug("Found levels " + string.Join(", ", allLevels));
+        
         thumbsToBeLoaded = [.. allLevels];
 
         allLevelsPlaylist = new(menu, this, default);
@@ -731,6 +722,63 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         return 0;
     }
     public string LevelListSortString(string levelName) => LevelListSortNumber(levelName).ToString("000") + LevelDisplayName(levelName);
+    public int LevelInfoSort(ArenaInfo left, ArenaInfo right)
+    {
+        // If both are not from a mod
+        if (left.mod is null && right.mod is null)
+        {
+            // if both are vanilla or both are imported, compare the name
+            if ((left.IsFromMeadowImport && right.IsFromMeadowImport)
+                || (left.IsFromVanilla && right.IsFromVanilla))
+            {
+                return left.levelName.CompareTo(right.levelName);
+            }
+
+            // Imported levels on top
+            else if (left.IsFromMeadowImport) return -1;
+            else if (right.IsFromMeadowImport) return 1;
+        }
+
+        // Imported and Vanilla levels on top
+        else if (left.mod is null) return -1;
+        else if (right.mod is null) return 1;
+
+        // If both are from a mod
+        else 
+        {
+            // if they are in the same mod, compare the arena name
+            if (left.mod == right.mod) return left.levelName.CompareTo(right.levelName);
+
+            // else, compare the mod
+            else 
+            {
+                // MSC on top, then Watcher
+                if (ModManager.MSC)
+                {
+                    if (left.mod.id == MoreSlugcats.MoreSlugcats.MOD_ID) return -1;
+                    if (right.mod.id == MoreSlugcats.MoreSlugcats.MOD_ID) return 1;
+                }
+                if (ModManager.Watcher)
+                {
+                    if (left.mod.id == Watcher.Watcher.MOD_ID) return -1;
+                    if (right.mod.id == Watcher.Watcher.MOD_ID) return 1;
+                }
+                
+                // else, compare the mod ID
+                return left.mod.id.CompareTo(right.mod.id);
+            }
+        }
+        return 1;
+    }
+    public bool TryGetLevelFromName(string name, out ArenaInfo arenaInfo)
+    {
+        arenaInfo = new();
+        int index = allLevelsInfo.FindIndex(x => x.levelName == name);
+        if (index < 0) return false;
+
+        arenaInfo = allLevelsInfo[index];
+        return true;
+    }
     public void AddItemToSelectedList(string name)
     {
         SelectedPlayList.Add(name);
@@ -764,8 +812,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         string thumbToBeLoaded = thumbsToBeLoaded[0];
         thumbsToBeLoaded.RemoveAt(0);
+        if (!TryGetLevelFromName(thumbToBeLoaded, out var thumbToBeLoadedInfo)) return;
 
-        string renderedThumbnailPath = AssetManager.ResolveFilePath($"Levels{Path.DirectorySeparatorChar}{thumbToBeLoaded}_Thumb.png");
+        string renderedThumbnailPath = thumbToBeLoadedInfo.thumbPath;
         string thumbnailPath;
 
         bool hasRenderedThumbnail;
@@ -776,7 +825,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         else
         {
-            thumbnailPath = AssetManager.ResolveFilePath($"Levels{Path.DirectorySeparatorChar}{thumbToBeLoaded}_1.png");
+            thumbnailPath = thumbToBeLoadedInfo.firstCameraPath;
             hasRenderedThumbnail = false;
         }
 
