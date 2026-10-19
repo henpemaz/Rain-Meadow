@@ -148,6 +148,7 @@ namespace RainMeadow
         public int artiExplosionCount = ModManager.MSC ? MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value : 0;
         public float artiParryDistanceMult = RainMeadow.rainMeadowOptions.ArtificerParryDistanceMult.Value;
         public bool artiParryLeniency = RainMeadow.rainMeadowOptions.ArtificerParryLeniency.Value;
+        public bool arenaMonkShield = RainMeadow.rainMeadowOptions.ArenaMonkShield.Value;
         public float artiStunDistanceMult = RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
@@ -209,9 +210,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            spearHitScore = 0;
-            killScore = 0;
-            survivalScore = 0;
             hostLoadedOverlay = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
@@ -533,13 +531,13 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer arenaPlayer,
             OnlinePlayer onlinePlayer)
         {
-            WinsByOPlayer[onlinePlayer]        = arenaPlayer.wins;
-            DeathsByOPlayer[onlinePlayer]      = arenaPlayer.deaths;
+            WinsByOPlayer[onlinePlayer] = arenaPlayer.wins;
+            DeathsByOPlayer[onlinePlayer] = arenaPlayer.deaths;
             RoundDeathsByOPlayer[onlinePlayer] = arenaPlayer.RoundDeaths;
-            TotalScoreByOPlayer[onlinePlayer]  = arenaPlayer.totScore;
-            ScoreByOPlayer[onlinePlayer]       = arenaPlayer.score;
-            AllKillsByOPlayer[onlinePlayer]    = arenaPlayer.allKills.ToList();
-            RoundKillsByOPlayer[onlinePlayer]  = arenaPlayer.roundKills.ToList();
+            TotalScoreByOPlayer[onlinePlayer] = arenaPlayer.totScore;
+            ScoreByOPlayer[onlinePlayer] = arenaPlayer.score;
+            AllKillsByOPlayer[onlinePlayer] = arenaPlayer.allKills.ToList();
+            RoundKillsByOPlayer[onlinePlayer] = arenaPlayer.roundKills.ToList();
         }
 
         /// <summary>
@@ -556,13 +554,13 @@ namespace RainMeadow
         {
             AddMissingStatEntries(onlinePlayer);
 
-            arenaPlayer.wins        = WinsByOPlayer[onlinePlayer];
-            arenaPlayer.deaths      = DeathsByOPlayer[onlinePlayer];
+            arenaPlayer.wins = WinsByOPlayer[onlinePlayer];
+            arenaPlayer.deaths = DeathsByOPlayer[onlinePlayer];
             arenaPlayer.RoundDeaths = RoundDeathsByOPlayer[onlinePlayer];
-            arenaPlayer.totScore    = TotalScoreByOPlayer[onlinePlayer];
-            arenaPlayer.score       = ScoreByOPlayer[onlinePlayer];
-            arenaPlayer.allKills    = AllKillsByOPlayer[onlinePlayer].ToList();
-            arenaPlayer.roundKills  = RoundKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.totScore = TotalScoreByOPlayer[onlinePlayer];
+            arenaPlayer.score = ScoreByOPlayer[onlinePlayer];
+            arenaPlayer.allKills = AllKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.roundKills = RoundKillsByOPlayer[onlinePlayer].ToList();
         }
 
         public void ResetInvDetails()
