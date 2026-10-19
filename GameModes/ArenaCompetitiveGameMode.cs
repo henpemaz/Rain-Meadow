@@ -77,7 +77,7 @@ namespace RainMeadow
 
         public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
-
+        
         public string paincatName;
         public int lizardEvent;
 
@@ -109,6 +109,9 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
+
+        // saves data of players that left (accidentally or not). If the player logs back on, their data gets loaded in the others persistents tables and gets removed from this one. 
+        public Dictionary<MeadowPlayerId, ArenaPersistentStats> PersistentArenaStatsByOfflinePlayer = []; 
 
         public Dictionary<OnlinePlayer, int> PersistentWinsByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> PersistentDeathsByOPlayer { get; set; } = [];
@@ -1162,11 +1165,45 @@ namespace RainMeadow
             return true;
         }
 
+        public void SavePersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentWinsByOPlayer.ContainsKey(onlinePlayer)) // I'm betting on the fact that only checking this checks all 4
+            {
+                PersistentArenaStatsByOfflinePlayer[onlinePlayer.id] = new(
+                    PersistentWinsByOPlayer[onlinePlayer],
+                    PersistentDeathsByOPlayer[onlinePlayer],
+                    PersistentTotalScoreByOPlayer[onlinePlayer],
+                    PersistentAllKillsByOPlayer[onlinePlayer]
+                );
+            }
+        }
+        public void LoadPersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentArenaStatsByOfflinePlayer.ContainsKey(onlinePlayer.id))
+            {
+                PersistentWinsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].wins;
+                PersistentDeathsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].death;
+                PersistentTotalScoreByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].totscore;
+                PersistentAllKillsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].allkills;
+                PersistentArenaStatsByOfflinePlayer.Remove(onlinePlayer.id);
+            }
+        }
+
+        public override void NewPlayerInLobby(OnlinePlayer onlinePlayer)
+        {
+            base.NewPlayerInLobby(onlinePlayer);
+
+            // Load persistent data if it's there
+            LoadPersistentArenaStats(onlinePlayer);
+        }
         public override void PlayerLeftLobby(OnlinePlayer onlinePlayer)
         {
+            // Save Persistent data in the case the player rejoins
+            SavePersistentArenaStats(onlinePlayer);
+            
             // Clients should change the lobby data here so the dictionaries behave as excepted.
             // (Looping over the dictionary keys should NOT give you players that aren't contained in OnlineManager.players)
-
+    
             PersistentDeathsByOPlayer.Remove(onlinePlayer);
             PersistentWinsByOPlayer.Remove(onlinePlayer);
             PersistentTotalScoreByOPlayer.Remove(onlinePlayer);
