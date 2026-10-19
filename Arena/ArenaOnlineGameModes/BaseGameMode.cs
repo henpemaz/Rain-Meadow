@@ -1397,7 +1397,21 @@ namespace RainMeadow
                 }
 
                 if (!isInserted)
+                {
                     sortedArenaPlayers.Add(arenaPlayer);
+                }
+                
+                // For the Arena tournament
+                if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arenaOnline,
+                        arenaPlayer.playerNumber
+                    ) is OnlinePlayer onlinePlayer)
+                {
+                    RainMeadow.Info(
+                        $"RMEL;{onlinePlayer.id.DisplayName};{arenaPlayer.wins};"
+                        + $"{arenaPlayer.allKills.Count};{arenaPlayer.deaths};{arenaPlayer.totScore}"
+                    );
+                }
             }
 
             return sortedArenaPlayers;
