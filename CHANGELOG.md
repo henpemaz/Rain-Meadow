@@ -9,6 +9,7 @@
 ## Arena
 - Fixed infinite tinnitus again
 - Fixed part of the spear state being sent every tick no matter what
+- Overhauled the Slugcat Ability menu and the Arena Settings menu
 - Stopped self-destruct giving kill points (it will be treated as a suicide now)
 
 ## Chat

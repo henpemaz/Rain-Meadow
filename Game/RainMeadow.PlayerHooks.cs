@@ -36,6 +36,7 @@ public partial class RainMeadow
         IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.IsObjectThrowable += Player_IsObjectThrowable;
         On.Player.CanIPickThisUp += Player_CanIPickThisUp;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         IL.Player.Collide += Player_Collide;
@@ -783,18 +784,69 @@ public partial class RainMeadow
         return orig(self, hand);
     }
 
+    private bool Player_IsObjectThrowable(On.Player.orig_IsObjectThrowable orig, Player self, PhysicalObject obj)
+    {
+        if (isArenaMode(out var arenaOnline)
+            && arenaOnline.arenaMonkShield
+            && self.SlugCatClass == SlugcatStats.Name.Yellow)
+        {
+            // if we got two of them bad boys
+            if (obj is DangleFruit && !self.isNPC)
+            {
+                for (int i = 0; i < self.grasps.Length; i++)
+                {
+                    if (self.grasps[i]?.grabbed is PhysicalObject other
+                        && other != obj
+                        && other is not DangleFruit
+                        && orig(self, other))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return orig(self, obj);
+    }
+
     private void SlugcatHand_Update(On.SlugcatHand.orig_Update orig, SlugcatHand self)
     {
         if (OnlineManager.lobby != null && self.owner.owner is Player player)
         {
-            // Keep the pointing on as if it was a local update, this will be kept until handPointing is
-            // no longer -1, remember this is networking and in some frames we may have non-updated
-            // reachingForObject (see RealizedPlayerState.cs)
+
             if (player.graphicsModule is PlayerGraphics playerGraphics && player.handPointing != -1)
             {
                 playerGraphics.hands[player.handPointing].reachingForObject = true;
             }
             orig(self);
+
+            int dir = player.ThrowDirection;
+            if (dir != 0
+                && self.limbNumber >= 0
+                && self.limbNumber < player.grasps.Length
+                && isArenaMode(out var arenaOnline)
+                && arenaOnline.arenaMonkShield
+                && player.SlugCatClass == SlugcatStats.Name.Yellow
+                && !player.isNPC)
+            {
+                int shieldLimb = -1;
+                for (int i = 0; i < player.grasps.Length; i++)
+                {
+                    if (player.grasps[i]?.grabbed is DangleFruit)
+                    {
+                        shieldLimb = i;
+                        break;
+                    }
+                }
+
+                if (shieldLimb == self.limbNumber)
+                {
+                    self.relativeHuntPos.x = Mathf.Abs(self.relativeHuntPos.x) * dir;
+                }
+                else if (shieldLimb >= 0 && player.grasps[self.limbNumber]?.grabbed != null)
+                {
+                    self.relativeHuntPos.x = -Mathf.Abs(self.relativeHuntPos.x) * dir;
+                }
+            }
         }
         else
         {
@@ -944,6 +996,17 @@ public partial class RainMeadow
 
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
+        // STOP AUTO EATING
+        if (isArenaMode(out _)
+            && !self.isNPC
+            && self.input != null
+            && self.input.Length > 0
+            && !self.input[0].pckp
+            && self.eatCounter <= 15)
+        {
+            self.eatCounter = 40;
+        }
+
         orig(self, eu);
         // if (isArenaMode(out var _))
         if (OnlineManager.lobby != null)
