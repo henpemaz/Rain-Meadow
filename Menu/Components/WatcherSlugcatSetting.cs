@@ -116,10 +116,7 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
         voidkeeperSetting?.tabIndependant = true;
         voidkeeperSetting?.altDescription = "Summon amoebas at the cost of your camo timer";
         
-        AddElementAfter(
-            new OnlineSettingDescription(menu, this, VoidkeeperDescription, voidkeeperTab){tabIndependant = true},
-            voidkeeperSetting
-        );
+        AddDescriptionToElement(VoidkeeperDescription, voidkeeperSetting);
 
         (GetSettingParameter(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor) as OnlineSettingFloatValue)?
             .roundoffDecimals = 1;

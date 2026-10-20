@@ -140,6 +140,15 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
             AddElement(newEl, index, updatePosition);
         }
     }
+    public void AddDescriptionToElement(string description, OnlineSettingElement? elementAbove, bool updatePosition = true)
+    {
+        AddElementAfter(
+            new OnlineSettingDescription(menu, this, description, elementAbove, elementAbove?.tab){tabIndependant = elementAbove?.tabIndependant ?? false},
+            elementAbove,
+            updatePosition
+        );
+    }
+    
     public void AddBackButton()
     {
         if (backButton is null)
@@ -196,6 +205,10 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         int visibleElementCount = 0;
         for (int i = 0; i < elements.Count; i++)
         {
+            if (elements[i] is IUpdateWithSlugcatSetting updateWithSlugcatSetting)
+            {
+                updateWithSlugcatSetting.OnUpdateVisibility();
+            }
             if (elements[i].tab is OnlineSettingTab tab)
             {
                 if (tab.grayedOut && !elements[i].tabIndependant && !elements[i].isClient)
@@ -226,6 +239,10 @@ public abstract class OnlineSlugcatSettingsBase : SettingsPage
         position = 0;
         for (int i = 0; i < elements.Count; i++)
         {
+            if (elements[i] is IUpdateWithSlugcatSetting updateWithSlugcatSetting)
+            {
+                updateWithSlugcatSetting.OnUpdatePosition();
+            }
             elements[i].position = position;
             elements[i].offsetPos = -Vector2.up * offset.y;
             if (elements[i].visible)

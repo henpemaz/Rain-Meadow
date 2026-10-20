@@ -23,9 +23,6 @@ public class VanillaSetting : OnlineSlugcatSettings<VanillaSetting>
     }
     public VanillaSetting(Menu.Menu menu, MenuObject owner) : base(menu, owner)
     {
-        AddElementAfter(
-            new OnlineSettingDescription(menu, this, MonkShieldDescription, GetSettingTab(SlugcatStats.Name.Yellow)),
-            GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaMonkShield)
-        );
+        AddDescriptionToElement(MonkShieldDescription, GetSettingParameter(RainMeadow.rainMeadowOptions.ArenaMonkShield));
     }
 }
