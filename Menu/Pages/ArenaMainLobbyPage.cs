@@ -7,7 +7,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using RainMeadow.LevelsScan;
+using RainMeadow.ArenaScan;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Interfaces;

@@ -9,7 +9,7 @@ using RWCustom;
 using Steamworks;
 using UnityEngine;
 
-namespace RainMeadow.LevelsScan;
+namespace RainMeadow.ArenaScan;
 
 public static partial class ArenaScanner
 {

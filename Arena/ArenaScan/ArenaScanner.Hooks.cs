@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace RainMeadow.LevelsScan;
+namespace RainMeadow.ArenaScan;
 
 public static partial class ArenaScanner
 {

@@ -7,7 +7,7 @@ using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
-using RainMeadow.LevelsScan;
+using RainMeadow.ArenaScan;
 using RWCustom;
 using UnityEngine;
 

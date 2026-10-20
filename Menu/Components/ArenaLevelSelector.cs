@@ -6,7 +6,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
-using RainMeadow.LevelsScan;
+using RainMeadow.ArenaScan;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Systems;

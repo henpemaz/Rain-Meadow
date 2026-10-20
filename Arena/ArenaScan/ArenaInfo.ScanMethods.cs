@@ -5,7 +5,7 @@ using System.Linq;
 using RWCustom;
 using UnityEngine;
 
-namespace RainMeadow.LevelsScan;
+namespace RainMeadow.ArenaScan;
 
 public partial class ArenaInfo
 {
