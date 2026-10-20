@@ -7,87 +7,8 @@ using UnityEngine;
 
 namespace RainMeadow.LevelsScan;
 
-public readonly struct ArenaInfo(string name, string path, ModManager.Mod? mod, bool highImpact = false)
+public readonly partial struct ArenaInfo(string name, string path, ModManager.Mod? mod, bool highImpact = false)
 {
-    public static List<string> GetLevelsFromMod(string modPath, out List<string> levelNames)
-    {
-        string levelDirectory = Path.Combine(modPath, "Levels".ToLowerInvariant());
-        List<string> levels = [];
-        levelNames = [];
-
-        if (Directory.Exists(levelDirectory))
-        {
-            foreach (string file in Directory.GetFiles(levelDirectory)) // from MultiplayerMenu.FindAllLevels
-            {
-                string fileName = Path.GetFileName(file).ToLowerInvariant();
-                if (fileName.Length > 4
-                    && fileName.Substring(fileName.Length - 4, 4) == ".txt" 
-                    && !fileName.EndsWith("_settings.txt")
-                    && !fileName.EndsWith("_arena.txt")
-                    && !fileName.EndsWith("_arena.txt")
-                    && !fileName.EndsWith("_properties.txt")
-                    && !fileName.Contains("unlockall")
-                    && !levelNames.Contains(fileName))
-				{
-                    levels.Add(file);
-					levelNames.Add(fileName.Substring(0, fileName.Length - 4).Split(Path.DirectorySeparatorChar).Last());
-				}
-            }
-        } 
-
-        return levels;
-    }
-    public static List<string> GetLevelsFromMod(ModManager.Mod mod, out List<string> levelNames)
-        => GetLevelsFromMod(mod.path, out levelNames);
-    
-    internal static List<ArenaInfo> ScanUnloadedMod(ModManager.Mod mod)
-    {
-        // Check if this mod is high impact
-        var mergedModInfo = RainMeadowModInfoManager.MergedModInfo;
-        bool highImpact = RainMeadowModInfoManager.GenerateModInfo(mod).SyncRequiredMods.Contains(mod.id)
-            || mergedModInfo.SyncRequiredMods.Except(mergedModInfo.SyncRequiredModsOverride).Contains(mod.id);
-        
-        // Get all levels
-        List<string> levelsPath = GetLevelsFromMod(mod, out var levelNames);
-        List<ArenaInfo> unloadedArenaInfos = [];
-
-        // Generate the unloaded arena info
-        for (int i = 0; i < levelsPath.Count; i++)
-        {
-            unloadedArenaInfos.Add(new(levelNames[i], levelsPath[i], mod, highImpact));
-        }
-
-        return unloadedArenaInfos;
-    }
-    internal static List<ArenaInfo> ScanVanillaLevelDirectory()
-    {
-        // Get all levels
-        List<string> levelsPath = GetLevelsFromMod(Custom.RootFolderDirectory(), out var levelNames);
-        List<ArenaInfo> unloadedArenaInfos = [];
-
-        // Generate the unloaded arena info
-        for (int i = 0; i < levelsPath.Count; i++)
-        {
-            unloadedArenaInfos.Add(new(levelNames[i], levelsPath[i], null, false));
-        }
-        return unloadedArenaInfos;
-    }
-    internal static List<ArenaInfo> ScanImportedLevelDirectory()
-    {
-        return [];
-        // // Get all levels
-        // List<string> levelsPath = GetLevelsFromMod(Custom.RootFolderDirectory(), out var levelNames);
-        // List<ArenaInfo> unloadedArenaInfos = [];
-
-        // // Generate the unloaded arena info
-        // for (int i = 0; i < levelsPath.Count; i++)
-        // {
-        //     unloadedArenaInfos.Add(new(levelNames[i], levelsPath[i], null, true));
-        // }
-        // return unloadedArenaInfos;
-
-    }
-
     public readonly string levelName = name;
     public readonly string levelPath = path;
 
@@ -110,6 +31,12 @@ public readonly struct ArenaInfo(string name, string path, ModManager.Mod? mod, 
     public readonly string baldPath => levelPath.Substring(0, levelPath.Length - 4);
     public readonly string thumbPath => baldPath + "_Thumb.png";
     public readonly string firstCameraPath => baldPath + "_1.png";
+
+    public readonly string modName => mod is not null 
+        ? mod.id
+        : IsFromVanilla 
+            ? vanillaID
+            : importedID;
 
     public override bool Equals(object obj)
     {

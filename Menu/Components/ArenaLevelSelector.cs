@@ -117,7 +117,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public FSprite? outlineDividerSprite, bkgDividerSprite;
         public RoundedRect roundedRect;
         public LevelItem? levelItemAbove, levelItemBelow;
-        public bool thumbLoaded, lastSelected, doAThumbFade, showThumbDivider;
+        public bool thumbLoaded, thumbLoadWasAttempted, lastSelected, doAThumbFade, showThumbDivider;
         public float labelSelectedBlink, labelLastSelectedBlink, lastFade, fade, thumbChangeFade, lastThumbChangeFade, fadeAway;
         public string name, description;
         public PlaylistSelector? MyPlaylistSelector => owner as PlaylistSelector;
@@ -136,7 +136,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             roundedRect = new(menu, this, Vector2.zero, new Vector2(size.x, size.y), true);
 
             thumbLoaded = MyPlaylistSelector?.MyLevelSelector?.IsThumbnailLoaded(name) == true;
+            thumbLoadWasAttempted = thumbLoaded;
             thumbnailSprite = thumbLoaded ? new FSprite($"{name}_Thumb") : new FSprite("Menu_Empty_Level_Thumb") { color = MenuRGB(MenuColors.DarkGrey) };
+
+            ArenaScanner.OnArenaScan += RefreshAvailableLevels;
 
             this.SafeAddSubobjects(label, roundedRect);
             Container.AddChild(thumbnailSprite);
@@ -152,6 +155,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             outlineDividerSprite?.RemoveFromContainer();
             bkgDividerSprite?.RemoveFromContainer();
             base.RemoveSprites();
+            ArenaScanner.OnArenaScan -= RefreshAvailableLevels;
         }
         public override void Clicked()
         {
@@ -179,7 +183,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (doAThumbFade)
             {
                 thumbChangeFade = Custom.LerpAndTick(thumbChangeFade, 1f, 0.08f, 1f / 30f);
-                if (thumbChangeFade == 1f)
+                if (thumbChangeFade == 1f && thumbLoaded)
                 {
                     thumbnailSprite.element = Futile.atlasManager.GetElementWithName(name + "_Thumb");
                     thumbnailSprite.color = new Color(1f, 1f, 1f);
@@ -208,8 +212,11 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * 0.5f * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * (float)Math.PI)) * (buttonBehav.clicked ? 0f : 1f); roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
 
-            if (!thumbLoaded && (Selected || Alpha > 0.5f))
+            if (!thumbLoadWasAttempted && !thumbLoaded && (Selected || Alpha > 0.5f))
+            {
                 MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(name);
+                thumbLoadWasAttempted = true;
+            }
 
             if (outlineDividerSprite != null && showThumbDivider != ShowThumbDivider)
             {
@@ -269,6 +276,21 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 roundedRect.sprites[i].color = i < 9 ? rectColor : color;
                 roundedRect.sprites[i].alpha = fadeFactor * thumbTransitionState * (i < 9 ? 0.5f : 1);
                 roundedRect.sprites[i].isVisible = thumbTransitionState * fadeFactor > 0;
+            }
+        }
+
+        public void RefreshAvailableLevels(RainWorld rainWorld, Dictionary<string, List<ArenaInfo>> availableArenas, bool refreshAll)
+        {
+            if (!thumbLoaded || refreshAll)
+            {
+                thumbLoadWasAttempted = false;
+                if (refreshAll)
+                {
+                    thumbnailSprite.element = Futile.atlasManager.GetElementWithName("Menu_Empty_Level_Thumb");
+                    thumbnailSprite.color = MenuRGB(MenuColors.DarkGrey);
+                    doAThumbFade = false;
+                    thumbLoaded = false;
+                }
             }
         }
         public void AddDividers(LevelItem nxt)
@@ -690,11 +712,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
     }
 
-
+    public const char modSeparator = '\0'; // gonna need an untypable character for this
     public PlaylistSelector allLevelsPlaylist;
     public PlaylistHolder selectedLevelsPlaylist;
     public List<LevelUnlockID> unlockBatchIds = [];
     private List<ArenaInfo> allLevelsInfo = [];
+    
     public List<string> allLevels = [], thumbsToBeLoaded = [], loadedThumbTextures = [];
     public int thumbLoadDelay;
     public static int ThumbWidth => 100;
@@ -727,7 +750,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         allLevelsInfo.Sort(LevelInfoSort);
         allLevels = allLevelsInfo.Select(x => x.levelName).ToList();
 
-        RainMeadow.Debug("Found levels " + string.Join(", ", allLevels));
+        ArenaScanner.OnArenaScan += RefreshAvailableLevels;
+
+        // RainMeadow.Debug("Found levels " + string.Join(", ", allLevels));
         
         thumbsToBeLoaded = [.. allLevels];
 
@@ -741,6 +766,24 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     {
         base.Update();
         LoadThumbSprite();
+    }
+    public override void RemoveSprites()
+    {
+        base.RemoveSprites();
+        ArenaScanner.OnArenaScan -= RefreshAvailableLevels;
+    }
+
+    public void RefreshAvailableLevels(RainWorld rainWorld, Dictionary<string, List<ArenaInfo>> availableArenas, bool refreshAll)
+    {
+        allLevelsInfo = ArenaScanner.availableArenas;
+        allLevelsInfo.Sort(LevelInfoSort);
+        allLevels = allLevelsInfo.Select(x => x.levelName).ToList();
+
+        if (refreshAll)
+        {
+            loadedThumbTextures = [];
+            thumbsToBeLoaded = [.. allLevels];
+        }
     }
     public void LoadNewPlaylist(List<string> playlist, bool addToOwnPlaylist)
     {

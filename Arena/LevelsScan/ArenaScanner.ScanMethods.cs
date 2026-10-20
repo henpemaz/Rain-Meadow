@@ -13,6 +13,8 @@ namespace RainMeadow.LevelsScan;
 
 public static partial class ArenaScanner
 {
+    public delegate void ArenaScanFunc(RainWorld rainWorld, Dictionary<string, List<ArenaInfo>> scannedArenas, bool refreshAll);
+    public static event ArenaScanFunc? OnArenaScan;
     public static ModManager.Mod[] GetAllInstalledMods(RainWorld rainWorld) // from ModManager.RefreshModList
     {
         List<ModManager.Mod> mods = [];
@@ -91,8 +93,8 @@ public static partial class ArenaScanner
 
         var sw = Stopwatch.StartNew();
         
-        ScanImportedFolderForArenas(ref arenaRefTable, refreshAll);
         ScanVanillaFolderForArenas(ref arenaRefTable, refreshAll);
+        ScanImportedFolderForArenas(ref arenaRefTable, refreshAll);
         ScanAllModsForArenas(ref arenaRefTable, rainWorld, refreshAll, checkOnlyRWmodList);
 
         if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= RainMeadow.LogLevel.Debug)
@@ -116,6 +118,8 @@ public static partial class ArenaScanner
         RainMeadow.Debug($"Scanned {levelScanned} arenas across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled and {importedLevels} arenas in the import folder!");
         sw.Stop();
 
+        OnArenaScan?.Invoke(rainWorld, arenaRefTable, refreshAll);
+
         return arenaRefTable;
     }
     public static Dictionary<string, List<ArenaInfo>> ScanVanillaFolderForArenas(ref Dictionary<string, List<ArenaInfo>> arenas, bool refreshAll = false)
@@ -124,8 +128,8 @@ public static partial class ArenaScanner
 
         try
         {
-            if (refreshAll || !scannedArenas.ContainsKey(vanillaID))
-                scannedArenas[vanillaID] = ArenaInfo.ScanVanillaLevelDirectory();
+            if (refreshAll || !scannedArenas.ContainsKey(ArenaInfo.vanillaID))
+                scannedArenas[ArenaInfo.vanillaID] = ArenaInfo.ScanVanillaLevelDirectory();
         }
         catch (Exception ex)
         {
@@ -143,8 +147,8 @@ public static partial class ArenaScanner
 
         try
         {
-            if (refreshAll || !scannedArenas.ContainsKey(importedID))
-                scannedArenas[importedID] = ArenaInfo.ScanImportedLevelDirectory();
+            if (refreshAll || !scannedArenas.ContainsKey(ArenaInfo.importedID))
+                scannedArenas[ArenaInfo.importedID] = ArenaInfo.ScanImportedLevelDirectory();
         }
         catch (Exception ex)
         {

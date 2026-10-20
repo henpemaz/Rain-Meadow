@@ -14,8 +14,6 @@ namespace RainMeadow.LevelsScan;
 public static partial class ArenaScanner
 {
     public static Dictionary<string, List<ArenaInfo>> scannedArenas = [];
-    public const string vanillaID = "_vanilla";
-    public const string importedID = "_imported";
     public static string[] allLevelsName 
         => availableArenas.Select(x => x.levelName).ToArray();
     public static string[] allLevelsPath 
