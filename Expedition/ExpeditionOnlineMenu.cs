@@ -12,7 +12,7 @@ namespace RainMeadow
         private ExpeditionGameMode expeditionGameMode;        
         private MenuLabel? lobbyLabel, slugcatLabel;
         private bool isCurrentCampaignInitiallyNull = false;
-        private bool updatingStats;
+        private bool updatingStats, onlineFirstTimeLoad;
 
         public ExpeditionOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -45,13 +45,7 @@ namespace RainMeadow
 
             Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-            SetupOnlineMenuItens();
-
-            // player list
-
-            UpdatePlayerList();
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
             ChatTextBox.OnShutDownRequest += ResetChatInput;
 
             expeditionGameMode.needUpdateeChallengePreview = true;
@@ -102,6 +96,15 @@ namespace RainMeadow
             }
 
             base.Update();
+
+            if (!onlineFirstTimeLoad && firstTimeLoad)
+            {
+                onlineFirstTimeLoad = true;
+                _currentPage = currentPage;
+                SetupOnlineMenuItens();
+                UpdatePlayerList();
+            }
+
 
             UpdateUI();
 
@@ -184,7 +187,7 @@ namespace RainMeadow
                     SetSelectedSlugcat(i, expeditionGameMode.currentCampaign);
                 }
             }
-            else
+            else if(onlineFirstTimeLoad)
             {
                 SetupSlugcatList();
             }
@@ -371,34 +374,12 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 return;
             }
-           
+
             base.Singal(sender, message);
 
             if (message == "COLOR_SLUGCAT")
             {
                 OpenColorConfig(PlayerSelectedSlugcat);
-            }
-
-            if (message == "MISSION")
-            {
-                UpdateOnlinePage(2);
-            }
-            if (message == "LEFT")
-            {
-                if (currentPage == 3)
-                    UpdateOnlinePage(2);
-                else if (currentPage == 2)
-                    UpdateOnlinePage(1);
-            }
-            if (message == "RIGHT")
-            {
-                if (currentPage == 2)
-                    UpdateOnlinePage(3);
-            }
-            if (message == "NEW")
-            {
-                if (currentPage == 1)
-                    UpdateOnlinePage(2);
             }
         }
     }

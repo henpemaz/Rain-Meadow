@@ -24,14 +24,14 @@ namespace RainMeadow
                 chatMenuBox.chatTypingBox.DelayedUnload(.1f);
                 ChatLogManager.MessageLogged -= chatMenuBox.OnMessageLogged;
             }
-            pages[currentPage].ClearMenuObject(ref this.chatMenuBox);
+            pages[_currentPage].ClearMenuObject(ref this.chatMenuBox);
 
             if (this.isChatToggled && this.chatMenuBox is null)
             {
-                this.chatMenuBox = new ChatMenuBox(this, pages[_currentPage], new Vector2(this.chatTextBoxPos.x + 24, 0), new(320, 300));
+                this.chatMenuBox = new ChatMenuBox(this, pages[currentPage], new Vector2(this.chatTextBoxPos.x + 24, 0), new(320, 300));
                 ChatLogManager.MessageLogged += chatMenuBox.OnMessageLogged;
                 
-                pages[_currentPage].subObjects.Add(this.chatMenuBox);
+                pages[currentPage].subObjects.Add(this.chatMenuBox);
             }
         }
 

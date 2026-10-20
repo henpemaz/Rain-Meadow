@@ -46,7 +46,7 @@ namespace RainMeadow
 
         private ButtonScroller? playerScrollBox;
         private Vector2 playerScrollBoxPos;
-        private int _currentPage = 1;
+        private int _currentPage = 0;
         
         private StoryMenuSlugcatSelector? slugcatSelector;
 
@@ -67,11 +67,11 @@ namespace RainMeadow
         void SetupOnlineMenuItens()
         {
             lobbylabelPos = new Vector2(rightAnchor - 160, 620);
-            lobbyLabel = new MenuLabel(this, pages[_currentPage], Translate("LOBBY"), lobbylabelPos, new(110, 30), true);
-            pages[_currentPage].subObjects.Add(lobbyLabel);
+            lobbyLabel = new MenuLabel(this, pages[currentPage], Translate("LOBBY"), lobbylabelPos, new(110, 30), true);
+            pages[currentPage].subObjects.Add(lobbyLabel);
 
             this.chatTextBoxPos = new Vector2(leftAnchor, 0);
-            toggleChat = new SimplerSymbolButton(this, pages[_currentPage], "Kill_Slugcat", "", this.chatTextBoxPos);
+            toggleChat = new SimplerSymbolButton(this, pages[currentPage], "Kill_Slugcat", "", this.chatTextBoxPos);
             toggleChat.OnClick += (_) =>
             {
                 ToggleChat(!this.isChatToggled);
@@ -80,7 +80,7 @@ namespace RainMeadow
                     selectedObject = null;
                 }
             };
-            pages[_currentPage].subObjects.Add(toggleChat);
+            pages[currentPage].subObjects.Add(toggleChat);
 
             SetupColorMenu();
             SetupCheckbox();
@@ -93,7 +93,7 @@ namespace RainMeadow
             {
                 playerScrollBoxPos = new(rightAnchor - 160, 620 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset));
                 playerScrollBox = new(this, pages[_currentPage], playerScrollBoxPos, MaxVisibleOnList, 200, new(ButtonSize, ButtonSpacingOffset));
-                pages[_currentPage].subObjects.Add(playerScrollBox);
+                pages[currentPage].subObjects.Add(playerScrollBox);
             }
             foreach (OnlinePlayer player in OnlineManager.players)
             {
@@ -117,6 +117,11 @@ namespace RainMeadow
             if (ModManager.JollyCoop && OnlineManager.lobby.isOwner)
             {
                 expeditionGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
+            }
+
+            if (currentPage != _currentPage)
+            {
+                UpdateOnlinePage(currentPage);
             }
 
             if (this.pagesMoving || _pagesMoving)
@@ -181,47 +186,45 @@ namespace RainMeadow
     
         void UpdateOnlinePage(int pageIndex)
         {
-            _currentPage = pageIndex;
 
-            pages[currentPage].ClearMenuObject(ref lobbyLabel);
+            pages[_currentPage].ClearMenuObject(ref lobbyLabel);
 
-            pages[currentPage].ClearMenuObject(ref toggleChat);
+            pages[_currentPage].ClearMenuObject(ref toggleChat);
 
             playerScrollBox?.RemoveAllButtons(false);
-            pages[currentPage].ClearMenuObject(ref playerScrollBox);
+            pages[_currentPage].ClearMenuObject(ref playerScrollBox);
 
-            pages[currentPage].ClearMenuObject(ref colorConfigButton);
-            pages[currentPage].ClearMenuObject(ref colorConfigLabel);
+            pages[_currentPage].ClearMenuObject(ref colorConfigButton);
+            pages[_currentPage].ClearMenuObject(ref colorConfigLabel);
 
-            pages[currentPage].ClearMenuObject(ref friendlyFire);
-            pages[currentPage].ClearMenuObject(ref reqCampaignSlug);
-            pages[currentPage].ClearMenuObject(ref syncSave);
+            pages[_currentPage].ClearMenuObject(ref friendlyFire);
+            pages[_currentPage].ClearMenuObject(ref reqCampaignSlug);
+            pages[_currentPage].ClearMenuObject(ref syncSave);
 
             if (!expeditionGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
                 SetupSlugcatList();
             }
+            _currentPage = pageIndex;
 
             SetupOnlineMenuItens();
             UpdatePlayerList();
             ResetChatInput();
         }
 
-        // custom scugs
-
         private void SetupSlugcatList()
         {
             Vector2 pos = new(leftAnchor + 70, 620);
             if (slugcatLabel == null)
             {
-                slugcatLabel = new(this, pages[_currentPage], Translate("Selected Slugcat").Replace("<LINE>", "\n"), pos, new(110, 30), true);
-                pages[_currentPage].subObjects.Add(slugcatLabel);
+                slugcatLabel = new(this, pages[currentPage], Translate("Selected Slugcat").Replace("<LINE>", "\n"), pos, new(110, 30), true);
+                pages[currentPage].subObjects.Add(slugcatLabel);
             }
             if (slugcatSelector == null)
             {
-                slugcatSelector = new(this, pages[_currentPage], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
-                pages[_currentPage].subObjects.Add(slugcatSelector);
+                slugcatSelector = new(this, pages[currentPage], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
+                pages[currentPage].subObjects.Add(slugcatSelector);
             }
             if (expeditionGameMode.preferredSlug != null)
             {
@@ -231,8 +234,8 @@ namespace RainMeadow
 
         private void RemoveSlugcatList()
         {
-            pages[currentPage].ClearMenuObject(ref slugcatLabel);
-            pages[currentPage].ClearMenuObject(ref slugcatSelector);
+            pages[_currentPage].ClearMenuObject(ref slugcatLabel);
+            pages[_currentPage].ClearMenuObject(ref slugcatSelector);
         }
 
         public void SetupSelectableSlugcats()
@@ -315,11 +318,11 @@ namespace RainMeadow
                 float restartTextWidth = GetRestartTextWidth(base.CurrLang);
                 Futile.atlasManager.LogAllElementNames();
                 
-                colorConfigButton = new(this, pages[_currentPage], "Meadow_Menu_BigColorBucket", "COLOR_SLUGCAT", pos + new Vector2(0, 0), new(45, 45));
-                colorConfigLabel = new MenuLabel(this, pages[_currentPage], Translate("Custom colors"), pos + new Vector2(colorConfigButton.size.x / 2f, -20f), Vector2.zero, false, null);
+                colorConfigButton = new(this, pages[currentPage], "Meadow_Menu_BigColorBucket", "COLOR_SLUGCAT", pos + new Vector2(0, 0), new(45, 45));
+                colorConfigLabel = new MenuLabel(this, pages[currentPage], Translate("Custom colors"), pos + new Vector2(colorConfigButton.size.x / 2f, -20f), Vector2.zero, false, null);
 
-                pages[_currentPage].subObjects.Add(colorConfigButton);
-                pages[_currentPage].subObjects.Add(colorConfigLabel);
+                pages[currentPage].subObjects.Add(colorConfigButton);
+                pages[currentPage].subObjects.Add(colorConfigLabel);
             }
         }
 
@@ -361,15 +364,15 @@ namespace RainMeadow
             Vector2 pos = new(rightAnchor - 60, 0);
             if (!OnlineManager.lobby.isOwner)
             {
-                syncSave = new CheckBox(this, pages[_currentPage], this, pos + new Vector2(0, 90), restartTextWidth, Translate("Sync Save"), "SYNCSAVE");
+                syncSave = new CheckBox(this, pages[currentPage], this, pos + new Vector2(0, 90), restartTextWidth, Translate("Sync Save"), "SYNCSAVE");
                 syncSave.label.pos.x += restartTextWidth - syncSave.label.label.textRect.width - 5f;
                 pages[_currentPage].subObjects.Add(syncSave);
             }
 
-            friendlyFire = new CheckBox(this, pages[_currentPage], this, pos + new Vector2(0, 60), restartTextWidth, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE");
+            friendlyFire = new CheckBox(this, pages[currentPage], this, pos + new Vector2(0, 60), restartTextWidth, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE");
             friendlyFire.label.pos.x += restartTextWidth - friendlyFire.label.label.textRect.width - 5f;
            
-            reqCampaignSlug = new CheckBox(this, pages[_currentPage], this, pos + new Vector2(0, 30), restartTextWidth, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY");
+            reqCampaignSlug = new CheckBox(this, pages[currentPage], this, pos + new Vector2(0, 30), restartTextWidth, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY");
             reqCampaignSlug.label.pos.x += restartTextWidth - reqCampaignSlug.label.label.textRect.width - 5f;
            
             if (!OnlineManager.lobby.isOwner)
@@ -378,8 +381,8 @@ namespace RainMeadow
                 reqCampaignSlug.buttonBehav.greyedOut = true;
             }
 
-            pages[_currentPage].subObjects.Add(friendlyFire);
-            pages[_currentPage].subObjects.Add(reqCampaignSlug);
+            pages[currentPage].subObjects.Add(friendlyFire);
+            pages[currentPage].subObjects.Add(reqCampaignSlug);
         }
 
         public bool GetChecked(CheckBox box)
