@@ -355,7 +355,11 @@ namespace RainMeadow
 
                 arenaOnline.isInGame = isInGame;
                 arenaOnline.isWaitingForPlayersToLoad = isWaitingForPlayersToLoad;
-                arenaOnline.playList = playList;
+                if (!arenaOnline.playList.SequenceEqual(playList))
+                {
+                    arenaOnline.playList = playList;
+                    arenaOnline.arenaClientSettings.CheckForMissingArenas(playList, out _);
+                }
                 arenaOnline.shufflePlayList = shufflePlayList;
                 arenaOnline.arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 arenaOnline.allPlayersReadyLockLobby = allPlayersReadyLockLobby;

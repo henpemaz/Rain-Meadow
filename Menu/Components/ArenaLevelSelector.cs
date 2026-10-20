@@ -295,10 +295,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public class PlaylistSelector : ButtonScroller
     {
         public const string AddOnClick = "Add level to playlist", RemoveOnClick = "Remove level from playlist";
+        public const string REFRESHSIGNAL = "REFRESH";
         public FContainer dividerContainer;
         public MenuTabWrapper tabWrapper;
         public OpTextBox? searchBox;
         public SideButton? searchButton;
+        public SideButton? refreshButton;
         public SideButton showThumbsButton;
         public LevelPreview levelPreviewer;
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
@@ -332,6 +334,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.allLevelsScroll = value;
             }
         }
+        public bool RefreshButtonRefreshesAll => Input.GetKey(KeyCode.LeftShift) ||  Input.GetKey(KeyCode.RightShift);
         public ArenaLevelSelector? MyLevelSelector => owner as ArenaLevelSelector;
 
         public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, new GridScrollSystem(new(120, 80), new(0, 10), 5, startEndWithSpacing: true), sliderPosOffset: new(0, 9), sliderSizeAxisOffset: -40)
@@ -368,6 +371,14 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             if (showThumbsTransitionState != lastShowThumbsTransitionState)
                 ConstrainScroll();
+        }
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (refreshButton is not null && RefreshButtonRefreshesAll)
+            {
+                refreshButton.symbolSprite.color = Color.Lerp(refreshButton.symbolSprite.color, Color.yellow, 0.5f);
+            }
         }
         public override Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
@@ -455,6 +466,17 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             if (buttons.Contains(item))
                 MyLevelSelector?.AddItemToSelectedList(item.name);
+        }
+        public void AddRefreshButton()
+        {
+            if (refreshButton is not null) return;
+
+            refreshButton = AddSideButton("Menu_Symbol_Repeats", signal:REFRESHSIGNAL);
+            refreshButton.OnClick += btn =>
+            {
+                ArenaScanner.ScanForArenas(ref ArenaScanner.scannedArenas, menu.manager.rainWorld, refreshAll:RefreshButtonRefreshesAll);
+                menu.PlaySound(RefreshButtonRefreshesAll ? SoundID.MENU_Button_Successfully_Assigned : SoundID.MENU_Checkbox_Check);
+            };
         }
         public void AddSearchBar(float sizeX = 150, float decreaseSizeY = 20)
         {
@@ -711,6 +733,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         allLevelsPlaylist = new(menu, this, default);
         allLevelsPlaylist.AddSearchBar();
+        allLevelsPlaylist.AddRefreshButton();
         selectedLevelsPlaylist = new(menu, this, new Vector2(200, 0)); //no support for search.
         this.SafeAddSubobjects(allLevelsPlaylist, selectedLevelsPlaylist);
     }

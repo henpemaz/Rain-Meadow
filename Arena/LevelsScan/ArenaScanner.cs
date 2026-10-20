@@ -26,9 +26,12 @@ public static partial class ArenaScanner
         => scannedArenas.SelectMany(kp => kp.Value.Where(x => x.IsAvailable && (x.IsFromMeadowImport || x.mod?.enabled is false))).ToList();
     private static RainWorld rainWorld = null!;
     
-    public static bool AreAllArenasAvailable(List<string> playList)
+    public static bool AreAllArenasAvailable(List<string> playList, out List<string> missingArenas)
     {
         string[] levels = allLevelsName;
-        return playList.All(x => levels.Contains(x));
+        missingArenas = playList.FindAll(x => !levels.Contains(x)).Distinct().ToList();
+        return !missingArenas.Any();
     }
+    public static bool AreAllArenasAvailable(List<string> playList)
+        => AreAllArenasAvailable(playList, out _);
 }
