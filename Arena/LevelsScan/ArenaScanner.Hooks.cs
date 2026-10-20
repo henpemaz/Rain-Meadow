@@ -22,47 +22,26 @@ public static partial class ArenaScanner
     private static string AssetManager_ResolveFilePath_GetAdditionalLevelsPath(On.AssetManager.orig_ResolveFilePath_string_bool_bool orig, string path, bool skipMergedMods, bool skipConsoleFiles)
     {
         string[] pathTable = path.Split(Path.DirectorySeparatorChar);
-        if (!skipMergedMods 
-            && RainMeadow.isArenaMode(out var _) 
-            && pathTable[0].ToLowerInvariant() == "Levels".ToLowerInvariant() 
+        if (RainMeadow.isArenaMode(out var _) 
+            && !skipMergedMods 
+            && pathTable[0].ToLowerInvariant() == "Levels".ToLowerInvariant()
             && pathTable.Length == 2) // we should have smt like levels/levelname_smtsmt.extension
         {
             var arenas = availableArenas;
-            int index = arenas.FindIndex(x => pathTable[1].StartsWith(x.levelName));
+            int index = arenas.FindIndex(x => pathTable[1].ToLowerInvariant().StartsWith(x.levelName.ToLowerInvariant()));
             if (index >= 0)
             {
                 string levelExtension = pathTable[1].Substring(arenas[index].levelName.Length);
-                string finalPath = arenas[index].baldPath + levelExtension;
-                // RainMeadow.Debug($"Found {arenas[index].levelName}{levelExtension} ! ({finalPath})<{File.Exists(finalPath)}>");
+                string finalPath = (arenas[index].baldPath + levelExtension).ToLowerInvariant();
                 if (File.Exists(finalPath)) return finalPath;
             }
         }
         return orig(path, skipMergedMods, skipConsoleFiles);
     }
-
     private static bool GameTypeSetup_LevelExists_SearchAdditionalLevels(On.ArenaSetup.GameTypeSetup.orig_LevelExists orig, string levelName)
     {
         return orig(levelName) || (RainMeadow.isArenaMode(out var _) && availableArenasFromDisabledMods.Exists(x => x.levelName == levelName));
     }
-
-    private static string WorldLoader_FindRoomFile_FindTutorialRoomFile(On.WorldLoader.orig_FindRoomFile orig, string roomName, bool includeRootDirectory, string additionalAppend, bool showWarning)
-    {
-        string result = orig(roomName, includeRootDirectory, additionalAppend, showWarning);
-        if (result is null && RainMeadow.isArenaMode(out var _))
-        {
-            var arenas = availableArenasFromDisabledMods;
-            int index = arenas.FindIndex(x => x.levelName == roomName);
-            if (index >= 0)
-            {
-                result = arenas[index].levelPath;
-            }
-            if (!File.Exists(result)) return null!;
-            // RainMeadow.Debug($"Found {roomName}{additionalAppend} !");
-            if (includeRootDirectory) return "file:///" + result;
-        }
-        return result!;
-    }
-
     private static void MatchmakingManager_OnLobbyJoined_ScanForNewArenas(bool ok, string error)
     {
         if (ok && RainMeadow.isArenaMode(out var _))
@@ -70,7 +49,6 @@ public static partial class ArenaScanner
             ScanForArenas(ref scannedArenas, rainWorld, refreshAll:true);
         }
     }
-
     private static void ModManager_RefreshModsLists_ScanForNewArenas(On.ModManager.orig_RefreshModsLists orig, RainWorld rainWorld)
     {
         orig(rainWorld);

@@ -103,10 +103,9 @@ public readonly struct ArenaInfo(string name, string path, ModManager.Mod? mod, 
     public readonly bool IsAvailable => // the mod is enabled or it's available offline
         mod?.enabled is not false || IsAvailableWithModDisabled;
     public readonly bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
-    public readonly bool IsFromMeadowImport => IsNotFromAMod && highImpact;
+    public readonly bool IsFromMeadowImport => mod is null && highImpact;
     public readonly bool IsFromLocalMod => mod?.workshopMod is false;
-    public readonly bool IsFromVanilla => IsNotFromAMod && !highImpact;
-    public readonly bool IsNotFromAMod => mod is null;
+    public readonly bool IsFromVanilla => mod is null && !highImpact;
 
     public readonly string baldPath => levelPath.Substring(0, levelPath.Length - 4);
     public readonly string thumbPath => baldPath + "_Thumb.png";
@@ -116,6 +115,11 @@ public readonly struct ArenaInfo(string name, string path, ModManager.Mod? mod, 
     {
         return obj is ArenaInfo other && other.levelPath == levelPath;
     }
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+    
     public static bool operator== (ArenaInfo left, ArenaInfo right)
     {
         return left.Equals(right);
