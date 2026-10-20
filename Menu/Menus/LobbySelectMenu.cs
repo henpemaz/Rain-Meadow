@@ -94,7 +94,7 @@ public class LobbySelectMenu : SmartMenu
             false
         );
 
-        lobbyCardSelector = new LobbyCardSelector(this, mainPage, new Vector2(225, 115));
+        lobbyCardSelector = new LobbyCardSelector(this, mainPage, new Vector2(225, 105));
 #pragma warning disable IDE0200
         // this forces RefreshLobbies to fetch the actual currentInstance instead of just forcefully pointing at the original currentInstance
         lobbyCardSelector.RefreshLobbies += () =>

@@ -1848,7 +1848,8 @@ namespace RainMeadow
             }
             else
             {
-                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                bool isSameRegion = storyGameMode.myLastDenPos?.Split('_')[0] == self.currentSaveState.denPosition.Split('_')[0];
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null || !isSameRegion)
                 {
                     // user is freshly joining the game
                     storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
