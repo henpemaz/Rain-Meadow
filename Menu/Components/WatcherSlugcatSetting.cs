@@ -6,12 +6,18 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
 {
     public const string WATCHERCAMO = "Camo",
         WATCHERWEAVER = "Weaver",
-        WATCHERVOIDMASTER = "Voidkeeper";
+        WATCHERVOIDKEEPER = "Voidkeeper";
+    public const string VoidkeeperDescription = "When activated, Watcher will be able to summon"
+        + OnlineSettingDescription.LINEBREAK + "an amoeba, at the cost of half of their camo."
+        + OnlineSettingDescription.LINEBREAK + "To summon your companion, stand on steady ground,"
+        + OnlineSettingDescription.LINEBREAK + "and hold up + special."
+        + OnlineSettingDescription.LINEBREAK + "The Amoeba can blind and kill slugcats,"
+        + OnlineSettingDescription.LINEBREAK + "and can stun other creatures.";
     public override string Name => "Watcher Settings";
     private readonly OnlineSettingIntValue? rippleLevelSetting;
     private readonly OnlineSettingCheckBox? invisSetting;
-    private readonly OnlineSettingCheckBox? voidMasterSetting;
-    private readonly OnlineSettingTab? voidmasterTab;
+    private readonly OnlineSettingCheckBox? voidkeeperSetting;
+    private readonly OnlineSettingTab? voidkeeperTab;
     static WatcherSlugcatSetting()
     {
         AddSlugcatSettingsTab(new(
@@ -26,7 +32,7 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
             true
         ));
         AddSlugcatSettingsTab(new(
-            WATCHERVOIDMASTER,
+            WATCHERVOIDKEEPER,
             Watcher.WatcherEnums.SlugcatStatsName.Watcher,
             RainWorld.RippleColor * 1.5f
         ));
@@ -65,28 +71,28 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
 
         AddSlugcatSettingsConfigurable(new(
             "Voidkeeper",
-            WATCHERVOIDMASTER,
+            WATCHERVOIDKEEPER,
             RainMeadow.rainMeadowOptions.VoidMaster,
             nameof(ArenaOnlineGameMode.voidMasterEnabled),
             "Amoeba summoning is disabled lobby-wide")
         );
         AddSlugcatSettingsConfigurable(new(
             "Voidkeeper Amoeba Duration",
-            WATCHERVOIDMASTER,
+            WATCHERVOIDKEEPER,
             RainMeadow.rainMeadowOptions.AmoebaDuration,
             nameof(ArenaOnlineGameMode.amoebaDuration),
             "Amoeba duration time in seconds")
         );
         AddSlugcatSettingsConfigurable(new(
             "Amoeba Lethality Factor",
-            WATCHERVOIDMASTER,
+            WATCHERVOIDKEEPER,
             RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor,
             nameof(ArenaOnlineGameMode.voidSpawnLethalityFactor),
             "Multiplier for amoeba lethality")
         );
         AddSlugcatSettingsConfigurable(new(
             "Void's Vengeance",
-            WATCHERVOIDMASTER,
+            WATCHERVOIDKEEPER,
             RainMeadow.rainMeadowOptions.AmoebaControl,
             nameof(ArenaOnlineGameMode.amoebaControl),
             "Amoebas chase targets at-will")
@@ -103,12 +109,14 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
         weaverGraphics?.color = RainWorld.GoldRGB * 1.5f;
         (weaverGraphics as OnlineSettingCheckBox)?.altDescription = "Your watcher has synced weaver cosmetics";
 
-        voidmasterTab = GetSettingTab(WATCHERVOIDMASTER);
+        voidkeeperTab = GetSettingTab(WATCHERVOIDKEEPER);
 
-        voidMasterSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster) as OnlineSettingCheckBox;
-        voidMasterSetting?.color = RainWorld.RippleColor * 1.5f;
-        voidMasterSetting?.tabIndependant = true;
-        voidMasterSetting?.altDescription = "Summon amoebas at the cost of your camo timer";
+        voidkeeperSetting = GetSettingParameter(RainMeadow.rainMeadowOptions.VoidMaster) as OnlineSettingCheckBox;
+        voidkeeperSetting?.color = RainWorld.RippleColor * 1.5f;
+        voidkeeperSetting?.tabIndependant = true;
+        voidkeeperSetting?.altDescription = "Summon amoebas at the cost of your camo timer";
+        
+        AddDescriptionToElement(VoidkeeperDescription, voidkeeperSetting);
 
         (GetSettingParameter(RainMeadow.rainMeadowOptions.VoidSpawnLethalityFactor) as OnlineSettingFloatValue)?
             .roundoffDecimals = 1;
@@ -123,9 +131,9 @@ public class WatcherSlugcatSetting : OnlineSlugcatSettings<WatcherSlugcatSetting
 
         if (rippleLevelSetting?.valueInt < 9) invisSetting?.grayedOut = true;
 
-        if (voidMasterSetting?.valueBool is false)
+        if (voidkeeperSetting?.valueBool is false)
         {
-            voidmasterTab?.grayedOut = true;
+            voidkeeperTab?.grayedOut = true;
             UpdateElementsVisibility(); // update the whole tab
         }
     }
