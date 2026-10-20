@@ -9,11 +9,10 @@ namespace RainMeadow
 {
     public partial class ExpeditionOnlineMenu : ExpeditionMenu
     {
-        ExpeditionGameMode expeditionGameMode;
-        
+        private ExpeditionGameMode expeditionGameMode;        
         private MenuLabel? lobbyLabel, slugcatLabel;
-
-        bool isCurrentCampaignInitiallyNull = false;
+        private bool isCurrentCampaignInitiallyNull = false;
+        private bool updatingStats;
 
         public ExpeditionOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -87,6 +86,19 @@ namespace RainMeadow
                     lastPauseButton = true;
                 }
                 ChatTextBox.blockInput = true;
+            }
+
+            if (OnlineManager.lobby is not null)
+            {
+                if (characterSelect is not null && characterSelect.waitForSaveData)
+                {
+                    updatingStats = true;
+                }
+                else if (updatingStats)
+                {                 
+                    updatingStats = false;
+                    if (chatMenuBox is not null) ResetChatInput();
+                }
             }
 
             base.Update();
@@ -312,6 +324,7 @@ namespace RainMeadow
             if (manager.rainWorld.progression.loadInProgress) return;
                 
             firstTimeCampaingSet = true;
+            updatingStats = true;
 
             expeditionGameMode.currentCampaign = campaign;            
             RainMeadow.Debug($"{campaign} selected");
