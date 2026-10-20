@@ -95,9 +95,6 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
         [OnlineField(group = "expeditionSetup", nullable = true)]
         public string? activeMission;
         
-        [OnlineField(group = "expeditionSetup", nullable = true)]
-        public string? startingDen;
-
         [OnlineField(group = "expeditionSetup")]
         SlugcatStats.Name currentCampaign;
 
@@ -160,7 +157,6 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
             currentChallengeList = expeditionGameMode.currentChallengeList;
             activeUnlocks = expeditionGameMode.activeUnlocks;
             activeMission = ExpeditionData.activeMission;
-            startingDen = ExpeditionData.startingDen;
             earnedPassages = ExpeditionData.earnedPassages;
 
             if (currentGameState?.session is StoryGameSession storySession)
@@ -271,12 +267,10 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                 expedition.slugcatCampaingSelected = selectedSlugcat;
                 expedition.needSlugUpdate = true;
             }
-
-            ExpeditionData.activeMission = activeMission;
-            ExpeditionData.startingDen = startingDen;
-
+            
             expedition.activeUnlocks = activeUnlocks;                
             expedition.earnedPassages = earnedPassages;
+            expedition.activeMission = activeMission ?? "";
 
             if (!ExpeditionGame.expeditionComplete)
             {
@@ -299,14 +293,14 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     expedition.challengeListStrings = new List<string>(challengeStrings);
                 }
 
-                bool needUpdateeChallengePreview = false;
-
                 for (int i = 0; i < currentChallengeList.Length; i++)
                 {
                     if (challenge[i].GetType() != currentChallengeList[i].ChallengeType)
                     {
                         challenge[i] = currentChallengeList[i].GetChallenge;
                     }
+
+                    expedition.isChallengeCompleted = isChallengeCompleted;
 
                     bool oldCompleteState = challenge[i].completed;
                     bool needUpdate = false;
@@ -317,7 +311,7 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     {
                         expedition.challengeListStrings[i] = challenge[i].ToString();
                         needUpdate = true;
-                        needUpdateeChallengePreview = true;
+                        expedition.needUpdateeChallengePreview = true;
                     }
 
                     if (needUpdate)
@@ -330,21 +324,16 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                             if (oldCompleteState != newCompleteState && newCompleteState)
                             {
                                 challenge[i].completed = oldCompleteState;
-                                challenge[i].CompleteChallenge();
-                            }
 
+                                expedition.challengeIndex = i;
+                                challenge[i].CompleteChallenge();
+                                expedition.challengeIndex = -1;
+                            }
                             challenge[i].UpdateDescription();
                         }
                     }
                 }
-                
-                if (needUpdateeChallengePreview && RWCustom.Custom.rainWorld.processManager.currentMainLoop is ExpeditionOnlineMenu eom)
-                {
-                    eom.characterSelect.UpdateChallengePreview();
-                }
             }                
-
-            expedition.isChallengeCompleted = isChallengeCompleted;
 
             foreach (OnlineEntity.EntityId pupid in pups)
             {

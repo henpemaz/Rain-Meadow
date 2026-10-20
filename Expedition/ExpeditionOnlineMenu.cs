@@ -34,6 +34,7 @@ namespace RainMeadow
             }
             else
             {
+                ExpeditionData.validateQuests = false;
                 currentSelection = expeditionGameMode.slugcatCampaingSelected;
                 expeditionGameMode.needSlugUpdate = true;
             }
@@ -53,6 +54,8 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
             ChatTextBox.OnShutDownRequest += ResetChatInput;
+
+            expeditionGameMode.needUpdateeChallengePreview = true;
         }
 
         public override void Update()
@@ -90,7 +93,7 @@ namespace RainMeadow
 
             UpdateUI();
 
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby is null) return;
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -99,7 +102,7 @@ namespace RainMeadow
 
                 PreviewChallengesInMenu();
 
-                if (characterSelect != null)
+                if (characterSelect is not null)
                 {
                     characterSelect.abandonButton.bumpBehav.greyedOut = false;
                     if (characterSelect.confirmExpedition?.buttonBehav is not null)
@@ -109,11 +112,21 @@ namespace RainMeadow
             else
             {
                 currentSelection = expeditionGameMode.slugcatCampaingSelected;
-                if (characterSelect != null)
+
+                if (characterSelect is not null)
                 {
                     characterSelect.abandonButton.bumpBehav.greyedOut = true;
                     if (characterSelect.confirmExpedition is not null)
+                    {
                         characterSelect.confirmExpedition.buttonBehav.greyedOut = !expeditionGameMode.canJoinGame;
+                    }
+
+                    if (expeditionGameMode.needUpdateeChallengePreview)
+                    {
+
+                        expeditionGameMode.needUpdateeChallengePreview = false;
+                        characterSelect.UpdateChallengePreview();                        
+                    }
                 }
             }
 
@@ -124,7 +137,7 @@ namespace RainMeadow
                 expeditionGameMode.needMenuSaveUpdate = false;
             }
 
-            if (characterSelect != null && expeditionGameMode.needSlugUpdate)
+            if (characterSelect is not null && expeditionGameMode.needSlugUpdate)
             {
                 expeditionGameMode.needSlugUpdate = false;
                 characterSelect.UpdateSelectedSlugcat(expeditionGameMode.slugcatCampaingSelected);

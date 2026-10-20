@@ -20,6 +20,8 @@ namespace RainMeadow
 
         public List<OnlineCreature> pinChallenge_PinList;
         public int earnedPassages;
+        public bool needUpdateeChallengePreview;
+        public string activeMission;
 
         public ExpeditionGameMode(Lobby lobby) : base(lobby)
         {

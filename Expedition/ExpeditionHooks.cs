@@ -38,6 +38,7 @@ namespace RainMeadow
 
             new Hook(typeof(ExpeditionGame).GetProperty(nameof(ExpeditionGame.activeUnlocks)).GetGetMethod(), ExpeditionGame_activeUnlocks);
             new Hook(typeof(ExpeditionData).GetProperty(nameof(ExpeditionData.earnedPassages)).GetGetMethod(), ExpeditionData_earnedPassages);
+            new Hook(typeof(ExpeditionData).GetProperty(nameof(ExpeditionData.activeMission)).GetGetMethod(), ExpeditionData_activeMission);
 
             IL.Expedition.ExpeditionCoreFile.ToString += ExpeditionCoreFile_ToString;
             On.Expedition.ExpeditionCoreFile.FromString += unlockAllMeadowMusics;            
@@ -432,6 +433,12 @@ namespace RainMeadow
             return expedition.earnedPassages;
         }
 
+        private string ExpeditionData_activeMission(Func<string> orig)
+        {
+            if (!isExpeditionMode(out var expedition) || OnlineManager.lobby.isOwner) return orig();
+            return expedition.activeMission;
+        }
+
         private string ExpeditionProgression_UnlockSprite(On.Expedition.ExpeditionProgression.orig_UnlockSprite orig, string key, bool alwaysShow)
         {
             if (OnlineManager.lobby is null || OnlineManager.lobby.isOwner)
@@ -651,6 +658,7 @@ namespace RainMeadow
             {
                 if (!self.completed)
                 {
+                    RainMeadow.Debug($"Complete challenge");
                     var getcid = getChallengeID(self, out var id);
                     RainMeadow.Info($" - getChallengeID: {id}");
                     if (!OnlineManager.lobby.isOwner && getcid && !em.isChallengeCompleted[id])
