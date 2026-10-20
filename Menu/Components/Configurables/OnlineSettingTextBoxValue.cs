@@ -3,6 +3,7 @@ using Menu.Remix;
 using UnityEngine;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 using Menu.Remix.MixedUI;
+using System;
 
 namespace RainMeadow.UI.Components.Configurables;
 public abstract class OnlineSettingTextBoxValue : OnlineSettingUIconfig
@@ -42,6 +43,8 @@ public class OnlineSettingIntValue : OnlineSettingTextBoxValue
 
 public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
 {
+    public int? roundoffDecimals;
+    public bool needsRoundOff = false;
     public float valueFloat => textBox.valueFloat;
     public OnlineSettingFloatValue(Menu.Menu menu, OnlineSlugcatSettingsBase owner, SettingsConfigData config, OnlineSettingTab? tab = null)
          : this(menu, owner.scroller, owner.tabWrapper, config, tab) {}
@@ -57,6 +60,36 @@ public class OnlineSettingFloatValue : OnlineSettingTextBoxValue
                 accept = OpTextBox.Accept.Float
             },
             tab) {}
+
+    public void RoundOff()
+    {
+        // decimal roundoff
+        if (roundoffDecimals is int r)
+        {
+            textBox.valueFloat = (float)Math.Round(textBox.valueFloat, r);
+        }
+    }
+
+    protected override void ShowSyncInUIConfig(bool grayedOut, object value)
+    {
+        base.ShowSyncInUIConfig(grayedOut, value);
+        if (!uiConfig.held && needsRoundOff)
+        {
+            needsRoundOff = false;
+            RoundOff();
+        }
+    }
+    public override void SyncValueToAttribute()
+    {
+        if (roundoffDecimals is not null)
+        {
+            // don't override someone typing
+            if (textBox.held) needsRoundOff = true;
+            else RoundOff();
+        }
+
+        base.SyncValueToAttribute();
+    }
 }
 
 public class OnlineSettingStringValue : OnlineSettingTextBoxValue

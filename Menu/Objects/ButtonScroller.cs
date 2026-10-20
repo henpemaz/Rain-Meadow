@@ -27,7 +27,6 @@ namespace RainMeadow
         public List<SideButton> sideButtons = [];
         public FSprite[] sideButtonLines = [];
         public readonly GridScrollSystem gridSystem;
-        public bool MouseOverItemBounds => MouseOver;
         public static float CalculateHeightBasedOnAmtOfButtons(int amtOfButtonsView, float buttonHeight, float spacing, bool startEndSpacing = false)
         {
             //remember it goes by buttonsize + button spacing not the buttonSpacing + buttonsize. button size plus first as there will be not extra spacing
@@ -160,7 +159,7 @@ namespace RainMeadow
             lastButtonsDirty = buttonsDirty;
             buttonsDirty = false;
             base.Update(); 
-            if (!IsHidden && CanScroll && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
+            if (!IsHidden && CanScroll && base.MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
                 /*for (int i = 0; i < buttons.Count; i++)
                 {
                     buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
@@ -287,15 +286,15 @@ namespace RainMeadow
         public void AddButtons(int startingIndex, MenuObject[]? scrollObjects)
         {
             if (scrollObjects == null) return;
-            int actualStartingIndex = startingIndex == -1? this.buttons.Count : startingIndex;
-            int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(scrollObjects[startingIndex]);
+            int actualStartingIndex = startingIndex == -1? buttons.Count : startingIndex;
+            int subObjectIndexToInsert = startingIndex == - 1? subObjects.Count : subObjects.IndexOf(buttons[startingIndex]);
             for (int i = 0; i < scrollObjects.Length; i++)
             {
                 var obj = scrollObjects[i];
                 int indexInsert = actualStartingIndex + i;
                 OnAddMenuScrollObject(obj, indexInsert);
                 subObjects.Insert(subObjectIndexToInsert + i, obj);
-                this.buttons.Insert(actualStartingIndex + i, obj);
+                buttons.Insert(actualStartingIndex + i, obj);
             }
         }
         public virtual void OnAddMenuScrollObject(MenuObject scrollObject, int indexAt)

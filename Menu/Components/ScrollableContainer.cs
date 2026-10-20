@@ -31,7 +31,7 @@ namespace RainMeadow.UI.Components
         public Slider? scrollSlider;
         public UIMask uiMask;
         public FContainer itemMaskContainer;
-        public bool MouseOverItemBounds => uiMask.MouseOverTexture;
+        public override bool MouseOver => uiMask.MouseOverTexture;
         public bool IsHidden { get; set; }
         public bool ScrollObjectsDirty => lastScrollableDirty;
         public FContainer ItemContainer => itemMaskContainer;
@@ -161,7 +161,7 @@ namespace RainMeadow.UI.Components
                 base.Update();
             }
 
-            if (!menu.FreezeMenuFunctions && !IsHidden && MouseOver && menu.manager.menuesMouseMode)
+            if (!menu.FreezeMenuFunctions && !IsHidden && base.MouseOver && menu.manager.menuesMouseMode)
                 AddScroll(menu.mouseScrollWheelMovement);
 
             UpdateScroll();
