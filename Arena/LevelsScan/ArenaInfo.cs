@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RainMeadow.LevelsScan;
 
-public readonly partial struct ArenaInfo(string name, string path, ModManager.Mod? mod, bool highImpact = false)
+public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bool highImpact = false)
 {
     public readonly string levelName = name;
     public readonly string levelPath = path;
@@ -16,28 +16,27 @@ public readonly partial struct ArenaInfo(string name, string path, ModManager.Mo
     public readonly bool highImpact = highImpact;
     
 
-    
-    public readonly bool IsAvailableWithModDisabled => // either it's from a mod, all its dependencies are loaded and it's not high impact, or it's from the meadow import folder, or it's vanilla
+    public bool IsAvailableWithModDisabled => // either it's from a mod, all its dependencies are loaded and it's not high impact, or it's from the meadow import folder, or it's vanilla
         mod?.requirements.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id)) is not false
         && (mod is null || !highImpact);
         
-    public readonly bool IsAvailable => // the mod is enabled or it's available offline
+    public bool IsAvailable => // the mod is enabled or it's available offline
         mod?.enabled is not false || IsAvailableWithModDisabled;
-    public readonly bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
-    public readonly bool IsFromMeadowImport => mod is null && highImpact;
-    public readonly bool IsFromLocalMod => mod?.workshopMod is false;
-    public readonly bool IsFromVanilla => mod is null && !highImpact;
+    public bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
+    public bool IsFromMeadowImport => mod is null && highImpact;
+    public bool IsFromLocalMod => mod?.workshopMod is false;
+    public bool IsFromVanilla => mod is null && !highImpact;
 
-    public readonly string BaldPath => levelPath.Substring(0, levelPath.Length - 4);
-    public readonly string ThumbPath => BaldPath + "_Thumb.png";
-    public readonly string FirstCameraPath => BaldPath + "_1.png";
+    public string BaldPath => levelPath.Substring(0, levelPath.Length - 4);
+    public string ThumbPath => BaldPath + "_Thumb.png";
+    public string FirstCameraPath => BaldPath + "_1.png";
 
-    public readonly string ModID => mod is not null 
+    public string ModID => mod is not null 
         ? mod.id
         : IsFromVanilla 
             ? vanillaID
             : importedID;
-    public readonly string ModName => mod is not null 
+    public string ModName => mod is not null 
         ? mod.name
         : IsFromVanilla 
             ? "Vanilla"
@@ -52,17 +51,9 @@ public readonly partial struct ArenaInfo(string name, string path, ModManager.Mo
         return base.GetHashCode();
     }
     
-    public static bool operator== (ArenaInfo left, ArenaInfo right)
-    {
-        return left.Equals(right);
-    }
-    public static bool operator!= (ArenaInfo left, ArenaInfo right)
-    {
-        return !(left == right);
-    }
     public static bool operator== (ArenaInfo? left, ArenaInfo? right)
     {
-        return left is null ? right is null : right.HasValue && right.Value.Equals(left.Value);
+        return left is null ? right is null : right?.Equals(left) is true;
     }
     public static bool operator!= (ArenaInfo? left, ArenaInfo? right)
     {

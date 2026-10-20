@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RainMeadow.LevelsScan;
 
-public readonly partial struct ArenaInfo
+public partial class ArenaInfo
 {
     public const string ImportedArenaFolderName = "meadow-importedarenas";
     public const string vanillaID = "\0_vanilla"; // making SURE we don't get mods named like this
