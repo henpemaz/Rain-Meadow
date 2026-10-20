@@ -1167,17 +1167,22 @@ namespace RainMeadow
             return true;
         }
 
-        public void SavePersistentArenaStats(OnlinePlayer onlinePlayer)
+        public ArenaPersistentStats CreatePersistentArenaStatsForPlayer(OnlinePlayer onlinePlayer)
         {
             if (PersistentWinsByOPlayer.ContainsKey(onlinePlayer)) // I'm betting on the fact that only checking this checks all 4
             {
-                PersistentArenaStatsByOfflinePlayer[onlinePlayer.id] = new(
+                return new(
                     PersistentWinsByOPlayer[onlinePlayer],
                     PersistentDeathsByOPlayer[onlinePlayer],
                     PersistentTotalScoreByOPlayer[onlinePlayer],
                     PersistentAllKillsByOPlayer[onlinePlayer].Count
                 );
             }
+            return new(); // default with all 0
+        }
+        public void SavePersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            PersistentArenaStatsByOfflinePlayer[onlinePlayer.id] = CreatePersistentArenaStatsForPlayer(onlinePlayer);
         }
         public void LoadPersistentArenaStats(OnlinePlayer onlinePlayer)
         {
