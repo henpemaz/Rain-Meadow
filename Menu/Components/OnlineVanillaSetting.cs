@@ -7,7 +7,8 @@ public class VanillaSetting : OnlineSlugcatSettings<VanillaSetting>
 {
     public const string MonkShieldDescription = "When activated, Monk will spawn with a dangle fruit,"
         + OnlineSettingDescription.LINEBREAK + "which can blocks incoming spears."
-        + OnlineSettingDescription.LINEBREAK + "When throwing, Monk will prioritize over the fruit."
+        + OnlineSettingDescription.LINEBREAK + "When throwing, Monk will prioritize throwing"
+        + OnlineSettingDescription.LINEBREAK + "weapons over the fruit."
         + OnlineSettingDescription.LINEBREAK + "Monk will also make the dangle fruit automatically face"
         + OnlineSettingDescription.LINEBREAK + "where you're heading.";
     public override string Name => "Vanilla Settings";
