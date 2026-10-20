@@ -110,7 +110,9 @@ namespace RainMeadow
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
 
-        // saves data of players that left (accidentally or not). If the player logs back on, their data gets loaded in the others persistents tables and gets removed from this one. 
+        // Saves data of players that left (accidentally or not). 
+        // If the player logs back on, their data gets loaded in the others persistents tables and gets removed from this one. 
+        // There might be some issue with LAN since MeadowPlayerId isn't fully unique there... welp.
         public Dictionary<MeadowPlayerId, ArenaPersistentStats> PersistentArenaStatsByOfflinePlayer = []; 
 
         public Dictionary<OnlinePlayer, int> PersistentWinsByOPlayer { get; set; } = [];
@@ -1173,7 +1175,7 @@ namespace RainMeadow
                     PersistentWinsByOPlayer[onlinePlayer],
                     PersistentDeathsByOPlayer[onlinePlayer],
                     PersistentTotalScoreByOPlayer[onlinePlayer],
-                    PersistentAllKillsByOPlayer[onlinePlayer]
+                    PersistentAllKillsByOPlayer[onlinePlayer].Count
                 );
             }
         }
@@ -1184,7 +1186,11 @@ namespace RainMeadow
                 PersistentWinsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].wins;
                 PersistentDeathsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].death;
                 PersistentTotalScoreByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].totscore;
-                PersistentAllKillsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].allkills;
+                PersistentAllKillsByOPlayer[onlinePlayer] = [.. Enumerable.Repeat(
+                    new IconSymbol.IconSymbolData(CreatureTemplate.Type.Slugcat, AbstractPhysicalObject.AbstractObjectType.Creature, -1),
+                    PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].kills)
+                ]; // you do lose the info of what you killed. not that it was used anywhere anyway.
+
                 PersistentArenaStatsByOfflinePlayer.Remove(onlinePlayer.id);
             }
         }
@@ -1356,5 +1362,6 @@ namespace RainMeadow
         //         avatarSettings.eventCape = null;
         //     }
         // }
+        public record struct ArenaPersistentStats(int wins, int death, int totscore, int kills);
     }
 }

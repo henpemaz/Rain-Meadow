@@ -83,7 +83,7 @@ namespace RainMeadow.UI
             if (i == 1)
                 return [
                     .. GetScoreStringOfTable(arenaMode.PersistentAllKillsByOPlayer, x => x.Count, y => y.id.name, storedResults.size.x), // something about kills
-                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.allkills.Count, y => offlineIndicator + y.name, storedResults.size.x),
+                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.kills, y => offlineIndicator + y.name, storedResults.size.x),
                 ];
             if (i == 2)
                 return [
