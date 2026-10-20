@@ -404,6 +404,11 @@ namespace RainMeadow
             if (self.sessionEnded || ModManager.MSC && attacker.AI is not null)
                 return;
 
+            if (attacker == target)
+            {
+                RainMeadow.Debug("No points given on SD! Returning early.");
+                return;
+            }
             if (attacker.abstractCreature.GetOnlineCreature() is not OnlineCreature attackerOCreature)
             {
                 RainMeadow.Error("Unable to find attacker's online creature.");
@@ -445,7 +450,7 @@ namespace RainMeadow
 
             // Handle Score
             int scoreChange = 0;
-
+            
             if (targetOCreature.isAvatar)
             {
                 scoreChange = self.GameTypeSetup.KillScore;
@@ -1221,7 +1226,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (self.killTag is null)
+            if (self.killTag is null || self.killTag == self.abstractCreature)
             {
                 int scoreChange = -arenaSitting.gameTypeSetup.EmptyDeathScore;
 
