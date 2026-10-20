@@ -76,7 +76,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ShowTeamScoreTotals;
 
     public readonly Configurable<float> ScrollSpeed, ChatBgOpacity, ChatInactivityOpacity;
-    public readonly Configurable<bool> ShowPing;
+    public readonly Configurable<bool> ShowPing, ArenaScoreAutoScroll;
     public readonly Configurable<int> ShowPingLocation, ChatInactivityTimer;
 
     public readonly Configurable<string> LanUserName;
@@ -214,6 +214,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaToggleShowScoreKey = config.Bind("ArenaToggleShowScoreKey", KeyCode.T);
         ArenaShowScore = config.Bind("ArenaShowScore", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
+        ArenaScoreAutoScroll = config.Bind("ArenaScoreAutoScroll", true);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
@@ -685,6 +686,9 @@ public class RainMeadowOptions : OptionInterface
                     accept = OpTextBox.Accept.Int,
                     description = Translate("How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)")
                 },
+
+                new OpLabel(210f, 280, Translate("Arena Score Auto-Scroll")),
+                new OpCheckBox(ArenaScoreAutoScroll, new Vector2(210f, 250)),
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();

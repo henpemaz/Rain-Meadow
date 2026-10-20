@@ -77,7 +77,7 @@ namespace RainMeadow
 
         public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
-
+        
         public string paincatName;
         public int lizardEvent;
 
@@ -109,6 +109,11 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
+
+        // Saves data of players that left (accidentally or not). 
+        // If the player logs back on, their data gets loaded in the others persistents tables and gets removed from this one. 
+        // There might be some issue with LAN since MeadowPlayerId isn't fully unique there... welp.
+        public Dictionary<MeadowPlayerId, ArenaPersistentStats> PersistentArenaStatsByOfflinePlayer = []; 
 
         public Dictionary<OnlinePlayer, int> PersistentWinsByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> PersistentDeathsByOPlayer { get; set; } = [];
@@ -1160,11 +1165,54 @@ namespace RainMeadow
             return true;
         }
 
+        public ArenaPersistentStats CreatePersistentArenaStatsForPlayer(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentWinsByOPlayer.ContainsKey(onlinePlayer)) // I'm betting on the fact that only checking this checks all 4
+            {
+                return new(
+                    PersistentWinsByOPlayer[onlinePlayer],
+                    PersistentDeathsByOPlayer[onlinePlayer],
+                    PersistentTotalScoreByOPlayer[onlinePlayer],
+                    PersistentAllKillsByOPlayer[onlinePlayer].Count
+                );
+            }
+            return new(); // default with all 0
+        }
+        public void SavePersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            PersistentArenaStatsByOfflinePlayer[onlinePlayer.id] = CreatePersistentArenaStatsForPlayer(onlinePlayer);
+        }
+        public void LoadPersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentArenaStatsByOfflinePlayer.ContainsKey(onlinePlayer.id))
+            {
+                PersistentWinsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].wins;
+                PersistentDeathsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].death;
+                PersistentTotalScoreByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].totscore;
+                PersistentAllKillsByOPlayer[onlinePlayer] = [.. Enumerable.Repeat(
+                    new IconSymbol.IconSymbolData(CreatureTemplate.Type.Slugcat, AbstractPhysicalObject.AbstractObjectType.Creature, -1),
+                    PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].kills)
+                ]; // you do lose the info of what you killed. not that it was used anywhere anyway.
+
+                PersistentArenaStatsByOfflinePlayer.Remove(onlinePlayer.id);
+            }
+        }
+
+        public override void NewPlayerInLobby(OnlinePlayer onlinePlayer)
+        {
+            base.NewPlayerInLobby(onlinePlayer);
+
+            // Load persistent data if it's there
+            LoadPersistentArenaStats(onlinePlayer);
+        }
         public override void PlayerLeftLobby(OnlinePlayer onlinePlayer)
         {
+            // Save Persistent data in the case the player rejoins
+            SavePersistentArenaStats(onlinePlayer);
+            
             // Clients should change the lobby data here so the dictionaries behave as excepted.
             // (Looping over the dictionary keys should NOT give you players that aren't contained in OnlineManager.players)
-
+    
             PersistentDeathsByOPlayer.Remove(onlinePlayer);
             PersistentWinsByOPlayer.Remove(onlinePlayer);
             PersistentTotalScoreByOPlayer.Remove(onlinePlayer);
@@ -1317,5 +1365,6 @@ namespace RainMeadow
         //         avatarSettings.eventCape = null;
         //     }
         // }
+        public record struct ArenaPersistentStats(int wins, int death, int totscore, int kills);
     }
 }

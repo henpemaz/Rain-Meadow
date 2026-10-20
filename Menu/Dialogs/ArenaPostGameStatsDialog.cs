@@ -41,7 +41,7 @@ namespace RainMeadow.UI
                 arenaMode.PersistentAllKillsByOPlayer.Clear();
                 arenaMode.PersistentTotalScoreByOPlayer.Clear();
                 arenaMode.PersistentWinsByOPlayer.Clear();
-
+                arenaMode.PersistentArenaStatsByOfflinePlayer.Clear();
             };
             pages[0].subObjects.AddRange([postGameStatsLabel, closeButton, resetButton]);
             storedResults = [];
@@ -66,17 +66,35 @@ namespace RainMeadow.UI
             for (int i = 0; i < storedResults.Length; i++)
                 UpdateStoredResults(storedResults[i], GetStrings(storedResults[i], i));
         }
+        private string FormatScore(string name, float storedResultSize, int value)
+            => $"{LabelTest.TrimText(name, storedResultSize - LabelTest.GetWidth($" - {value}") - 10, true)} - {value}";
+        private string[] GetScoreStringOfTable<TPlayer,TValue>(Dictionary<TPlayer,TValue> table, Func<TValue, int> scoreSelector, Func<TPlayer,string> nameSelector, float storedResultSize)
+            => [.. table
+                .OrderByDescending(x => scoreSelector(x.Value))
+                .Select(x => FormatScore(nameSelector(x.Key), storedResultSize, scoreSelector(x.Value)))];
+        private const string offlineIndicator = "[O]";
         public string[] GetStrings(StoredResults storedResults, int i)
         {
-
             if (i == 0)
-                return [.. arenaMode.PersistentWinsByOPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [
+                    .. GetScoreStringOfTable(arenaMode.PersistentWinsByOPlayer, x => x, y => y.id.name, storedResults.size.x),
+                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.wins, y => offlineIndicator + y.name, storedResults.size.x),
+                ];
             if (i == 1)
-                return [.. arenaMode.PersistentAllKillsByOPlayer.OrderByDescending(x => x.Value.Count).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value.Count}") - 10, true)} - {x.Value.Count}")]; // something about kills
+                return [
+                    .. GetScoreStringOfTable(arenaMode.PersistentAllKillsByOPlayer, x => x.Count, y => y.id.name, storedResults.size.x), // something about kills
+                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.kills, y => offlineIndicator + y.name, storedResults.size.x),
+                ];
             if (i == 2)
-                return [.. arenaMode.PersistentDeathsByOPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [
+                    .. GetScoreStringOfTable(arenaMode.PersistentDeathsByOPlayer, x => x, y => y.id.name, storedResults.size.x),
+                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.death, y => offlineIndicator + y.name, storedResults.size.x),
+                ];
             if (i == 3)
-                return [.. arenaMode.PersistentTotalScoreByOPlayer.OrderByDescending(x => x.Value).Select(x => $"{LabelTest.TrimText(x.Key.id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
+                return [
+                    .. GetScoreStringOfTable(arenaMode.PersistentTotalScoreByOPlayer, x => x, y => y.id.name, storedResults.size.x),
+                    .. GetScoreStringOfTable(arenaMode.PersistentArenaStatsByOfflinePlayer, x => x.totscore, y => offlineIndicator + y.name, storedResults.size.x),
+                ];
             return [];
         }
         public void UpdateStoredResults(StoredResults storedResults, string[] strings)
@@ -90,6 +108,11 @@ namespace RainMeadow.UI
                     continue;
                 }
                 menulabels[i].text = strings[i];
+
+                if (strings[i].StartsWith(offlineIndicator))
+                    menulabels[i].label.color = MenuColorEffect.rgbDarkGrey;
+                else
+                    menulabels[i].label.color = MenuColorEffect.rgbMediumGrey;
             }
             int count = storedResults.scroller.GetSpecificButtons<AlignedMenuLabel>().Count;
             if (strings.Length == count) return;
