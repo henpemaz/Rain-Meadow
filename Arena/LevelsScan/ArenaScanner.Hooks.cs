@@ -32,7 +32,7 @@ public static partial class ArenaScanner
             if (index >= 0)
             {
                 string levelExtension = pathTable[1].Substring(arenas[index].levelName.Length);
-                string finalPath = (arenas[index].baldPath + levelExtension).ToLowerInvariant();
+                string finalPath = (arenas[index].BaldPath + levelExtension).ToLowerInvariant();
                 if (File.Exists(finalPath)) return finalPath;
             }
         }

@@ -28,15 +28,20 @@ public readonly partial struct ArenaInfo(string name, string path, ModManager.Mo
     public readonly bool IsFromLocalMod => mod?.workshopMod is false;
     public readonly bool IsFromVanilla => mod is null && !highImpact;
 
-    public readonly string baldPath => levelPath.Substring(0, levelPath.Length - 4);
-    public readonly string thumbPath => baldPath + "_Thumb.png";
-    public readonly string firstCameraPath => baldPath + "_1.png";
+    public readonly string BaldPath => levelPath.Substring(0, levelPath.Length - 4);
+    public readonly string ThumbPath => BaldPath + "_Thumb.png";
+    public readonly string FirstCameraPath => BaldPath + "_1.png";
 
-    public readonly string modName => mod is not null 
+    public readonly string ModID => mod is not null 
         ? mod.id
         : IsFromVanilla 
             ? vanillaID
             : importedID;
+    public readonly string ModName => mod is not null 
+        ? mod.name
+        : IsFromVanilla 
+            ? "Vanilla"
+            : "Imported";
 
     public override bool Equals(object obj)
     {

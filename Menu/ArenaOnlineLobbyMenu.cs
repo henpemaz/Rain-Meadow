@@ -614,7 +614,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     );
                 if (id == ArenaLevelSelector.PlaylistSelector.REFRESHSIGNAL)
                     return Translate(
-                        playSelector.RefreshButtonRefreshesAll
+                        playSelector.AnyShift
                             ? "Scan for all available arenas"
                             : "Scan for newly installed arenas"
                     );
