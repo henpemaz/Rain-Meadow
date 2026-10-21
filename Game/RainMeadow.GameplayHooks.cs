@@ -230,16 +230,21 @@ namespace RainMeadow
 
                     cursor.GotoLabel(label, MoveType.Before);
                     cursor.MoveAfterLabels();
-                    cursor.Emit(OpCodes.Ldarg_0);            
+                    cursor.Emit(OpCodes.Ldarg_0);
                     cursor.Emit(OpCodes.Ldarg_1);
                     cursor.EmitDelegate((Weapon w1, Weapon w2) =>
                         {
                             RainMeadow.DebugMe();
-                            // The check is still necessary, since the weaposn could be still going opposite directions and pass the above check.
-                            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) BroacastParry(w1, w2);
+                            if (OnlineManager.lobby != null && RPCEvent.currentRPCEvent is null) 
+                                return BroacastParry(w1, w2);
+                            return true;
                         }
                     );
-                    // If the weapons are about to deflect each other, call BroacastParry
+                    // If the weapons are about to deflect each other, call BroacastParry.
+                    
+                    cursor.Emit(OpCodes.Brtrue, cursor.Next);
+                    cursor.Emit(OpCodes.Ret);
+                    // If BroacastParry returns false (you are a bystander of the parry), the parry needs to be cancelled.
                 }
                 else
                 {
@@ -252,19 +257,20 @@ namespace RainMeadow
                 RainMeadow.Error("Error occured while hooking : " + ex);
             }
         }
-        private void BroacastParry(Weapon A, Weapon B)
+        private bool BroacastParry(Weapon A, Weapon B)
         {
             RainMeadow.DebugMe();
             OnlinePhysicalObject? wep1 = A.abstractPhysicalObject.GetOnlineObject();
             OnlinePhysicalObject? wep2 = B.abstractPhysicalObject.GetOnlineObject();
-            if (wep1 == null || wep2 == null || !(wep1.isMine || wep2.isMine)) return;
+            if (wep1 == null || wep2 == null) return true;
+            if (!(wep1.isMine || wep2.isMine)) return false; // you are a bystander of a parry, wait for the RPC to actually see it
             RainMeadow.Debug($"Parry {wep1}, {wep1.owner}, {wep2}, {wep2.owner}");
             
             RealizedWeaponState? realizedstatewep1 = GetAppropriateWeaponState(wep1);
             if (realizedstatewep1 is null)
             {
                 RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep1}");
-                return;
+                return true;
             } 
 
             
@@ -272,7 +278,7 @@ namespace RainMeadow
             if (realizedstatewep2 is null)
             {
                 RainMeadow.Error($"Failed to create the appropriate weapon state for obj {wep2}");
-                return;
+                return true;
             } 
             
 
@@ -294,6 +300,7 @@ namespace RainMeadow
                     p?.InvokeRPC(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2, realizedstatewep1, realizedstatewep2, A.firstChunk.lastPos, B.firstChunk.lastPos, UnityEngine.Random.state);
                 }
             }
+            return true;
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
