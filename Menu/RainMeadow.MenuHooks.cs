@@ -801,7 +801,7 @@ namespace RainMeadow
             if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode and not MeadowGameMode)
             {
                 // todo figure out a better way to do this proccess redirection, this isn't ideal
-                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu || ID == ProcessManager.ProcessID.SlugcatSelect)
+                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu || ID == ProcessManager.ProcessID.SlugcatSelect || ID == Expedition.ExpeditionEnums.ProcessID.ExpeditionMenu)
                 {
                     if (self.currentMainLoop.ID == gameMode.MenuProcessId())
                     {
@@ -831,6 +831,8 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
+            if (ID == Ext_ProcessID.ExpeditionMenu) self.currentMainLoop = new ExpeditionOnlineMenu(self);
+            if (ID == Ext_ProcessID.ExpeditionGameOver) self.currentMainLoop = new ExpeditionOnlineGameOver(self);
 
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
