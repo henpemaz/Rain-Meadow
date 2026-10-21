@@ -441,9 +441,16 @@ namespace RainMeadow
 
         private string ExpeditionProgression_UnlockSprite(On.Expedition.ExpeditionProgression.orig_UnlockSprite orig, string key, bool alwaysShow)
         {
-            if (OnlineManager.lobby is null || OnlineManager.lobby.isOwner)
-                return orig(key, alwaysShow);
-            return orig(key, true);
+            if (isExpeditionMode(out _))
+            {
+                if(!OnlineManager.lobby.isOwner) alwaysShow = true;
+                if (ModManager.MSC && (ExpeditionData.unlockables.Contains(key) || alwaysShow) && key == "unl-gun")
+                {
+                    return "Symbol_JokeRifle";
+                }
+            }
+
+            return orig(key, alwaysShow);
         }
 
         private void SlowTimeTracker_Update(On.Expedition.ExpeditionGame.SlowTimeTracker.orig_Update orig, ExpeditionGame.SlowTimeTracker self)
