@@ -12,6 +12,8 @@ public static partial class ArenaScanner
     public static Dictionary<int, string> scannedPalettesPaths = [];
     public static string[] allLevelsName 
         => availableArenas.Select(x => x.levelName).ToArray();
+    public static string[] allLevelsIDs 
+        => availableArenas.Select(x => x.LevelID).ToArray();
     public static string[] allLevelsPath 
         => availableArenas.Select(x => x.levelPath).ToArray();
     public static List<ArenaInfo> availableArenas 
@@ -22,7 +24,7 @@ public static partial class ArenaScanner
     
     public static bool AreAllArenasAvailable(List<string> playList, out List<string> missingArenas)
     {
-        string[] levels = allLevelsName;
+        string[] levels = [..allLevelsIDs.Concat(allLevelsName)];
         missingArenas = playList.FindAll(x => !levels.Contains(x)).Distinct().ToList();
         return !missingArenas.Any();
     }

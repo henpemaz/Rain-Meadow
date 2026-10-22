@@ -201,7 +201,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             missingArenas.Do(x => 
                 {
                     var (levelName, modID) = ArenaInfo.SplitLevelID(x);
-                    lines.Add(new(levelName + (string.IsNullOrEmpty(modID) ? "" : $" (from {modID})")));
+                    lines.Add(new(levelName + (
+                        string.IsNullOrEmpty(modID) 
+                            ? "" 
+                            : modID == ArenaInfo.importedID 
+                                ? " (imported)"
+                                : $" (from {modID})")));
                 }
             );
 
