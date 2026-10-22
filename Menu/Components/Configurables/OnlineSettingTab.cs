@@ -172,6 +172,7 @@ public class OnlineSettingTab : OnlineSettingElement
             arrowSprite.y = DrawY(timeStacker) + size.y/2f;
             arrowSprite.rotation = !settingTab.folded ? 180 : 90;
             arrowSprite.color = MyColor(timeStacker);
+            arrowSprite.isVisible = settingTab.visible;
         }
         public override void RemoveSprites()
         {

@@ -71,8 +71,6 @@ public class OnlineSettingUIconfig : OnlineSettingConfigurable
 
         uiConfig.myContainer.alpha = currentAlpha;
         uiConfig.myContainer.isVisible = visible;
-
-        if (color is Color c) label.label.color = c;
     }
     public override void ResetValueToDefault()
     {
