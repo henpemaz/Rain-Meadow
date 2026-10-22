@@ -40,6 +40,7 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
         RainMeadow.Debug($"Created unknown level from {levelID} !");
         return new(info.levelName, "", null, true){_unknownLevel = true, _unknownModID = info.modID};
     }
+
     public static ArenaInfo GetOrCreateArenaInfo(List<ArenaInfo> allLevelsInfo, string nameOrID)
     {
         // if it's a level name
@@ -61,9 +62,11 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
     public readonly string levelPath = path;
 
     public readonly ModManager.Mod? mod = mod;
-    public readonly bool highImpact = highImpact;
+    private readonly bool highImpact = highImpact;
     private bool _unknownLevel = false; // bool indicator of invalid level
     private string _unknownModID = "";
+
+    public ArenaSettings? LevelSettings {get; internal set;} = null;
 
     
     public int LevelListSortNumber(List<string> allModsIDOrdered)
@@ -103,12 +106,17 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
         return false;
     }
 
-    public bool IsAvailableWithModDisabled => // either it's from a mod, all its dependencies are loaded and it's not high impact, or it's from the meadow import folder, or it's vanilla
-        mod?.requirements.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id)) is not false
-        && (mod is null || !highImpact);
-        
-    public bool IsAvailable => // the mod is enabled or it's available offline
-        !_unknownLevel && (mod?.enabled is not false || IsAvailableWithModDisabled);
+    public bool AllDependanciesLoaded 
+        => LevelSettings?.DependanciesOverride is not null
+            ? LevelSettings.DependanciesOverride.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id))
+            : mod?.requirements.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id)) is not false;
+    public bool HighImpact => LevelSettings?.HighImpact is not null ? (bool)LevelSettings.HighImpact : highImpact;
+
+    public bool IsAvailableWithModDisabled => 
+        !IsUnknownLevel && AllDependanciesLoaded && (mod is null || !highImpact);
+    public bool IsAvailable => 
+        !IsUnknownLevel && (mod?.enabled is not false || IsAvailableWithModDisabled);
+
     public bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
     public bool IsFromMeadowImport => mod is null && highImpact && !IsUnknownLevel;
     public bool IsFromLocalMod => mod?.workshopMod is false;
@@ -135,6 +143,7 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
                 : string.IsNullOrEmpty(_unknownModID) ? "Unknown" : "(?)" + _unknownModID;
     public string LevelID => MakeLevelID(levelName, ModID);
 
+    public override int GetHashCode() => base.GetHashCode();
     public override bool Equals(object obj)
     {
         return obj is ArenaInfo other 
@@ -142,11 +151,6 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
             && !other.IsUnknownLevel 
             && !IsUnknownLevel;
     }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-    
     public static bool operator== (ArenaInfo? left, ArenaInfo? right)
     {
         return left is null ? right is null : right?.Equals(left) is true;

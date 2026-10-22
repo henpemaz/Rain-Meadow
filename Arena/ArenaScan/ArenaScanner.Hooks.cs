@@ -17,12 +17,27 @@ public static partial class ArenaScanner
         On.AssetManager.ResolveFilePath_string_bool_bool += AssetManager_ResolveFilePath_GetAdditionalLevelsPath;
         On.ArenaSetup.GameTypeSetup.LevelExists += GameTypeSetup_LevelExists_SearchAdditionalLevels;
         On.MultiplayerUnlocks.LevelDisplayName += MultiplayerUnlocks_LevelDisplayName_ShowRealName;
+        On.AbstractRoom.ctor += AbstractRoom_ctor_GetRealArenaName;
+    }
+
+    private static void AbstractRoom_ctor_GetRealArenaName(On.AbstractRoom.orig_ctor orig, AbstractRoom self, string name, int[] connections, int index, int swarmRoomIndex, int shelterIndex, int gateIndex)
+    {
+        if (RainMeadow.isArenaMode(out var _))
+        {
+            orig(self, ArenaInfo.SplitLevelID(name).levelName, connections, index, swarmRoomIndex, shelterIndex, gateIndex);
+        }
+        orig(self, name, connections, index, swarmRoomIndex, shelterIndex, gateIndex);
     }
 
     private static string MultiplayerUnlocks_LevelDisplayName_ShowRealName(On.MultiplayerUnlocks.orig_LevelDisplayName orig, string s)
     {
         if (RainMeadow.isArenaMode(out var _))
         {
+            if (ArenaSettings.settingsByID.TryGetValue(s, out var arenaSettings)
+                && !string.IsNullOrWhiteSpace(arenaSettings.DisplayName))
+            {
+                return arenaSettings.DisplayName!;
+            }
             return orig(ArenaInfo.SplitLevelID(s).levelName);
         }
         return orig(s);
@@ -42,13 +57,13 @@ public static partial class ArenaScanner
                 string finalPath = "";
                 if (arenas.Find(x => x.TryFindFileFromFileName(pathTable[1], out finalPath)) is ArenaInfo arenaInfo)
                 {
-                    RainMeadow.Debug($"Found file {finalPath.Split(Path.DirectorySeparatorChar).Last()} from file name {path}! Arena was {arenaInfo.levelName} from {arenaInfo.ModID}.");
+                    // RainMeadow.Debug($"Found file {finalPath.Split(Path.DirectorySeparatorChar).Last()} from file name {path}! Arena was {arenaInfo.levelName} from {arenaInfo.ModID}.");
                     return finalPath;
                 }
             }
             if (path.Contains(ArenaInfo.modSeparator))
             {
-                RainMeadow.Debug($"Path {path} is illegal and supposed to be an arena, making it empty.");
+                // RainMeadow.Debug($"Path {path} is illegal and supposed to be an arena, making it empty.");
                 return "";
             }
         }

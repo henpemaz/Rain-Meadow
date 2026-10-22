@@ -96,23 +96,22 @@ public static partial class ArenaScanner
         ScanImportedFolderForArenas(ref arenaRefTable, refreshAll);
         ScanAllModsForArenas(ref arenaRefTable, rainWorld, refreshAll, checkOnlyRWmodList);
 
-        if (RainMeadow.rainMeadowOptions.CurrentLogLevel.Value <= RainMeadow.LogLevel.Debug)
+        arenaRefTable.Do(kp =>
         {
-            arenaRefTable.Do(kp =>
+            modScanned++;
+            kp.Value.Do(x =>
             {
-                modScanned++;
-                kp.Value.Do(x =>
+                levelScanned++;
+                if (x.IsAvailable)
                 {
-                    levelScanned++;
-                    if (x.IsAvailable)
-                    {
-                        availableLevels++;
-                        if (x.IsFromMeadowImport) importedLevels++;
-                        else if (x.mod?.enabled is false) offlineLevels++;
-                    }
-                });
+                    availableLevels++;
+                    if (x.IsFromMeadowImport) importedLevels++;
+                    else if (x.mod?.enabled is false) offlineLevels++;
+
+                    ArenaSettings.RegisterSettingFromArenaInfo(x);
+                }
             });
-        }
+        });
 
         RainMeadow.Debug($"Scanned {levelScanned} arenas across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled and {importedLevels} arenas in the import folder!");
         sw.Stop();

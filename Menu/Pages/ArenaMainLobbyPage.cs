@@ -198,10 +198,15 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             List<ScrollableConfirmDialog.Line> lines = [];
 
             lines.Add(new(menu.Translate("Some arenas in the playlist cannont be found:"), true));
-            missingArenas.Do(x => lines.Add(new(x)));
+            missingArenas.Do(x => 
+                {
+                    var (levelName, modID) = ArenaInfo.SplitLevelID(x);
+                    lines.Add(new(levelName + (string.IsNullOrEmpty(modID) ? "" : $" (from {modID})")));
+                }
+            );
 
             lines.Add(new(menu.Translate("How to solve this:"), true));
-            lines.Add(new(menu.Translate("Please ask the owner about what mods needs to be installed")));
+            lines.Add(new(menu.Translate("Please ask the host about what mods needs to be installed to get those arenas")));
             lines.Add(new(menu.Translate("When the right mod has been installed, hit the refresh button.")));
 
             menu.manager.ShowDialog(
