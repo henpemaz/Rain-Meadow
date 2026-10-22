@@ -308,7 +308,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             GetGameTypeSetup,
             new MultiplayerUnlocks(
                 manager.rainWorld.progression,
-                arenaMainLobbyPage.levelSelector.allLevels
+                arenaMainLobbyPage.levelSelector.allLevelsInfo.Select(x => x.levelName).ToList()
             )
         )
         {

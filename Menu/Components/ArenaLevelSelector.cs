@@ -15,6 +15,9 @@ using UnityEngine;
 using static Menu.Menu;
 using static MultiplayerUnlocks;
 
+using ArenaInfoPerModTable = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<RainMeadow.ArenaScan.ArenaInfo>>;
+
+
 namespace RainMeadow.UI.Components;
 
 public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
@@ -68,8 +71,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                     sleepCounter = 0;
                     if (levelItem.thumbLoaded)
                     {
-                        levelName = levelItem.name;
-                        imageSprite.element = Futile.atlasManager.GetElementWithName(levelName + "_Thumb");
+                        imageSprite.element = Futile.atlasManager.GetElementWithName(ThumbTextureName(levelItem.level));
                         imageSprite.color = Color.white;
                     }
                 }
@@ -119,7 +121,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public LevelItem? levelItemAbove, levelItemBelow;
         public bool thumbLoaded, thumbLoadWasAttempted, lastSelected, doAThumbFade, showThumbDivider;
         public float labelSelectedBlink, labelLastSelectedBlink, lastFade, fade, thumbChangeFade, lastThumbChangeFade, fadeAway;
-        public string name, description;
+        public string description;
+        public ArenaInfo level;
         public PlaylistSelector? MyPlaylistSelector => owner as PlaylistSelector;
         public bool ShowThumbDivider => ShowThumbsTransitionState(1f) > 0.5f;
         public float Alpha => this.GetScrollObject().LocalAlpha;
@@ -127,17 +130,17 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public FContainer MyDividerContainer => MyPlaylistSelector?.dividerContainer ?? Container;
         public override bool CurrentlySelectableMouse => !buttonBehav.greyedOut && Alpha > 0.5f;
         public override bool CurrentlySelectableNonMouse => !buttonBehav.greyedOut && Alpha > 0.5f;
-        public LevelItem(Menu.Menu menu, MenuObject owner, string levelName, string description) : base(menu, owner, default, new Vector2(120f, 20f))
+        public LevelItem(Menu.Menu menu, MenuObject owner, ArenaInfo level, string description) : base(menu, owner, default, new Vector2(120f, 20f))
         {
-            name = levelName;
+            this.level = level;
             this.description = description;
             buttonBehav = new(this);
-            label = new(menu, this, LevelDisplayName(name), Vector2.zero, new Vector2(size.x, 20f), false);
+            label = new(menu, this, LevelDisplayName(level.LevelID), Vector2.zero, new Vector2(size.x, 20f), false);
             roundedRect = new(menu, this, Vector2.zero, new Vector2(size.x, size.y), true);
 
-            thumbLoaded = MyPlaylistSelector?.MyLevelSelector?.IsThumbnailLoaded(name) == true;
+            thumbLoaded = MyPlaylistSelector?.MyLevelSelector?.IsThumbnailLoaded(level) == true;
             thumbLoadWasAttempted = thumbLoaded;
-            thumbnailSprite = thumbLoaded ? new FSprite($"{name}_Thumb") : new FSprite("Menu_Empty_Level_Thumb") { color = MenuRGB(MenuColors.DarkGrey) };
+            thumbnailSprite = thumbLoaded ? new FSprite(ThumbTextureName(level)) : new FSprite("Menu_Empty_Level_Thumb") { color = MenuRGB(MenuColors.DarkGrey) };
 
             ArenaScanner.OnArenaScan += RefreshAvailableLevels;
 
@@ -185,7 +188,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 thumbChangeFade = Custom.LerpAndTick(thumbChangeFade, 1f, 0.08f, 1f / 30f);
                 if (thumbChangeFade == 1f && thumbLoaded)
                 {
-                    thumbnailSprite.element = Futile.atlasManager.GetElementWithName(name + "_Thumb");
+                    thumbnailSprite.element = Futile.atlasManager.GetElementWithName(ThumbTextureName(level));
                     thumbnailSprite.color = new Color(1f, 1f, 1f);
                     doAThumbFade = false;
                 }
@@ -214,7 +217,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             if (!thumbLoadWasAttempted && !thumbLoaded && (Selected || Alpha > 0.5f))
             {
-                MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(name);
+                MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(level);
                 thumbLoadWasAttempted = true;
             }
 
@@ -463,12 +466,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public virtual void LoadLevelsInit()
         {
             if (MyLevelSelector == null) return;
-            AddButtons([..MyLevelSelector.allLevels.Select(CreateLevelItem)]);
+            AddButtons([..MyLevelSelector.allLevelsInfo.Select(CreateLevelItem)]);
             for (int i = 0; i < buttons.Count - 1; i++)
             {
                 if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
-                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
+                if (MyLevelSelector.LevelListSortNumber(levelItem.level) != MyLevelSelector.LevelListSortNumber(nextLevelItem.level))
                     levelItem.AddDividers(nextLevelItem);
             }
         }
@@ -477,8 +480,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector == null) return;
             bool AllMods = string.IsNullOrEmpty(modID);
 
-            IEnumerable<string> searchList = MyLevelSelector.allLevels.Where(x => AllMods || (MyLevelSelector.TryGetLevelFromName(x, out var arenaInfo) && arenaInfo.ModID == modID)),
-            currentList = buttons.OfType<LevelItem>().Select(x => x.name);
+            IEnumerable<ArenaInfo> searchList = MyLevelSelector.allLevelsInfo.Where(x => AllMods || x.ModID == modID),
+            currentList = buttons.OfType<LevelItem>().Select(x => x.level);
             if (searchList.Count() == currentList.Count() && searchList.SequenceEqual(currentList)) return;
             
             RemoveAllButtons(false);
@@ -487,7 +490,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             {
                 if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
-                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
+                if (MyLevelSelector.LevelListSortNumber(levelItem.level) != MyLevelSelector.LevelListSortNumber(nextLevelItem.level))
                     levelItem.AddDividers(nextLevelItem);
             }
 
@@ -498,8 +501,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector == null) return;
             bool isSearchEmpty = string.IsNullOrEmpty(search);
             
-            IEnumerable<string> searchList = MyLevelSelector.allLevels.Where(x => isSearchEmpty || LevelDisplayName(x).StartsWith(search, StringComparison.CurrentCultureIgnoreCase)),
-            currentList = buttons.OfType<LevelItem>().Select(x => x.name);
+            IEnumerable<ArenaInfo> searchList = MyLevelSelector.allLevelsInfo.Where(x => isSearchEmpty || LevelDisplayName(x.LevelID).StartsWith(search, StringComparison.CurrentCultureIgnoreCase)),
+            currentList = buttons.OfType<LevelItem>().Select(x => x.level);
             if (searchList.Count() == currentList.Count() && searchList.SequenceEqual(currentList)) return;
             
             RemoveAllButtons(false);
@@ -508,7 +511,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             {
                 if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
-                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
+                if (MyLevelSelector.LevelListSortNumber(levelItem.level) != MyLevelSelector.LevelListSortNumber(nextLevelItem.level))
                     levelItem.AddDividers(nextLevelItem);
             }
             
@@ -518,7 +521,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public virtual void LevelItemClicked(LevelItem item)
         {
             if (buttons.Contains(item))
-                MyLevelSelector?.AddItemToSelectedList(item.name);
+                MyLevelSelector?.AddItemToSelectedList(item.level);
         }
 
         public void AddFilterButton()
@@ -587,7 +590,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 menu.selectedObject = searchBox.wrapper;
             };
         }
-        public virtual LevelItem CreateLevelItem(string levelName) => new(menu, this, levelName, menu.Translate(AddOnClick));
+        public virtual LevelItem CreateLevelItem(ArenaInfo level) => new(menu, this, level, menu.Translate(AddOnClick));
         public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
     }
     public class PlaylistHolder : PlaylistSelector
@@ -638,7 +641,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (MyLevelSelector?.SelectedPlayList == null) return false;
 
                 var levelItems = GetSpecificButtons<LevelItem>();
-                return (levelItems.Count != MyLevelSelector.SelectedPlayList.Count || !MyLevelSelector.SelectedPlayList.SequenceEqual(levelItems.Select(x => x.name)));
+                return levelItems.Count != MyLevelSelector.SelectedPlayList.Count 
+                    || !MyLevelSelector.SelectedPlayList.SequenceEqual(levelItems.Select(x => x.level.LevelID));
             }
         }
         public PlaylistHolder(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos) //no support for searchbar
@@ -701,11 +705,14 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override void LoadLevelsInit()
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
-            AddButtons([.. MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
+
+            AddButtons([.. MyLevelSelector.SelectedPlayList.Select(
+                x => CreateLevelItem(ArenaInfo.GetOrCreateArenaInfo(MyLevelSelector.allLevelsInfo, x)))
+            ]);
         }
-        public override LevelItem CreateLevelItem(string levelName)
+        public override LevelItem CreateLevelItem(ArenaInfo arenaInfo)
         {
-            return new(menu, this, levelName, menu.Translate(RemoveOnClick));
+            return new(menu, this, arenaInfo, menu.Translate(RemoveOnClick));
         }
         public void UpdatePlaylist()
         {
@@ -743,20 +750,23 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public void ResolvePlaylistMismatch()
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
+            RainMeadow.Debug($"MISMATCH ! Arenas are [{string.Join(" ,",GetSpecificButtons<LevelItem>().Select(x => x.level.LevelID))}] while playlist is [{string.Join(" ,",MyLevelSelector.SelectedPlayList)}]");
             for (int i = buttons.Count - 1; i >= 0; i--)
                 if (buttons[i] is LevelItem item)
                 RemoveButton(item, false);
-            AddButtons([..MyLevelSelector.SelectedPlayList.Select(CreateLevelItem)]);
+            AddButtons([..MyLevelSelector.SelectedPlayList.Select(
+                x => CreateLevelItem(ArenaInfo.GetOrCreateArenaInfo(MyLevelSelector.allLevelsInfo, x)))]);
             ConstrainScroll();
+            MyLevelSelector.SelectedPlayList.Clear();
+            MyLevelSelector.SelectedPlayList.AddRange([..GetSpecificButtons<LevelItem>().Select(x => x.level.LevelID)]);
             mismatchCounter = 0;
-
         }
         public void RemovePlaylistLevelItem(LevelItem levelItem)
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
             for (int i = MyLevelSelector.SelectedPlayList.Count - 1; i >= 0; i--)
             {
-                if (MyLevelSelector.SelectedPlayList[i] == levelItem.name)
+                if (MyLevelSelector.SelectedPlayList[i] == levelItem.level.LevelID)
                 {
                     MyLevelSelector.RemoveLevelFromPlayList(i);
                     break;
@@ -765,15 +775,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
     }
 
-    public const char modSeparator = '\0'; // gonna need an untypable character for this
     public PlaylistSelector allLevelsPlaylist;
     public PlaylistHolder selectedLevelsPlaylist;
     public List<LevelUnlockID> unlockBatchIds = [];
-    private List<ArenaInfo> allLevelsInfo = [];
-
-    public List<string> allLevels = [], 
-        allModsID = [], allModsNames = [],
+    public List<ArenaInfo> allLevelsInfo = [],
         thumbsToBeLoaded = [], loadedThumbTextures = [];
+    public List<string> allModsID = [], allModsNames = [];
     public int thumbLoadDelay;
     public static int ThumbWidth => 100;
     public static int ThumbHeight => 50;
@@ -783,6 +790,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public List<string> SelectedPlayList => GetGameTypeSetup.playList;
     public bool ForceGreyOutAll => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
     public bool IsHidden { get; set; }
+
+    public static string ThumbTextureName(ArenaInfo level)
+        => $"M_{level.levelName}_{level.ModID}_Thumb";
     public ArenaLevelSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
     {
 
@@ -806,8 +816,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         // RainMeadow.Debug("Found levels " + string.Join(", ", allLevels));
         
-        thumbsToBeLoaded = [.. allLevels];
-
         allLevelsPlaylist = new(menu, this, default);
         allLevelsPlaylist.AddSearchBar();
         allLevelsPlaylist.AddRefreshButton();
@@ -830,7 +838,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     {
         allLevelsInfo = ArenaScanner.availableArenas;
         allLevelsInfo.Sort(LevelInfoSort);
-        allLevels = allLevelsInfo.Select(x => x.levelName).ToList();
         allModsID = allLevelsInfo.Select(x => x.ModID).Distinct().ToList();
         allModsNames = allLevelsInfo.Select(x => x.ModName).Distinct().ToList();
         
@@ -840,13 +847,13 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             allLevelsPlaylist.currentModFilter = 0;
         }
     }
-    public void RefreshAvailableLevels(RainWorld rainWorld, Dictionary<string, List<ArenaInfo>> availableArenas, bool refreshAll)
+    public void RefreshAvailableLevels(RainWorld rainWorld, ArenaInfoPerModTable availableArenas, bool refreshAll)
     {
         RefreshAvailableLevels();
         if (refreshAll)
         {
             loadedThumbTextures = [];
-            thumbsToBeLoaded = [.. allLevels];
+            thumbsToBeLoaded = [.. allLevelsInfo];
         }
     }
     public void LoadNewPlaylist(List<string> playlist, bool addToOwnPlaylist)
@@ -856,14 +863,15 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         playListToClear?.Clear();
         if (playListToRead != null) playListToClear?.AddRange(playListToRead);
     }
+    public int LevelListSortNumber(ArenaInfo level)
+    {
+        int index = level.LevelListSortNumber(allModsID);
+        if (index >= 0) return index;
+
+        return LevelListSortNumber(level.levelName);
+    }
     public int LevelListSortNumber(string levelName)
     {
-        if (TryGetLevelFromName(levelName, out var arenaInfo))
-        {
-            int index = allModsID.FindIndex(x => x == arenaInfo.ModID);
-            if (index >= 0) return index;
-        }
-
         LevelUnlockID levelUnlockID = LevelLockID(levelName);
         if (levelUnlockID == LevelUnlockID.Default)
             return 0;
@@ -874,7 +882,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         return 0;
     }
-    public string LevelListSortString(string levelName) => LevelListSortNumber(levelName).ToString("000") + LevelDisplayName(levelName);
+    public string LevelListSortString(string levelName) 
+        => LevelListSortNumber(levelName).ToString("000") + LevelDisplayName(levelName);
     public int LevelInfoSort(ArenaInfo left, ArenaInfo right)
     {
         // If both are not from a mod
@@ -923,23 +932,19 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         return 1;
     }
-    public bool TryGetLevelFromName(string name, out ArenaInfo arenaInfo)
+    public void AddItemToSelectedList(ArenaInfo level)
     {
-        arenaInfo = new();
-        int index = allLevelsInfo.FindIndex(x => x.levelName == name);
-        if (index < 0) return false;
-
-        arenaInfo = allLevelsInfo[index];
-        return true;
-    }
-    public void AddItemToSelectedList(string name)
-    {
-        SelectedPlayList.Add(name);
-        LevelItem item = new(menu, selectedLevelsPlaylist, name, menu.Translate("Remove level from playlist"));
+        SelectedPlayList.Add(level.LevelID);
+        LevelItem item = new(menu, selectedLevelsPlaylist, level, menu.Translate("Remove level from playlist"));
         selectedLevelsPlaylist.AddButtons(item);
         selectedLevelsPlaylist.MoveToBoundary(ScrollSystem.Direction.Bottom, false);
         selectedLevelsPlaylist.ConstrainScroll();
         menu.PlaySound(SoundID.MENU_Add_Level);
+    }
+    public void AddItemToSelectedList(string levelName) // UNSAFE !! Might give you the arena of the wrong mod
+    {
+        if (ArenaInfo.TryGetLevelInfo(allLevelsInfo, levelName, out var arenaInfo))
+            AddItemToSelectedList(arenaInfo);
     }
     public void RemoveLevelFromPlayList(int index)
     {
@@ -948,14 +953,14 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         menu.PlaySound(SoundID.MENU_Remove_Level);
     }
-    public bool IsThumbnailLoaded(string levelName) => loadedThumbTextures.Contains(levelName);
-    public void BumpUpThumbnailLoad(string levelName)
+    public bool IsThumbnailLoaded(ArenaInfo level) => loadedThumbTextures.Contains(level);
+    public void BumpUpThumbnailLoad(ArenaInfo level)
     {
-        if (thumbsToBeLoaded.Count > 0 && thumbsToBeLoaded[0] == levelName) return;
-        if (IsThumbnailLoaded(levelName)) return;
+        if (thumbsToBeLoaded.Count > 0 && thumbsToBeLoaded[0] == level) return;
+        if (IsThumbnailLoaded(level)) return;
         for (int i = thumbsToBeLoaded.Count - 1; i >= 0; i--)
-            if (thumbsToBeLoaded[i] == levelName) thumbsToBeLoaded.RemoveAt(i);
-        thumbsToBeLoaded.Insert(0, levelName);
+            if (thumbsToBeLoaded[i] == level) thumbsToBeLoaded.RemoveAt(i);
+        thumbsToBeLoaded.Insert(0, level);
     }
     public void LoadThumbSprite()
     {
@@ -963,11 +968,10 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         if (thumbsToBeLoaded.Count <= 0 || thumbLoadDelay >= 1) return;
 
-        string thumbToBeLoaded = thumbsToBeLoaded[0];
+        ArenaInfo thumbToBeLoaded = thumbsToBeLoaded[0];
         thumbsToBeLoaded.RemoveAt(0);
-        if (!TryGetLevelFromName(thumbToBeLoaded, out var thumbToBeLoadedInfo)) return;
 
-        string renderedThumbnailPath = thumbToBeLoadedInfo.ThumbPath;
+        string renderedThumbnailPath = thumbToBeLoaded.ThumbPath;
         string thumbnailPath;
 
         bool hasRenderedThumbnail;
@@ -978,7 +982,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         else
         {
-            thumbnailPath = thumbToBeLoadedInfo.FirstCameraPath;
+            thumbnailPath = thumbToBeLoaded.FirstCameraPath;
             hasRenderedThumbnail = false;
         }
 
@@ -1009,13 +1013,15 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         texture2D.Apply();
 
         loadedThumbTextures.Add(thumbToBeLoaded);
-        HeavyTexturesCache.LoadAndCacheAtlasFromTexture($"{thumbToBeLoaded}_Thumb", texture2D, textureFromAsset: false);
+        HeavyTexturesCache.LoadAndCacheAtlasFromTexture(ThumbTextureName(thumbToBeLoaded), texture2D, textureFromAsset: false);
 
         MenuObject[] levelItems = [.. allLevelsPlaylist.buttons, .. selectedLevelsPlaylist.buttons];
         for (int i = 0; i < levelItems.Length; i++)
         {
-            if (levelItems[i] is not LevelItem levelItem || levelItem.name != thumbToBeLoaded) continue;
-            levelItem.ThumbnailHasBeenLoaded();
+            if (levelItems[i] is LevelItem levelItem && levelItem.level == thumbToBeLoaded)
+            {
+                levelItem.ThumbnailHasBeenLoaded();
+            }
         }
 
         thumbLoadDelay = 2;

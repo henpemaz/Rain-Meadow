@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using HarmonyLib;
-using MonoMod.Utils;
 using RWCustom;
 using Steamworks;
-using UnityEngine;
+
+using ArenaInfoPerModTable = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<RainMeadow.ArenaScan.ArenaInfo>>;
 
 namespace RainMeadow.ArenaScan;
 
 public static partial class ArenaScanner
 {
-    public delegate void ArenaScanFunc(RainWorld rainWorld, Dictionary<string, List<ArenaInfo>> scannedArenas, bool refreshAll);
+    public delegate void ArenaScanFunc(RainWorld rainWorld, ArenaInfoPerModTable scannedArenas, bool refreshAll);
     public static event ArenaScanFunc? OnArenaScan;
     public static ModManager.Mod[] GetAllInstalledMods(RainWorld rainWorld) // from ModManager.RefreshModList
     {
@@ -84,7 +83,7 @@ public static partial class ArenaScanner
         sw.Stop();
         return mods.ToArray();
     }
-    public static Dictionary<string, List<ArenaInfo>> ScanForArenas(ref Dictionary<string, List<ArenaInfo>> arenaRefTable, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWmodList = false)
+    public static ArenaInfoPerModTable ScanForArenas(ref ArenaInfoPerModTable arenaRefTable, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWmodList = false)
     {
         int modScanned = 0, levelScanned = 0, availableLevels = 0, offlineLevels = 0, importedLevels = 0;
         RainMeadow.Debug($"Scanning {(refreshAll ? "all" : "newly")} installed mods {(checkOnlyRWmodList ? "(only rain world mod list)" : "(all directories)")} for arenas");
@@ -122,7 +121,7 @@ public static partial class ArenaScanner
 
         return arenaRefTable;
     }
-    public static Dictionary<string, List<ArenaInfo>> ScanVanillaFolderForArenas(ref Dictionary<string, List<ArenaInfo>> arenas, bool refreshAll = false)
+    public static ArenaInfoPerModTable ScanVanillaFolderForArenas(ref ArenaInfoPerModTable arenas, bool refreshAll = false)
     {
         var sw = Stopwatch.StartNew();
 
@@ -141,7 +140,7 @@ public static partial class ArenaScanner
 
         return arenas;
     }
-    public static Dictionary<string, List<ArenaInfo>> ScanImportedFolderForArenas(ref Dictionary<string, List<ArenaInfo>> arenas, bool refreshAll = false)
+    public static ArenaInfoPerModTable ScanImportedFolderForArenas(ref ArenaInfoPerModTable arenas, bool refreshAll = false)
     {
         var sw = Stopwatch.StartNew();
 
@@ -160,7 +159,7 @@ public static partial class ArenaScanner
 
         return arenas;
     }
-    public static Dictionary<string, List<ArenaInfo>> ScanAllModsForArenas(ref Dictionary<string, List<ArenaInfo>> arenas, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWList = false)
+    public static ArenaInfoPerModTable ScanAllModsForArenas(ref ArenaInfoPerModTable arenas, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWList = false)
     {
         ModManager.Mod[] mods = checkOnlyRWList 
             ? ModManager.InstalledMods.ToArray() 

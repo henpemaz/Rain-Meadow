@@ -185,7 +185,7 @@ public class GameSettings : OnlineSlugcatSettings<GameSettings>
                 return;
             }
 
-            List<string> knownLevels = playlist.Where(levelSelector.allLevels.Contains).ToList();
+            List<string> knownLevels = playlist.Where(x => levelSelector.allLevelsInfo.Exists(y => y.LevelID == x)).ToList();
             if (knownLevels.Count == 0)
             {
                 row.ShowMessage(menu.Translate("Failed"), Color.red);

@@ -10,8 +10,10 @@ namespace RainMeadow.ArenaScan;
 public partial class ArenaInfo
 {
     public const string ImportedArenaFolderName = "meadow-importedarenas";
-    public const string vanillaID = "\0_vanilla"; // making SURE we don't get mods named like this
-    public const string importedID = "\0_imported";
+    // HOPEFULLY we don't get mods named like this
+    public const string vanillaID = "___vanilla"; 
+    public const string importedID = "___imported";
+    public const string unknownID = "___unknown";
     public static string ImportedArenaFolder
     {
         get
