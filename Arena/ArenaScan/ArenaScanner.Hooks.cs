@@ -61,6 +61,18 @@ public static partial class ArenaScanner
                     return finalPath;
                 }
             }
+            else if (!skipMergedMods 
+                && pathTable[0].ToLowerInvariant() == ArenaInfo.palettesFolder
+                && pathTable.Length == 2
+                && pathTable[1].Length > 4 + ArenaInfo.palettePrefix.Length
+                && pathTable[1].Substring(pathTable[1].Length - 4, 4) == ".png" 
+                && pathTable[1].StartsWith(ArenaInfo.palettePrefix)
+                && int.TryParse(pathTable[1].Substring(ArenaInfo.palettePrefix.Length, pathTable[1].Length - (4 + ArenaInfo.palettePrefix.Length)), out var ID)
+                && scannedPalettesPaths.TryGetValue(ID, out var palettePath)) 
+            {
+                return palettePath;
+            }
+            
             if (path.Contains(ArenaInfo.modSeparator))
             {
                 // RainMeadow.Debug($"Path {path} is illegal and supposed to be an arena, making it empty.");

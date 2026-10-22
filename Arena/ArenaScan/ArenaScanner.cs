@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// Dictionary<string, List<ArenaInfo>>
 using ArenaInfoTable = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<RainMeadow.ArenaScan.ArenaInfo>>;
 
 namespace RainMeadow.ArenaScan;
@@ -8,6 +9,7 @@ namespace RainMeadow.ArenaScan;
 public static partial class ArenaScanner
 {
     public static ArenaInfoTable scannedArenas = [];
+    public static Dictionary<int, string> scannedPalettesPaths = [];
     public static string[] allLevelsName 
         => availableArenas.Select(x => x.levelName).ToArray();
     public static string[] allLevelsPath 

@@ -86,15 +86,20 @@ public static partial class ArenaScanner
     public static ArenaInfoPerModTable ScanForArenas(ref ArenaInfoPerModTable arenaRefTable, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWmodList = false)
     {
         int modScanned = 0, levelScanned = 0, availableLevels = 0, offlineLevels = 0, importedLevels = 0;
-        RainMeadow.Debug($"Scanning {(refreshAll ? "all" : "newly")} installed mods {(checkOnlyRWmodList ? "(only rain world mod list)" : "(all directories)")} for arenas");
+        RainMeadow.Debug($"Scanning {(refreshAll ? "all" : "newly")} installed mods {(checkOnlyRWmodList ? "(only rain world mod list)" : "(all directories)")} for arenas and palettes");
 
         if (refreshAll) arenaRefTable.Clear();
 
         var sw = Stopwatch.StartNew();
-        
+
+        var mods = checkOnlyRWmodList ? null : GetAllInstalledMods(rainWorld);
         ScanVanillaFolderForArenas(ref arenaRefTable, refreshAll);
         ScanImportedFolderForArenas(ref arenaRefTable, refreshAll);
-        ScanAllModsForArenas(ref arenaRefTable, rainWorld, refreshAll, checkOnlyRWmodList);
+        ScanAllModsForArenas(ref arenaRefTable, rainWorld, refreshAll, checkOnlyRWmodList, mods);
+
+        ScanVanillaFolderForPalettes(ref scannedPalettesPaths, refreshAll);
+        ScanImportedFolderForPalettes(ref scannedPalettesPaths, refreshAll);
+        ScanAllModsForPalettes(ref scannedPalettesPaths, rainWorld, refreshAll, checkOnlyRWmodList, mods);
 
         arenaRefTable.Do(kp =>
         {
@@ -113,13 +118,88 @@ public static partial class ArenaScanner
             });
         });
 
-        RainMeadow.Debug($"Scanned {levelScanned} arenas across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled and {importedLevels} arenas in the import folder!");
+        RainMeadow.Debug($"Scanned {levelScanned} arenas and {scannedPalettesPaths.Count} palettes across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled and {importedLevels} arenas in the import folder!");
         sw.Stop();
 
         OnArenaScan?.Invoke(rainWorld, arenaRefTable, refreshAll);
 
         return arenaRefTable;
     }
+
+    public static Dictionary<int, string> ScanVanillaFolderForPalettes(ref Dictionary<int, string> palettes, bool refreshAll = false)
+    {        
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            foreach (var kpv in ArenaInfo.ScanVanillaPaletteDirectory())
+            {
+                if (refreshAll || !palettes.ContainsKey(kpv.Key))
+                palettes[kpv.Key] = kpv.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            RainMeadow.Error($"Error while scanning for vanilla palettes: " + ex);
+        }
+
+        RainMeadow.Debug($"Scanned vanilla palettes in {sw.ElapsedMilliseconds}ms");
+        sw.Stop();
+
+        return palettes;
+    }
+    public static Dictionary<int, string> ScanImportedFolderForPalettes(ref Dictionary<int, string> palettes, bool refreshAll = false)
+    {
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            foreach (var kpv in ArenaInfo.ScanImportedPaletteDirectory())
+            {
+                if (refreshAll || !palettes.ContainsKey(kpv.Key))
+                palettes[kpv.Key] = kpv.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            RainMeadow.Error($"Error while scanning for imported palettes: " + ex);
+        }
+
+        RainMeadow.Debug($"Scanned imported palettes in {sw.ElapsedMilliseconds}ms");
+        sw.Stop();
+
+        return palettes;
+    }
+    public static Dictionary<int, string> ScanAllModsForPalettes(ref Dictionary<int, string> palettes, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWList = false, ModManager.Mod[]? mods = null)
+    {
+        mods ??= checkOnlyRWList 
+            ? ModManager.InstalledMods.ToArray() 
+            : GetAllInstalledMods(rainWorld);
+        
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            foreach (var mod in mods)
+            {
+                foreach (var kpv in ArenaInfo.ScanModPaletteDirectory(mod))
+                {
+                    if (refreshAll || !palettes.ContainsKey(kpv.Key))
+                    palettes[kpv.Key] = kpv.Value;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            RainMeadow.Error($"Error while scanning for modded palettes: " + ex);
+        }
+
+        RainMeadow.Debug($"Scanned modded palettes in {sw.ElapsedMilliseconds}ms");
+        sw.Stop();
+
+        return palettes;
+    }
+
     public static ArenaInfoPerModTable ScanVanillaFolderForArenas(ref ArenaInfoPerModTable arenas, bool refreshAll = false)
     {
         var sw = Stopwatch.StartNew();
@@ -158,9 +238,9 @@ public static partial class ArenaScanner
 
         return arenas;
     }
-    public static ArenaInfoPerModTable ScanAllModsForArenas(ref ArenaInfoPerModTable arenas, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWList = false)
+    public static ArenaInfoPerModTable ScanAllModsForArenas(ref ArenaInfoPerModTable arenas, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWList = false, ModManager.Mod[]? mods = null)
     {
-        ModManager.Mod[] mods = checkOnlyRWList 
+        mods ??= checkOnlyRWList 
             ? ModManager.InstalledMods.ToArray() 
             : GetAllInstalledMods(rainWorld);
 
@@ -173,7 +253,7 @@ public static partial class ArenaScanner
                 if ((refreshAll || !scannedArenas.ContainsKey(mods[i].id))
                     && Directory.Exists(Path.Combine(mods[i].path, "Levels".ToLowerInvariant())))
                 {
-                    var foundArenas = ArenaInfo.ScanUnloadedMod(mods[i]);
+                    var foundArenas = ArenaInfo.ScanModLevelDirectory(mods[i]);
                     if (foundArenas.Count > 0) scannedArenas[mods[i].id] = foundArenas;
                 }
             }

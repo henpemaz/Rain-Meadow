@@ -14,6 +14,8 @@ public partial class ArenaInfo
     public const string vanillaID = "___vanilla"; 
     public const string importedID = "___imported";
     public const string unknownID = "___unknown";
+    public const string palettePrefix = "palette";
+    public const string palettesFolder = "palettes";
     public static string ImportedArenaFolder
     {
         get
@@ -36,6 +38,34 @@ public partial class ArenaInfo
         }
     }
 
+    public static List<string> GetPalettePathFromFolder(string folderPath, out List<int> paletteIDs)
+    {
+        List<string> palettes = [];
+        paletteIDs = [];
+
+        if (Directory.Exists(folderPath))
+        {
+            foreach (string file in Directory.GetFiles(folderPath))
+            {
+                string fileName = Path.GetFileName(file).ToLowerInvariant();
+                if (fileName.Length > 4 + palettePrefix.Length
+                    && fileName.Substring(fileName.Length - 4, 4) == ".png" 
+                    && fileName.StartsWith(palettePrefix)
+                    && int.TryParse(fileName.Substring(palettePrefix.Length, fileName.Length - (4 + palettePrefix.Length)), out var ID))
+				{
+                    palettes.Add(file);
+					paletteIDs.Add(ID);
+				}
+            }
+        } 
+
+        return palettes;
+    }
+    public static List<string> GetPalettePathFromMod(string modPath, out List<int> paletteIDs)
+        => GetPalettePathFromFolder(Path.Combine(modPath, palettesFolder), out paletteIDs);
+    public static List<string> GetPalettePathFromMod(ModManager.Mod mod, out List<int> paletteIDs)
+        => GetPalettePathFromMod(mod.path, out paletteIDs);
+
     public static List<string> GetLevelsPathFromFolder(string folderPath, out List<string> levelNames)
     {
         List<string> levels = [];
@@ -56,7 +86,7 @@ public partial class ArenaInfo
                     && !levelNames.Contains(fileName))
 				{
                     levels.Add(file);
-					levelNames.Add(fileName.Substring(0, fileName.Length - 4).Split(Path.DirectorySeparatorChar).Last());
+					levelNames.Add(fileName.Substring(0, fileName.Length - 4));
 				}
             }
         } 
@@ -68,7 +98,7 @@ public partial class ArenaInfo
     public static List<string> GetLevelsPathFromMod(ModManager.Mod mod, out List<string> levelNames)
         => GetLevelsPathFromMod(mod.path, out levelNames);
     
-    internal static List<ArenaInfo> ScanUnloadedMod(ModManager.Mod mod)
+    internal static List<ArenaInfo> ScanModLevelDirectory(ModManager.Mod mod)
     {
         // Check if this mod is high impact
         var mergedModInfo = RainMeadowModInfoManager.MergedModInfo;
@@ -87,6 +117,20 @@ public partial class ArenaInfo
 
         return unloadedArenaInfos;
     }
+    internal static Dictionary<int, string> ScanModPaletteDirectory(ModManager.Mod mod)
+    {
+        // Get all palettes
+        List<string> palettePaths = GetPalettePathFromMod(mod, out var paletteIDs);
+
+        // Make the palette dict
+        Dictionary<int, string> palettes = [];
+        for (int i = 0; i < paletteIDs.Count; i++)
+        {
+            palettes[paletteIDs[i]] = palettePaths[i];
+        }
+        return palettes;
+    }
+
     internal static List<ArenaInfo> ScanVanillaLevelDirectory()
     {
         // Get all levels
@@ -100,6 +144,20 @@ public partial class ArenaInfo
         }
         return unloadedArenaInfos;
     }
+    internal static Dictionary<int, string> ScanVanillaPaletteDirectory()
+    {
+        // Get all palettes
+        List<string> palettePaths = GetPalettePathFromMod(Custom.RootFolderDirectory(), out var paletteIDs);
+
+        // Make the palette dict
+        Dictionary<int, string> palettes = [];
+        for (int i = 0; i < paletteIDs.Count; i++)
+        {
+            palettes[paletteIDs[i]] = palettePaths[i];
+        }
+        return palettes;
+    }
+
     internal static List<ArenaInfo> ScanImportedLevelDirectory()
     {
         // Get all levels in the folder
@@ -122,5 +180,28 @@ public partial class ArenaInfo
             unloadedArenaInfos.Add(new(levelNames[i], levelsPath[i], null, true));
         }
         return unloadedArenaInfos;
+    }
+    internal static Dictionary<int, string> ScanImportedPaletteDirectory()
+    {
+        // Get all palette in the folder
+        List<string> palettePaths = GetPalettePathFromFolder(ImportedArenaFolder, out var paletteIDs);
+        
+        // Get all palette in folders in the folder
+        if (Directory.Exists(ImportedArenaFolder))
+        {
+            foreach (var folder in Directory.GetDirectories(ImportedArenaFolder))
+            {
+                palettePaths.AddRange(GetPalettePathFromFolder(folder, out var additionalpaletteIDs));
+                paletteIDs.AddRange(additionalpaletteIDs);
+            }
+        }
+        
+        // Make the palette dict
+        Dictionary<int, string> palettes = [];
+        for (int i = 0; i < paletteIDs.Count; i++)
+        {
+            palettes[paletteIDs[i]] = palettePaths[i];
+        }
+        return palettes;
     }
 }
