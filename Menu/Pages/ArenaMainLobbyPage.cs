@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.ArenaScan;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
@@ -63,12 +66,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             new Vector2(1056f, 50f),
             new Vector2(110f, 30f)
         );
-        readyButton.OnClick += btn =>
-        {
-            if (!RainMeadow.isArenaMode(out var _))
-                return;
-            Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
-        };
+        readyButton.OnClick += btn => PressedReady();
         arenaGameStatsButton = new(
             menu,
             this,
@@ -186,6 +184,50 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         );
 
         menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
+    }
+    
+    public void PressedReady()
+    {
+        if (!RainMeadow.isArenaMode(out var arenaOnline)) return;
+
+        Arena.arenaClientSettings.CheckForMissingArenas(out var missingArenas);
+        if (Arena.arenaClientSettings.isMissingArenas)
+        {
+            menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+
+            List<ScrollableConfirmDialog.Line> lines = [];
+
+            lines.Add(new(menu.Translate("Some arenas in the playlist cannont be found:"), true));
+            missingArenas.Do(x => 
+                {
+                    var (levelName, modID) = ArenaInfo.SplitLevelID(x);
+                    lines.Add(new(levelName + (
+                        string.IsNullOrEmpty(modID) 
+                            ? "" 
+                            : modID == ArenaInfo.importedID 
+                                ? " (imported)"
+                                : $" (from {modID})")));
+                }
+            );
+
+            lines.Add(new(menu.Translate("How to solve this:"), true));
+            lines.Add(new(menu.Translate("Please ask the host about what mods needs to be installed to get those arenas")));
+            lines.Add(new(menu.Translate("When the right mod has been installed, hit the refresh button.")));
+
+            menu.manager.ShowDialog(
+                new ScrollableConfirmDialog(
+                    menu.manager,
+                    menu.Translate("Missing Arenas!"),
+                    lines,
+                    UIUtils.DIALOG_SIZE,
+                    null, null, false
+                )
+            );
+        }
+        else
+        {
+            Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
+        }
     }
 
     public void BuildPlayerDisplay()
@@ -496,11 +538,13 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             (!Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready)
             || (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown);
         readyButton.menuLabel.text = menu.Translate(
-            Arena.arenaClientSettings.ready
-                ? !Arena.allowJoiningMidRound
-                    ? "WAITING"
-                    : "UNREADY"
-                : "READY?"
+            Arena.arenaClientSettings.isMissingArenas ?
+                "MISSING"
+                : Arena.arenaClientSettings.ready
+                    ? !Arena.allowJoiningMidRound
+                        ? "WAITING"
+                        : "UNREADY"
+                    : "READY?"
         );
 
         if (startButton == null)

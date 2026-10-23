@@ -7,6 +7,7 @@ using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.ArenaScan;
 using RWCustom;
 using UnityEngine;
 
@@ -1350,6 +1351,30 @@ namespace RainMeadow
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
             return Custom.rainWorld.processManager.arenaSitting?.gameTypeSetup.fliesSpawn == true;
+        }
+
+        public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
+        {
+            base.NewResourceOwner(resource, oldOwner, newOwner);
+            if (resource is Lobby)
+            {
+                if (newOwner?.isMe is true || OnlineManager.lobby.isOwner)
+                {
+                    RainMeadow.Debug("New lobby owner is ME! Refreshing arena playlist...");
+                    if (!ArenaScanner.AreAllArenasAvailable(playList, out var missingArenas))
+                    {
+                        var arenaSetup = Custom.rainWorld.processManager.arenaSetup;
+                        int removedArenas = playList.RemoveAll(missingArenas.Contains);
+                        arenaSetup.GetOrInitiateGameTypeSetup(arenaSetup.currentGameType).playList.RemoveAll(missingArenas.Contains);
+                        RainMeadow.Debug($"Removed {removedArenas} that were not available to me.");
+                    }
+                }
+                else
+                {
+                    RainMeadow.Debug("New lobby owner! Checking if I have some arenas missing...");
+                }
+                arenaClientSettings.CheckForMissingArenas(out _);
+            }
         }
 
         // needs new implementation which doesn't disable capes for other gamemodes.

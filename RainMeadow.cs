@@ -266,6 +266,7 @@ namespace RainMeadow
                 this.PlopMachine.OnEnable();
 
                 MeadowProgression.LoadProgression();
+                ArenaScan.ArenaScanner.ApplyHooks(self);
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
                 fullyInit = fullyEnabled;

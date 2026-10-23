@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using RainMeadow.ArenaScan;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,10 +9,24 @@ namespace RainMeadow
     {
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
         public SlugcatStats.Name? randomPlayingAs;
-        public bool selectingSlugcat, ready, gotSlugcat, weaverTail;
+        public bool selectingSlugcat, ready, gotSlugcat, weaverTail, isMissingArenas;
         public Color slugcatColor = Color.black;
 
         public ArenaClientSettings() { }
+
+        public void CheckForMissingArenas(out List<string> missingArenas)
+        {
+            missingArenas = [];
+            if (RainMeadow.isArenaMode(out var arenaOnline))
+                CheckForMissingArenas(arenaOnline.playList, out missingArenas);
+        }
+        public void CheckForMissingArenas(List<string> playlist, out List<string> missingArenas)
+        {
+            missingArenas = [];
+            isMissingArenas = !OnlineManager.lobby.isOwner 
+                && !ArenaScanner.AreAllArenasAvailable(playlist, out missingArenas);
+            if (isMissingArenas) ready = false;
+        }
 
         public override EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource)
         {

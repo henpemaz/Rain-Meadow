@@ -308,7 +308,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             GetGameTypeSetup,
             new MultiplayerUnlocks(
                 manager.rainWorld.progression,
-                arenaMainLobbyPage.levelSelector.allLevels
+                arenaMainLobbyPage.levelSelector.allLevelsInfo.Select(x => x.levelName).ToList()
             )
         )
         {
@@ -444,7 +444,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             }
         }
 
-        if (!Arena.allowJoiningMidRound)
+        if (!Arena.allowJoiningMidRound && !Arena.arenaClientSettings.isMissingArenas)
         {
             Arena.arenaClientSettings.ready = true;
         }
@@ -604,12 +604,21 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (selectedObject is ButtonScroller.SideButton sideBtn)
         {
             string id = sideBtn.signalText;
-            if (id == "THUMBS" && sideBtn.owner is ArenaLevelSelector.PlaylistSelector playSelector)
-                return Translate(
-                    playSelector.ShowThumbsStatus
-                        ? "Showing level thumbnails"
-                        : "Showing level names"
-                );
+            if (sideBtn.owner is ArenaLevelSelector.PlaylistSelector playSelector)
+            {
+                if (id == "THUMBS")
+                    return Translate(
+                        playSelector.ShowThumbsStatus
+                            ? "Showing level thumbnails"
+                            : "Showing level names"
+                    );
+                if (id == ArenaLevelSelector.PlaylistSelector.REFRESHSIGNAL)
+                    return Translate(
+                        playSelector.AnyShift
+                            ? "Scan for all available arenas"
+                            : "Scan for newly installed arenas"
+                    );
+            }
             if (id == "SHUFFLE" && sideBtn.owner is ArenaLevelSelector.PlaylistHolder playHolder)
                 return Translate(
                     playHolder.ShuffleStatus

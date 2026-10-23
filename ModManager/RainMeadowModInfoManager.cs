@@ -25,7 +25,19 @@ public static class RainMeadowModInfoManager
     /// </summary>
     public static RainMeadowModInfo? DebugModInfo { get; private set; }
 
+    internal static RainMeadowModInfo GenerateModInfo(ModManager.Mod mod)
+    {
+        RainMeadowModInfo generatedModInfo = GetGeneratedModInfo(mod);
+        
+        // check if there is a rainmeadow.json file
+        if (GetFileFromModOrNull(mod, ModInfoFileName) is string filePath
+            && GetLoadedModInfoOrNull(filePath) is RainMeadowModInfo loadedModInfo) 
+        {
+            generatedModInfo.MergeInfoFrom(loadedModInfo);
+        }
 
+        return generatedModInfo;
+    }
     internal static void RefreshRainMeadowModInfos()
     {
         ModInfos.Clear();
@@ -33,21 +45,7 @@ public static class RainMeadowModInfoManager
 
         foreach (var mod in ModManager.ActiveMods)
         {
-            var generatedModInfo = GetGeneratedModInfo(mod);
-
-            var filePath = GetFileFromModOrNull(mod, ModInfoFileName);
-
-            if (filePath is not null)
-            {
-                var loadedModInfo = GetLoadedModInfoOrNull(filePath);
-
-                if (loadedModInfo is not null)
-                {
-                    generatedModInfo.MergeInfoFrom(loadedModInfo);
-                }
-            }
-
-            ModInfos[mod.id] = generatedModInfo;
+            ModInfos[mod.id] = GenerateModInfo(mod);
         }
 
         LoadDebugModInfo();
@@ -109,7 +107,8 @@ public static class RainMeadowModInfoManager
         string[] highImpactDirectories =
         [
             Path.Combine(mod.path, "modify", "world"),
-            Path.Combine(mod.path, "levels"),
+            // Path.Combine(mod.path, "levels"),
+            Path.Combine(mod.path, "slugbase"),
             Path.Combine(mod.path, "modify", "levels"),
         ];
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Menu.Remix.MixedUI;
+using RainMeadow.ArenaScan;
 using RWCustom;
 using UnityEngine;
 
@@ -643,6 +644,7 @@ public class RainMeadowOptions : OptionInterface
             OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
             OpHoldButton arenaSpoilerButton;
             OpCheckBox slugpupHellBackgroundCheckbox;
+            OpSimpleButton openImportFolderButton;
 
             OnlineArenaSettings =
             [
@@ -689,6 +691,8 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(210f, 280, Translate("Arena Score Auto-Scroll")),
                 new OpCheckBox(ArenaScoreAutoScroll, new Vector2(210f, 250)),
+
+                openImportFolderButton = new OpSimpleButton(new Vector2(10f, 190), new Vector2(200f, 30f), Translate("Open Arena Import Folder")),
             ];
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
@@ -708,6 +712,18 @@ public class RainMeadowOptions : OptionInterface
                 }
                 ArenaFlairActive.Value = result;
                 RainMeadow.Info($"Converted ArenaFlair to integer: {result}");
+            };
+            openImportFolderButton.OnClick += _ =>
+            {
+                try
+                {
+                    RainMeadowModManager.GetRequiredMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(ArenaInfo.ImportedArenaFolder));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
             };
 
 
