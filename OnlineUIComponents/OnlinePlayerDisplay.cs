@@ -81,8 +81,6 @@ namespace RainMeadow
                 this.lighter_color = color;
             }
 
-            this.pos = new Vector2(-1000f, -1000f);
-            this.lastPos = this.pos;
             this.gradient = new FSprite("Futile_White", true);
             owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
@@ -185,7 +183,6 @@ namespace RainMeadow
                 if (!player.isMe && !isTeammate && (myRippleLayer != 1 || otherRippleLayer != 1))
                 {
                     show = false;
-                    pos.x = -1000f;
                     this.alpha = 0f;
                 }
             }
@@ -196,44 +193,32 @@ namespace RainMeadow
                 this.blink = 1f;
                 this.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
 
-                if (owner.found)
+                if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe)//
                 {
-                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe)//
-                    {
-                        this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
-                    }
-
-                    this.pos = owner.drawpos;
-                    if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
-
-                    if (this.lastAlpha == 0) this.lastPos = pos;
-
-                    if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
-
-                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine)
-                    {
-                        playerIcon.DrawSlugIcon(false);
-                    }
-                    else if (RainMeadow.isArenaMode(out var arena))
-                    {
-                        string arenaIcon = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
-                        if (arenaIcon != "") playerIcon.DrawSingleElement(arenaIcon);
-                        else playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
-                        playerIcon.icon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
-                    }
-                    else if (owner.PlayerInAncientShelter) playerIcon.DrawSingleElement("ShortcutAShelter");
-                    else if (owner.PlayerInShelter) playerIcon.DrawSingleElement("ShortcutShelter");
-                    else if (owner.PlayerInGate) playerIcon.DrawSingleElement("ShortcutGate");
-                    else if (iconString is null) playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
-                    else playerIcon.DrawSingleElement(iconString);
-
-                    if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
-                    else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
+                    this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
                 }
-                else
+
+                if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
+
+                if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine)
                 {
-                    pos.x = -1000f;
+                    playerIcon.DrawSlugIcon(false);
                 }
+                else if (RainMeadow.isArenaMode(out var arena))
+                {
+                    string arenaIcon = arena.externalArenaGameMode.AddIcon(arena, this, owner, customization, player);
+                    if (arenaIcon != "") playerIcon.DrawSingleElement(arenaIcon);
+                    else playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
+                    playerIcon.icon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
+                }
+                else if (owner.PlayerInAncientShelter) playerIcon.DrawSingleElement("ShortcutAShelter");
+                else if (owner.PlayerInShelter) playerIcon.DrawSingleElement("ShortcutShelter");
+                else if (owner.PlayerInGate) playerIcon.DrawSingleElement("ShortcutGate");
+                else if (iconString is null) playerIcon.DrawSlugIcon(owner.PlayerConsideredDead);
+                else playerIcon.DrawSingleElement(iconString);
+
+                if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
+                else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
 
                 this.counter++;
             }
@@ -254,14 +239,20 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
-            var pos = vector;
+            (Vector2 pos, Vector2 dir)? drawPos = owner.GetTargetDrawPos(timeStacker);
+            if (!drawPos.HasValue)
+            {
+                alpha = 0f;
+                lastAlpha = 0f;
+                drawPos = (new Vector2(-1000f, -1000f), Vector2.zero);
+            }
+            var pos = drawPos.Value.pos + new Vector2(0.01f, 0.01f);
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
             this.pingLabel.text = $"({realPing}ms)";
 
             this.arrowSprite.x = pos.x;
             this.arrowSprite.y = pos.y;
-            this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(owner.pointDir * -1);
+            this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(drawPos.Value.dir * -1);
 
             this.gradient.x = pos.x;
             this.gradient.y = pos.y + 10f;
