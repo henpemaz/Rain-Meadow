@@ -16,8 +16,10 @@ public class ArenaSettings
     public const string MeadowAttributeID = "Meadow";
     public const string DisplayNameID = "DisplayName";
     public const string DependanciesOverrideID = "Dependancies";
+    public const string ArenaOverrideID = "Override";
     public const string HighImpactOverrideID = "HighImpact";
     public readonly static Dictionary<string, ArenaSettings> settingsByID = [];
+    
     public static void RegisterSettingFromArenaInfo(ArenaInfo arenaInfo)
     {
         string arenaFilePath = arenaInfo.BaldPath + ArenaFileSuffix;
@@ -49,6 +51,15 @@ public class ArenaSettings
                             {
                                 settings.HighImpact = !items[2].ToLowerInvariant().Contains("false");
                             }
+                            else if (items[1] == ArenaOverrideID)
+                            {
+                                settings.IsOverride = items.Length > 3 && !items[2].ToLowerInvariant().Contains("false");
+                                settings.OverridingMod = settings.IsOverride is true ? items[3] : null;
+                                if (settings.OverridingMod is not null && settings.OverridingMod.ToLowerInvariant() == "vanilla")
+                                {
+                                    settings.OverridingMod = ArenaInfo.vanillaID;
+                                }
+                            }
                             else
                             {
                                 settings.UnrecognizedAttributes[items[1]] = string.Join(ItemSplit, items.Skip(2));
@@ -75,6 +86,8 @@ public class ArenaSettings
     
     public string? DisplayName {get; private set;} = null;
     public bool? HighImpact {get; private set;} = null;
+    public string? OverridingMod {get; private set;} = null;
+    public bool? IsOverride {get; private set;} = null;
     public string[]? DependanciesOverride {get; private set;} = null;
     public Dictionary<string,string> UnrecognizedAttributes {get; private set;} = [];
 }

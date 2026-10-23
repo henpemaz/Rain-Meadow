@@ -57,7 +57,12 @@ public static partial class ArenaScanner
                 string finalPath = "";
                 if (arenas.Find(x => x.TryFindFileFromFileName(pathTable[1], out finalPath)) is ArenaInfo arenaInfo)
                 {
-                    // RainMeadow.Debug($"Found file {finalPath.Split(Path.DirectorySeparatorChar).Last()} from file name {path}! Arena was {arenaInfo.levelName} from {arenaInfo.ModID}.");
+                    if (arenaInfo.IsFromHighImpactMod)
+                    {
+                        // Let the original function do its job for high-impact mods
+                        return orig(string.Concat(pathTable[0], Path.DirectorySeparatorChar, arenaInfo.levelName) , skipMergedMods, skipConsoleFiles);
+                    }
+                    // Put the offline path in there;
                     return finalPath;
                 }
             }
@@ -70,6 +75,7 @@ public static partial class ArenaScanner
                 && int.TryParse(pathTable[1].Substring(ArenaInfo.palettePrefix.Length, pathTable[1].Length - (4 + ArenaInfo.palettePrefix.Length)), out var ID)
                 && scannedPalettesPaths.TryGetValue(ID, out var palettePath)) 
             {
+                // return the palette path
                 return palettePath;
             }
             

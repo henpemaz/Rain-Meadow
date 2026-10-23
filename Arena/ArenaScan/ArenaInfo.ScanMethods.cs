@@ -16,6 +16,9 @@ public partial class ArenaInfo
     public const string unknownID = "___unknown";
     public const string palettePrefix = "palette";
     public const string palettesFolder = "palettes";
+    public static readonly List<string> suffixThatAreNOTAnArena = [
+        "_settings.txt", "_arena.txt", "_properties.txt", "_meadowsettings.txt", 
+    ];
     public static string ImportedArenaFolder
     {
         get
@@ -78,10 +81,7 @@ public partial class ArenaInfo
                 string fileName = Path.GetFileName(file).ToLowerInvariant();
                 if (fileName.Length > 4
                     && fileName.Substring(fileName.Length - 4, 4) == ".txt" 
-                    && !fileName.EndsWith("_settings.txt")
-                    && !fileName.EndsWith("_arena.txt")
-                    && !fileName.EndsWith("_arena.txt")
-                    && !fileName.EndsWith("_properties.txt")
+                    && !suffixThatAreNOTAnArena.Exists(x => fileName.EndsWith(x))
                     && !fileName.Contains("unlockall")
                     && !levelNames.Contains(fileName))
 				{

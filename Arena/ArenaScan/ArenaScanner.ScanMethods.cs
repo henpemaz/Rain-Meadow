@@ -12,6 +12,9 @@ namespace RainMeadow.ArenaScan;
 
 public static partial class ArenaScanner
 {
+    public const string vanillaID = ArenaInfo.vanillaID; 
+    public const string importedID = ArenaInfo.importedID;
+    public const string unknownID = ArenaInfo.unknownID;
     public delegate void ArenaScanFunc(RainWorld rainWorld, ArenaInfoPerModTable scannedArenas, bool refreshAll);
     public static event ArenaScanFunc? OnArenaScan;
     public static ModManager.Mod[] GetAllInstalledMods(RainWorld rainWorld) // from ModManager.RefreshModList
@@ -85,7 +88,7 @@ public static partial class ArenaScanner
     }
     public static ArenaInfoPerModTable ScanForArenas(ref ArenaInfoPerModTable arenaRefTable, RainWorld rainWorld, bool refreshAll = false, bool checkOnlyRWmodList = false)
     {
-        int modScanned = 0, levelScanned = 0, availableLevels = 0, offlineLevels = 0, importedLevels = 0;
+        int modScanned = 0, levelScanned = 0, availableLevels = 0, offlineLevels = 0, importedLevels = 0, overrideLevels = 0;
         RainMeadow.Debug($"Scanning {(refreshAll ? "all" : "newly")} installed mods {(checkOnlyRWmodList ? "(only rain world mod list)" : "(all directories)")} for arenas and palettes");
 
         if (refreshAll) arenaRefTable.Clear();
@@ -94,31 +97,73 @@ public static partial class ArenaScanner
 
         var mods = checkOnlyRWmodList ? null : GetAllInstalledMods(rainWorld);
         ScanVanillaFolderForArenas(ref arenaRefTable, refreshAll);
-        ScanImportedFolderForArenas(ref arenaRefTable, refreshAll);
+        ScanImportedFolderForArenas(ref arenaRefTable, true);
         ScanAllModsForArenas(ref arenaRefTable, rainWorld, refreshAll, checkOnlyRWmodList, mods);
 
-        ScanVanillaFolderForPalettes(ref scannedPalettesPaths, refreshAll);
-        ScanImportedFolderForPalettes(ref scannedPalettesPaths, refreshAll);
+        ScanVanillaFolderForPalettes(ref scannedPalettesPaths, true);
+        ScanImportedFolderForPalettes(ref scannedPalettesPaths, true);
         ScanAllModsForPalettes(ref scannedPalettesPaths, rainWorld, refreshAll, checkOnlyRWmodList, mods);
 
-        arenaRefTable.Do(kp =>
+        Dictionary<string, List<string>> arenaToRemove = [];
+        List<ArenaInfo> otherOverride = [];
+        foreach (var kp in arenaRefTable)
         {
             modScanned++;
-            kp.Value.Do(x =>
+            foreach (var arenaInfo in kp.Value)
             {
                 levelScanned++;
-                if (x.IsAvailable)
+
+                ArenaSettings.RegisterSettingFromArenaInfo(arenaInfo);
+
+                if (arenaInfo.IsAvailable)
                 {
+                    if (arenaInfo.IsOverriding)
+                    {
+                        // check for vanilla override, since MSC and Watcher tend to do it (holy shit O(n^3))
+                        if (arenaInfo.LevelSettings?.OverridingMod is null)
+                        {
+                            if (arenaRefTable[vanillaID].Exists(x => x.levelName == arenaInfo.levelName))
+                            {
+                                if (!arenaToRemove.TryGetValue(kp.Key, out _)) arenaToRemove[kp.Key] = [];
+                                arenaToRemove[kp.Key].Add(arenaInfo.levelName);
+                                RainMeadow.Debug($"{arenaInfo.LevelID} is overriding a vanilla level.");
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            otherOverride.Add(arenaInfo);
+                        }
+                    }
+                    
                     availableLevels++;
-                    if (x.IsFromMeadowImport) importedLevels++;
-                    else if (x.mod?.enabled is false) offlineLevels++;
-
-                    ArenaSettings.RegisterSettingFromArenaInfo(x);
+                    if (arenaInfo.IsFromMeadowImport) importedLevels++;
+                    else if (arenaInfo.mod?.enabled is false) offlineLevels++;
                 }
-            });
-        });
+            }
+        }
 
-        RainMeadow.Debug($"Scanned {levelScanned} arenas and {scannedPalettesPaths.Count} palettes across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled and {importedLevels} arenas in the import folder!");
+        foreach (var arenaOverride in otherOverride)
+        {
+            if (arenaOverride.LevelSettings?.OverridingMod is string ModID
+                && arenaRefTable.TryGetValue(ModID, out var arenaInfos)
+                && arenaInfos.Find(x => x.IsAvailable && x.levelName == arenaOverride.levelName) is ArenaInfo arenaInfo)
+            {
+                RainMeadow.Debug($"{arenaOverride.LevelID} is overriding {arenaInfo.LevelID}");
+                arenaInfo.Overriding.Add(arenaOverride);
+
+                if (!arenaToRemove.TryGetValue(ModID, out _)) arenaToRemove[ModID] = [];
+                arenaToRemove[arenaOverride.ModID].Add(arenaOverride.levelName);
+            }
+        }
+
+        foreach (var kp in arenaToRemove)
+        {
+            int removed = arenaRefTable[kp.Key].RemoveAll(x => kp.Value?.Contains(x.levelName) is true);
+            availableLevels -= removed;
+        }
+
+        RainMeadow.Debug($"Scanned {levelScanned} arenas and {scannedPalettesPaths.Count} palettes across {modScanned} mods, vanilla and import in {sw.ElapsedMilliseconds}ms! Found {availableLevels} arenas available, including {offlineLevels} with their mod disabled, {overrideLevels} overrides, and {importedLevels} arenas in the import folder!");
         sw.Stop();
 
         OnArenaScan?.Invoke(rainWorld, arenaRefTable, refreshAll);
@@ -206,8 +251,8 @@ public static partial class ArenaScanner
 
         try
         {
-            if (refreshAll || !scannedArenas.ContainsKey(ArenaInfo.vanillaID))
-                scannedArenas[ArenaInfo.vanillaID] = ArenaInfo.ScanVanillaLevelDirectory();
+            if (refreshAll || !scannedArenas.ContainsKey(vanillaID))
+                scannedArenas[vanillaID] = ArenaInfo.ScanVanillaLevelDirectory();
         }
         catch (Exception ex)
         {
@@ -225,8 +270,8 @@ public static partial class ArenaScanner
 
         try
         {
-            if (refreshAll || !scannedArenas.ContainsKey(ArenaInfo.importedID))
-                scannedArenas[ArenaInfo.importedID] = ArenaInfo.ScanImportedLevelDirectory();
+            if (refreshAll || !scannedArenas.ContainsKey(importedID))
+                scannedArenas[importedID] = ArenaInfo.ScanImportedLevelDirectory();
         }
         catch (Exception ex)
         {

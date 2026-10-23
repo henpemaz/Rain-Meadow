@@ -67,12 +67,19 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
     private string _unknownModID = "";
 
     public ArenaSettings? LevelSettings {get; internal set;} = null;
+    public readonly List<ArenaInfo> Overriding = [];
 
     
     public int LevelListSortNumber(List<string> allModsIDOrdered)
         => LevelListSortNumber(allModsIDOrdered, this);
     public bool TryFindFileFromFileName(string fileName, out string actualFile)
     {
+        // check the overides first
+        foreach (var ov in Overriding)
+        {
+            if (TryFindFileFromFileName(fileName, out actualFile)) return true;
+        }
+
         // we should have smt like levelname[\0]modid_smtsmt.extension in filename
         string[] levelID = fileName.Split(modSeparator); // levelname/modid_smtsmt.extension
         if (levelID.Length > 1) // used levelID instead of levelName
@@ -111,17 +118,25 @@ public partial class ArenaInfo(string name, string path, ModManager.Mod? mod, bo
             ? LevelSettings.DependanciesOverride.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id))
             : mod?.requirements.All(id => ModManager.ActiveMods.Exists(mod => mod.id == id)) is not false;
     public bool HighImpact => LevelSettings?.HighImpact is not null ? (bool)LevelSettings.HighImpact : highImpact;
+    public bool IsModDisabled => mod?.enabled is false;
+    public bool IsOverriding => LevelSettings?.IsOverride is not null 
+        ? (bool)LevelSettings.IsOverride 
+        : (IsFromMSC || IsFromWatcher);
+
 
     public bool IsAvailableWithModDisabled => 
-        !IsUnknownLevel && AllDependanciesLoaded && (mod is null || !highImpact);
+        !IsUnknownLevel && AllDependanciesLoaded && (mod is null || !HighImpact);
     public bool IsAvailable => 
-        !IsUnknownLevel && (mod?.enabled is not false || IsAvailableWithModDisabled);
+        !IsUnknownLevel && (!IsModDisabled || IsAvailableWithModDisabled);
 
-    public bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
-    public bool IsFromMeadowImport => mod is null && highImpact && !IsUnknownLevel;
-    public bool IsFromLocalMod => mod?.workshopMod is false;
-    public bool IsFromVanilla => mod is null && !highImpact && !IsUnknownLevel;
     public bool IsUnknownLevel => _unknownLevel || string.IsNullOrEmpty(levelPath);
+    public bool IsFromSteamWorkshopMod => mod?.workshopMod is true;
+    public bool IsFromMeadowImport => mod is null && HighImpact && !IsUnknownLevel;
+    public bool IsFromLocalMod => mod?.workshopMod is false;
+    public bool IsFromVanilla => mod is null && !HighImpact && !IsUnknownLevel;
+    public bool IsFromHighImpactMod => !IsFromMeadowImport && !IsUnknownLevel && HighImpact;
+    public bool IsFromMSC => ModID == MoreSlugcats.MoreSlugcats.MOD_ID;
+    public bool IsFromWatcher => ModID == Watcher.Watcher.MOD_ID;
 
     public string BaldPath => IsUnknownLevel ? "" : levelPath.Substring(0, levelPath.Length - 4);
     public string ThumbPath => BaldPath + "_Thumb.png";
