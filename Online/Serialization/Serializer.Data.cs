@@ -807,8 +807,94 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeLong(ref string[] data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((ushort)data.Length);
+                for (int i = 0; i < data.Length; i++)
+                {
+                    writer.Write(data[i]);
+                }
+            }
+            if (IsReading)
+            {
+                data = new string[reader.ReadUInt16()];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i] = reader.ReadString();
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
 
-        // Todo make Half version for these as well see SerializeHalf(float)
+        public void SerializeLong(ref List<string> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((ushort)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(data[i]);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    data.Add(reader.ReadString());
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeNullableLong(ref List<string> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(data != null);
+                if (data != null)
+                {
+                    writer.Write((ushort)data.Count);
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        writer.Write(data[i]);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    var count = reader.ReadUInt16();
+                    data = new(count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        data.Add(reader.ReadString());
+                    }
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+
         public void Serialize(ref Vector2 data)
         {
 #if TRACING
@@ -1105,8 +1191,36 @@ namespace RainMeadow
 #endif
         }
 
+/*
+ * 128 bits for a color? no.
+        public void Serialize(ref Color data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(data.r);
+                writer.Write(data.g);
+                writer.Write(data.b);
+                writer.Write(data.a);
+            }
+            if (IsReading)
+            {
+                data.r = reader.ReadSingle();
+                data.g = reader.ReadSingle();
+                data.b = reader.ReadSingle();
+                data.a = reader.ReadSingle();
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+*/
+
         public void SerializeRGB(ref Color data)
         {
+            reader.ReadSingle();
 #if TRACING
             long wasPos = this.Position;
 #endif
@@ -1286,6 +1400,44 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeLong(ref Dictionary<string, bool> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
+                data = new Dictionary<string, bool>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadBoolean();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void Serialize(ref Dictionary<string, float> data)
         {
 #if TRACING
@@ -1310,6 +1462,44 @@ namespace RainMeadow
             if (IsReading)
             {
                 var count = reader.ReadByte();
+                data = new Dictionary<string, float>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadSingle();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeLong(ref Dictionary<string, float> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
                 data = new Dictionary<string, float>(count);
                 for (int i = 0; i < count; i++)
                 {
@@ -1358,6 +1548,42 @@ namespace RainMeadow
 
             }
         }
+
+        public void SerializeLong(ref Dictionary<string, int> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
+                data = new Dictionary<string, int>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadInt32();
+                    data.Add(key, value);
+                }
+
+            }
+        }
+
         public void Serialize(ref Dictionary<string, string> data)
         {
 #if TRACING
@@ -1392,6 +1618,42 @@ namespace RainMeadow
 
             }
         }
+
+        public void SerializeLong(ref Dictionary<string, string> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
+                data = new Dictionary<string, string>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadString();
+                    data.Add(key, value);
+                }
+
+            }
+        }
+
         public void Serialize(ref Dictionary<int, List<string>> data)
         {
 #if TRACING
@@ -1444,7 +1706,61 @@ namespace RainMeadow
                 }
             }
         }
-         public void Serialize(ref Dictionary<int, int> data)
+
+        public void SerializeLong(ref Dictionary<int, List<string>> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write((byte)kvp.Value.Count);
+                        for (int i = 0; i < kvp.Value.Count; i++)
+                        {
+
+                            writer.Write(kvp.Value[i].ToString());
+                        }
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var dictCount = reader.ReadUInt16();
+                if (dictCount == 0)
+                {
+                    data = new Dictionary<int, List<string>>();
+                }
+                else
+                {
+                    data = new Dictionary<int, List<string>>(dictCount);
+                    for (int i = 0; i < dictCount; i++)
+                    {
+                        var key = reader.ReadInt32();
+                        var listCount = reader.ReadByte();
+                        var value = new List<string>(listCount);
+
+                        for (int j = 0; j < listCount; j++)
+                        {
+                            value.Add(reader.ReadString());
+
+                        }
+                        data.Add(key, new List<string>(value));
+                    }
+                }
+            }
+        }
+
+        public void Serialize(ref Dictionary<int, int> data)
         {
 #if TRACING
             long wasPos = this.Position;
@@ -1482,24 +1798,38 @@ namespace RainMeadow
 #endif
         }
 
-        public void Serialize(ref Color data)
+        public void SerializeLong(ref Dictionary<int, int> data)
         {
 #if TRACING
             long wasPos = this.Position;
 #endif
             if (IsWriting)
             {
-                writer.Write(data.r);
-                writer.Write(data.g);
-                writer.Write(data.b);
-                writer.Write(data.a);
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
             }
             if (IsReading)
             {
-                data.r = reader.ReadSingle();
-                data.g = reader.ReadSingle();
-                data.b = reader.ReadSingle();
-                data.a = reader.ReadSingle();
+                var count = reader.ReadUInt16();
+                data = new Dictionary<int, int>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadInt32();
+                    var value = reader.ReadInt32();
+                    data.Add(key, value);
+                }
+
             }
 #if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
@@ -1550,6 +1880,52 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
+        public void SerializeLong(ref Dictionary<ushort, ushort[]> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write((byte)kvp.Value.Length);
+                        for (int i = 0; i < kvp.Value.Length; i++)
+                        {
+                            writer.Write(kvp.Value[i]);
+                        }
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
+                data = new Dictionary<ushort, ushort[]>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadUInt16();
+                    var value = new ushort[reader.ReadByte()];
+                    for (int j = 0; j < value.Length; j++)
+                    {
+                        value[j] = reader.ReadUInt16();
+                    }
+                    data.Add(key, value);
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void Serialize(ref Dictionary<ushort, int> data)
         {
 #if TRACING
@@ -1574,6 +1950,44 @@ namespace RainMeadow
             if (IsReading)
             {
                 var count = reader.ReadByte();
+                data = new Dictionary<ushort, int>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadUInt16();
+                    var value = reader.ReadInt32();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeLong(ref Dictionary<ushort, int> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((ushort)0);
+                }
+                else
+                {
+                    writer.Write((ushort)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadUInt16();
                 data = new Dictionary<ushort, int>(count);
                 for (int i = 0; i < count; i++)
                 {
