@@ -17,7 +17,7 @@ namespace RainMeadow
     public class ButtonScroller : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME, IScrollObjectHolder
     {
         public bool sliderDefaultIsDown, greyOutWhenNoScroll, isScrolling, buttonsDirty, lastButtonsDirty;
-        public float desiredScrollOffset, scrollOffset, prevScrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap
+        public float desiredScrollOffset, scrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap
             , maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
         public Slider scrollSlider;
         public ScrollSystem.Direction sliderAnchor;
@@ -39,6 +39,16 @@ namespace RainMeadow
         {
             get => desiredScrollOffset;
             set => desiredScrollOffset = Mathf.Clamp(value, 0, MaxDownScroll);
+        }
+        public float ActualScrollOffset
+        {
+            get => scrollOffset;
+            set
+            {
+                if (scrollOffset == value) return;
+                scrollOffset = value;
+                buttonsDirty = true;
+            }
         }
         public float buttonHeight
         {
@@ -139,7 +149,7 @@ namespace RainMeadow
         }
         public void SetScrollImmediately(float scrollOffset)
         {
-            this.scrollOffset = DownScrollOffset = scrollOffset;
+            ActualScrollOffset = DownScrollOffset = scrollOffset;
         }
         public void UpdateGridSystem()
         {
@@ -167,27 +177,24 @@ namespace RainMeadow
                     buttons[i].Alpha = AlphaOfObject(buttons[i].Pos);
                 }*/
             
-            prevScrollOffset = scrollOffset;
             float currentScrollOffset = GetCurrentScrollOffset();
-            scrollOffset = Custom.LerpAndTick(scrollOffset, currentScrollOffset, 0.01f, 0.01f);
-            floatScrollSpeed *= Custom.LerpMap(Math.Abs(currentScrollOffset - scrollOffset), 0.25f, 1.5f, 0.45f, 0.99f);
-            floatScrollSpeed += Mathf.Clamp(currentScrollOffset - scrollOffset, -2.5f, 2.5f) / 2.5f * 0.15f;
+            ActualScrollOffset = Custom.LerpAndTick(ActualScrollOffset, currentScrollOffset, 0.01f, 0.01f);
+            floatScrollSpeed *= Custom.LerpMap(Math.Abs(currentScrollOffset - ActualScrollOffset), 0.25f, 1.5f, 0.45f, 0.99f);
+            floatScrollSpeed += Mathf.Clamp(currentScrollOffset - ActualScrollOffset, -2.5f, 2.5f) / 2.5f * 0.15f;
             floatScrollSpeed = Mathf.Clamp(floatScrollSpeed, -maxScrollSpeed, maxScrollSpeed);
-            scrollOffset += floatScrollSpeed;
+            ActualScrollOffset += floatScrollSpeed;
 
             scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, buttons.Count / 40f);
 
             if (MaxDownScroll == 0) scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, sliderDefaultIsDown? 1 : 0, scrollSliderCapLerp, scrollSliderCapTick);
-            else scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, Mathf.InverseLerp(0f, scrollSliderValueCap, scrollOffset), isScrolling?  Mathf.Max(0.9f, scrollSliderCapLerp) : scrollSliderCapLerp, scrollSliderCapTick);
+            else scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, Mathf.InverseLerp(0f, scrollSliderValueCap, ActualScrollOffset), isScrolling?  Mathf.Max(0.9f, scrollSliderCapLerp) : scrollSliderCapLerp, scrollSliderCapTick);
 
-            if (isScrolling && scrollOffset == currentScrollOffset) isScrolling = false;
+            if (isScrolling && ActualScrollOffset == currentScrollOffset) isScrolling = false;
 
             scrollSlider.buttonBehav.greyedOut = greyOutWhenNoScroll && MaxDownScroll == 0;
             if (scrollDownButton != null) scrollDownButton.buttonBehav.greyedOut = !CanScrollToBoundary(ScrollSystem.Direction.Bottom);
             if (scrollUpButton != null) scrollUpButton.buttonBehav.greyedOut = !CanScrollToBoundary(ScrollSystem.Direction.Top); ;
 
-            if (scrollOffset != prevScrollOffset)
-                buttonsDirty = true;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -238,6 +245,7 @@ namespace RainMeadow
         {
             float newScrollOffset = DownScrollOffset;
             if (!gridSystem.TryAddScroll(dir, ref newScrollOffset, direction)) return;
+            RainMeadow.DebugMe();
             if (setScrollImmediately)
                 SetScrollImmediately(newScrollOffset);
             else DownScrollOffset = newScrollOffset;
@@ -248,7 +256,7 @@ namespace RainMeadow
             UpdateGridSystem();
             DownScrollOffset = Mathf.Clamp(DownScrollOffset, 0, MaxDownScroll);
             if (constrainImmediately)
-                scrollOffset = DownScrollOffset;
+                ActualScrollOffset = DownScrollOffset;
         }
         public List<T> GetSpecificButtons<T>() where T : MenuObject
         {
@@ -304,11 +312,12 @@ namespace RainMeadow
         public virtual Vector2 SizeOfObject(Vector2 origSize) => new(origSize.x, buttonHeight);
         public virtual Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
+            RainMeadow.Debug(GetType().Name);
             var prevScrollObj = buttons.GetValueOrDefault(index - 1)?.GetScrollObject();
             (Vector2, Vector2) posSizeOfElement = (origPosition, buttons.GetValueOrDefault(index)?.GetScrollObject()?.Size ?? SizeOfObject(size));
             (Vector2, Vector2)? prevPosSizeOfElement = prevScrollObj == null ? null : (prevScrollObj.LocalPos, prevScrollObj.Size);
 
-            return gridSystem.PositionOfElementWithScroll(index, posSizeOfElement, prevPosSizeOfElement, scrollOffset);
+            return gridSystem.PositionOfElementWithScroll(index, posSizeOfElement, prevPosSizeOfElement, ActualScrollOffset);
         }
         public virtual float AlphaOfObject(Vector2 elementPos, Vector2 elementSize)
         {

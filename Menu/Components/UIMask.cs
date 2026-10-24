@@ -39,7 +39,7 @@ namespace RainMeadow.UI.Components
         }
         public bool MouseOverTexture => WithinBounds(menu.mousePosition, default);
         public bool IsHidden { get; set; }
-        public UIMask(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, FContainer itemMaskContainer) : base(menu, owner, pos, size)
+        public UIMask(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, FContainer itemMaskContainer, bool camIndexAffectYAxis = false) : base(menu, owner, pos, size)
         {
             maskContainer = itemMaskContainer;
             itemMaskContainer.container.AddChild(camContainer = new());
@@ -47,7 +47,7 @@ namespace RainMeadow.UI.Components
             uiCam = new(menu, this, new(0, 0), size);
 
             IDForTexture = "UIMASKCAM" + uiCam.index;
-            initialCamPos = new Vector2(10000f + 10300f * uiCam.index, 10000f);
+            initialCamPos = camIndexAffectYAxis? new Vector2(10000f, -10000f - 10300f * uiCam.index) : new Vector2(10000f + 10300f * uiCam.index, 10000f);
             uiCam.pos = initialCamPos;
 
             maskContainer.SetPosition(initialCamPos);
@@ -103,12 +103,8 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (lastSize != size)
-            {
-                uiCam.size = CamViewSizeOffset + size;
-                uiCam.pos = initialCamPos + CamViewPosOffset;
-            }
-
+            uiCam.size = CamViewSizeOffset + size;
+            uiCam.pos = initialCamPos + CamViewPosOffset;
             base.Update();
         }
         public override void GrafUpdate(float timeStacker)
