@@ -245,7 +245,6 @@ namespace RainMeadow
         {
             float newScrollOffset = DownScrollOffset;
             if (!gridSystem.TryAddScroll(dir, ref newScrollOffset, direction)) return;
-            RainMeadow.DebugMe();
             if (setScrollImmediately)
                 SetScrollImmediately(newScrollOffset);
             else DownScrollOffset = newScrollOffset;
