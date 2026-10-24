@@ -8,7 +8,6 @@ namespace RainMeadow
     {
         private TextPrompt textPrompt;
         public RoomCamera camera;
-        public RMOverlayHUDMenu overlayMenu;
         private RainWorldGame game;
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
@@ -29,7 +28,6 @@ namespace RainMeadow
             this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
             this.game = camera.game;
-            overlayMenu = RMOverlayHUDMenu.GetOverlayMenu();
             ChatLogManager.MessageLogged += OnMessageLogged;
             if (!ChatLogManager.shownChatTutorial)
             {

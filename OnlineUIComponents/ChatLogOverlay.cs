@@ -62,7 +62,6 @@ namespace RainMeadow
             this.messageHistoryStart = Mathf.Max(0, ChatLogManager.chatLog.Count - maxMessagesHistoryOnStart);
             UpdateLogDisplay();
             scroller.SetScrollImmediately(chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos);
-            scroller.AddScrollUpDownButtons();
             chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
             // debug = new("pixel")
             // {
