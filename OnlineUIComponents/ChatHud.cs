@@ -168,7 +168,7 @@ namespace RainMeadow
             if (chatLogOverlay != null)
             {
                 logScrollPos = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll ? -1 : chatLogOverlay.scroller.DownScrollOffset;
-                chatLogOverlay.owner.ClearMenuObject(chatLogOverlay);
+                chatLogOverlay.RemoveSprites();
                 chatLogOverlay = null;
             }
         }
@@ -179,7 +179,7 @@ namespace RainMeadow
             {
                 if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom, true);
                 chatInputOverlay.chat.DelayedUnload(0.1f);
-                chatInputOverlay.owner.ClearMenuObject(chatInputOverlay);
+                chatInputOverlay.RemoveSprites();
                 chatInputOverlay = null;
             }
 
