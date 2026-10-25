@@ -40,7 +40,7 @@ namespace RainMeadow
             new Hook(typeof(ExpeditionData).GetProperty(nameof(ExpeditionData.earnedPassages)).GetGetMethod(), ExpeditionData_earnedPassages);
             new Hook(typeof(ExpeditionData).GetProperty(nameof(ExpeditionData.activeMission)).GetGetMethod(), ExpeditionData_activeMission);
 
-            IL.Expedition.ExpeditionCoreFile.ToString += ExpeditionCoreFile_ToString;
+            On.Expedition.ExpeditionCoreFile.ToString += ExpeditionCoreFile_ToString;
             On.Expedition.ExpeditionCoreFile.FromString += unlockAllMeadowMusics;            
             On.Expedition.ExpeditionProgression.GetUnlockedSongs += ExpeditionProgression_GetUnlockedSongs;
             On.Expedition.PinChallenge.Reset += PinChallenge_Reset;
@@ -371,54 +371,15 @@ namespace RainMeadow
             return unlockedSongs;
         }
 
-        private void ExpeditionCoreFile_ToString(ILContext il)
+        private string ExpeditionCoreFile_ToString(On.Expedition.ExpeditionCoreFile.orig_ToString orig, ExpeditionCoreFile self)
         {
-            try
+            if (isExpeditionMode(out var em) && !OnlineManager.lobby.isOwner && em.saveToDisk)
             {
-                var c = new ILCursor(il);
-                var skip = c.DefineLabel();
-
-                // if (!this.runEnded && global::Expedition.ExpeditionGame.activeUnlocks != null && global::Expedition.ExpeditionGame.activeUnlocks.Count > 0)
-
-                c.GotoNext(MoveType.Before,
-                    // x => x.MatchLdarg(0),
-                    x => x.MatchLdfld<ExpeditionCoreFile>("runEnded"),
-                    x => x.MatchBrtrue(out skip),
-
-                    x => x.MatchCall(typeof(ExpeditionGame).GetProperty(nameof(ExpeditionGame.activeUnlocks)).GetGetMethod()),
-                    x => x.MatchBrfalse(out _)
-                    );
-                c.MoveAfterLabels();
-
-                c.Emit(OpCodes.Ldloc_0);
-                c.EmitDelegate((ExpeditionCoreFile self, List<string> list) =>
-                {
-                    if (!isExpeditionMode(out var expedition) || OnlineManager.lobby.isOwner) return false;
-
-                    if (!ExpeditionGame.allUnlocks.ContainsKey(ExpeditionData.slugcatPlayer))
-                    {
-                        ExpeditionGame.allUnlocks[ExpeditionData.slugcatPlayer] = new List<string>();
-                    }
-
-                    List<string> activeUnlocks;
-                    if(expedition.saveToDisk)
-                        activeUnlocks = expedition.activeUnlocks;
-                    else
-                        activeUnlocks = ExpeditionGame.allUnlocks[ExpeditionData.slugcatPlayer];
-
-                    if (!self.runEnded && activeUnlocks != null && activeUnlocks.Count > 0)
-                    {
-                        list.Add(ExpeditionData.slugcatPlayer.value + "#" + self.ActiveUnlocksString(activeUnlocks));
-                    }
-                    return true;
-                });
-                c.Emit(OpCodes.Brtrue, skip);
-                c.Emit(OpCodes.Ldarg_0);
+                ExpeditionGame.allUnlocks[ExpeditionData.slugcatPlayer] = em.activeUnlocks;
+                ExpeditionData.allActiveMissions[ExpeditionData.slugcatPlayer.value] = em.activeMission;
+                ExpeditionData.allEarnedPassages[ExpeditionData.slugcatPlayer.value] = em.earnedPassages;
             }
-            catch (Exception e)
-            {
-                Error($"Error while IL hooking : {e}");
-            }
+            return orig(self);
         }
 
         private List<string> ExpeditionGame_activeUnlocks(Func<List<string>> orig)
@@ -827,13 +788,13 @@ namespace RainMeadow
 
         private void CharacterSelectPage_LoadGame(On.Menu.CharacterSelectPage.orig_LoadGame orig, CharacterSelectPage self)
         {
-            if(self.menu is ExpeditionOnlineMenu om) om.pre_start();
+            if(self.menu is ExpeditionOnlineMenu om) om.PreStart();
             orig(self);
         }
 
         private void ChallengeSelectPage_StartGame(On.Menu.ChallengeSelectPage.orig_StartGame orig, ChallengeSelectPage self)
         {
-            if (self.menu is ExpeditionOnlineMenu om) om.pre_start();
+            if (self.menu is ExpeditionOnlineMenu om) om.PreStart();
             orig(self);
         }
 

@@ -9,7 +9,6 @@ public class AchievementChallengeState : ChallengeState
     string? ID;
 
     public override Type ChallengeType => typeof(AchievementChallenge);
-    public override Challenge GetChallenge => new AchievementChallenge();
 
     public AchievementChallengeState() { }
     public AchievementChallengeState(Challenge challenge) : base(challenge)
@@ -18,9 +17,9 @@ public class AchievementChallengeState : ChallengeState
         ID = achievementChallenge.ID.value;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         var achievementChallenge = (AchievementChallenge)challenge;
         achievementChallenge.ID = (WinState.EndgameID)ExtEnumBase.Parse(typeof(WinState.EndgameID), ID, false);
 
@@ -28,6 +27,6 @@ public class AchievementChallengeState : ChallengeState
 
     public override string ToString()
     {
-        return $"{{{base.ToString()}:  data - ID: {ID}}}";
+        return $"{{{base.ToString()} - ID: {ID}}}";
     }
 }

@@ -14,8 +14,6 @@ public class VistaChallengeState : ChallengeState
     string? room;
 
     public override Type ChallengeType => typeof(VistaChallenge);
-    public override Challenge GetChallenge => new VistaChallenge();
-
     public VistaChallengeState() { }
     public VistaChallengeState(Challenge challenge) : base(challenge)
     {
@@ -25,9 +23,9 @@ public class VistaChallengeState : ChallengeState
         room = vc.room;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         VistaChallenge vc = (VistaChallenge)challenge;
         vc.location = location;
         vc.region = region;
@@ -35,6 +33,6 @@ public class VistaChallengeState : ChallengeState
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - location: {location}, region: {region}, room: {room}}}";
+        return $"{{{base.ToString()} - location: {location}, region: {region}, room: {room}}}";
     }
 }

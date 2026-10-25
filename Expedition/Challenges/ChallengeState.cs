@@ -14,7 +14,6 @@ public abstract class ChallengeState : OnlineState
     bool revealed;
 
     public abstract Type ChallengeType { get; }
-    public abstract Challenge GetChallenge { get; }
 
     public ChallengeState() { }
     public ChallengeState(Challenge challenge)
@@ -24,10 +23,26 @@ public abstract class ChallengeState : OnlineState
         revealed = challenge.revealed;
     }
 
-    public virtual void ReadTo(Challenge challenge)
+    public Challenge CreateChallenge()
     {
+        return (Challenge)Activator.CreateInstance(ChallengeType);
+    }
+
+    public virtual void ReadTo(ref Challenge challenge)
+    {
+        
+        if (challenge?.GetType() != ChallengeType)
+        {
+            challenge = CreateChallenge();         
+        }
+
         challenge.completed = completed;
         challenge.hidden = hidden;
         challenge.revealed = revealed;
+    }
+
+    public override string ToString()
+    {
+        return $"{base.ToString()} - completed: {completed}, hidden: {hidden}, revealed: {revealed}";
     }
 }

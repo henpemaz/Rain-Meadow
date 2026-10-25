@@ -11,8 +11,6 @@ public class GlobalScoreChallengeState : ChallengeState
     int target;
 
     public override Type ChallengeType => typeof(GlobalScoreChallenge);
-    public override Challenge GetChallenge => new GlobalScoreChallenge();
-
     public GlobalScoreChallengeState() { }
     public GlobalScoreChallengeState(Challenge challenge) : base(challenge)
     {
@@ -21,9 +19,9 @@ public class GlobalScoreChallengeState : ChallengeState
         target = gsc.target;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         GlobalScoreChallenge gsc = (GlobalScoreChallenge)challenge;
         gsc.score = score;
         gsc.target = target;
@@ -31,6 +29,6 @@ public class GlobalScoreChallengeState : ChallengeState
     
     public override string ToString()
     {
-        return $"{{{base.ToString()}: score: {score}, target: {target}}}";
+        return $"{{{base.ToString()} - score: {score}, target: {target}}}";
     }
 }

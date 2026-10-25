@@ -150,6 +150,11 @@ namespace RainMeadow
                 expeditionGameMode.currentCampaign = ExpeditionData.slugcatPlayer;
                 characterSelect?.UpdateSelectedSlugcat((characterSelect.menu as ExpeditionMenu).currentSelection);
                 expeditionGameMode.needMenuSaveUpdate = false;
+
+                if (OnlineManager.lobby.isOwner && syncSave is not null)
+                {
+                    UpdateOnlinePage(currentPage);
+                }
             }
 
             if (characterSelect is not null && expeditionGameMode.needSlugUpdate)
@@ -196,7 +201,6 @@ namespace RainMeadow
             {
                 slugcatSelector.Slug = PlayerSelectedSlugcat;
             }
-
         }
 
         private void PreviewChallengesInMenu()
@@ -233,7 +237,7 @@ namespace RainMeadow
             }
         }
 
-        public void pre_start()
+        public void PreStart()
         {
             if (OnlineManager.lobby != null)
             {
@@ -254,7 +258,7 @@ namespace RainMeadow
                     {
                         expeditionGameMode.avatarSettings[i].playingAs = name;
                     }
-                    //expeditionGameMode.avatarSettings[i].playingAs = expeditionGameMode.currentCampaign;             
+                    
                     expeditionGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(expeditionGameMode.avatarSettings[i].playingAs).Select(RWCustom.Custom.hexToColor)];
 
                     if (jollyallowed)

@@ -11,8 +11,6 @@ public class CycleScoreChallengeState : ChallengeState
     int target;
 
     public override Type ChallengeType => typeof(CycleScoreChallenge);
-    public override Challenge GetChallenge => new CycleScoreChallenge();
-
     public CycleScoreChallengeState() { }
     public CycleScoreChallengeState(Challenge challenge) : base(challenge)
     {
@@ -21,9 +19,9 @@ public class CycleScoreChallengeState : ChallengeState
         target = csc.target;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         CycleScoreChallenge csc = (CycleScoreChallenge)challenge;
         csc.score = score;
         csc.target = target;
@@ -31,6 +29,6 @@ public class CycleScoreChallengeState : ChallengeState
 
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - score: { score}, target: { target} }}";
+        return $"{{{base.ToString()} - score: { score}, target: { target} }}";
     }
 }

@@ -2,56 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using static RainMeadow.OnlineResource;
-using static RainMeadow.StoryLobbyData;
+using RainMeadow.Generics;
 
 namespace RainMeadow;
 
-public class ExpeditionLobbyData : OnlineResource.ResourceData
+public class ExpeditionLobbyData : StoryLobbyData
 {
     public override ResourceDataState MakeState(OnlineResource resource)
     {
-        return new State(this, resource);
+        return new ExpeditionState(this, resource);
     }
 
-    public class State : ResourceDataState
+    public class ExpeditionState : StoryLobbyData.State
     {
         [OnlineField]
-        public bool isInGame;
-        
-        [OnlineField]
-        public bool readyForWin;
-
-        [OnlineField]
-        public bool changedRegions;
-        
-        [OnlineField]
         public bool hasSaveState;
-
-        [OnlineField]
-        public bool malnourished;
-
-        [OnlineField]
-        public bool lastMalnourished;
-
-        [OnlineField]
-        public bool reinforcedKarma;
-
-        [OnlineField]
-        public bool theGlow;
-        
-        [OnlineField]
-        public byte readyForTransition;
-
-        [OnlineField]
-        public int food;
-
-        [OnlineField]
-        public int quarterfood;
-
-        [OnlineField]
-        public int mushroomCounter;
 
         [OnlineField]
         public int earnedPassages;
@@ -59,59 +24,25 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
         [OnlineFieldHalf]
         public float slowTimeCooldown;
 
-        [OnlineField(nullable = true)]
-        public string? region;
 
-        [OnlineField]
-        public List<OnlineEntity.EntityId> pups;
+        [OnlineField(group = "expeditionChallenge", polymorphic = true)]
+        DynamicOrderedStates<ChallengeState> currentChallengeList;
 
-
-        [OnlineField(group = "saveString", nullable = true)]
-        public string? saveStateString;
-        
-        [OnlineField(group = "menusave", nullable = true)]
-        public MenuSaveStateState? currentMenuSaveState;
-
-
-        [OnlineField(group = "expeditiondChallenge")]
-        bool[] isChallengeCompleted;
-
-        [OnlineField(group = "expeditiondChallenge", polymorphic = true)]
-        ChallengeState[] currentChallengeList;
-
-
-        [OnlineField(group = "expeditionSetup")]
-        public bool friendlyFire;
-
-        [OnlineField(group = "expeditionSetup")]
-        public bool requireCampaignSlugcat;
-
-        [OnlineField(group = "expeditionSetup")]
-        public bool itemSteal;
 
         [OnlineField(group = "expeditionSetup")]
         public int selectedSlugcat;
 
         [OnlineField(group = "expeditionSetup", nullable = true)]
         public string? activeMission;
-        
-        [OnlineField(group = "expeditionSetup")]
-        SlugcatStats.Name currentCampaign;
 
         [OnlineField(group = "expeditionSetup", nullable = true)]
         public List<string> activeUnlocks = new List<string>();
 
-        public State() { }
-        public State(ExpeditionLobbyData expeditionLobbyData, OnlineResource onlineResource)
+        public ExpeditionState() { }
+        public ExpeditionState(ExpeditionLobbyData expeditionLobbyData, OnlineResource onlineResource) : base(expeditionLobbyData, onlineResource)
         {
             ExpeditionGameMode expeditionGameMode = (ExpeditionGameMode)((Lobby)onlineResource).gameMode;
             RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-
-            PlayerState ps = currentGameState?.Players[0].state as PlayerState;
-
-            food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
-            quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
-            mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
 
             for (int i = 0; i < ExpeditionGame.unlockTrackers.Count; i++)
             {
@@ -119,24 +50,9 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     slowTimeCooldown = stt.cooldown;
             }
 
-            isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
-
-            readyForWin = expeditionGameMode.readyForWin;
-            readyForTransition = (byte)expeditionGameMode.readyForTransition;
-            saveStateString = expeditionGameMode.saveStateString;
-            selectedSlugcat = expeditionGameMode.slugcatCampaingSelected;
-            currentCampaign = expeditionGameMode.currentCampaign;
-            requireCampaignSlugcat = expeditionGameMode.requireCampaignSlugcat;
-            friendlyFire = expeditionGameMode.friendlyFire;
-            changedRegions = expeditionGameMode.changedRegions;
-            region = expeditionGameMode.region;
-            itemSteal = expeditionGameMode.itemSteal;
-
             if (currentCampaign is not null)
             {
-                if (expeditionGameMode.challengeListStrings is null ||
-                    expeditionGameMode.challengeListStrings.Count != ExpeditionData.allChallengeLists[currentCampaign].Count ||
-                    !expeditionGameMode.challengeListStrings.SequenceEqual(ExpeditionData.allChallengeLists[currentCampaign].Select(x => x.ToString())))
+                if (expeditionGameMode.currentChallengeList is null || expeditionGameMode.currentChallengeList.Count != ExpeditionData.allChallengeLists[currentCampaign].Count)
                 {
                     expeditionGameMode.challengeListStrings = ExpeditionData.allChallengeLists[currentCampaign].Select(x => x.ToString()).ToList();
 
@@ -145,7 +61,19 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                     {
                         challengeStateList.Add(GetChallengeState(challenge));
                     }
-                    expeditionGameMode.currentChallengeList = challengeStateList.ToArray();
+                    expeditionGameMode.currentChallengeList = new(challengeStateList);
+                }
+                else
+                {
+                    for (int i = 0; i < expeditionGameMode.challengeListStrings.Count; i++)
+                    {
+                        var challenge = ExpeditionData.allChallengeLists[currentCampaign][i];
+                        if (expeditionGameMode.challengeListStrings[i] == challenge.ToString()) continue;
+                        
+                        expeditionGameMode.currentChallengeList[i] = GetChallengeState(challenge);
+                        expeditionGameMode.challengeListStrings[i] = challenge.ToString();
+                        
+                    }
                 }
             }
 
@@ -154,192 +82,92 @@ public class ExpeditionLobbyData : OnlineResource.ResourceData
                 expeditionGameMode.activeUnlocks = new List<string>(ExpeditionGame.activeUnlocks);
             }
 
-            currentChallengeList = expeditionGameMode.currentChallengeList;
+            selectedSlugcat = expeditionGameMode.slugcatCampaingSelected;
+            currentChallengeList = new DynamicOrderedStates<ChallengeState>(expeditionGameMode.currentChallengeList.ToList());
             activeUnlocks = expeditionGameMode.activeUnlocks;
             activeMission = ExpeditionData.activeMission;
             earnedPassages = ExpeditionData.earnedPassages;
-
-            if (currentGameState?.session is StoryGameSession storySession)
-            {                
-                theGlow = storySession.saveState.theGlow;
-                reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
-                malnourished = storySession.saveState.malnourished;
-                lastMalnourished = storySession.saveState.lastMalnourished;
-                
-                expeditionGameMode.menuSaveState = new MenuSaveStateState(storySession.saveState);
-                currentMenuSaveState = expeditionGameMode.menuSaveState;
-                hasSaveState = saveStateString != null;
-            }
-            else
-            {
-                currentMenuSaveState = expeditionGameMode.menuSaveState;
-                hasSaveState = expeditionGameMode.hasSaveState;
-            }
-           
-            int cclCount = currentChallengeList.Length;
-
-            if (expeditionGameMode.isChallengeCompleted == null || expeditionGameMode.isChallengeCompleted.Length != cclCount)
-            {
-                expeditionGameMode.isChallengeCompleted = new bool[cclCount];
-            }
-
-            isChallengeCompleted = new bool[cclCount];
-
-            for (int i = 0; i < cclCount; i++)
-            {
-                isChallengeCompleted[i] = expeditionGameMode.isChallengeCompleted[i] = currentChallengeList[i].completed;
-            }
-
-            pups = new();
-            foreach (AbstractCreature apo in expeditionGameMode.pups)
-            {
-                if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                {
-                    pups.Add(oe.id);
-                }
-            }
+            hasSaveState = expeditionGameMode.hasSaveState;
         }
 
-        public override void ReadTo(ResourceData data, OnlineResource resource)
+        public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
         {
+            base.ReadTo(data, resource);
+
             Lobby lobby = (Lobby)resource;
             ExpeditionGameMode expedition = (ExpeditionGameMode)lobby.gameMode;
-            expedition.currentCampaign = currentCampaign;
-
-            if (expedition.menuSaveState != currentMenuSaveState)
-            {
-                expedition.menuSaveState = currentMenuSaveState;
-                expedition.menuSaveGameData = expedition.menuSaveState?.CreateSaveData();
-                expedition.needMenuSaveUpdate = true;
-            }
 
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame currentGameState)
             {
-                for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
-                {
-                    PlayerState ps = (PlayerState)currentGameState.Players[i].state;
-
-                    ps.foodInStomach = food;
-                    ps.quarterFoodPoints = quarterfood;
-
-                    if ((currentGameState?.Players[i].realizedCreature is Player player))
-                    {
-                        player.mushroomCounter = mushroomCounter;
-                        player.AddFood(0);
-                    }
-                }
-
                 for (int i = 0; i < ExpeditionGame.unlockTrackers.Count; i++)
                 {
                     if (ExpeditionGame.unlockTrackers[i] is ExpeditionGame.SlowTimeTracker stt)
                         stt.cooldown = slowTimeCooldown;
                 }
-
-                if (currentGameState.session is StoryGameSession storySession)
-                {                    
-                    storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
-                    storySession.saveState.theGlow = theGlow;
-                    storySession.saveState.lastMalnourished = lastMalnourished;
-                    storySession.saveState.malnourished = malnourished;
-
-                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
-                    {
-                        if (currentGameState.Players[i].realizedCreature != null)
-                            (currentGameState.Players[i].realizedCreature as Player).glowing = theGlow;
-                    }
-                }
             }
-
-            expedition.isInGame = isInGame;
-            expedition.readyForWin = readyForWin;
-            expedition.readyForTransition = (StoryGameMode.ReadyForTransition)readyForTransition;
-            expedition.saveStateString = saveStateString;
-            expedition.requireCampaignSlugcat = requireCampaignSlugcat;
-            expedition.friendlyFire = friendlyFire;
-            expedition.changedRegions = changedRegions;
-            expedition.region = region;
-            expedition.itemSteal = itemSteal;           
-
-            expedition.hasSaveState = hasSaveState;
 
             if (expedition.slugcatCampaingSelected != selectedSlugcat)
             {
                 expedition.slugcatCampaingSelected = selectedSlugcat;
                 expedition.needSlugUpdate = true;
             }
-            
-            expedition.activeUnlocks = activeUnlocks;                
+
+            expedition.hasSaveState = hasSaveState;
+            expedition.activeUnlocks = activeUnlocks;
             expedition.earnedPassages = earnedPassages;
             expedition.activeMission = activeMission ?? "";
 
             if (!ExpeditionGame.expeditionComplete)
             {
-                if (!ExpeditionData.allChallengeLists.ContainsKey(currentCampaign) || ExpeditionData.allChallengeLists[currentCampaign].Count != currentChallengeList.Length)
+                if (!ExpeditionData.allChallengeLists.ContainsKey(currentCampaign) || ExpeditionData.allChallengeLists[currentCampaign].Count != currentChallengeList.list.Count)
                 {
                     List<Challenge> challengeList = new List<Challenge>();
-                    foreach (ChallengeState challengeState in currentChallengeList)
+                    foreach (ChallengeState challengeState in currentChallengeList.list)
                     {
-                        var _challenge = challengeState.GetChallenge;                            
+                        var _challenge = challengeState.CreateChallenge();                 
                         challengeList.Add(_challenge);
                     }
+
                     ExpeditionData.allChallengeLists[currentCampaign] = challengeList;
+                    expedition.isChallengeCompleted = new bool[challengeList.Count];
                 }
 
-                List<Challenge> challenge = ExpeditionData.allChallengeLists[currentCampaign];
-  
-                if (expedition.challengeListStrings is null || expedition.challengeListStrings.Count != currentChallengeList.Length)
+                if (expedition.challengeListStrings is null || expedition.challengeListStrings.Count != currentChallengeList.list.Count)
                 {
-                    string[] challengeStrings = new string[currentChallengeList.Length];                   
+                    string[] challengeStrings = new string[currentChallengeList.list.Count];
                     expedition.challengeListStrings = new List<string>(challengeStrings);
                 }
 
-                for (int i = 0; i < currentChallengeList.Length; i++)
+                List<Challenge> challenges = ExpeditionData.allChallengeLists[currentCampaign];
+
+                for (int i = 0; i < currentChallengeList.list.Count; i++)
                 {
-                    if (challenge[i].GetType() != currentChallengeList[i].ChallengeType)
+                    Challenge challenge = challenges[i];
+                    bool oldCompleteState = challenge.completed;
+
+                    currentChallengeList.list[i].ReadTo(ref challenge);
+                    challenges[i] = challenge;
+
+                    if (expedition.challengeListStrings[i] == challenge.ToString()) continue;
+
+                    expedition.challengeListStrings[i] = challenge.ToString();
+                    expedition.needUpdateeChallengePreview = true;
+
+                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
                     {
-                        challenge[i] = currentChallengeList[i].GetChallenge;
-                    }
+                        bool newCompleteState = challenge.completed;
 
-                    expedition.isChallengeCompleted = isChallengeCompleted;
-
-                    bool oldCompleteState = challenge[i].completed;
-                    bool needUpdate = false;
-
-                    currentChallengeList[i].ReadTo(challenge[i]);
-
-                    if (expedition.challengeListStrings[i] != challenge[i].ToString())
-                    {
-                        expedition.challengeListStrings[i] = challenge[i].ToString();
-                        needUpdate = true;
-                        expedition.needUpdateeChallengePreview = true;
-                    }
-
-                    if (needUpdate)
-                    {
-                        needUpdate = false;
-                        if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
+                        if (!oldCompleteState && newCompleteState)
                         {
-                            bool newCompleteState = challenge[i].completed;
+                            challenge.completed = false;
+                            expedition.isChallengeCompleted[i] = true;
 
-                            if (oldCompleteState != newCompleteState && newCompleteState)
-                            {
-                                challenge[i].completed = oldCompleteState;
-
-                                expedition.challengeIndex = i;
-                                challenge[i].CompleteChallenge();
-                                expedition.challengeIndex = -1;
-                            }
-                            challenge[i].UpdateDescription();
+                            expedition.challengeIndex = i;
+                            challenge.CompleteChallenge();
+                            expedition.challengeIndex = -1;
                         }
+                        challenge.UpdateDescription();
                     }
-                }
-            }                
-
-            foreach (OnlineEntity.EntityId pupid in pups)
-            {
-                if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo)
-                {
-                    (lobby.gameMode as ExpeditionGameMode).pups.Add(apo);
                 }
             }
         }

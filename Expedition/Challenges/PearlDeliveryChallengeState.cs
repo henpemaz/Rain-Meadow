@@ -11,7 +11,6 @@ public class PearlDeliveryChallengeState : ChallengeState
     string? region;
 
     public override Type ChallengeType => typeof(PearlDeliveryChallenge);
-    public override Challenge GetChallenge => new PearlDeliveryChallenge();
 
     public PearlDeliveryChallengeState() { }
     public PearlDeliveryChallengeState(Challenge challenge) : base(challenge)
@@ -21,15 +20,15 @@ public class PearlDeliveryChallengeState : ChallengeState
         region = pdc.region;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         PearlDeliveryChallenge pdc = (PearlDeliveryChallenge)challenge;
         pdc.iterator = iterator;
         pdc.region = region;
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - iterador: {iterator}, region: {region}}}";
+        return $"{{{base.ToString()} - iterador: {iterator}, region: {region}}}";
     }
 }

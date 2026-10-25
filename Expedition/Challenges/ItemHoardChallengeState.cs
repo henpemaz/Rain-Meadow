@@ -11,7 +11,6 @@ public class ItemHoardChallengeState : ChallengeState
     string? target;
 
     public override Type ChallengeType => typeof(ItemHoardChallenge);
-    public override Challenge GetChallenge => new ItemHoardChallenge();
 
     public ItemHoardChallengeState() { }
     public ItemHoardChallengeState(Challenge challenge) : base(challenge)
@@ -21,15 +20,15 @@ public class ItemHoardChallengeState : ChallengeState
         target = ihc.target.value;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         ItemHoardChallenge ihc = (ItemHoardChallenge)challenge;
         ihc.amount = amount;
         ihc.target = (AbstractPhysicalObject.AbstractObjectType)ExtEnumBase.Parse(typeof(AbstractPhysicalObject.AbstractObjectType), target, false);
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - amount: {amount}, target: {target}}}";
+        return $"{{{base.ToString()} - amount: {amount}, target: {target}}}";
     }
 }

@@ -11,7 +11,6 @@ public class NeuronDeliveryChallengeState : ChallengeState
     int neurons;
 
     public override Type ChallengeType => typeof(NeuronDeliveryChallenge);
-    public override Challenge GetChallenge => new NeuronDeliveryChallenge();
 
     public NeuronDeliveryChallengeState() { }
     public NeuronDeliveryChallengeState(Challenge challenge) : base(challenge)
@@ -21,15 +20,15 @@ public class NeuronDeliveryChallengeState : ChallengeState
         neurons = ndc.neurons;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         NeuronDeliveryChallenge ndc = (NeuronDeliveryChallenge)challenge;
         ndc.delivered = delivered;
         ndc.neurons = neurons;
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - delivered: {delivered}, neurons: {neurons}}}";
+        return $"{{{base.ToString()} - delivered: {delivered}, neurons: {neurons}}}";
     }
 }

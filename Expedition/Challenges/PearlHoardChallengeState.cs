@@ -13,8 +13,6 @@ public class PearlHoardChallengeState : ChallengeState
     string? region;
 
     public override Type ChallengeType => typeof(PearlHoardChallenge);
-    public override Challenge GetChallenge => new PearlHoardChallenge();
-
     public PearlHoardChallengeState() { }
     public PearlHoardChallengeState(Challenge challenge) : base(challenge)
     {
@@ -24,9 +22,9 @@ public class PearlHoardChallengeState : ChallengeState
         region = phc.region;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         PearlHoardChallenge phc = (PearlHoardChallenge)challenge;
         phc.amount = amount;
         phc.common = common;
@@ -34,6 +32,6 @@ public class PearlHoardChallengeState : ChallengeState
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - common: {common}, region: {region}}}";
+        return $"{{{base.ToString()} - common: {common}, region: {region}}}";
     }
 }

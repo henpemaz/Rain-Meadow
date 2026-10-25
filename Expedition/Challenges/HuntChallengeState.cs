@@ -13,7 +13,6 @@ public class HuntChallengeState : ChallengeState
     string? target;
 
     public override Type ChallengeType => typeof(HuntChallenge);
-    public override Challenge GetChallenge => new HuntChallenge();
 
     public HuntChallengeState() { }
     public HuntChallengeState(Challenge challenge) : base(challenge)
@@ -24,9 +23,9 @@ public class HuntChallengeState : ChallengeState
         target = hc.target.value;
     }
 
-    public override void ReadTo(Challenge challenge)
+    public override void ReadTo(ref Challenge challenge)
     {
-        base.ReadTo(challenge);
+        base.ReadTo(ref challenge);
         HuntChallenge hc = (HuntChallenge)challenge;
         hc.amount = amount;
         hc.current = current;
@@ -34,6 +33,6 @@ public class HuntChallengeState : ChallengeState
     }
     public override string ToString()
     {
-        return $"{{{base.ToString()}: data - amount: {amount}, current: {current}, target: {target}}}";
+        return $"{{{base.ToString()} - amount: {amount}, current: {current}, target: {target}}}";
     }
 }
