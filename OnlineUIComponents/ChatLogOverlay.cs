@@ -30,10 +30,9 @@ namespace RainMeadow
 
         private FSprite? debug;
 
-        public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(RMOverlayHUDMenu.GetOverlayMenu(), RMOverlayHUDMenu.GetOverlayMenu().pages[0])
+        public ChatLogOverlay(ChatHud chatHud) : base(RMOverlayHUDMenu.GetOverlayMenu(), RMOverlayHUDMenu.GetOverlayMenu().pages[0])
         {
             // if (chatHud.hud is RMOverlayHUD) this.container = chatHud.hud.fContainers[1];
-            
             this.chatHud = chatHud;
 
             chatBg = [];
@@ -51,7 +50,7 @@ namespace RainMeadow
             }
             msgExtents = [];
 
-            scroller = new(this.menu, this, new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new Vector2(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
+            scroller = new(this.menu, this, new(1366f - 660f - menu.manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new Vector2(menu.manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
                 SetTextAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
@@ -62,8 +61,7 @@ namespace RainMeadow
             
             this.messageHistoryStart = Mathf.Max(0, ChatLogManager.chatLog.Count - maxMessagesHistoryOnStart);
             UpdateLogDisplay();
-            scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
-
+            scroller.SetScrollImmediately(chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos);
             chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
             // debug = new("pixel")
             // {
@@ -90,8 +88,8 @@ namespace RainMeadow
 
         public override void GrafUpdate(float timeStacker)
         {
-            /// Obtains the first visible button index on the scroller
-            int GetFirstIndex()
+                /// Obtains the first visible button index on the scroller
+                int GetFirstIndex()
             {
                 for (int i = 0; i < scroller.buttons.Count; ++i)
                     if (scroller.buttons[i].GetScrollObject().LocalAlpha >= 0.5f && scroller.buttons[i].GetScrollObject().LocalPos.y >= 0)
@@ -123,16 +121,6 @@ namespace RainMeadow
                 int j = firstIndex + i;
                 if (j >= 0 && j < scroller.buttons.Count)
                 {
-                    // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
-                    // messages fading out work as intended.
-                    /*if (scroller.buttons[j] is AlignedMenuLabel label)
-                    {
-                        label.label.alpha = tOpacity;
-                        foreach(var subObj in label.subObjects)
-                        {
-                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
-                        }
-                    }*/
                     var scroll = scroller.buttons[j].GetScrollObject();
                     chatBg[i].x = scroller.pos.x + scroll.LocalPos.x - 4f;
                     chatBg[i].y = scroller.pos.y + scroll.LocalPos.y;

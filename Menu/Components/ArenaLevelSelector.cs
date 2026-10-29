@@ -387,7 +387,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 }
                 prevPosSizeOfElement = (pos, size);
             }
-            Vector2 newPos = gridSystem.PositionOfElementWithScroll(currentIndex, posSizeOfElement, prevPosSizeOfElement, scrollOffset);
+            Vector2 newPos = gridSystem.PositionOfElementWithScroll(currentIndex, posSizeOfElement, prevPosSizeOfElement, ActualScrollOffset);
             if (menuObj is LevelItem lvlItem)
                 newPos[indexToRef] += (lvlItem.levelItemBelow != null ? 3 : 0) - (lvlItem.levelItemAbove != null ? 3 : 0) * showThumbsTransitionState;
             return newPos;
@@ -446,7 +446,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
                     levelItem.AddDividers(nextLevelItem);
             }
-            scrollOffset = DownScrollOffset = 0;
+            ActualScrollOffset = DownScrollOffset = 0;
 
         }
         public virtual void HandleLevelItemFade(LevelItem item) { }

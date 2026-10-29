@@ -18,7 +18,6 @@ namespace RainMeadow
 
         public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || slatedForDeletion;
         public bool InGameTransition => game.processActive || game.manager.upcomingProcess != null;
-
         public static bool isLogToggled
         {
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
@@ -29,7 +28,6 @@ namespace RainMeadow
             this.textPrompt = camera.hud.textPrompt;
             this.camera = camera;
             this.game = camera.game;
-
             ChatLogManager.MessageLogged += OnMessageLogged;
             if (!ChatLogManager.shownChatTutorial)
             {
@@ -40,7 +38,7 @@ namespace RainMeadow
             if (isLogToggled)
             {
                 RainMeadow.Debug("creating log");
-                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                chatLogOverlay = new ChatLogOverlay(this);
                 showChatLog = true;
             }
 
@@ -68,7 +66,7 @@ namespace RainMeadow
             if (chatLogOverlay is not null) ShutDownChatLog(); // clear the UI
             if (showChatLog && chatLogOverlay == null && !ShouldForceCloseChat)
             {
-                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                chatLogOverlay = new ChatLogOverlay(this);
             }
         }
         public void UpdateCamera(RoomCamera camera)
@@ -119,7 +117,7 @@ namespace RainMeadow
                 else if (!textPrompt.pausedMode && !ShouldForceCloseChat)
                 {
                     RainMeadow.Debug("creating log");
-                    chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                    chatLogOverlay = new ChatLogOverlay(this);
                     showChatLog = true;
                     isLogToggled = true;
                 }
@@ -136,38 +134,34 @@ namespace RainMeadow
                     else
                     {
                         RainMeadow.Debug("creating input");
-                        chatInputOverlay = new ChatInputOverlay(game.manager);
+                        chatInputOverlay = new ChatInputOverlay();
                         if (chatLogOverlay is null)
                         {
                             RainMeadow.Debug("creating log");
-                            chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                            chatLogOverlay = new ChatLogOverlay(this);
                         }
                     }
                 }
             }
 
-            // Would need a fix later
-
-            // if (chatInputActive)
-            // {
-            //     if (chatLogOverlay != null)
-            //     {
-            //         bool lastBlockInput = ChatTextBox.blockInput;
-            //         ChatTextBox.blockInput = false;
-
-            //         if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Top))
-            //             chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Top, true);
-            //         else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Bottom))
-            //             chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Bottom, true);
-
-            //         ChatTextBox.blockInput = lastBlockInput;
-            //     }
-            // }
+            if (chatInputActive && chatLogOverlay != null)
+            {
+                bool lastBlockInput = ChatTextBox.blockInput;
+                ChatTextBox.blockInput = false;
+                if (!ChatTextBox.AnyCtrl)
+                {
+                    if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Top))
+                        chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Top, true);
+                    else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollToBoundary(UI.Systems.ScrollSystem.Direction.Bottom))
+                        chatLogOverlay.scroller.AddScroll(1, UI.Systems.ScrollSystem.Direction.Bottom, true);
+                }
+                ChatTextBox.blockInput = lastBlockInput;
+            }
 
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
-        }
 
+        }
         public void ShutDownChatLog()
         {
             RainMeadow.DebugMe();
@@ -219,8 +213,9 @@ namespace RainMeadow
             }
             else if (showChatLog && chatLogOverlay == null)
             {
-                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                chatLogOverlay = new ChatLogOverlay(this);
             }
+
             chatLogOverlay?.Update();
             chatInputOverlay?.Update();
         }
