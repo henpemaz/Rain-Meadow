@@ -8,6 +8,7 @@ using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Dialogs;
 using RainMeadow.UI.Interfaces;
 using RainMeadow.UI.Menus;
 using RainMeadow.UI.Systems;
@@ -826,13 +827,32 @@ namespace RainMeadow
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
             if (ID == Ext_ProcessID.LobbySelectMenu) self.currentMainLoop = new LobbySelectMenu(self);
-            if (ID == Ext_ProcessID.LobbyCreateMenu) self.currentMainLoop = new LobbyCreateMenu(self);
-            if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaOnlineLobbyMenu(self);
-            if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
-            if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
-            if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
+            else if (ID == Ext_ProcessID.LobbyCreateMenu) self.currentMainLoop = new LobbyCreateMenu(self);
+            else if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-            if (ID == ProcessManager.ProcessID.IntroRoll)
+            else if (OnlineManager.lobby is null
+                && (ID == Ext_ProcessID.ArenaLobbyMenu 
+                    || ID == Ext_ProcessID.StoryMenu 
+                    || ID == Ext_ProcessID.MeadowMenu))
+            {
+                // Oh no !! Lobby is null !! Go back !!
+                Error($"Next process is {ID} but lobby is null! Going back to lobby selection immediatly!");
+                OnlineManager.LeaveLobby();
+
+                ID = Ext_ProcessID.LobbySelectMenu;
+                self.currentMainLoop = new LobbySelectMenu(self);
+                self.ShowDialog(
+                    new NotifyDialog(self, 
+                        self.rainWorld.inGameTranslator.Translate("Error while joining lobby:")
+                            + '\n' + self.rainWorld.inGameTranslator.Translate("Lobby is null!"), 
+                        new Vector2(self.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - self.rainWorld.options.ScreenSize.x) / 2f, 224f))
+                );
+            }
+            else if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaOnlineLobbyMenu(self);
+            else if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
+            else if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
+
+            else if (ID == ProcessManager.ProcessID.IntroRoll)
             {
                 try
                 {
@@ -845,6 +865,7 @@ namespace RainMeadow
                     RainMeadow.Debug(ex);
                 }
             }
+
             orig(self, ID);
         }
 
