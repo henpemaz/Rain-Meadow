@@ -159,7 +159,8 @@ Custom Chat Username Color|Пользовательский цвет имени 
 Custom colors|Пользовательские цвета
 Enable Meadow Cosmetics|Включить косметику Meadow
 Toggle Show Score|Переключение показа счёта
-Countdown Safety Time (ticks)|Время безопасности отсчёта (в тиках)
+Countdown Safety Time (ticks)|Время безопасности отсчёта
+Arena Score Auto-Scroll|Автопрокрутка счёта в Арене
 How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|На протяжении какого времени отсчёт будет ждать остальных. По умолчанию: 300 тиков (7,5сек)
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
@@ -174,6 +175,8 @@ Chat Log Toggle|Открыть/закрыть окно чата
 Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
 Show Ping|Показать пинг
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists.|Управляйте модами, которые будут разрешены у клиентов, редактируя файлы снизу.<LINE>Инструкция прилагается. Когда файл белого листа не пуст, он заменяет два других листа.
+Edit Whitelist|Изменить белый лист
 Playtesting Gift|Подарок за тест
 Anniversary Gift|Подарок на годовщину
 Pointing Key|Клавиша указания лапой
@@ -182,9 +185,11 @@ Vanilla|Стандартный
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|DLC Downpour не включён, будет использовано стандартное вступление.
 Watcher DLC is not activated, vanilla intro will be used instead|DLC Watcher не включён, будет использовано стандартное вступление.
-Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 5
-Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: $10
+Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: <SCROLLSPEED>|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: <SCROLLSPEED>
 Text Downscroll|Спуск текста
+Clear On New Session|Чистка каждую сессию
+Death|Смерть
+System|Система
 Disable Pause Menu Animation|Отключить анимацию в меню паузы.
 If selected, disables the sway animation in the pause menu|Если этот параметр включен, отключает анимацию раскачивания в меню паузы.
 Input “cheats” to access cheats|Введи «cheats», чтобы получить доступ к читам.
@@ -427,10 +432,16 @@ UNREADY|НЕ ГОТОВ
 WAITING|ЖДЁМ
 Slugcat Abilities|Балансирование
 Select Settings|Разделы настроек
+Vanilla Settings|Стандартные настройки
 MSC Settings|Настройки MSC
 Watcher Settings|Настройки Созерцателя
 Go to <SETTINGSNAME> Page|Перейти на страницу «<SETTINGSNAME>»
 Return to Select Settings Page|Вернуться на страницу «Разделы настроек»
+Monk Spawns With Fruit:|Монах спавниться с фруктом:
+Monk starts each arena round holding a dangle fruit|Монах начинает каждый раунд арены с синим фруктом в руках
+Camo|Камуфляж
+Weaver|Ткач
+Voidkeeper|Хранитель пустоты
 Watcher Camo Duration:|Длительность камуфляжа Созерцателя:
 How long Watcher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
 How long Wacher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
@@ -656,6 +667,7 @@ Press and hold something on screen to spin the slots / Hope you brought green|З
 One, two three of a kind / Somewhere on this page you will find|Один, два, их всего три / На этой странице ты сможешь найти.
 A joke started from the Meadow Discord / Makes all players broke, and none can afford|Началась шутка в Meadow Discord / По банкротству побит был рекорд.
 SCUGSLOTS|СЛИЗНЕСЛОТЫ
+SlugSlots<LINE>Winner!!|Победитель<LINE>Слизнеслотов!!
 LET'S ROLL!|КРУТАНЁМ!
 Oops, better luck next time!|Упс, в следующий раз точно повезёт!
 Try your luck again!|Попытай удачу снова!
