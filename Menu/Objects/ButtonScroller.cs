@@ -311,7 +311,7 @@ namespace RainMeadow
         public virtual Vector2 SizeOfObject(Vector2 origSize) => new(origSize.x, buttonHeight);
         public virtual Vector2 PositionOfObject(int index, Vector2 origPosition = default)
         {
-            RainMeadow.Debug(GetType().Name);
+            // RainMeadow.Debug(GetType().Name);
             var prevScrollObj = buttons.GetValueOrDefault(index - 1)?.GetScrollObject();
             (Vector2, Vector2) posSizeOfElement = (origPosition, buttons.GetValueOrDefault(index)?.GetScrollObject()?.Size ?? SizeOfObject(size));
             (Vector2, Vector2)? prevPosSizeOfElement = prevScrollObj == null ? null : (prevScrollObj.LocalPos, prevScrollObj.Size);
