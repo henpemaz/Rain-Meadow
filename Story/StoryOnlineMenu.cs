@@ -82,7 +82,8 @@ namespace RainMeadow
             if (CurrLang == InGameTranslator.LanguageID.Russian)
             {
                 restartCheckbox.pos.x += 50;
-                colorsCheckbox.pos.x += 50;
+                if (colorsCheckbox != null)
+                    colorsCheckbox.pos.x += 50;
             }
             ModifyExistingMenuItems();
 
