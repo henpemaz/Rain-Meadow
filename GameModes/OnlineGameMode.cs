@@ -26,7 +26,7 @@ namespace RainMeadow
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die<LINE>together." },
                 { Arena, "Fight against unforgiving creatures and foes where only the strong survive." },
-                { Expedition, "tgnad" },
+                { Expedition, "Complete a variety of quests with your friends filled with tough challenges" },
             };
         }
 
