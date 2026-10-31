@@ -514,7 +514,7 @@ Pit yourself against a series of challenges|Испытайте себя, про�
 Arena Settings|Настройки арены
 Challenge Settings|Настройки испытаний
 Challenge ID|ID Испытания
-Scoring|Подсчёт очков
+Scoring|Подсчёт Очков
 Dens|Убежища
 Import & Export|Импорт и Экспорт
 Copy the match settings to your clipboard|Скопировать настройки матча в буфер обмена
