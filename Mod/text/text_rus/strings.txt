@@ -514,6 +514,13 @@ Pit yourself against a series of challenges|Испытайте себя, про�
 Arena Settings|Настройки арены
 Challenge Settings|Настройки испытаний
 Challenge ID|ID Испытания
+Scoring|Подсчёт Очков
+Dens|Убежища
+Import & Export|Импорт и Экспорт
+Copy the match settings to your clipboard|Скопировать настройки матча в буфер обмена
+Load match settings from your clipboard|Загрузить настройки матча из буфера обмена
+Copy the level playlist to your clipboard|Скопировать плейлист арен в буфер обмена
+Load a level playlist from your clipboard|Загрузить плейлист арен из буфера обмена
 Food Score:|Счёт еды:
 Food points multiplier|Множитель очков за еду.
 Spear Hit Score:|Счёт попаданий:
