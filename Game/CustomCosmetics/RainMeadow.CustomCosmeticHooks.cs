@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Mono.Cecil.Cil;
@@ -18,9 +19,42 @@ namespace RainMeadow
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSpritesCosmetics;
             On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainerCosmetics;
             IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
+            IL.WindRect.Update += WindRect_Update_ApplyWindToCosmetics;
         }
 
         public static ConditionalWeakTable<GraphicsModule, CosmeticManager.IMeadowCosmetic> cosmeticed_avatars = new();
+
+        
+        private void WindRect_Update_ApplyWindToCosmetics(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchStloc(7),
+                    x => x.MatchBr(out _)
+                );
+                cursor.MoveAfterLabels();
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_2);
+                cursor.Emit(OpCodes.Ldloc_S, (byte)7);
+                cursor.Emit(OpCodes.Ldloc_0);
+
+                cursor.EmitDelegate((WindRect windRect, List<UpdatableAndDeletable> updateList, int i, float windForce) =>
+                {
+                    if (updateList[i] is Player player 
+                        && windRect.WindAffectsPoint(player.mainBodyChunk.pos)
+                        && cosmeticed_avatars.TryGetValue(player.graphicsModule, out var cosmetic))
+                    {
+                        cosmetic.ApplyWind(windForce * Vector2.right);
+                    } 
+                });
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
+        }
 
         void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor)
         {
@@ -93,10 +127,10 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby != null)
                         {
-                            if (cosmeticed_avatars.TryGetValue(self, out var cape))
+                            if (cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                             {
                                 RainMeadow.Debug(sLeaser.sprites.Length);
-                                cape.InitiateSprites(sLeaser, rCam);
+                                cosmetic.InitiateSprites(sLeaser, rCam);
                             }
                         }
                     }
@@ -120,9 +154,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                     {
-                        cape.Update();
+                        cosmetic.Update();
                     }
                 }
             }
@@ -139,9 +173,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                     {
-                        cape.Reset();
+                        cosmetic.Reset();
                     }
                 }
             }
@@ -161,9 +195,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                     {
-                        cape.DrawSprites(sLeaser, rCam, timeStacker, camPos);
+                        cosmetic.DrawSprites(sLeaser, rCam, timeStacker, camPos);
                     }
                 }
             }
@@ -181,9 +215,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    if (cosmeticed_avatars.TryGetValue(self, out var cape))
+                    if (cosmeticed_avatars.TryGetValue(self, out var cosmetic))
                     {
-                        cape.AddToContainer(sLeaser, rCam, newContatiner);
+                        cosmetic.AddToContainer(sLeaser, rCam, newContatiner);
                     }
                 }
             }
