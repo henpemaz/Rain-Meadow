@@ -36,7 +36,7 @@ namespace RainMeadow
             }
             else
             {
-                neck_length = 3f;
+                neck_length = 4f;
                 neck_width = 16f;
             }
         }
@@ -305,7 +305,7 @@ namespace RainMeadow
             HSLColor customColorHSL = customColor.ToHSL();
             Color fadeColor;
             if (customColorHSL.saturation < 0.4f)
-                fadeColor = new HSLColor(customColorHSL.hue, 1f, customColorHSL.lightness).rgb; // fade to saturated color if desaturated
+                fadeColor = new HSLColor(customColorHSL.hue, 1f, Mathf.Sqrt(customColorHSL.lightness)).rgb; // fade to saturated color if desaturated
             else if (customColorHSL.lightness < 0.4f)
                 fadeColor = Color.white; // fade to white if dark color
             else
