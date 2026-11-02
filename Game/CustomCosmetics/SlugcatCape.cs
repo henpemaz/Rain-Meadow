@@ -229,5 +229,16 @@ namespace RainMeadow
         {
             return; 
         }
+        
+        public void ApplyWind(Vector2 wind)
+        {
+            for (int i = 1; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    CosmeticManager.ApplyWindEffect(ref segments[i, j].vel, wind / (size - j), 0.5f);
+                }
+            }
+        }
     }
 }

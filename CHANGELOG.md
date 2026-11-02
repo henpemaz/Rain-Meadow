@@ -1,3 +1,9 @@
+# Release 1.16.1
+
+## Cosmetics
+- Adjusted scarf cosmetic
+- Scarfs and capes are now affected by (Vanilla) wind
+
 # Release 1.16.0
 
 ## Story

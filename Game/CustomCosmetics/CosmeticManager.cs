@@ -15,12 +15,21 @@ namespace RainMeadow
 {
     public static class CosmeticManager
     {
+        public static void ApplyWindEffect(ref Vector2 vel, Vector2 wind, float force)
+        {
+            float magnitude = wind.magnitude;
+            if (magnitude < 0.01) return; // wind too slow
+            if (Vector2.Dot(vel, wind) * (1f / magnitude) > magnitude) return; // vel projeted is greater than wind
+
+            vel = Vector2.Lerp(vel, wind, force);
+        }
 
         public interface IMeadowCosmetic : IDrawable
         {
             int totalSprites { get; }
             void Update();
             void Reset();
+            void ApplyWind(Vector2 wind);
         }
 
         public interface ICosmeticSkin
