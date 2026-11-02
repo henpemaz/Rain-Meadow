@@ -24,5 +24,9 @@ public abstract class LobbyInfo(
         pinned,
         whitelistMode = whitelistMode;
 
-    public abstract string GetLobbyJoinCode(string? password = null);
+    public abstract MatchmakingManager.MatchMakingDomain domain { get; }
+    protected abstract object[] JoinCodeArgs { get; }
+
+    public string GetLobbyJoinCode(string? password = null)
+        => MatchmakingManager.instances[domain].FormatJoinCode(password, JoinCodeArgs);
 }
