@@ -36,7 +36,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                     == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner)
                 )
                 {
-                    additionalPoints = Math.Min(scoringOn ? arenaPlayer.totScore : arenaPlayer.allKills.Count, 2);
+                    additionalPoints = 2 + Mathf.Max(scoringOn ? arenaPlayer.totScore : arenaPlayer.allKills.Count, 0);
                     break;
                 }
             }
