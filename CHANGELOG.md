@@ -1,8 +1,13 @@
 # Release 1.16.1
 
-## Cosmetics
+## General
 - Adjusted scarf cosmetic
 - Scarfs and capes are now affected by (Vanilla) wind
+
+## Engine
+- ModManager restarting mods won't brick lobby joins anymore
+- You can finally join friends' lobbies from the Steam Overlay!
+- Fixed a source of invisible creatures
 
 # Release 1.16.0
 
