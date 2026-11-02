@@ -260,6 +260,8 @@ namespace RainMeadow
                 ObjectHooks();
                 JollyHooks();
 
+                ExtEnumSync.ApplyHooks();
+
                 CosmeticManager.FetchCosmetics();
                 CosmeticManager.ParseAvailableCosmetics();
 
