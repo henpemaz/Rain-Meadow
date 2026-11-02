@@ -36,7 +36,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                     == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner)
                 )
                 {
-                    additionalPoints = scoringOn ? arenaPlayer.totScore : arenaPlayer.allKills.Count;
+                    additionalPoints = Math.Min(scoringOn ? arenaPlayer.totScore : arenaPlayer.allKills.Count, 2);
                     break;
                 }
             }
@@ -105,7 +105,9 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 if (TeamBattleMode.IsTeamBattleMode(out var tb))
                 {
                     ArenaTeamClientSettings? playerTeam =
-                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
+                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(
+                            voidSpawn.abstractPhysicalObject.GetOnlineObject()?.owner
+                        );
                     if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
                         continue;
                 }
@@ -126,7 +128,7 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 )
                 {
                     foundPlayer = realizedPlayer;
-                    foundPlayerPriority  = GetPriority(arena, voidSpawn, foundPlayer);
+                    foundPlayerPriority = playerPriority;
                     minDistance = distance;
                 }
             }
