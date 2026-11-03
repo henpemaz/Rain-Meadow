@@ -50,7 +50,8 @@ namespace RainMeadow
             }
             msgExtents = [];
 
-            scroller = new(this.menu, this, new(1366f - 660f - menu.manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new Vector2(menu.manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
+            scroller = new(this.menu, this, new(0, 330 - maxVisibleMessages * 20
+            ), new Vector2(menu.manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
                 SetTextAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
