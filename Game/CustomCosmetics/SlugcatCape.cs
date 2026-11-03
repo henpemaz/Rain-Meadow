@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
+using static RainMeadow.CosmeticManager;
 using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
@@ -22,6 +23,7 @@ namespace RainMeadow
         private SimpleSegment[,] segments;
         private const int size = 5;
         private const float targetLength = 50f;
+        const float tip_fade = 1f;
         public int firstSpriteIndex;
 
         public SlugcatCape(GraphicsModule gfx, int firstSpriteIndex, CosmeticManager.ICosmeticSkin cloakColor)
@@ -60,6 +62,9 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
+            Color? fadeColor = cloakColor is FadeGradientCapeColor 
+                ? FadeGradientCapeColor.GetFadeColor(customColor)
+                : null;
 
 
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
@@ -70,6 +75,11 @@ namespace RainMeadow
                 {
                     triangleMesh.MoveVertice(num, this.segments[j, i].DrawPos(timeStacker) - camPos);
                     cloakColor.ApplyColor(triangleMesh, num, rCam, customColor);
+                    if (i > size / 2 && fadeColor is Color fade)
+                    {
+                        float tipRatio = Mathf.Pow(Mathf.InverseLerp(size / 2, size - 1f, i), 2);
+                        (cloakColor as FadeGradientCapeColor)!.ApplyFade(triangleMesh, num, fade, tipRatio * tip_fade);
+                    }
                     ++num;
                 }
             }
@@ -92,13 +102,12 @@ namespace RainMeadow
         // Token: 0x060022B4 RID: 8884 RVA: 0x002B2484 File Offset: 0x002B0684
         private void ConnectEnd()
         {
-            if ((ModManager.Watcher && playerGFX.player.isCamo))
+            if (ModManager.Watcher && playerGFX.player.isCamo)
             {
                 return;
             }
 
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
-            BodyChunk bodyChunk = playerGFX.player.bodyChunks[1];
             Vector2 normalized = GetBodyNormalized();
             Vector2 a = Custom.PerpendicularVector(normalized);
             for (int i = 0; i <= SlugcatCape.size; i++)
@@ -232,13 +241,8 @@ namespace RainMeadow
         
         public void ApplyWind(Vector2 wind)
         {
-            for (int i = 1; i < size; i++)
-            {
-                for (int j = 0; j < size; j++)
-                {
-                    CosmeticManager.ApplyWindEffect(ref segments[i, j].vel, wind / (size - j), 0.5f);
-                }
-            }
+            int clock = playerGFX?.owner?.room.game.clock ?? 0;
+            ApplySurfaceWind(ref segments, wind * 8f, 0.35f, clock);
         }
     }
 }

@@ -23,6 +23,49 @@ namespace RainMeadow
 
             vel = Vector2.Lerp(vel, wind, force);
         }
+        public static void ApplySurfaceWind(ref SimpleSegment[,] segments, Vector2 wind, float force, int clock = 0)
+        {
+            for (int i = 1; i < segments.GetLength(0) - 1; i++)
+            {
+                for (int j = 1; j < segments.GetLength(1) - 1; j++)
+                {
+                    int randomInt = clock + i + j;
+                    wind.x *= 0.75f + Mathf.Sin(randomInt) * 0.25f;
+                    wind.y *= 0.75f + Mathf.Cos(randomInt) * 0.25f;
+                    
+                    Vector2 windXAxis = wind.ProjectOn(segments[i - 1, j].pos - segments[i + 1, j].pos);
+                    Vector2 windYAxis = wind.ProjectOn(segments[i, j - 1].pos - segments[i, j + 1].pos);
+                    ApplyWindEffect(ref segments[i, j].vel, windXAxis, force);
+                    ApplyWindEffect(ref segments[i, j].vel, windYAxis, force);
+                }
+            }
+        }
+        public static void ConnectSegments(ref SimpleSegment A, ref SimpleSegment B, 
+            float targetDist, float massRatio, 
+            float correction = 0.45f, float elasticity = 0.15f, 
+            float spacing = 0f, float spacingCorrection = 0f, float spacingElasticity = 0f)
+		{
+			Vector2 difference = B.pos - A.pos;
+			float magnitude = difference.magnitude;
+			if (magnitude > targetDist)
+			{
+                Vector2 normalizedDiff = difference / magnitude;
+                float error = targetDist - magnitude;
+				A.pos -= correction * error * normalizedDiff * massRatio;
+				A.vel -= elasticity * error * normalizedDiff * massRatio;
+				B.pos += correction * error * normalizedDiff * (1f - massRatio);
+				B.vel += elasticity * error * normalizedDiff * (1f - massRatio);
+			}
+            else if (magnitude < targetDist * spacing)
+            {
+                Vector2 normalizedDiff = difference.normalized; // puts 0 if the vector is too tiny
+                float error = (targetDist * spacing) - magnitude;
+				A.pos -= spacingCorrection * error * normalizedDiff * massRatio;
+				A.vel -= spacingElasticity * error * normalizedDiff * massRatio;
+				B.pos += spacingCorrection * error * normalizedDiff * (1f - massRatio);
+				B.vel += spacingElasticity * error * normalizedDiff * (1f - massRatio);
+            }
+		}
 
         public interface IMeadowCosmetic : IDrawable
         {
@@ -43,7 +86,7 @@ namespace RainMeadow
             public bool UsesCustomColor => false;
             public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
             {
-                mesh.verticeColors[vertex] = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f); ;
+                mesh.verticeColors[vertex] = Color.HSVToRGB(Time.time * 0.1f % 1f, 1f, 1f); ;
             }
 
             public override string ToString() => "rainbow";
@@ -83,7 +126,45 @@ namespace RainMeadow
                 mesh.verticeColors[vertex] = customColor;
             }
 
-            public override string ToString() => $"solid";
+            public override string ToString() => "solid";
+        }
+
+        public class FadeGradientCapeColor : ICosmeticSkin
+        {
+            public static Color GetFadeColor(Color baseColor)
+            {
+                HSLColor baseColorHSL = baseColor.ToHSL();
+                if (baseColorHSL.saturation < 0.5f) // fade to saturated color if desaturated
+                    return new HSLColor(
+                        baseColorHSL.hue, 
+                        1f, 
+                        Mathf.Pow(baseColorHSL.lightness, baseColorHSL.lightness > 0.5f ? 2 : 0.5f)
+                    ).rgb;
+
+                else if (baseColorHSL.lightness < 0.5f) // fade to white if dark color
+                    return Color.white;
+
+                else // fade to black if bright color
+                    return new(0.1f, 0.1f, 0.1f);
+            }
+
+            public bool UsesCustomColor => true;
+            public FadeGradientCapeColor()
+            {
+            }
+            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            {
+                mesh.verticeColors[vertex] = customColor;
+            }
+
+            public void ApplyFade(TriangleMesh mesh, int vertex, float fade)
+                => ApplyFade(mesh, vertex, GetFadeColor(mesh.verticeColors[vertex]), fade);
+            public void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
+            {
+                mesh.verticeColors[vertex] = Color.Lerp(mesh.verticeColors[vertex], fadeColor, fade);
+            }
+
+            public override string ToString() => "fade gradient";
         }
 
 
@@ -217,6 +298,7 @@ namespace RainMeadow
                 "rainbow" => new RainbowCapeColor(),
                 "cosmic" => new CosmicCapeColor(),
                 "solid" => new SolidCapeColor(),
+                "fade gradient" => new FadeGradientCapeColor(),
                 _ => null,
             };
         }
@@ -258,6 +340,7 @@ namespace RainMeadow
             }
 
             skins.Add("solid");
+            skins.Add("fade gradient");
             available_skins_cache.Add(player, skins);
             return skins;
         }

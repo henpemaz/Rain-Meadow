@@ -1,6 +1,7 @@
 using RWCustom;
 using System;
 using UnityEngine;
+using static RainMeadow.CosmeticManager;
 
 namespace RainMeadow
 {
@@ -25,18 +26,18 @@ namespace RainMeadow
 
             // todo cosmetic options??
             dangle_length = 45f;
-            dangle_width = 25f; 
-            small_dangle_length = 10f;
-            small_dangle_width = 15f; 
+            dangle_width = 20f; 
+            small_dangle_length = 25f;
+            small_dangle_width = 12f; 
 
             if (baseModule is ScavengerGraphics)
             {
-                neck_length = 3f;
+                neck_length = 4f;
                 neck_width = 8f;
             }
             else
             {
-                neck_length = 4f;
+                neck_length = 5f;
                 neck_width = 16f;
             }
         }
@@ -51,11 +52,7 @@ namespace RainMeadow
         float neck_length;
         float neck_width;
         float neck_lenght_mult = 1;
-        const float odd_dangle_ratio = 0.20f;
-        const float neck_dangle_ratio = 0.20f;
         
-        const float dangle_fade = 0.05f;
-        const float small_dangle_fade = 0.10f;
         const float tip_fade = 0.85f;
         
         const int sizeDangle = 7;
@@ -156,7 +153,7 @@ namespace RainMeadow
                 }
             }
         }
-        private void UpdateSegmentVelocity(Room room, ref SimpleSegment[,] segments, float segmentlength, float segmentwidth,
+        private void UpdateSegmentVelocity(Room room, ref SimpleSegment[,] segments, float segmentlength, float segmentEndwidth,
             float gravity = 0.4f, float correction = 0.65f, float elasticity = 0.05f, 
             float spacing = 0.85f, float spacingCorrection = 0.35f, float spacingElasticity = 0.75f)
         {
@@ -167,38 +164,36 @@ namespace RainMeadow
                     ref SimpleSegment segment = ref segments[i, j];
                     UpdateSegmentVelocity(room, ref segment, gravity);
 
-                    float dangle_knot_ratio = Mathf.Lerp(neck_dangle_ratio, 1f, j / (segments.GetLength(1) - 1f));
+                    float dangle_knot_ratio = j / (segments.GetLength(1) - 1f);
+                    float width = Mathf.Lerp(neck_length / segments.GetLength(0), segmentEndwidth, Mathf.Pow(dangle_knot_ratio * 1.25f, 2));
                     if (i > 0)
                     {
-                        ConnectSegments(ref segment, ref segments[i - 1, j], 
-                            segmentwidth * dangle_knot_ratio, 
-                            0.5f, correction, elasticity, 
-                            spacing * dangle_knot_ratio, spacingCorrection * dangle_knot_ratio, spacingElasticity * dangle_knot_ratio);
+                        CosmeticManager.ConnectSegments(ref segment, ref segments[i - 1, j], 
+                            width, 0.5f, correction, elasticity, 
+                            spacing, spacingCorrection * Mathf.Sqrt(dangle_knot_ratio), spacingElasticity * Mathf.Sqrt(dangle_knot_ratio));
                         
+                        // Force it to unfold
                         if (i > 1)
                         {
-                            // force it to spread around instead on folding on itself
-                            ConnectSegments(ref segment, ref segments[i - 2, j], 
-                                segmentwidth * dangle_knot_ratio * 2, 
-                                0.5f, correction, elasticity, 
-                                spacing * dangle_knot_ratio, spacingCorrection * dangle_knot_ratio, spacingElasticity * dangle_knot_ratio);
+                            CosmeticManager.ConnectSegments(ref segment, ref segments[i - 2, j], 
+                                width * 2, 0.5f, correction, elasticity, 
+                                spacing, spacingCorrection * dangle_knot_ratio, spacingElasticity * dangle_knot_ratio);
                         }
                     }
                     if (j > 0)
                     {
-                        ConnectSegments(ref segment, ref segments[i, j - 1], 
-                            segmentlength * (j == segments.GetLength(1) - 1 && i%2 == 0 ? odd_dangle_ratio : 1),
-                            0.9f, correction, elasticity);
+                        CosmeticManager.ConnectSegments(ref segment, ref segments[i, j - 1], 
+                            segmentlength, 0.9f, correction, elasticity);
                     }
                 }
             }
         }
-        private void ConnectToNeck(ref SimpleSegment[,] segments, float segmentwidth, float offset = 0f)
+        private void ConnectToNeck(ref SimpleSegment[,] segments, float offset = 0f)
         {
             for (int i = 0; i < segments.GetLength(0); i++)
             {
                 float segment_pos = ((float)i / (segments.GetLength(0) - 1)) - 0.5f;
-                segment_pos *= segmentwidth * neck_dangle_ratio;
+                segment_pos *= neck_length;
                 segment_pos += neck_width * offset;
 
                 ref SimpleSegment segment = ref segments[i, 0];
@@ -210,18 +205,8 @@ namespace RainMeadow
                 segment.vel = Vector2.zero;
             }
         }
-        private void UpdateSegmentPosition(ref SimpleSegment segment, ref SimpleSegment back_segment)
+        private void UpdateSegmentPosition(ref SimpleSegment segment)
         {
-            
-            Vector2 dir = (segment.pos - back_segment.pos).normalized;
-            if (dir.x < 0.05f)
-            {
-                dir.x = Mathf.Sign(Flip(0f)) * 0.05f;
-
-                // simplification of sin(acos(x)) 
-                dir.y = Mathf.Sqrt(1 - (dir.x * dir.x)) * Math.Sign(dir.y);
-            }
-            
             segment.pos += segment.vel;
         }
         private void UpdateSegmentPosition(Room room, ref SimpleSegment[,] segments, float segmentlength)
@@ -233,7 +218,7 @@ namespace RainMeadow
                     ref SimpleSegment segment = ref segments[i, j];
                     ref SimpleSegment back_segment = ref segments[i, j - 1];
 
-                    UpdateSegmentPosition(ref segment, ref back_segment);
+                    UpdateSegmentPosition(ref segment);
                     
                     if (room.GetTile(segment.lastPos).Solid && Custom.DistLess(segment.lastPos, segment.pos, segmentlength * 4f))
                     {
@@ -259,10 +244,10 @@ namespace RainMeadow
             if (room is null) return;
 
             UpdateSegmentVelocity(room, ref dangleBigSegments, bigDanglelength, bigDanglewidth);
-            UpdateSegmentVelocity(room, ref dangleSmallSegments, smallDanglelength, smallDanglewidth, gravity: 0.25f, elasticity:0.15f, spacingElasticity: 1.25f);
+            UpdateSegmentVelocity(room, ref dangleSmallSegments, smallDanglelength, smallDanglewidth, gravity: 0.25f, elasticity:0.20f, spacingElasticity: 1.35f);
 
-            ConnectToNeck(ref dangleBigSegments, dangle_width, 0.25f);
-            ConnectToNeck(ref dangleSmallSegments, small_dangle_width, 0.35f);
+            ConnectToNeck(ref dangleBigSegments, 0.15f);
+            ConnectToNeck(ref dangleSmallSegments, 0.35f);
             
             UpdateSegmentPosition(room, ref dangleBigSegments, bigDanglelength);
             UpdateSegmentPosition(room, ref dangleSmallSegments, smallDanglelength);
@@ -288,7 +273,7 @@ namespace RainMeadow
         {
             sLeaser.sprites[DangleSprite] = TriangleMesh.MakeGridMesh("Futile_White", sizeDangle - 1); // scarf dangle
             sLeaser.sprites[DangleSpriteSub] = TriangleMesh.MakeGridMesh("Futile_White", sizeSmall - 1); // small scarf dangle
-            sLeaser.sprites[NeckSprite] = TriangleMesh.MakeOneToOneLongMesh(sizeNeck, true); // neck
+            sLeaser.sprites[NeckSprite] = TriangleMesh.MakeGridMesh("Futile_White", sizeNeck - 1); // neck
         }
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -301,20 +286,9 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
-
-            HSLColor customColorHSL = customColor.ToHSL();
-            Color fadeColor;
-            if (customColorHSL.saturation < 0.4f)
-                fadeColor = new HSLColor(customColorHSL.hue, 1f, Mathf.Sqrt(customColorHSL.lightness)).rgb; // fade to saturated color if desaturated
-            else if (customColorHSL.lightness < 0.4f)
-                fadeColor = Color.white; // fade to white if dark color
-            else
-                fadeColor = new(0.1f, 0.1f, 0.1f); // fade to black if bright color
-
-            if (baseModule is PlayerGraphics)
-                neck_lenght_mult = sLeaser.sprites[0].scaleX;
-            else if (baseModule is ScavengerGraphics scavengerGraphics)
-                neck_lenght_mult = sLeaser.sprites[scavengerGraphics.ChestSprite].scaleX;
+            Color? fadeColor = color is FadeGradientCapeColor 
+                ? FadeGradientCapeColor.GetFadeColor(customColor)
+                : null;
 
             TriangleMesh dangle = (TriangleMesh)sLeaser.sprites[DangleSprite];
             TriangleMesh dangleSmall = (TriangleMesh)sLeaser.sprites[DangleSpriteSub];
@@ -326,11 +300,11 @@ namespace RainMeadow
                 for (int j = 0; j < sizeDangle; j++)
                 {
                     dangle.MoveVertice(dangle_index, dangleBigSegments[i, j].DrawPos(timeStacker) - camPos);
-                    color.ApplyColor(dangle, dangle_index, rCam, Color.Lerp(customColor, fadeColor, dangle_fade));
-                    if (j > sizeDangle / 2)
+                    color.ApplyColor(dangle, dangle_index, rCam, customColor);
+                    if (j > sizeDangle / 2 && fadeColor is Color fade)
                     {
                         float tipRatio = Mathf.InverseLerp(sizeDangle / 2, sizeDangle - 1f, j);
-                        dangle.verticeColors[dangle_index] = Color.Lerp(dangle.verticeColors[dangle_index], fadeColor, Mathf.Pow(tipRatio, 3) * tip_fade);
+                        (color as FadeGradientCapeColor)!.ApplyFade(dangle, dangle_index, fade, tipRatio * tip_fade);
                     }
                     ++dangle_index;
                 }
@@ -342,11 +316,11 @@ namespace RainMeadow
                 for (int j = 0; j < sizeSmall; j++)
                 {
                     dangleSmall.MoveVertice(small_dangle_index, dangleSmallSegments[i, j].DrawPos(timeStacker) - camPos);
-                    color.ApplyColor(dangleSmall, small_dangle_index, rCam, Color.Lerp(customColor, fadeColor, small_dangle_fade));
-                    if (j > 0)
+                    color.ApplyColor(dangleSmall, small_dangle_index, rCam, customColor);
+                    if (j > 1 && fadeColor is Color fade)
                     {
-                        float tipRatio = Mathf.InverseLerp(0, sizeDangle - 1f, j);
-                        dangleSmall.verticeColors[small_dangle_index] = Color.Lerp(dangle.verticeColors[small_dangle_index], fadeColor, tipRatio * tip_fade);
+                        float tipRatio = Mathf.InverseLerp(1, sizeSmall - 1f, j);
+                        (color as FadeGradientCapeColor)!.ApplyFade(dangleSmall, small_dangle_index, fade, tipRatio * tip_fade);
                     }
                     ++small_dangle_index;
                 }
@@ -355,14 +329,22 @@ namespace RainMeadow
             int neck_index = 0;
             for (int i = 0; i < sizeNeck; i++)
             {
-                for (int j = 0; j < 2; j++)
+                for (int j = 0; j < sizeNeck; j++)
                 {
                     float segment_width = ((i / (sizeNeck - 1f)) - 0.5f) * neck_width * neck_lenght_mult;
-                    float segment_height = (j - 0.5f) * neck_length;
+                    float segment_height = ((j / (sizeNeck - 1f)) - 0.5f)  * neck_length;
+                    
+                    Vector2 neckpos = NeckPos(timeStacker);
                     Vector2 posrelativetohead = new(segment_width, segment_height);
                     posrelativetohead = Custom.rotateVectorDeg(posrelativetohead, Custom.VecToDeg(HeadDir(timeStacker)));
-                    Vector2 neckpos = NeckPos(timeStacker);
-                    neck.MoveVertice(neck_index, posrelativetohead + neckpos - camPos + Vector2.up * Mathf.Abs(i + 1 - sizeNeck/2));
+
+                    Vector2 additionalOffset = Vector2.up * Mathf.Abs(i - sizeNeck/2); // round shape
+                    if (i == 0)
+                        additionalOffset.x -= sizeNeck/2 - Mathf.Abs(j - sizeNeck/2);
+                    else if (i == sizeNeck - 1)
+                        additionalOffset.x += sizeNeck/2 - Mathf.Abs(j - sizeNeck/2);
+
+                    neck.MoveVertice(neck_index, posrelativetohead + neckpos + additionalOffset - camPos);
                     color.ApplyColor(neck, neck_index, rCam, customColor);
                     ++neck_index;
                 }
@@ -386,56 +368,9 @@ namespace RainMeadow
 
         public void ApplyWind(Vector2 wind)
         {
-            // putting some randomness to the wind
             int clock = baseModule?.owner?.room.game.clock ?? 0;
-            // if (clock % 5 != 0) return;
-            for (int i = 1; i < sizeDangle; i++)
-            {
-                for (int j = 0; j < sizeDangle; j++)
-                {
-                    int randomInt = clock + i + j;
-                    // if (randomInt % 8 == 0) continue;
-                    wind.x *= 0.75f + Mathf.Sin(randomInt) * 0.25f;
-                    wind.y *= 0.75f + Mathf.Cos(randomInt) * 0.25f;
-                    CosmeticManager.ApplyWindEffect(ref dangleBigSegments[i, j].vel, 8f * wind / (sizeDangle - j), 0.2f);
-                }
-            }
-
-            for (int i = 1; i < sizeSmall; i++)
-            {
-                for (int j = 0; j < sizeSmall; j++)
-                {
-                    int randomInt = clock + i + j;
-                    // if (randomInt % 4 == 0) continue;
-                    wind.x *= 0.75f + Mathf.Cos(randomInt) * 0.25f;
-                    wind.y *= 0.75f + Mathf.Sin(randomInt) * 0.25f;
-                    CosmeticManager.ApplyWindEffect(ref dangleSmallSegments[i, j].vel, 4f * wind / (sizeSmall - j), 0.5f);
-                }
-            }
+            ApplySurfaceWind(ref dangleBigSegments, wind * 4f, 0.2f, clock);
+            ApplySurfaceWind(ref dangleSmallSegments, wind * 8f, 0.45f, clock);
         }
-
-		private void ConnectSegments(ref SimpleSegment A, ref SimpleSegment B, float targetDist, float massRatio, float correction = 0.45f, float elasticity = 0.15f, float spacing = 0f, float spacingCorrection = 0f, float spacingElasticity = 0f)
-		{
-			Vector2 difference = B.pos - A.pos;
-			float magnitude = difference.magnitude;
-			if (magnitude > targetDist)
-			{
-                Vector2 normalizedDiff = difference / magnitude;
-                float error = targetDist - magnitude;
-				A.pos -= correction * error * normalizedDiff * massRatio;
-				A.vel -= elasticity * error * normalizedDiff * massRatio;
-				B.pos += correction * error * normalizedDiff * (1f - massRatio);
-				B.vel += elasticity * error * normalizedDiff * (1f - massRatio);
-			}
-            else if (magnitude > 0.1f && magnitude < targetDist * spacing) // magnitude need a minimum so it doesn't get send to Mars or smt
-            {
-                Vector2 normalizedDiff = difference / magnitude;
-                float error = (targetDist * spacing) - magnitude;
-				A.pos -= spacingCorrection * error * normalizedDiff * massRatio;
-				A.vel -= spacingElasticity * error * normalizedDiff * massRatio;
-				B.pos += spacingCorrection * error * normalizedDiff * (1f - massRatio);
-				B.vel += spacingElasticity * error * normalizedDiff * (1f - massRatio);
-            }
-		}
     }
 }
