@@ -50,7 +50,7 @@ namespace RainMeadow
             }
             msgExtents = [];
 
-            scroller = new(this.menu, this, new(0, 330 - maxVisibleMessages * 20
+            scroller = new(this.menu, this, new(-bgSideOffset, 330 - maxVisibleMessages * 20
             ), new Vector2(menu.manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
             {
                 buttonHeight = 20,
@@ -188,7 +188,7 @@ namespace RainMeadow
             if (ChatLogManager.chatLog.Count > myChatLog.Length + messageHistoryStart)
             {
                 ChatLogManager.UpdatePlayerColors();
-                float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset + textOffsetSquishFix; 
+                float desiredXWidth = scroller.size.x - bgSideOffset * 2, xPos = bgSideOffset * 2 + textOffsetSquishFix; 
                 var newMessages = ChatLogManager.chatLog.Skip(myChatLog.Length + messageHistoryStart);
                 foreach (var (username, message) in newMessages)
                 {
