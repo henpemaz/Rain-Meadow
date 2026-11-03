@@ -1994,20 +1994,44 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded_DontAssumePlayerRealized(ILContext il)
         {
-            // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
-            //becomes
-            // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);
             try
             {
                 var c = new ILCursor(il);
                 var vanilla = il.DefineLabel();
                 var cont = il.DefineLabel();
                 var skip = il.DefineLabel();
+
                 c.GotoNext(
                     i => i.MatchLdsfld<ModManager>("CoopAvailable"),
                     i => i.MatchBrfalse(out vanilla)
                     );
                 c.GotoLabel(vanilla);
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInStomach;
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInStomach;
+
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>()
+                    );
+                c.Emit(OpCodes.Dup);
+                c.Emit(OpCodes.Brtrue, cont);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, skip);
+                c.MarkLabel(cont);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCallOrCallvirt<Player>("get_FoodInStomach"),
+                    i => i.MatchAdd()
+                    );
+                c.MarkLabel(skip);
+
+                cont = il.DefineLabel();
+                skip = il.DefineLabel();
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);            
+
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchIsinst<Player>()
                     );

@@ -777,7 +777,7 @@ Join selected lobby|選択したロビーに参加
 MSC + Watcher|MSC + ウォッチャー
 Mute player|プレイヤーミュート
 Unmute player|プレイヤーミュート解除
-Countdown Safety Time (ticks)|安全カウントダウンタイマー (チック)
+Countdown Safety Time (ticks)|安全カウントダウン(チック)
 How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|カウントダウンが待つ時間 デフォルト:300チック (7.5秒)
 
 
@@ -872,7 +872,21 @@ MothGrub|モスグラブ
 Angler|アングラー
 TowerCrab|タワークラブ
 
-//misc
+//1.16.0
 
-//lacking translate string?
-Current points:|現在のポイント
+// Remix
+Arena Score Auto-Scroll|自動スクロールスコア
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists.|以下のファイルを編集することで,クライアントで許可されるMODを制御できます.<LINE>空でないホワイトリストが、他の2つのリストに取って代わります。
+Edit Whitelist|ホワイトリスト編集
+
+// Arena
+Vanilla Settings|バニラ設定
+Monk Spawns With Fruit:|僧侶はブルーフルーツを持って出現する
+Monk starts each arena round holding a dangle fruit|僧侶は,各アリーナラウンドの開始時にブルーフルーツを手に持っている
+Camo|透明化
+SlugSlots<LINE>Winner!!|ス(ラッグ)ロット<LINE>WIN!
+Voidkeeper|ヴォイドキーパー
+Weaver|織り手
+Scoring|得点
+Dens|雨宿
+Import & Export|インポートとエクスポート

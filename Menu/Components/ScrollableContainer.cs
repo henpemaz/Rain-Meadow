@@ -57,12 +57,12 @@ namespace RainMeadow.UI.Components
             (owner?.Container ?? menu.container).AddChild(myContainer = new());
             myContainer.AddChild(itemMaskContainer = new());
 
-            uiMask = new(menu, this, new(0, 0), size, itemMaskContainer);
             contentSystem = scrollingSystem ?? new ContentScrollSystem(ScrollSystem.Axis.Vertical);
             contentSystem.MarkScrollObjectsDirty += MarkScrollObjectsDirty;
             contentSystem.OnViewSizeChanged += ViewSizeChanged;
             contentSystem.OnContentSizeChanged += ContentSizeChanged;
 
+            uiMask = new(menu, this, new(0, 0), size, itemMaskContainer, contentSystem.IsHorizontal);
             subObjects.Add(uiMask);
             BuildSliders(horiVertSliderAnchor, sliderPosOffset, sliderSizeoffset);
         }
