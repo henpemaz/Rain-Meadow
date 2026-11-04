@@ -3,9 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -105,7 +103,7 @@ namespace RainMeadow
         {
             return requiredMods.Split('\n');
         }
-      
+
         public static string[] GetBannedMods()
         {
             if (IsWhitelistActive())
@@ -259,7 +257,8 @@ namespace RainMeadow
                 RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
                 RainMeadow.Debug($"reorder: {reorder}");
 
-                if (!reorder) {
+                if (!reorder)
+                {
                     onFinish?.Invoke();
                     return;
                 }
@@ -333,40 +332,44 @@ namespace RainMeadow
                         missingDLC.Add(ModManager.InstalledMods[i].LocalizedName);
 
                 ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
+                modApplier.forcedRestart = modsRequiringForcedRestart
+                    .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
+                    .Any();
 
-                //mod applier code moved to a task so the game doesn't get frozen?
-                
-                Task.Run(() =>
+                RainMeadow.Debug("Showing mod check popups");
+                if (missingDLC.Count > 0)
+                    modApplier.ShowMissingDLCMessage(missingDLC);
+                else if (enable.Any() || disable.Any() || missingMods.Count > 0)
+                    modApplier.ShowConfirmation(modNamesToEnable, modNamesToDisable, missingMods);
+                else
+                    modApplier.ConfirmReorder();
+
+                modApplier.OnFinish += (ModApplier modApplyer) =>
                 {
-                    RainMeadow.Debug("Showing mod check popups");
-                    if (missingDLC.Count > 0)
-                        modApplier.ShowMissingDLCMessage(missingDLC);
-                    else if (enable.Any() || disable.Any() || missingMods.Count > 0)
-                        modApplier.ShowConfirmation(modNamesToEnable, modNamesToDisable, missingMods);
-                    else
-                        modApplier.ConfirmReorder();
+                    RainMeadow.Debug("Finished applying");
 
-                    modApplier.OnFinish += (ModApplier modApplyer) =>
+                    if (modApplier.WillRestart)
                     {
-                        RainMeadow.Debug("Finished applying");
-
-                        if (modApplier.requiresRestart || 
-                        modsRequiringForcedRestart
-                                .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
-                                .Any())
+                        RainMeadow.Debug($"Restarting game with code {restartCode}");
+                        try
                         {
-                            RainMeadow.Debug($"Restarting game with code {restartCode}");
                             Utils.Restart(restartCode);
                         }
-                        else if (modApplier.WasSuccessful())
+                        catch (Exception ex)
                         {
-                            RainMeadow.Debug("Successfully applied mods");
-                            onFinish?.Invoke();
+                            RainMeadow.Error("Failed to restart the game");
+                            RainMeadow.Error(ex);
+                            modApplier.RestartFailed();
                         }
-                        else
-                            RainMeadow.Debug("Error in mod applier; unsuccessful");
-                    };
-                });
+                    }
+                    else if (modApplier.WasSuccessful())
+                    {
+                        RainMeadow.Debug("Successfully applied mods");
+                        onFinish?.Invoke();
+                    }
+                    else
+                        RainMeadow.Debug("Error in mod applier; unsuccessful");
+                };
             }
             catch (Exception ex)
             {
