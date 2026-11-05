@@ -26,9 +26,9 @@ namespace RainMeadow
 
             // todo cosmetic options??
             dangle_length = 45f;
-            dangle_width = 20f; 
+            dangle_width = 16f; 
             small_dangle_length = 25f;
-            small_dangle_width = 12f; 
+            small_dangle_width = 10f; 
 
             if (baseModule is ScavengerGraphics)
             {
@@ -286,9 +286,8 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
-            Color? fadeColor = color is FadeGradientCapeColor 
-                ? FadeGradientCapeColor.GetFadeColor(customColor)
-                : null;
+            GradientCapeColor? gradient = color as GradientCapeColor;
+            Color? fadeColor = gradient?.GetFadeColor(customColor);
 
             TriangleMesh dangle = (TriangleMesh)sLeaser.sprites[DangleSprite];
             TriangleMesh dangleSmall = (TriangleMesh)sLeaser.sprites[DangleSpriteSub];
@@ -301,10 +300,10 @@ namespace RainMeadow
                 {
                     dangle.MoveVertice(dangle_index, dangleBigSegments[i, j].DrawPos(timeStacker) - camPos);
                     color.ApplyColor(dangle, dangle_index, rCam, customColor);
-                    if (j > sizeDangle / 2 && fadeColor is Color fade)
+                    if (gradient is not null && j > sizeDangle / 2)
                     {
                         float tipRatio = Mathf.InverseLerp(sizeDangle / 2, sizeDangle - 1f, j);
-                        (color as FadeGradientCapeColor)!.ApplyFade(dangle, dangle_index, fade, tipRatio * tip_fade);
+                        gradient.ApplyFade(dangle, dangle_index, (Color)fadeColor!, tipRatio * tip_fade);
                     }
                     ++dangle_index;
                 }
@@ -317,10 +316,10 @@ namespace RainMeadow
                 {
                     dangleSmall.MoveVertice(small_dangle_index, dangleSmallSegments[i, j].DrawPos(timeStacker) - camPos);
                     color.ApplyColor(dangleSmall, small_dangle_index, rCam, customColor);
-                    if (j > 1 && fadeColor is Color fade)
+                    if (gradient is not null && j > 1)
                     {
                         float tipRatio = Mathf.InverseLerp(1, sizeSmall - 1f, j);
-                        (color as FadeGradientCapeColor)!.ApplyFade(dangleSmall, small_dangle_index, fade, tipRatio * tip_fade);
+                        gradient.ApplyFade(dangleSmall, small_dangle_index, (Color)fadeColor!, tipRatio * tip_fade);
                     }
                     ++small_dangle_index;
                 }

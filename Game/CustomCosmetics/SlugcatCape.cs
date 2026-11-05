@@ -62,9 +62,8 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
-            Color? fadeColor = cloakColor is FadeGradientCapeColor 
-                ? FadeGradientCapeColor.GetFadeColor(customColor)
-                : null;
+            GradientCapeColor? gradient = cloakColor as GradientCapeColor;
+            Color? fadeColor = gradient?.GetFadeColor(customColor);
 
 
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
@@ -75,10 +74,10 @@ namespace RainMeadow
                 {
                     triangleMesh.MoveVertice(num, this.segments[j, i].DrawPos(timeStacker) - camPos);
                     cloakColor.ApplyColor(triangleMesh, num, rCam, customColor);
-                    if (i > size / 2 && fadeColor is Color fade)
+                    if (gradient is not null && i > size / 2)
                     {
-                        float tipRatio = Mathf.Pow(Mathf.InverseLerp(size / 2, size - 1f, i), 2);
-                        (cloakColor as FadeGradientCapeColor)!.ApplyFade(triangleMesh, num, fade, tipRatio * tip_fade);
+                        float tipRatio = Mathf.InverseLerp(size / 2, size - 1f, i);
+                        gradient.ApplyFade(triangleMesh, num, (Color)fadeColor!, tipRatio * tip_fade);
                     }
                     ++num;
                 }

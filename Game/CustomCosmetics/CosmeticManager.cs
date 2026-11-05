@@ -128,10 +128,29 @@ namespace RainMeadow
 
             public override string ToString() => "solid";
         }
-
-        public class FadeGradientCapeColor : ICosmeticSkin
+        public abstract class GradientCapeColor : ICosmeticSkin
         {
-            public static Color GetFadeColor(Color baseColor)
+            public virtual bool UsesCustomColor => true;
+            public GradientCapeColor()
+            {
+            }
+
+            public abstract Color GetFadeColor(Color baseColor);
+            public virtual void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            {
+                mesh.verticeColors[vertex] = customColor;
+            }
+            public void ApplyFade(TriangleMesh mesh, int vertex, float fade)
+                => ApplyFade(mesh, vertex, GetFadeColor(mesh.verticeColors[vertex]), fade);
+            public virtual void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
+            {
+                mesh.verticeColors[vertex] = Color.Lerp(mesh.verticeColors[vertex], fadeColor, fade);
+            }
+        }
+
+        public class FadeGradientCapeColor() : GradientCapeColor
+        {
+            public override Color GetFadeColor(Color baseColor)
             {
                 HSLColor baseColorHSL = baseColor.ToHSL();
                 if (baseColorHSL.saturation < 0.5f) // fade to saturated color if desaturated
@@ -147,21 +166,9 @@ namespace RainMeadow
                 else // fade to black if bright color
                     return new(0.1f, 0.1f, 0.1f);
             }
-
-            public bool UsesCustomColor => true;
-            public FadeGradientCapeColor()
+            public override void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
             {
-            }
-            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
-            {
-                mesh.verticeColors[vertex] = customColor;
-            }
-
-            public void ApplyFade(TriangleMesh mesh, int vertex, float fade)
-                => ApplyFade(mesh, vertex, GetFadeColor(mesh.verticeColors[vertex]), fade);
-            public void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
-            {
-                mesh.verticeColors[vertex] = Color.Lerp(mesh.verticeColors[vertex], fadeColor, fade);
+                base.ApplyFade(mesh, vertex, fadeColor, Mathf.Pow(fade, 2));
             }
 
             public override string ToString() => "fade gradient";
