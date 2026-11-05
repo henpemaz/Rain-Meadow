@@ -49,6 +49,7 @@ namespace RainMeadow
             ChatTextBox.OnShutDownRequest += ResetChatInput;
 
             expeditionGameMode.needUpdateeChallengePreview = true;
+            expeditionGameMode.pinChallenge_PinList = null;
         }
 
         public override void Update()
@@ -244,6 +245,9 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     expeditionGameMode.currentCampaign = Expedition.ExpeditionData.slugcatPlayer;
+
+                    if(ExpeditionData.challengeList.Exists(x => x is PinChallenge))
+                        expeditionGameMode.pinChallenge_PinList = new();
                 }
 
                 var jollyallowed = ModManager.JollyCoop;

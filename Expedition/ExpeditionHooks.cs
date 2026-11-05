@@ -43,8 +43,6 @@ namespace RainMeadow
             On.Expedition.ExpeditionCoreFile.ToString += ExpeditionCoreFile_ToString;
             On.Expedition.ExpeditionCoreFile.FromString += unlockAllMeadowMusics;            
             On.Expedition.ExpeditionProgression.GetUnlockedSongs += ExpeditionProgression_GetUnlockedSongs;
-            On.Expedition.PinChallenge.Reset += PinChallenge_Reset;
-            On.Expedition.PinChallenge.ctor += PinChallenge_ctor;
 
             On.Expedition.ExpeditionProgression.CheckUnlocked += ExpeditionProgression_CheckUnlocked;
             On.Expedition.CycleScoreChallenge.ToString += CycleScoreChallenge_ToString;
@@ -59,7 +57,17 @@ namespace RainMeadow
             IL.RainWorldGame.GoToDeathScreen += ExpeditionGameOver;
             On.Menu.SleepAndDeathScreen.Singal += ExpeditionFastTravel;
             On.Menu.SleepAndDeathScreen.Update += ExpPassageGreyedOut;
+            On.SaveState.SessionEnded += ClearPinList;
 
+        }
+
+        private void ClearPinList(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
+        {
+            orig(self, game, survived, newMalnourished);
+            if (isExpeditionMode(out var em))
+            {
+                em.pinChallenge_PinList?.Clear();
+            }
         }
 
         private void ExpPassageGreyedOut(On.Menu.SleepAndDeathScreen.orig_Update orig, SleepAndDeathScreen self)
@@ -272,29 +280,7 @@ namespace RainMeadow
 
             if (isExpeditionMode(out _)) return true;
             return orig(manager, slugcat);
-        }
-
-        private void PinChallenge_ctor(On.Expedition.PinChallenge.orig_ctor orig, PinChallenge self)
-        {
-            orig(self);
-            if (isExpeditionMode(out var ex))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    ex.pinChallenge_PinList = new List<OnlineCreature>();
-                }
-            }
-        }
-
-        private void PinChallenge_Reset(On.Expedition.PinChallenge.orig_Reset orig, PinChallenge self)
-        {
-            orig(self);
-            if (isExpeditionMode(out var ex))
-            {
-                ex.pinChallenge_PinList = new List<OnlineCreature>();
-            }
-
-        }
+        }       
 
         private void unlockAllMeadowMusics(On.Expedition.ExpeditionCoreFile.orig_FromString orig, ExpeditionCoreFile self, string saveString)
         {
