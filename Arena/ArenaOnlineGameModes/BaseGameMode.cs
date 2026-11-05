@@ -573,9 +573,14 @@ namespace RainMeadow
                 );
                 return;
             }
-            if (attackerOCreature is not { isAvatar: true, isMine: true })
+            if (!attackerOCreature.isAvatar)
             {
-                RainMeadow.Debug("Attacker is not my avatar. Returning early.");
+                RainMeadow.Debug("Attacker is not an avatar. Returning early.");
+                return;
+            }
+            if (!targetOCreature.isMine)
+            {
+                RainMeadow.Debug("Target is not mine; the target's owner scores spear hits. Returning early.");
                 return;
             }
             if (!targetOCreature.isAvatar)
