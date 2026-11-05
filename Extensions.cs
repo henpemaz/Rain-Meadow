@@ -561,5 +561,15 @@ namespace RainMeadow
         {
             return menu.manager.rainWorld.inGameTranslator.TryTranslate(text, out trad);
         }
+
+        public static float ProjectionLenght(this Vector2 from, Vector2 on)
+        {
+            if (on.magnitude < 1E-05f) return 0;
+            return Vector2.Dot(from, on) * 1f/on.magnitude;
+        }
+        public static Vector2 ProjectOn(this Vector2 from, Vector2 on)
+        {
+            return on.normalized * from.ProjectionLenght(on);
+        }
     }
 }
