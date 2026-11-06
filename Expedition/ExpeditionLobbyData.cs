@@ -186,7 +186,7 @@ public class ExpeditionLobbyData : StoryLobbyData
             if (challenge is PinChallenge) return new PinChallengeState(challenge);
             if (challenge is VistaChallenge) return new VistaChallengeState(challenge);
 
-            throw new NotImplementedException($"challenge type: {challenge.GetType()} not implemented");
+            return new NotImplementedChallengeState(challenge); // sync from string
         }
 
         public override Type GetDataType()
