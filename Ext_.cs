@@ -33,6 +33,9 @@ namespace RainMeadow
             // public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
             public static ProcessManager.ProcessID MeadowCredits = new("MeadowCredits", true);
             public static ProcessManager.ProcessID RainMeadowOverlay = new("RainMeadowOverlay", true);
+            public static ProcessManager.ProcessID ExpeditionMenu = new("ExpeditionOnlineMenu", true);
+            public static ProcessManager.ProcessID ExpeditionGameOver = new("ExpeditionOnlineGameOver", true);
+
         }
 
         public class Ext_SlugcatStatsName
