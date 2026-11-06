@@ -58,7 +58,6 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.Singal += ExpeditionFastTravel;
             On.Menu.SleepAndDeathScreen.Update += ExpPassageGreyedOut;
             On.SaveState.SessionEnded += ClearPinList;
-
         }
 
         private void ClearPinList(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
@@ -390,7 +389,8 @@ namespace RainMeadow
         {
             if (isExpeditionMode(out _))
             {
-                if(!OnlineManager.lobby.isOwner) alwaysShow = true;
+                if(!OnlineManager.lobby.isOwner || ExpeditionGame.activeUnlocks.Contains(key)) alwaysShow = true;
+                
                 if (ModManager.MSC && (ExpeditionData.unlockables.Contains(key) || alwaysShow) && key == "unl-gun")
                 {
                     return "Symbol_JokeRifle";
