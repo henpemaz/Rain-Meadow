@@ -721,7 +721,7 @@ Round Notification|ラウンドメッセージ
 Session Notification|セッションメッセージ
 Enable Chat Logging Toggle|チャットログ保持
 Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat."|チャットログ保持. シフト+「チャットキー」 チャットでの表示エラー
-Clear On New Session|新しいセッションチャットクリア
+Clear On New Session|新しいセッションクリア
 Death|デス
 System|システム
 Text Downscroll|テキストスクロール
@@ -884,9 +884,16 @@ Vanilla Settings|バニラ設定
 Monk Spawns With Fruit:|僧侶はブルーフルーツを持って出現する
 Monk starts each arena round holding a dangle fruit|僧侶は,各アリーナラウンドの開始時にブルーフルーツを手に持っている
 Camo|透明化
-SlugSlots<LINE>Winner!!|ス(ラッグ)ロット<LINE>WIN!
+SlugSlots<LINE>Winner!!|スロット<LINE>WIN!
 Voidkeeper|ヴォイドキーパー
 Weaver|織り手
 Scoring|得点
 Dens|雨宿
 Import & Export|インポートとエクスポート
+Copy the match settings to your clipboard|マッチ設定をクリップボードにコピー
+Load match settings from your clipboard|クリップボードからロードマッチ設定を読み込む
+Copy the level playlist to your clipboard|レベルプレイリストをクリップボードにコピー
+Load a level playlist from your clipboard|クリップボードからロードレベルプレイリストを読み込む
+Team Totals:|チーム合計
+fade gradient|フェード
+Me|自分
