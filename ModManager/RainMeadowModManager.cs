@@ -51,9 +51,9 @@ namespace RainMeadow
                     Watcher.Watcher.MOD_ID
 
                 };
-        public static string[] GetRequiredMods()
+        public static string[] GetRequiredMods(bool includeWhitelist = true)
         {
-            var whitelistedMods = GetWhitelistedMods();
+            var whitelistedMods = includeWhitelist ? GetWhitelistedMods() : [];
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
             var generatedSyncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
 
@@ -212,7 +212,7 @@ namespace RainMeadow
                 bool reorder = true; //or change mods whatsoever
                 var disable = whitelistMode
                     ? active.Except(requiredMods).ToList()
-                    : GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+                    : GetRequiredMods(includeWhitelist: false).Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list
