@@ -33,6 +33,7 @@ public partial class RainMeadow
         On.Player.GrabUpdate += Player_GrabUpdate1;
         IL.Player.GrabUpdate += Player_GrabUpdate;
         IL.Player.GrabUpdate += Player_GrabUpdate_FixSpearmasterNeedles;
+        IL.Player.GrabUpdate += Player_GrabUpdate_MonkShieldDrop;
         IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
@@ -1671,6 +1672,42 @@ public partial class RainMeadow
                 return self.abstractPhysicalObject.IsLocal();
             });
             c.Emit(OpCodes.Brfalse, skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private void Player_GrabUpdate_MonkShieldDrop(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.Before,
+                i => i.MatchLdarg(1),
+                i => i.MatchCallOrCallvirt<Player>(nameof(Player.ReleaseObject)));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((int graspIndex, Player self) =>
+            {
+                if (graspIndex >= 0
+                    && graspIndex < self.grasps.Length
+                    && !self.isNPC
+                    && self.SlugCatClass == SlugcatStats.Name.Yellow
+                    && isArenaMode(out var arenaOnline)
+                    && arenaOnline.arenaMonkShield
+                    && self.grasps[graspIndex]?.grabbed is DangleFruit)
+                {
+                    for (int i = 0; i < self.grasps.Length; i++)
+                    {
+                        if (i != graspIndex && self.grasps[i] != null)
+                        {
+                            return i;
+                        }
+                    }
+                }
+                return graspIndex;
+            });
         }
         catch (Exception e)
         {
