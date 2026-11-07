@@ -890,3 +890,7 @@ Weaver|織り手
 Scoring|得点
 Dens|雨宿
 Import & Export|インポートとエクスポート
+Copy the match settings to your clipboard|マッチ設定をクリップボードにコピー
+Load match settings from your clipboard|クリップボードからロードマッチ設定を読み込む
+Copy the level playlist to your clipboard|レベルプレイリストをクリップボードにコピー
+Load a level playlist from your clipboard|クリップボードからロードレベルプレイリストを読み込む
