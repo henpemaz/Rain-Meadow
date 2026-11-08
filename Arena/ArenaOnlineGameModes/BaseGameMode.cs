@@ -450,7 +450,7 @@ namespace RainMeadow
 
             // Handle Score
             int scoreChange = 0;
-            
+
             if (targetOCreature.isAvatar)
             {
                 scoreChange = self.GameTypeSetup.KillScore;
@@ -1214,6 +1214,10 @@ namespace RainMeadow
             OnlineCreature onlineCreature = self.abstractCreature.GetOnlineCreature()!;
 
             bool wasAlreadyDead = self.dead;
+            if (ModManager.Watcher)
+            {
+                self.rippleDeathIntensity = 0f;
+            }
             orig(self);
 
             if (wasAlreadyDead)
@@ -1442,7 +1446,7 @@ namespace RainMeadow
                 {
                     sortedArenaPlayers.Add(arenaPlayer);
                 }
-                
+
                 // For the Arena tournament
                 if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                         arenaOnline,
