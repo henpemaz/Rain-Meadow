@@ -1,13 +1,25 @@
 # Release 1.16.1
 
 ## General
+- Fixed chat position at certain resolutions 
 - Adjusted scarf cosmetic
 - Scarfs and capes are now affected by (Vanilla) wind
+- Added additional Russian and Japanese language support for text
 
+## Arena
+- Amoeba will now chase players with highest score or highest kills, dependent on if scoring is active in the gamemode 
+- Fixed scoring occurrences if an attacker hit but a defender parried; scoring will now rely on the defender’s post-parry result to determine if scoring should’ve occurred 
+- Fixed an issue capturing menu inputs at higher frame rates
+
+## Story 
+- Fixed an issue that would break the menu when playing the game with Russian language active
+  
 ## Engine
 - ModManager restarting mods won't brick lobby joins anymore
 - You can finally join friends' lobbies from the Steam Overlay!
 - Fixed a source of invisible creatures
+- Fixed a bug in banning users where custom builds could ignore bans and rejoin lobbies 
+- Fixed a bug where spears created unexpected latency
 
 # Release 1.16.0
 
