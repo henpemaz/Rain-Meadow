@@ -39,7 +39,7 @@ namespace RainMeadow
 
         public static OnlineState ParsePolymorph(Serializer serializer)
         {
-            return handlersByEnum[new StateType(MeadowExtEnumSync.GetExtEnumValue<StateType>(serializer.reader.ReadByte()))].factory();
+            return handlersByEnum[new StateType(ExtEnumSync.GetExtEnumValue<StateType>(serializer.reader.ReadByte()))].factory();
         }
 
         public void WritePolymorph(Serializer serializer)
@@ -135,7 +135,7 @@ namespace RainMeadow
         public virtual OnlineState ApplyDelta(OnlineState incoming)
         {
             if (incoming == null) throw new ArgumentNullException();
-            
+
             if (incoming.IsDelta)
             {
                 if (incoming.handler != this.handler) throw new InvalidProgrammerException("Incoming changed types but sent a delta");
@@ -223,7 +223,7 @@ namespace RainMeadow
             public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => 
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m =>
                 nullable ? m.Name == nameof(Serializer.SerializeHalfNullable)
                 : m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
@@ -273,10 +273,10 @@ namespace RainMeadow
             {
                 get
                 {
-                    if (MeadowExtEnumSync.OnlineStateTypeMap.version != _stateTypeIndexVersion)
+                    if (ExtEnumSync.OnlineStateTypeMap.version != _stateTypeIndexVersion)
                     {
-                        _stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
-                        _stateTypeIndex = this.stateType.MeadowIndex();
+                        _stateTypeIndexVersion = ExtEnumSync.OnlineStateTypeMap.version;
+                        _stateTypeIndex = this.stateType.MappedIndex();
                     }
                     return _stateTypeIndex;
                 }
@@ -306,8 +306,8 @@ namespace RainMeadow
                 {
                     if (!type.IsValueType && !type.IsClass) throw new InvalidProgrammerException("not class or struct");
                     this.stateType = stateType;
-                    this._stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
-                    this._stateTypeIndex = stateType.MeadowIndex();
+                    this._stateTypeIndexVersion = ExtEnumSync.OnlineStateTypeMap.version;
+                    this._stateTypeIndex = stateType.MappedIndex();
                     this.type = type;
                     this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 
@@ -397,7 +397,7 @@ namespace RainMeadow
                                         Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i))),
 #if TRACING
                                     Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace("sending " + deltagroupname); }), serializer),
-#endif                                   
+#endif
                                     Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
                                         f =>
 #if TRACING
@@ -461,9 +461,9 @@ namespace RainMeadow
                         // var output = DeepCopy();
                         // **output.IsDelta = true;
                         // **output.baseline = baseline.tick;
-                        // 
+                        //
                         // output.fieldWithDelta = this.fieldWithDelta?.Delta(baseline.fieldWithDelta);
-                        // 
+                        //
                         // output.hasGroupValue = field != baseline.field || field2 != baseline.field2;
 
                         expressions = new List<Expression>();
@@ -520,7 +520,7 @@ namespace RainMeadow
                                             : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
                                             )
                                     ).Where(e => e != null).ToArray())
-                                )); 
+                                ));
 #if TRACING
                             expressions.Add(Expression.Block(
                                 deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
