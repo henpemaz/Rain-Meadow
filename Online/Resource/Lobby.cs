@@ -169,6 +169,11 @@ namespace RainMeadow
         [RPCMethod(security = RPCSecurity.NoSecurity)]
         public void RequestedLobby(RPCEvent request, string? key)
         {
+            if (bannedUsers.list.Contains(request.from.id))
+            {
+                request.from.QueueEvent(new GenericResult.Fail(request));
+                return;
+            }
             if (this.hasPassword)
             {
                 if (this.password != key)
@@ -352,6 +357,10 @@ namespace RainMeadow
 
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p is not null).ToList());
+                if (!lobby.isOwner)
+                {
+                    lobby.bannedUsers = bannedUsers != null ? new(bannedUsers.list.ToList()) : new();
+                }
                 if (lobby.bannedUsersChecked == false)
                 {
                     // Need to get the participants before we check

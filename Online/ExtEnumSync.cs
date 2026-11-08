@@ -753,6 +753,12 @@ public static class MeadowExtEnumSync
             return;
         }
 
+        if (OnlineManager.lobby.bannedUsers.list.Contains(request.from.id))
+        {
+            request.from.QueueEvent(new GenericResult.Fail(request));
+            return;
+        }
+
         Dictionary<string, string> compressedExtEnumTable = [];
         try
         {
