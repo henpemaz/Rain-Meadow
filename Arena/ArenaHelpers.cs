@@ -303,6 +303,14 @@ namespace RainMeadow
         public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) =>
             GetDataSettings<ArenaClientSettings>(player);
 
+        public static bool MeadowCosmeticsEnabled() =>
+            RainMeadow.isArenaMode(out ArenaOnlineGameMode arena) && arena.enableMeadowCosmetics;
+
+        public static bool ShowSlugSlotsFlair(OnlinePlayer? player) =>
+            MeadowCosmeticsEnabled()
+            && (GetArenaClientSettings(player)?.gotSlugcat == true
+                || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>());
+
         public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)

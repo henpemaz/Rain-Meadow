@@ -247,7 +247,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
                 if (RainMeadow.isArenaMode(out _))
-                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1;
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1 && Arena.enableMeadowCosmetics;
             }
         );
         manager.ShowDialog(selector);

@@ -14,8 +14,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] requiredmods;
-        public string[] bannedmods;
+        public string[] requiredmods = [];
+        public string[] bannedmods = [];
         public bool whitelistmode;
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
@@ -67,10 +67,6 @@ namespace RainMeadow
 
             RainMeadowModInfoManager.RefreshDebugModInfo();
 
-            requiredmods = RainMeadowModManager.GetRequiredMods();
-            bannedmods = RainMeadowModManager.GetBannedMods();
-            whitelistmode = RainMeadowModManager.IsWhitelistActive();
-
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
@@ -91,6 +87,9 @@ namespace RainMeadow
 
             if (isOwner)
             {
+                requiredmods = RainMeadowModManager.GetRequiredMods();
+                bannedmods = RainMeadowModManager.GetBannedMods();
+                whitelistmode = RainMeadowModManager.IsWhitelistActive();
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
 

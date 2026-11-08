@@ -503,9 +503,7 @@ namespace RainMeadow
                 );
 
                 // Cash Money Slugs
-                ArenaClientSettings? attackerClientData = ArenaHelpers.GetArenaClientSettings(attackerOCreature.owner);
-                if (attackerClientData?.gotSlugcat == true
-                    || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+                if (ArenaHelpers.ShowSlugSlotsFlair(attackerOCreature.owner))
                 {
                     attackerOCreature.BroadcastRPCInRoom(ArenaRPCs.ShowMeTheMoney, attackerOCreature, targetOCreature);
 
@@ -700,8 +698,7 @@ namespace RainMeadow
             }
 
 
-            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
+            if (ArenaHelpers.ShowSlugSlotsFlair(player))
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 return "meadowcoin";
