@@ -286,8 +286,6 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
-            GradientCapeColor? gradient = color as GradientCapeColor;
-            Color? fadeColor = gradient?.GetFadeColor(customColor);
 
             TriangleMesh dangle = (TriangleMesh)sLeaser.sprites[DangleSprite];
             TriangleMesh dangleSmall = (TriangleMesh)sLeaser.sprites[DangleSpriteSub];
@@ -299,12 +297,11 @@ namespace RainMeadow
                 for (int j = 0; j < sizeDangle; j++)
                 {
                     dangle.MoveVertice(dangle_index, dangleBigSegments[i, j].DrawPos(timeStacker) - camPos);
-                    color.ApplyColor(dangle, dangle_index, rCam, customColor);
-                    if (gradient is not null && j > sizeDangle / 2)
-                    {
-                        float tipRatio = Mathf.InverseLerp(sizeDangle / 2, sizeDangle - 1f, j);
-                        gradient.ApplyFade(dangle, dangle_index, (Color)fadeColor!, tipRatio * tip_fade);
-                    }
+
+                    float fade = 0f;
+                    if (j > sizeDangle / 2) fade = Mathf.InverseLerp(sizeDangle / 2, sizeDangle - 1f, j) * tip_fade;
+
+                    color.ApplyColor(dangle, dangle_index, rCam, customColor, fade);
                     ++dangle_index;
                 }
             }
@@ -315,12 +312,11 @@ namespace RainMeadow
                 for (int j = 0; j < sizeSmall; j++)
                 {
                     dangleSmall.MoveVertice(small_dangle_index, dangleSmallSegments[i, j].DrawPos(timeStacker) - camPos);
-                    color.ApplyColor(dangleSmall, small_dangle_index, rCam, customColor);
-                    if (gradient is not null && j > 1)
-                    {
-                        float tipRatio = Mathf.InverseLerp(1, sizeSmall - 1f, j);
-                        gradient.ApplyFade(dangleSmall, small_dangle_index, (Color)fadeColor!, tipRatio * tip_fade);
-                    }
+
+                    float fade = 0f;
+                    if (j > 1) fade = Mathf.InverseLerp(1, sizeSmall - 1f, j) * tip_fade;
+
+                    color.ApplyColor(dangleSmall, small_dangle_index, rCam, customColor, fade);
                     ++small_dangle_index;
                 }
             }

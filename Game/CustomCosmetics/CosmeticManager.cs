@@ -78,15 +78,17 @@ namespace RainMeadow
         public interface ICosmeticSkin
         {
             bool UsesCustomColor { get; }
-            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor);
+            bool UsesFadeColor { get; }
+            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor, float fade = 0);
         }
 
         public class RainbowCapeColor : ICosmeticSkin
         {
             public bool UsesCustomColor => false;
-            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            public bool UsesFadeColor => false;
+            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor, float fade = 0)
             {
-                mesh.verticeColors[vertex] = Color.HSVToRGB(Time.time * 0.1f % 1f, 1f, 1f); ;
+                mesh.verticeColors[vertex] = Color.HSVToRGB((Time.time * 0.1f) % 1f, 1f, 1f); ;
             }
 
             public override string ToString() => "rainbow";
@@ -95,8 +97,9 @@ namespace RainMeadow
         public class CosmicCapeColor : ICosmeticSkin
         {
             public bool UsesCustomColor => true;
+            public bool UsesFadeColor => false;
             public List<WeakReference> shaderApplied = new();
-            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor, float fade = 0)
             {
                 if (!shaderApplied.Any(x => x.Target == mesh))
                 {
@@ -118,10 +121,11 @@ namespace RainMeadow
         public class SolidCapeColor : ICosmeticSkin
         {
             public bool UsesCustomColor => true;
+            public bool UsesFadeColor => false;
             public SolidCapeColor()
             {
             }
-            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            public void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor, float fade = 0)
             {
                 mesh.verticeColors[vertex] = customColor;
             }
@@ -131,26 +135,27 @@ namespace RainMeadow
         public abstract class GradientCapeColor : ICosmeticSkin
         {
             public virtual bool UsesCustomColor => true;
-            public GradientCapeColor()
-            {
-            }
+            public bool UsesFadeColor => true;
+            public GradientCapeColor() { }
 
-            public abstract Color GetFadeColor(Color baseColor);
-            public virtual void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor)
+            protected abstract Color GetFadeColor(Color baseColor);
+            public virtual void ApplyColor(TriangleMesh mesh, int vertex, RoomCamera rCam, Color customColor, float fade = 0)
             {
                 mesh.verticeColors[vertex] = customColor;
+                ApplyFade(mesh, vertex, fade);
             }
-            public void ApplyFade(TriangleMesh mesh, int vertex, float fade)
+            protected void ApplyFade(TriangleMesh mesh, int vertex, float fade)
                 => ApplyFade(mesh, vertex, GetFadeColor(mesh.verticeColors[vertex]), fade);
-            public virtual void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
+            protected virtual void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
             {
                 mesh.verticeColors[vertex] = Color.Lerp(mesh.verticeColors[vertex], fadeColor, fade);
             }
+            public override abstract string ToString();
         }
 
         public class FadeGradientCapeColor() : GradientCapeColor
         {
-            public override Color GetFadeColor(Color baseColor)
+            protected override Color GetFadeColor(Color baseColor)
             {
                 HSLColor baseColorHSL = baseColor.ToHSL();
                 if (baseColorHSL.saturation < 0.5f) // fade to saturated color if desaturated
@@ -166,7 +171,7 @@ namespace RainMeadow
                 else // fade to black if bright color
                     return new(0.1f, 0.1f, 0.1f);
             }
-            public override void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
+            protected override void ApplyFade(TriangleMesh mesh, int vertex, Color fadeColor, float fade)
             {
                 base.ApplyFade(mesh, vertex, fadeColor, Mathf.Pow(fade, 2));
             }

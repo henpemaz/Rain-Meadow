@@ -62,8 +62,6 @@ namespace RainMeadow
                     customColor = s.customCosmeticColor;
                 }
             }
-            GradientCapeColor? gradient = cloakColor as GradientCapeColor;
-            Color? fadeColor = gradient?.GetFadeColor(customColor);
 
 
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
@@ -73,12 +71,11 @@ namespace RainMeadow
                 for (int j = 0; j <= SlugcatCape.size; j++)
                 {
                     triangleMesh.MoveVertice(num, this.segments[j, i].DrawPos(timeStacker) - camPos);
-                    cloakColor.ApplyColor(triangleMesh, num, rCam, customColor);
-                    if (gradient is not null && i > size / 2)
-                    {
-                        float tipRatio = Mathf.InverseLerp(size / 2, size - 1f, i);
-                        gradient.ApplyFade(triangleMesh, num, (Color)fadeColor!, tipRatio * tip_fade);
-                    }
+
+                    float fade = 0f;
+                    if (i > size / 2) fade = Mathf.InverseLerp(size / 2, size - 1f, i) * tip_fade;
+                    cloakColor.ApplyColor(triangleMesh, num, rCam, customColor, fade);
+
                     ++num;
                 }
             }
