@@ -1,0 +1,65 @@
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?
+This mod and all its features were brought to you by really awesome people from the community.
+
+RAIN MEADOW TEAM
+
+Henpemaz
+Project Lead, Concept, Engine Design, Network Design, Meadow Mode
+
+UO
+Story Lead, Arena Lead, 67 God
+
+Wolfycatt(Ana)
+Lead Artist
+
+Intikus
+Lead Audio Designer, Rain Meadow Soundtrack
+
+Noircatto
+Programming, Engine, Networking
+
+A1iex
+Programming, UI/UX Design
+
+InvalidUnits
+Programming, Gameplay, Netcode, UI, LAN Support
+
+NotchOC
+Programming, Gameplay, Engine, Story
+
+DustyLemny
+Programming, Story, Arena, UI
+
+Timbits
+Programming, UI/UX Design, Menus
+
+CaptainRedstone
+Programming, Meadow Mode, Story
+
+EdEnStone
+Programming, Arena, Cosmetics, QOL
+
+Saddest
+Programming, UI, Chat
+
+Chrometurtle
+Programming, Gameplay, Networking
+
+niacdoial
+Programming, LAN Support
+
+None
+Programming, Gameplay, Chat, QOL
+
+Vigaro
+Programming, Menus
+
+phanie_
+Illustration
+
+ForthFora
+Mod Sync
+
+ddemile
+Mod Sync

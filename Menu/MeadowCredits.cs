@@ -1,68 +1,246 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RWCustom;
+using System.IO;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class MeadowCredits : SmartMenu
     {
-        string credits = $"""
+        public float time, scrollSpeed, scrollInputSupression;
+        public bool anyButton, lastAnyButton;
+        public RainEffect rainEffect;
+        public CreditsStage currentStage;
+        public MeadowCreditsObject currentCreditsObject;
 
-                         {Utils.Translate("Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz")}
-
-                         {Utils.Translate("Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?")}
-
-                         {Utils.Translate("This mod and all its features were brought to you by really awesome people from the community.")}
-
-                         Henpemaz - {Utils.Translate("Lead Developer")}
-                         Wolfycatt(Ana) - {Utils.Translate("Lead Artist")}
-                         Intikus - {Utils.Translate("Lead Audio Designer")}
-                         Noircatto - {Utils.Translate("Programming, engine")}
-                         HelloThere - {Utils.Translate("Programming, sound")}
-                         A1iex - {Utils.Translate("UI Design")}
-                         FranklyGD - {Utils.Translate("Programming, engine")}
-                         MC41Games - {Utils.Translate("Programming, menus")}
-                         Silvyger - {Utils.Translate("Programming, arena")}
-                         Vigaro - {Utils.Translate("Programming, menus")}
-                         BitiLope - {Utils.Translate("Programming, story")}
-                         Pudgy Turtle - {Utils.Translate("Programming, story")}
-                         ddemile - {Utils.Translate("Programming, modsync")}
-                         UO - {Utils.Translate("Programming, story, arena")}
-                         Saddest - {Utils.Translate("Programming, UI, chat")}
-                         notchoc - {Utils.Translate("Programming, story")}
-                         phanie_ - {Utils.Translate("Illustration")}
-                         Timbits - {Utils.Translate("Programming, UI, menus")}
-                         Zedreus - {Utils.Translate("Programming, UI, story")}
-                         Persondotexe - {Utils.Translate("Programming, modsync")}
-                         invalidunits - {Utils.Translate("Programming, UI, LAN")}
-                         forthfora - {Utils.Translate("Programming, modsync")}
-                         WillowWisp - {Utils.Translate("Programming, story")}
-                         @None - {Utils.Translate("Programming, gameplay")}
-                         DustyLemmy - {Utils.Translate("Arena, story, UI")}
-                         Elizabeth - {Utils.Translate("Programming, story, UI")}
-                         niacdoial - {Utils.Translate("LAN")}
-                         CaptainRedstone - {Utils.Translate("Meadow, story")}
-                         EdEnStonne - {Utils.Translate("Arena")}
-                         
-                         {Utils.Translate("Thank you playtesters from the Rain Meadow discord as well.")}
-
-                         """;
-
-
-        public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
+        public override MenuScene.SceneID GetScene => MenuScene.SceneID.Intro_3_In_Tree;
         public MeadowCredits(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowCredits)
         {
             RainMeadow.DebugMe();
+            rainEffect = new(this, pages[0]);
+            pages[0].subObjects.Add(rainEffect);
 
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
+            backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+            mySoundLoopID = SoundID.MENU_End_Credits_LOOP;
 
-            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+            //this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+            //this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
+            //this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
-            OpLabelLong text = new OpLabelLong(new Vector2(manager.rainWorld.screenSize.x / 2f - 300f, 40), new Vector2(600, 580), credits);
-            new UIelementWrapper(tabWrapper, text);
+            //this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
+            //OpLabelLong text = new OpLabelLong(new Vector2(manager.rainWorld.screenSize.x / 2f - 300f, 40), new Vector2(600, 580), credits);
+            //new UIelementWrapper(tabWrapper, text);
+        }
+
+        public void SpawnCreditsObject()
+        {
+            if (currentStage != CreditsStage.Wait)
+            {
+                currentCreditsObject = new(this, pages[0], currentStage);
+                pages[0].subObjects.Add(currentCreditsObject);
+            }
+        }
+
+        public void DisposeCreditsObject()
+        {
+            if (currentCreditsObject == null) return;
+            currentCreditsObject.RemoveSprites();
+            pages[0].subObjects.Remove(currentCreditsObject);
+            currentCreditsObject = null;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            anyButton = false;
+            if (currentCreditsObject != null)
+            {
+                if (input.y > 0)
+                {
+                    scrollSpeed = Custom.LerpAndTick(scrollSpeed, Mathf.Lerp(-4f, currentCreditsObject.CurrentDefaultScrollSpeed, scrollInputSupression), 0.12f, 0.09090909f);
+                }
+                else if (input.y < 0)
+                {
+                    scrollSpeed = Custom.LerpAndTick(scrollSpeed, Mathf.Lerp(16f, currentCreditsObject.CurrentDefaultScrollSpeed, scrollInputSupression), 0.12f, 0.09090909f);
+                }
+                else
+                {
+                    scrollSpeed = Custom.LerpAndTick(scrollSpeed, anyButton ? 0f : currentCreditsObject.CurrentDefaultScrollSpeed, 0.12f, 0.09090909f);
+                }
+
+                if (currentCreditsObject.OutOfScreen) NextStage();
+                else if (currentCreditsObject.BeforeScreen && scrollSpeed < 0f) PreviousStage();
+            }
+            else
+            {
+                NextStage();
+            }
+            lastAnyButton = anyButton;
+            if (time > 14f && Random.value < 0.00625f && rainEffect != null)
+            {
+                rainEffect.LightningSpike(Mathf.Pow(Random.value, 2f) * 0.85f, Mathf.Lerp(20f, 120f, Random.value));
+            }
+        }
+
+        public void NextStage()
+        {
+            if (currentStage == CreditsStage.End)
+            {
+                ExitCredits();
+                return;
+            }
+            DisposeCreditsObject();
+            currentStage++;
+            SpawnCreditsObject();
+        }
+
+        public void PreviousStage()
+        {
+            if (currentStage == CreditsStage.End || currentStage == CreditsStage.Contributors)
+            {
+                return;
+            }
+            DisposeCreditsObject();
+            currentStage--;
+            SpawnCreditsObject();
+        }
+
+        public void ExitCredits()
+        {
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+        }
+
+        public override void RawUpdate(float dt)
+        {
+            base.RawUpdate(dt);
+            time += dt;
+            rainEffect?.rainFade = Custom.SCurve(Mathf.InverseLerp(0f, 6f, time), 0.8f) * 0.5f;
+        }
+
+        public class MeadowCreditsObject : PositionedMenuObject
+        {
+            public int age;
+            public float scroll, lastScroll;
+            public float defaultScroll = 4f;
+            public float slowScroll = 1f;
+            public float slowZone = 30f;
+
+            public bool BeforeScreen => scroll <= -100f;
+
+            public bool OutOfScreen
+            {
+                get
+                {
+                    foreach(var obj in subObjects)
+                    {
+                        if (obj is not RectangularMenuObject menuObject) continue;
+
+                        float lowestPoint = menuObject.DrawY(1f) - ((menuObject is MenuIllustration) ? menuObject.size.y : 0);
+                        if (lowestPoint < 800f) return false;
+                    }
+                    return true;
+                }
+            }
+
+            public float CurrentDefaultScrollSpeed => Custom.LerpMap(Mathf.Abs(500f - scroll), slowZone, slowZone + 100f, slowScroll, defaultScroll, 0.6f);
+
+            public CreditsStage stage;
+            public MeadowCreditsObject(Menu.Menu menu, MenuObject owner, CreditsStage stage) : base(menu, owner, default)
+            {
+                this.stage = stage;
+                string creditsFile = "";
+                switch(stage)
+                {
+                    case CreditsStage.RM_Logo:
+                        MenuIllustration logo = new(menu, this, "illustrations/rainmeadowtitle", "title_credits", new(683f, 384f), true, true)
+                        {
+                            lastAlpha = 0f,
+                            alpha = 0f,
+                        };
+                        subObjects.Add(logo);
+
+                        scroll = 0;
+                        defaultScroll = 4f;
+                        slowScroll = 4f;
+                        break;
+                    case CreditsStage.Contributors:
+                        creditsFile = "01 - MEADOW CONTRIBUTORS";
+
+                        defaultScroll = 1.75f;
+                        slowScroll = 1f;
+                        break;
+                    case CreditsStage.Playtesters:
+                        creditsFile = "02 - MEADOW PLAY TESTERS";
+
+                        defaultScroll = 2.5f;
+                        slowScroll = 1.5f;
+                        break;
+                }
+
+                float offset = 0;
+
+                if (creditsFile != null)
+                {
+                    string path = AssetManager.ResolveFilePath("Text" + Path.DirectorySeparatorChar.ToString() + "Credits" + Path.DirectorySeparatorChar.ToString() + creditsFile + ".txt");
+
+                    string[] text;
+                    text = File.Exists(path) ? File.ReadAllLines(path) : [];
+                    for (int i = 0; i < text.Length; i++)
+                    {
+                        string line = text[i];
+                        line.Replace("<LINE>", "\r\n");
+                        if (line.StartsWith("<T>"))
+                        {
+                            line = menu.Translate(line.Substring(3));
+                        }
+                        var label = new MenuLabel(menu, this, line, new(433f, -i * 40f), new(500f, 30f), false);
+                        label.label.alignment = FLabelAlignment.Center;
+                        label.label.x = -1000f;
+                        subObjects.Add(label);
+                    }
+                    offset = text.Length * 40f + 800f;
+                }
+
+                scroll = -100f;
+                pos.y = scroll;
+                lastPos.y = pos.y;
+            }
+
+            public override void Update()
+            {
+                base.Update();
+
+                lastScroll = scroll;
+                scroll += (menu as MeadowCredits).scrollSpeed;
+                scroll = Mathf.Max(scroll, -1000f);
+                age++;
+
+                pos.y = scroll;
+
+                if (stage == CreditsStage.RM_Logo)
+                {
+                    float fade = 60;
+                    if (age < fade + 20f)
+                    {
+                        pos.y = 0f;
+                        scroll = 0f;
+                        (menu as MeadowCredits).scrollSpeed = 0f;
+                    }
+                    (subObjects[0] as MenuIllustration).alpha = Custom.SCurve(Mathf.InverseLerp(0f, fade, age), 0.65f);
+                }
+            }
+        }
+
+        public enum CreditsStage
+        {
+            Wait,
+            RM_Logo,
+            Contributors,
+            Playtesters,
+            End,
         }
     }
 }
