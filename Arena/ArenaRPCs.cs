@@ -15,8 +15,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void ShowMeTheMoney(OnlinePhysicalObject killer, OnlinePhysicalObject killedCreature)
         {
-            ArenaClientSettings? playerClient = ArenaHelpers.GetArenaClientSettings(killer.owner);
-            if ((playerClient != null && playerClient.gotSlugcat) || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+            if (ArenaHelpers.ShowSlugSlotsFlair(killer.owner))
             {
                 if (killer.owner.isMe)
                 {

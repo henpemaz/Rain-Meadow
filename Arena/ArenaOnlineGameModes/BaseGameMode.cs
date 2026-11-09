@@ -450,7 +450,7 @@ namespace RainMeadow
 
             // Handle Score
             int scoreChange = 0;
-            
+
             if (targetOCreature.isAvatar)
             {
                 scoreChange = self.GameTypeSetup.KillScore;
@@ -503,9 +503,7 @@ namespace RainMeadow
                 );
 
                 // Cash Money Slugs
-                ArenaClientSettings? attackerClientData = ArenaHelpers.GetArenaClientSettings(attackerOCreature.owner);
-                if (attackerClientData?.gotSlugcat == true
-                    || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+                if (ArenaHelpers.ShowSlugSlotsFlair(attackerOCreature.owner))
                 {
                     attackerOCreature.BroadcastRPCInRoom(ArenaRPCs.ShowMeTheMoney, attackerOCreature, targetOCreature);
 
@@ -700,8 +698,7 @@ namespace RainMeadow
             }
 
 
-            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
+            if (ArenaHelpers.ShowSlugSlotsFlair(player))
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 return "meadowcoin";
@@ -1214,6 +1211,10 @@ namespace RainMeadow
             OnlineCreature onlineCreature = self.abstractCreature.GetOnlineCreature()!;
 
             bool wasAlreadyDead = self.dead;
+            if (ModManager.Watcher)
+            {
+                self.rippleDeathIntensity = 0f;
+            }
             orig(self);
 
             if (wasAlreadyDead)
@@ -1442,7 +1443,7 @@ namespace RainMeadow
                 {
                     sortedArenaPlayers.Add(arenaPlayer);
                 }
-                
+
                 // For the Arena tournament
                 if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
                         arenaOnline,

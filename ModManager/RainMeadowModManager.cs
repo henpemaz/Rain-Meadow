@@ -35,7 +35,11 @@ namespace RainMeadow
         public static string WhitelistedModsExplanationComment =>
             """
             // Whitelist. When any line is uncommented, this file replaces both
-            // meadow-highimpactmods.txt and meadow-bannedmods.txt entirely.
+            // meadow-highimpactmods.txt and meadow-bannedmods.txt.
+            // Clients must run exactly the mods uncommented here (plus their dependencies).
+            // Every other mod on the client is disabled.
+            // Built-in sync-required mods (like More Slugcats, Watcher) that the host has
+            // enabled are still required even if they aren't listed here.
             // Uncomment a line by removing its leading '//'. Leave every line commented to
             // disable whitelist mode and go back to the high-impact / banned lists.
 
@@ -51,9 +55,9 @@ namespace RainMeadow
                     Watcher.Watcher.MOD_ID
 
                 };
-        public static string[] GetRequiredMods()
+        public static string[] GetRequiredMods(bool includeWhitelist = true)
         {
-            var whitelistedMods = GetWhitelistedMods();
+            var whitelistedMods = includeWhitelist ? GetWhitelistedMods() : [];
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
             var generatedSyncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
 
@@ -192,6 +196,14 @@ namespace RainMeadow
             return GetWhitelistedMods().Count > 0;
         }
 
+        public static List<string> ModsToDisable(string[] requiredMods, string[] bannedMods, bool whitelistMode)
+        {
+            var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
+            return whitelistMode
+                ? active.Except(requiredMods).ToList()
+                : GetRequiredMods(includeWhitelist: false).Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+        }
+
         /// <summary>
         /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary.
         /// </summary>
@@ -210,9 +222,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = whitelistMode
-                    ? active.Except(requiredMods).ToList()
-                    : GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+                var disable = ModsToDisable(requiredMods, bannedMods, whitelistMode);
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list

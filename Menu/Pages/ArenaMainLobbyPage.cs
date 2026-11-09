@@ -425,7 +425,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
             ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(
                 playerBox.profileIdentifier
             );
-            bool slugSlots = clientSettings?.gotSlugcat == true;
+            bool slugSlots = clientSettings?.gotSlugcat == true && Arena.enableMeadowCosmetics;
 
             if (
                 ModManager.MSC
