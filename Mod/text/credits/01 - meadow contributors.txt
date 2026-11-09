@@ -11,19 +11,19 @@ UO
 Story Lead, Arena Lead, Networking, 67
 
 Wolfycatt (Ana)
-Lead Artist
+Lead Artist, Meadow Mode
 
 Intikus
 Lead Audio Designer, Rain Meadow Soundtrack
+
+InvalidUnits
+Programming, Gameplay, Networking Lead, UI, LAN Support
 
 Noircatto
 Programming, Engine, Networking
 
 A1iex
 Programming, UI Design
-
-InvalidUnits
-Programming, Gameplay, Networking, UI, LAN Support
 
 notchoc
 Programming, Gameplay, Engine, Story
@@ -50,16 +50,16 @@ niacdoial
 Programming, LAN Support
 
 r3nsen
-Programming, Expedition, Story
+Programming, Expedition Lead, Story
 
 Saddest
 Programming, UI, Chat
 
 None
-Programming, Gameplay, Chat, QOL
+Programming, Gameplay, Chat, Media
 
 OneLetterShor
-Programming, Gameplay, Arena, QOL
+Programming, Gameplay, Arena, QOL, Water for the Hunter
 
 FranklyGD
 Programming, Engine
