@@ -14,6 +14,7 @@ namespace RainMeadow
             public static OnlineGameModeType Meadow = new("Meadow", true);
             public static OnlineGameModeType Story = new("Story", true);
             public static OnlineGameModeType Arena = new("Arena", true);
+            public static OnlineGameModeType Expedition = new("Expedition", true);
 
             public Dictionary<string, bool> boolRemixSettings;
             public Dictionary<string, float> floatRemixSettings;
@@ -25,6 +26,7 @@ namespace RainMeadow
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die<LINE>together." },
                 { Arena, "Fight against unforgiving creatures and foes where only the strong survive." },
+                { Expedition, "Complete a variety of quests with your friends filled with tough challenges" },
             };
         }
 
@@ -128,6 +130,7 @@ namespace RainMeadow
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
             { OnlineGameModeType.Arena, typeof(ArenaOnlineGameMode) },
+            { OnlineGameModeType.Expedition, typeof(ExpeditionGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
