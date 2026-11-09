@@ -1,16 +1,16 @@
-Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz
-Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?
-This mod and all its features were brought to you by really awesome people from the community.
+<T>Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz
+<T>Meadow is a gamemode inspired by the game of same name from Might & Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?
+<T>This mod and all its features were brought to you by really awesome people from the community.
 
-RAIN MEADOW TEAM
+<T>RAIN MEADOW TEAM
 
 Henpemaz
 Project Lead, Concept, Engine Design, Network Design, Meadow Mode
 
 UO
-Story Lead, Arena Lead, 67 God
+Story Lead, Arena Lead, Networking, 67
 
-Wolfycatt(Ana)
+Wolfycatt (Ana)
 Lead Artist
 
 Intikus
@@ -20,46 +20,79 @@ Noircatto
 Programming, Engine, Networking
 
 A1iex
-Programming, UI/UX Design
+Programming, UI Design
 
 InvalidUnits
-Programming, Gameplay, Netcode, UI, LAN Support
+Programming, Gameplay, Networking, UI, LAN Support
 
-NotchOC
+notchoc
 Programming, Gameplay, Engine, Story
 
 DustyLemny
 Programming, Story, Arena, UI
 
 Timbits
-Programming, UI/UX Design, Menus
+Programming, UI Design, Menus
+
+Zedreus
+Programming, UI, Story
 
 CaptainRedstone
 Programming, Meadow Mode, Story
 
+Elizabeth
+Programming, Story, UI
+
 EdEnStone
 Programming, Arena, Cosmetics, QOL
-
-Saddest
-Programming, UI, Chat
-
-Chrometurtle
-Programming, Gameplay, Networking
 
 niacdoial
 Programming, LAN Support
 
+r3nsen
+Programming, Expedition, Story
+
+Saddest
+Programming, UI, Chat
+
 None
 Programming, Gameplay, Chat, QOL
 
-Vigaro
-Programming, Menus
+OneLetterShor
+Programming, Gameplay, Arena, QOL
+
+FranklyGD
+Programming, Engine
 
 phanie_
 Illustration
 
+MC41Games
+Programming, Menus
+
+Pudgy Turtle
+Programming, Gameplay, Networking
+
+BitiLope
+Programming, Story
+
+Silvyger
+Programming, Arena
+
+HelloThere
+Programming, Sound
+
+Vigaro
+Programming, Menus
+
+WillowWisp
+Programming, Story
+
 ForthFora
-Mod Sync
+Programming, Mod Sync
 
 ddemile
-Mod Sync
+Programming, Mod Sync
+
+Persondotexe
+Programming, Mod Sync

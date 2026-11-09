@@ -24,15 +24,6 @@ namespace RainMeadow
 
             backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
             mySoundLoopID = SoundID.MENU_End_Credits_LOOP;
-
-            //this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
-            //this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
-            //this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
-
-            //this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
-
-            //OpLabelLong text = new OpLabelLong(new Vector2(manager.rainWorld.screenSize.x / 2f - 300f, 40), new Vector2(600, 580), credits);
-            //new UIelementWrapper(tabWrapper, text);
         }
 
         public void SpawnCreditsObject()
