@@ -192,6 +192,32 @@ namespace RainMeadow
             return disable.Union(active.Where(id => !allowed.Contains(id))).ToList();
         }
 
+        public static List<string> ModsToEnable(string[] requiredMods)
+        {
+            var active = ModManager.ActiveMods.Select(mod => mod.id);
+            return requiredMods
+                .Union(WithDependencies(requiredMods, ModManager.InstalledMods))
+                .Except(active)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList();
+        }
+
+        public static void AddDisabledDependents(List<string> disable)
+        {
+            bool added;
+            do
+            {
+                added = false;
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    if (disable.Contains(mod.id)) continue;
+                    if (!disable.Exists(id => mod.requirements.Contains(id))) continue;
+                    disable.Add(mod.id);
+                    added = true;
+                }
+            } while (added);
+        }
+
         private static HashSet<string> WithDependencies(IEnumerable<string> ids, List<ModManager.Mod> source)
         {
             var result = new HashSet<string>(ids);
@@ -230,7 +256,7 @@ namespace RainMeadow
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
                 var disable = ModsToDisable(requiredMods, bannedMods, whitelistMods);
-                var enable = requiredMods.Except(active).ToList();
+                var enable = ModsToEnable(requiredMods);
 
                 //clear phony entries to the mod list
                 enable.RemoveAll(mod => mod == null || mod == "" /* || mod == "henpemaz_rainmeadow" */);
@@ -298,10 +324,7 @@ namespace RainMeadow
                 }
 
                 //add mods that have their dependencies disabled to the disable list (e.g: a mod that requires Slugbase)
-                foreach (var mod in ModManager.ActiveMods)
-                    if (!disable.Contains(mod.id)) //ignore mods that are already in disable; no change necessary
-                        if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
-                            disable.Add(mod.id); //disable the mod
+                AddDisabledDependents(disable);
 
                 //clear phony entries to the mod list again, just in case
                 enable.RemoveAll(mod => mod == null || mod == "");

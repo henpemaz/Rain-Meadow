@@ -135,8 +135,7 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
 
         highImpactModsTextScroller.Container.isVisible = true;
 
-        List<string> enabledModIds = ModManager.ActiveMods.ConvertAll(mod => mod.id);
-        List<string> modIdsToEnable = [.. requiredMods.Except(enabledModIds)];
+        List<string> modIdsToEnable = RainMeadowModManager.ModsToEnable(requiredMods);
         List<string> modIdsToDisable = RainMeadowModManager.ModsToDisable(requiredMods, bannedMods, whitelistMods);
 
         modIdsToEnable.RemoveAll(string.IsNullOrEmpty);
@@ -160,13 +159,7 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
             modNamesToEnable.Add(ModManager.InstalledMods[index].LocalizedName);
         }
 
-        foreach (ModManager.Mod mod in ModManager.ActiveMods)
-        {
-            if (modIdsToDisable.Contains(mod.id))
-                continue;
-            if (modIdsToDisable.Exists(id => mod.requirements.Contains(id)))
-                modIdsToDisable.Add(mod.id);
-        }
+        RainMeadowModManager.AddDisabledDependents(modIdsToDisable);
 
         // this has to be paranoia
         modIdsToDisable.RemoveAll(string.IsNullOrEmpty);
