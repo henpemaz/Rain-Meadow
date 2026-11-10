@@ -175,7 +175,7 @@ Chat Log Toggle|Открыть/закрыть окно чата
 Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
 Show Ping|Показать пинг
-Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists.|Управляйте модами, которые будут разрешены у клиентов, редактируя файлы снизу.<LINE>Инструкция прилагается. Когда файл белого листа не пуст, он заменяет два других листа.
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the banned list.|Управляйте модами, которые будут разрешены у клиентов, редактируя файлы снизу.<LINE>Инструкция прилагается. Когда файл белого листа не пуст, он заменяет два других листа.
 Edit Whitelist|Изменить белый лист
 Playtesting Gift|Подарок за тест
 Anniversary Gift|Подарок на годовщину
