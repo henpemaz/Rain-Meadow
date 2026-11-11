@@ -131,7 +131,6 @@ namespace RainMeadow
                 .Where(mod => mod != "henpemaz_rainmeadow")
                 .ToArray();
         }
-
         /// <summary>
         /// Returns the list of mod IDs uncommented in meadow-whitelistmods.txt and creates the file
         /// with all currently active mods all commented out if it doesn't exist yet.
