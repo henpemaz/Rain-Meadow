@@ -10,8 +10,8 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.overworld != null && OnlineManager.lobby.overworld.isAvailable)
             {
-                OnlineManager.lobby.overworld.Deactivate();
                 OnlineManager.lobby.overworld.NotNeeded();
+                OnlineManager.lobby.overworld.Deactivate();
             }
         }
         public HashSet<PlacedObject.Type> cosmeticItems = new()

@@ -1,18 +1,32 @@
-﻿using Menu;
-using System;
+﻿using System;
+using Menu;
 using UnityEngine;
 
 namespace RainMeadow;
 
-public class SimplerSymbolButton(Menu.Menu menu, MenuObject owner, string symbolName, string singalText, Vector2 pos, string description = "")
-    : SymbolButton(menu, owner, symbolName, singalText, pos), IHaveADescription
+public class SimplerSymbolButton(
+    Menu.Menu menu,
+    MenuObject owner,
+    string symbolName,
+    string singalText,
+    Vector2 pos,
+    string description = ""
+) : SymbolButton(menu, owner, symbolName, singalText, pos), IHaveADescription
 {
     public string description = description;
     public event Action<SymbolButton>? OnClick;
 
     public void ResetSubscriptions() => OnClick = delegate { };
 
-    public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
+    public override void Clicked()
+    {
+        base.Clicked();
+        OnClick?.Invoke(this);
+    }
 
-    public string Description => description;
+    public string Description
+    {
+        get => description;
+        set => description = value;
+    }
 }

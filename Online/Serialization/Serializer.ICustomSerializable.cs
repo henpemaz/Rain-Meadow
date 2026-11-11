@@ -161,6 +161,74 @@ namespace RainMeadow
             }
         }
 
+        public void SerializeNullableShort<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                writer.Write(arrayOfSerializables != null);
+                if (arrayOfSerializables != null)
+                {
+                    if (arrayOfSerializables.Length > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)arrayOfSerializables.Length);
+                    for (int i = 0; i < arrayOfSerializables.Length; i++)
+                    {
+                        arrayOfSerializables[i].CustomSerialize(this);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    ushort count = reader.ReadUInt16();
+                    arrayOfSerializables = new T[count];
+                    for (int i = 0; i < count; i++)
+                    {
+                        T item = new();
+                        item.CustomSerialize(this);
+                        arrayOfSerializables[i] = item;
+                    }
+                }
+            }
+        }
+        
+        public void SerializeNullableShort<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                writer.Write(listOfSerializables != null);
+                if (listOfSerializables != null)
+                {
+                    if (listOfSerializables.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                    writer.Write((ushort)listOfSerializables.Count);
+                    for (int i = 0; i < listOfSerializables.Count; i++)
+                    {
+                        listOfSerializables[i].CustomSerialize(this);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    ushort count = reader.ReadUInt16();
+                    listOfSerializables = new(count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        T item = new();
+                        item.CustomSerialize(this);
+                        listOfSerializables.Add(item);
+                    }
+                }
+            }
+        }
+
         internal static Dictionary<Serializer.TypeInfo, MethodInfo> serializerMethods = new();
 
         // tempting to try and cache this, would need a query icomparable
@@ -263,6 +331,9 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
+
+            var method = typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            if (method is not null) return method;
 
             if (Nullable.GetUnderlyingType(fieldType) is Type t)
             {
@@ -371,7 +442,29 @@ namespace RainMeadow
                 return dynMethod;
             }
 
-            return typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
+            if (fieldType.GetCustomAttribute(typeof(System.SerializableAttribute)) is System.SerializableAttribute attriute && !fieldType.IsPrimitive && !fieldType.IsEnum && !fieldType.IsArray && fieldType != typeof(string))
+            {
+                RainMeadow.Debug($"Generating function for [Serializable] {fieldType}");
+                var dynMethod = new DynamicMethod("SerializeSystemSerializable" + fieldType.Name, null, [typeof(Serializer), fieldType.MakeByRefType()], true);
+                var il = dynMethod.GetILGenerator();
+
+                var fields = fieldType.GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Where(x => x.GetCustomAttribute(typeof(NonSerializedAttribute)) is null).OfType<FieldInfo>().ToArray();
+                foreach (FieldInfo field in fields)
+                {
+                    RainMeadow.Debug($"{field}");
+                    var func = GetSerializationMethod(field.FieldType, false, false, false);
+
+                    il.Emit(OpCodes.Ldarg, 0);
+                    il.Emit(OpCodes.Ldarga, 1);
+                    il.Emit(OpCodes.Ldflda, field);
+                    il.Emit(OpCodes.Call, func);
+                }
+                il.Emit(OpCodes.Ret);
+                return dynMethod;
+            }
+
+
+            throw new KeyNotFoundException("Could not find a valid serializable function");
         }
     }
 }

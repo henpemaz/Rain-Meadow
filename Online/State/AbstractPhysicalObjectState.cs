@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -15,6 +16,8 @@ namespace RainMeadow
         public bool realized;
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
+        [OnlineField(group = "abstract")]
+        public bool destroyOnAbstraction;
 
         public AbstractPhysicalObjectState() : base() { }
         public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
@@ -38,6 +41,7 @@ namespace RainMeadow
             this.sticks = new(onlineEntity.apo.stuckObjects.Where(s => s.A == onlineEntity.apo).Select(s => AbstractObjStickRepr.map.GetValue(s, AbstractObjStickRepr.FromStick)).Where(s => s != null).ToList());
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
+            this.destroyOnAbstraction = onlineEntity.apo.destroyOnAbstraction;
             if (realizedState) this.realizedObjectState = GetRealizedState(onlineEntity);
         }
 
@@ -53,6 +57,8 @@ namespace RainMeadow
                 }
                 return new RealizedOracleState(onlineObject);
             }
+            if (onlineObject.apo.realizedObject is PrinceBulb) return new RealizedPrinceBulbState(onlineObject);
+            if (onlineObject.apo.realizedObject is JokeRifle) return new JokeRifleState(onlineObject);
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is Watcher.BoxWorm.Larva) return new RealizedFireSpriteLarva(onlineObject);
@@ -112,12 +118,17 @@ namespace RainMeadow
                 }
                 bool wasbeingmoved = onlineObject.beingMoved;
                 onlineObject.beingMoved = true;
-                if (wasPos.room != apo.pos.room) {
-                    if (apo.realizedObject != null && apo.realizedObject.room != null) {
+                if (wasPos.room != apo.pos.room)
+                {
+                    if (apo.realizedObject != null && apo.realizedObject.room != null)
+                    {
                         apo.realizedObject.room.RemoveObject(apo.realizedObject);
                     }
                 }
-                if (apo.world.IsRoomInRegion(apo.pos.room)) apo.MoveOnly(pos);
+                // check THE DESTINATION. The room we're told to move to isn't in this
+                // world when the sender has moved to another region and we haven' followed them
+                // This significantly helps Watcher warping which used to cause Null keys on MoveOnly
+                if (apo.world.IsRoomInRegion(pos.room)) apo.MoveOnly(pos);
                 onlineObject.beingMoved = false;
                 onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             }
@@ -161,6 +172,7 @@ namespace RainMeadow
                 }
             }
 
+            apo.destroyOnAbstraction = destroyOnAbstraction;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)
             {

@@ -9,8 +9,12 @@ namespace RainMeadow
     {
         // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
         public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
-        public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
-        public ICapeColor? eventCape { get; set; } = SpecialEvents.EventActiveInLobby<SpecialEvents.Anniversary>()? new RainbowCapeColor() : RainMeadow.rainMeadowOptions.wantsDefaultCapeColor.Value ? null : new SolidCapeColor(RainMeadow.rainMeadowOptions.currentlyActiveCapeColor.Value);
+
+        public bool globalMute { get; set; } = RainMeadow.rainMeadowOptions.GlobalMute.Value;
+        public string? cosmetic { get; set; }
+        public string? cosmeticSkin { get; set; }
+        public Color customCosmeticColor;
+
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
         public bool fakePup { get; set; }
@@ -19,7 +23,12 @@ namespace RainMeadow
         public SlugcatStats.Name playingAs;
         public string nickname;
 
-        public SlugcatCustomization() { }
+        public SlugcatCustomization()
+        {
+            cosmetic = RainMeadow.rainMeadowOptions.currentlyActiveCosmetic.Value;
+            cosmeticSkin = RainMeadow.rainMeadowOptions.currentlyActiveCosmeticSkin.Value;
+            customCosmeticColor = RainMeadow.rainMeadowOptions.currentlyActiveCustomCosmeticColor.Value;
+        }
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
@@ -64,11 +73,22 @@ namespace RainMeadow
             [OnlineField]
             public bool wearingCape;
 
-            [OnlineField]
-            public string eventCape;
+
+
+            [OnlineField(group: "cosmetic", nullable: true)]   
+            public string? cosmetic;
+
+            [OnlineField(group: "cosmetic", nullable: true)]   
+            public string? cosmeticSkin;
+
+            [OnlineFieldColorRgb(group: "cosmetic_color")]
+            public Color customCosmeticColor;
 
             [OnlineField]
             public int playerIndex;
+
+            [OnlineField]
+            public bool globalMute;
 
             [OnlineField]
             public bool fakePup { get; set; }
@@ -79,10 +99,12 @@ namespace RainMeadow
                 customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
-                wearingCape = slugcatCustomization.wearingCape;
-                eventCape = slugcatCustomization.eventCape?.ToString() ?? "";
+                cosmetic = slugcatCustomization.cosmetic;
+                cosmeticSkin = slugcatCustomization.cosmeticSkin;
+                customCosmeticColor = slugcatCustomization.customCosmeticColor;
                 playerIndex = slugcatCustomization.playerIndex;
                 fakePup = slugcatCustomization.fakePup;
+                globalMute = slugcatCustomization.globalMute;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -92,16 +114,31 @@ namespace RainMeadow
                 slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
-                slugcatCustomization.wearingCape = wearingCape;
-                if (string.IsNullOrWhiteSpace(eventCape)) slugcatCustomization.eventCape = null;
-                else if (slugcatCustomization.eventCape?.ToString() != eventCape)
+                slugcatCustomization.globalMute = globalMute;
+
+                bool needsGraphicRefresh = false;
+                var allowedCosmetic = cosmetic != null && CosmeticManager.AvailableCosmetics(onlineEntity.owner.id).Contains(cosmetic) ? cosmetic : null;
+                if (allowedCosmetic != slugcatCustomization.cosmetic)
                 {
-                    slugcatCustomization.eventCape = CapeManager.ParseCapeColor(eventCape);
-                    if (onlineEntity is OnlineCreature critter && critter.abstractCreature.realizedCreature is Creature s)
-                    {
-                        CapeManager.RefreshGraphicalModule(s);
-                    }
+                    slugcatCustomization.cosmetic = allowedCosmetic;
+                    needsGraphicRefresh = true;
                 }
+
+                var allowedSkin = cosmeticSkin != null && CosmeticManager.AvailableCosmeticSkins(onlineEntity.owner.id).Contains(cosmeticSkin) ? cosmeticSkin : null;
+                if (allowedSkin != slugcatCustomization.cosmeticSkin)
+                {
+                    slugcatCustomization.cosmeticSkin = allowedSkin;
+                    needsGraphicRefresh = true;
+                }
+
+                slugcatCustomization.customCosmeticColor = customCosmeticColor;
+
+                if (needsGraphicRefresh && onlineEntity is OnlineCreature critter && critter.abstractCreature.realizedCreature is Creature s)
+                {
+                    CosmeticManager.RefreshGraphicalModule(s);
+                }
+                
+
                 slugcatCustomization.playerIndex = playerIndex;
                 slugcatCustomization.fakePup = fakePup;
             }

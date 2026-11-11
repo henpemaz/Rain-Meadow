@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using HUD;
 using UnityEngine;
 
@@ -14,9 +15,28 @@ namespace RainMeadow
         private AbstractCreature? spectatee;
         public bool isActive;
 
+
+        private readonly List<AbstractRoom> pendingRoomKills = new();
+
         public bool isSpectating
         {
             get => spectatee is not null;
+        }
+
+        public AbstractCreature? Spectatee
+        {
+            get => spectatee;
+            set
+            {
+                if (value == null)
+                {
+                    ClearSpectatee();
+                }
+                else
+                {
+                    SpectateCreature(value);
+                }
+            }
         }
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera)
@@ -30,12 +50,13 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
+            if (OnlineManager.lobby != null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
             {
                 if (spectatorOverlay == null)
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
+                    spectatorOverlay.spectatee = spectatee;
                     if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                     {
                         holidayStoreOverlay = new HolidayStoreOverlay(game.manager, game);
@@ -59,6 +80,16 @@ namespace RainMeadow
             holidayStoreOverlay?.GrafUpdate(timeStacker);
         }
 
+        public void SpectateCreature(AbstractCreature critter)
+        {
+            spectatee = critter;
+            if (spectatorOverlay != null)
+            {
+                spectatorOverlay.spectatee = critter;
+                spectatorOverlay.Update();
+            }
+        }
+
         public void ClearSpectatee()
         {
             if (spectatee != null)
@@ -77,6 +108,7 @@ namespace RainMeadow
         public void ReturnCameraToPlayer()
         {
             RainMeadow.DebugMe();
+            if (OnlineManager.lobby == null) return; // no lobby, no avatars to look up
             AbstractCreature? return_to_player = null;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
@@ -97,9 +129,6 @@ namespace RainMeadow
                         );
                         break;
                     }
-                    //return_to_player = ac;
-                    //RainMeadow.Debug($"Setting return to player to: {return_to_player}");
-                    //break;
                 }
             }
 
@@ -112,14 +141,16 @@ namespace RainMeadow
                 camera.followAbstractCreature = return_to_player;
                 if (return_to_player.Room.realizedRoom == null)
                 {
-                    this.game.world.ActivateRoom(return_to_player.Room);
+                    this.game.roomRealizer.MeadowRealizeAndTrackRoom(return_to_player.Room, true);
                 }
                 if (
                     return_to_player.Room.realizedRoom != null
                     && camera.room.abstractRoom != return_to_player.Room
                 )
                 {
+                    var oldRoom = camera.room?.abstractRoom;
                     camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
+                    QueueRoomKill(oldRoom);
                 }
             }
         }
@@ -127,6 +158,24 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            UpdatePendingRoomKills(); // drains even when we've stopped spectating
+
+            if (OnlineManager.lobby == null)
+            {
+                if (spectatorOverlay != null)
+                {
+                    RainMeadow.Debug("Shutting down spectator overlay, no lobby");
+                    spectatorOverlay.ShutDownProcess();
+                    spectatorOverlay = null;
+                }
+                holidayStoreOverlay?.ShutDownProcess();
+                holidayStoreOverlay = null;
+                spectatee = null;
+                isActive = false;
+                OnlineManager.mePlayer.isActuallySpectating = false;
+                return;
+            }
+
             if (spectatorOverlay != null)
             {
                 if (RainMeadow.isStoryMode(out _) || RainMeadow.isArenaMode(out _))
@@ -149,7 +198,8 @@ namespace RainMeadow
                     }
                 }
                 spectatorOverlay.forceNonMouseSelectFreeze =
-                    hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
+                    hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true }
+                    || RMOverlayHUDMenu.GetOverlay()?.chatHud?.chatInputActive is true;
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
             }
@@ -175,16 +225,49 @@ namespace RainMeadow
                 {
                     if (spectatee.Room.realizedRoom == null)
                     {
-                        this.game.world.ActivateRoom(spectatee.Room);
+                        this.game.roomRealizer.MeadowRealizeAndTrackRoom(spectatee.Room, false);
                     }
                     if (
                         spectatee.Room.realizedRoom != null
                         && camera.room.abstractRoom != spectatee.Room
                     )
                     {
+                        var oldRoom = camera.room?.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                        QueueRoomKill(oldRoom);
                     }
                 }
+            }
+        }
+        private void QueueRoomKill(AbstractRoom? oldRoom)
+        {
+            if (oldRoom is null || oldRoom.realizedRoom is null) return;
+            if (!pendingRoomKills.Contains(oldRoom)) pendingRoomKills.Add(oldRoom);
+        }
+
+        private void UpdatePendingRoomKills()
+        {
+            for (int i = pendingRoomKills.Count - 1; i >= 0; i--)
+            {
+                AbstractRoom room = pendingRoomKills[i];
+
+                if (room.realizedRoom is null || room.world != game.world)
+                {
+                    pendingRoomKills.RemoveAt(i); // already gone or we changed regions
+                    continue;
+                }
+
+                // the camera is showing it or is midway through loading into it
+                if (camera.room?.abstractRoom == room || camera.loadingRoom?.abstractRoom == room) continue;
+
+                // our own room can never be killed so don't keep retrying it forever
+                if (game.roomRealizer?.followCreature?.Room == room)
+                {
+                    pendingRoomKills.RemoveAt(i);
+                    continue;
+                }
+
+                if (room.TryKillRoom()) pendingRoomKills.RemoveAt(i);
             }
         }
     }

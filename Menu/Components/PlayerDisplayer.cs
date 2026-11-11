@@ -65,3 +65,59 @@ namespace RainMeadow.UI.Components
         public SideButton moderationMenu;
     }
 }
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Menu;
+using UnityEngine;
+namespace RainMeadow.UI.Components
+{
+    public class PlayerDisplayer : ButtonDisplayer
+    {
+        public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, MenuObject> getPlayerButton, int numOfLargeButtonsToView, float xListSize, (float, float) largeButtonHeightSpacing, (float, float) smallButtonHeightSpacing, float scrollSliderSizeYOffset = -40) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeightSpacing)
+        {
+            this.getPlayerButton = getPlayerButton;
+            onlinePlayers = players;
+            this.largeButtonHeightSpacing = largeButtonHeightSpacing;
+            this.smallButtonHeightSpacing = smallButtonHeightSpacing;
+            inviteFriends = this.AddSideButton("Meadow_Menu_InviteFriends", description: menu.Translate("Invite Friends"), signal: "INVITE_FRIENDS");
+            inviteFriends.OnClick += (_) =>
+            {
+                SimpleDialogBoxNotify dialogBox = new(menu, owner, "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
+                MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            };
+            refreshDisplayButtons = PopulatePlayerDisplays;
+            UpdatePlayerList(onlinePlayers);
+        }
+        public void UpdatePlayerList(List<OnlinePlayer> lobbyOnlinePlayers)
+        {
+            onlinePlayers = lobbyOnlinePlayers;
+            CallForRefresh();
+        }
+        public MenuObject[] PopulatePlayerDisplays(ButtonDisplayer buttonDisplayer, bool isLargeDisplay)
+        {
+            buttonHeight = isLargeDisplay ? largeButtonHeightSpacing.Item1 : smallButtonHeightSpacing.Item1;
+            buttonSpacing = isLargeDisplay ? largeButtonHeightSpacing.Item2 : smallButtonHeightSpacing.Item2;
+            List<MenuObject> scrollButtons = [];
+            for (int i = 0; i < onlinePlayers?.Count; i++)
+            {
+                MenuObject? scrollButton = getPlayerButton?.Invoke(this, isLargeDisplay, onlinePlayers[i], PositionOfObject(scrollButtons.Count));
+                if (scrollButton == null)
+                {
+                    RainMeadow.Debug("Player button gotten was null!");
+                    continue;
+                }
+                scrollButtons.Add(scrollButton);
+            }
+            return [.. scrollButtons];
+        }
+        public override string DescriptionOfDisplayButton() => menu.Translate(isCurrentlyLargeDisplay ? "Showing players in thumbnail view" : "Showing players in list view");
+
+        public (float, float) largeButtonHeightSpacing, smallButtonHeightSpacing;
+        public List<OnlinePlayer> onlinePlayers;
+        public Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, MenuObject> getPlayerButton;
+        public SideButton inviteFriends;
+    }
+}

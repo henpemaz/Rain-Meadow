@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -21,16 +22,17 @@ namespace RainMeadow
             return new Color(((value >> 16) & 0xff) / 255f, ((value >> 8) & 0xff) / 255f, (value & 0xff) / 255f);
         }
 
+        // GetAbstractRoom returns null for a coord outside this world, AKA watcher
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static WorldSession? GetResource(this World world)
+        public static WorldSession? GetResource(this World? world)
         {
-            return WorldSession.map.TryGetValue(world, out var ws) ? ws : null;
+            return world is not null && WorldSession.map.TryGetValue(world, out var ws) ? ws : null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RoomSession? GetResource(this AbstractRoom room)
+        public static RoomSession? GetResource(this AbstractRoom? room)
         {
-            return RoomSession.map.TryGetValue(room, out var rs) ? rs : null;
+            return room is not null && RoomSession.map.TryGetValue(room, out var rs) ? rs : null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,7 +67,7 @@ namespace RainMeadow
         public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo) => IsLocal(po.abstractPhysicalObject, out opo);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord=null, bool quiet=false)
+        public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord = null, bool quiet = false)
         {
             if (!GetOnlineObject(apo, out var oe)) return true;
             if (!oe.isMine && !oe.beingMoved && (newCoord is null || oe.roomSession is null || oe.roomSession.absroom.index != newCoord.Value.room))
@@ -76,14 +78,16 @@ namespace RainMeadow
             return true;
         }
 
-        public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
-            foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects()) {
+        public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord)
+        {
+            foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects())
+            {
                 if (obj.CanMove(newCoord, true))
-                {   
+                {
                     if (newCoord.CompareDisregardingTile(obj.pos)) return;
 
                     obj.timeSpentHere = 0;
-                    if (newCoord.room != obj.pos.room)
+                    if (newCoord.room != obj.pos.room && obj.CanChangeRoomsTo(newCoord))
                     {
                         obj.ChangeRooms(newCoord);
                     }
@@ -94,27 +98,47 @@ namespace RainMeadow
                     }
 
                     obj.pos = newCoord;
-                    obj.world.GetResource().ApoEnteringWorld(obj);
-                    obj.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(obj, newCoord);
-                } 
+                    obj.world.GetResource()?.ApoEnteringWorld(obj);
+                    obj.world?.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(obj, newCoord);
+                }
             }
         }
-        public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
-            if (apo.CanMove(newCoord, true)) {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CanChangeRoomsTo(this AbstractPhysicalObject apo, WorldCoordinate newCoord)
+        {
+            return apo.world is not null
+                && apo.world.IsRoomInRegion(apo.pos.room)
+                && apo.world.IsRoomInRegion(newCoord.room);
+        }
+
+        public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord)
+        {
+            if (apo.CanMove(newCoord, true))
+            {
                 if (newCoord.CompareDisregardingTile(apo.pos)) return;
 
                 apo.timeSpentHere = 0;
                 if (newCoord.room != apo.pos.room)
                 {
-                    try {
-                        apo.ChangeRooms(newCoord);
-                    } catch (Exception except) {
-                        RainMeadow.Error(except);
-                        RainMeadow.Debug("Manually setting room");
+                    if (apo.CanChangeRoomsTo(newCoord))
+                    {
+                        try
+                        {
+                            apo.ChangeRooms(newCoord);
+                        }
+                        catch (Exception except)
+                        {
+                            RainMeadow.Error(except);
+                            RainMeadow.Debug("Manually setting room");
+                            apo.world?.GetAbstractRoom(apo.pos)?.RemoveEntity(apo);
+                            apo.world?.GetAbstractRoom(newCoord)?.AddEntity(apo);
+                        }
+                    }
+                    else // one end is in another region, place it by hand as far as we can
+                    {
                         apo.world?.GetAbstractRoom(apo.pos)?.RemoveEntity(apo);
                         apo.world?.GetAbstractRoom(newCoord)?.AddEntity(apo);
                     }
-                    
                 }
 
                 if (!newCoord.TileDefined && apo.pos.room == newCoord.room)
@@ -123,12 +147,12 @@ namespace RainMeadow
                 }
 
                 apo.pos = newCoord;
-                apo.world.GetResource().ApoEnteringWorld(apo);
-                apo.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(apo, newCoord);
+                apo.world.GetResource()?.ApoEnteringWorld(apo);
+                apo.world?.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(apo, newCoord);
             }
         }
 
-        public static bool RemoveFromShortcuts<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel 
+        public static bool RemoveFromShortcuts<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel
         {
             bool removefromallrooms = room is null;
             for (int i = 0; i < vessels.Count; i++)
@@ -150,9 +174,46 @@ namespace RainMeadow
             if (RemoveFromShortcuts(ref handler.transportVessels, creature, room)) found = true;
             if (RemoveFromShortcuts(ref handler.borderTravelVessels, creature, room)) found = true;
             if (RemoveFromShortcuts(ref handler.betweenRoomsWaitingLobby, creature, room)) found = true;
-            
+
             if (!found) RainMeadow.Debug("not found");
             return found;
+        }
+
+        public static RoomRealizer.RealizedRoomTracker MeadowRealizeAndTrackRoom(this RoomRealizer self, AbstractRoom room, bool actuallyEntering)
+        {
+            room.world.ActivateRoom(room);
+            RoomRealizer.RealizedRoomTracker? tracker = self.realizedRooms.FirstOrDefault(x => x.room == room);
+
+            if (tracker is null)
+            {
+                tracker = new RoomRealizer.RealizedRoomTracker(room, actuallyEntering);
+                self.realizedRooms.Add(tracker);
+                if (actuallyEntering) self.currentlyLoadingRoom = room.realizedRoom;
+            }
+
+            return tracker;
+        }
+
+        public static bool TryKillRoom(this AbstractRoom self)
+        {
+            if (self.realizedRoom is null) return true;
+
+            RoomRealizer roomRealizer = self.world.game.roomRealizer;
+            if (roomRealizer is null) return false;
+
+            var trackedroom = roomRealizer.realizedRooms.FirstOrDefault(x => x.room == self);
+            if (trackedroom is null)
+            {
+                roomRealizer.AddNewTrackedRoom(self, false);
+                return false;
+            }
+
+            if (!roomRealizer.CanAbstractizeRoom(trackedroom)) return false;
+
+            RainMeadow.Debug($"Killing {self.name} to prevent leaks.");
+            roomRealizer.KillRoom(self);
+            roomRealizer.realizedRooms.Remove(trackedroom);
+            return true;
         }
 
         // suck it, linq
@@ -224,7 +285,7 @@ namespace RainMeadow
 
         public static T? GetValueOrDefault<T>(this IList<T> iList, int index, T? defaultVal)
         {
-            return iList != null && index >= 0 && iList.Count > index? iList[index] : defaultVal;
+            return iList != null && index >= 0 && iList.Count > index ? iList[index] : defaultVal;
         }
 
         public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
@@ -377,9 +438,9 @@ namespace RainMeadow
             {
                 WorkingObjects.Reverse();
             }
-            for (int i=0; i < WorkingObjects.Count - 1; i++)
+            for (int i = 0; i < WorkingObjects.Count - 1; i++)
             {
-                TryMutualBind(menu, WorkingObjects[i], WorkingObjects[i+1], leftRight, bottomTop);
+                TryMutualBind(menu, WorkingObjects[i], WorkingObjects[i + 1], leftRight, bottomTop);
             }
             if (loopLastIndex)
             {
@@ -391,11 +452,11 @@ namespace RainMeadow
         {
             //Clean up the lists
             List<MenuObject> ListA = fromObjectsList.Where(MenuObject => MenuObject != null).ToList(); //If our input lists contain null entries (such as uninitialized), just remove them and continue as if they don't exist.
-            List<MenuObject> ListB =   toObjectsList.Where(MenuObject => MenuObject != null).ToList();
+            List<MenuObject> ListB = toObjectsList.Where(MenuObject => MenuObject != null).ToList();
             if (ListA.Count < 1) { RainMeadow.Warn(" Tried to UI keybind to an empty or null fromObjects, cancelling operation. Is the list not yet populated?"); return; }
-            if (ListB.Count < 1) { RainMeadow.Warn(" Tried to UI keybind to an empty or null toObjects, cancelling operation. Is the list not yet populated?");   return; }
+            if (ListB.Count < 1) { RainMeadow.Warn(" Tried to UI keybind to an empty or null toObjects, cancelling operation. Is the list not yet populated?"); return; }
             if (reverseFromList) { ListA.Reverse(); }
-            if (reverseToList)   { ListB.Reverse(); }
+            if (reverseToList) { ListB.Reverse(); }
             if (swapLists) { (ListA, ListB) = (ListB, ListA); }
             //Create 2 button pointers, one for each list
             int NotSoLeastCommonMultiple = (ListA.Count - 1) * (ListB.Count - 1);
@@ -442,11 +503,11 @@ namespace RainMeadow
             //Find which direction we need to bind, then bind. Referencing the index of a division is conceptually sketchy, but the math checks out and has been throughly tested. Worst-case scenario it's integer division anyway.
             TryBind(
                 ListA[ListAStepper / Math.Max(1, ListB.Count - 1)],
-                ListB[TargetStep   / Math.Max(1, ListA.Count - 1)],
-                top:   !isTempSwap && areRows,
+                ListB[TargetStep / Math.Max(1, ListA.Count - 1)],
+                top: !isTempSwap && areRows,
                 bottom: isTempSwap && areRows,
                 right: !isTempSwap && areColumns,
-                left:   isTempSwap && areColumns
+                left: isTempSwap && areColumns
             );
         }
         /// <summary>Hybrid of TrySeqentualMutualBind() and TryParallelStitchBind(); find the best way to bind a list of lists together. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right, use reverseListList if you want the readability.</summary>
@@ -470,6 +531,58 @@ namespace RainMeadow
             {
                 TryParallelStitchBind(listList[0], listList[listList.Count - 1], areRows, areColumns);
             }
+        }
+        public static bool IsDictionary(this Type type, out Type? dictInterface)
+        {
+            dictInterface = null;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                dictInterface = type;
+                return true;
+            }
+            else
+            {
+                foreach (var i in type.GetInterfaces())
+                {
+                    if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                    {
+                        dictInterface = i;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        public static bool EqualHalf(this float? f1, float? f2)
+            => f1 is null 
+                ? f2 is null 
+                : f2 is not null && EqualHalf((float)f1, (float)f2);
+        public static bool EqualHalf(this float f1, float f2)
+            => Mathf.FloatToHalf(f1) == Mathf.FloatToHalf(f2);
+        public static bool EqualHalf(this Vector2? v1, Vector2? v2)
+            => v1 is null 
+                ? v2 is null 
+                : v2 is not null && EqualHalf((Vector2)v1, (Vector2)v2);
+        public static bool EqualHalf(this Vector2 v1, Vector2 v2)
+            => Mathf.FloatToHalf(v1.x) == Mathf.FloatToHalf(v2.x)
+                && Mathf.FloatToHalf(v1.y) == Mathf.FloatToHalf(v2.y);
+
+        // TryTranslate to menu too
+        public static bool TryTranslate(this Menu.Menu menu, string text, out string trad)
+        {
+            return menu.manager.rainWorld.inGameTranslator.TryTranslate(text, out trad);
+        }
+
+        public static float ProjectionLenght(this Vector2 from, Vector2 on)
+        {
+            if (on.magnitude < 1E-05f) return 0;
+            return Vector2.Dot(from, on) * 1f/on.magnitude;
+        }
+        public static Vector2 ProjectOn(this Vector2 from, Vector2 on)
+        {
+            return on.normalized * from.ProjectionLenght(on);
         }
     }
 }

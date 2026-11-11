@@ -10,23 +10,21 @@ namespace RainMeadow
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
-        private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x;
+        public static Vector2 MenuShift => new(-186f, 171f);
+        private Vector2 ScreenSize => manager.rainWorld.options.ScreenSize;
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game, RoomCamera camera) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
             this.game = game;
             this.camera = camera;
-
-            pages.Add(new(this, null, "spectator", 0));
             selectedObject = null;
-            float xPos = ScreenWidth - 186f; 
-            Vector2 pos = new(xPos, 553f);
-            pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
-            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
-            pages[0].subObjects.Add(playerScroller);
+
+            playerScroller = null!;
         }
         private bool UpdateList()
         {
+            if (OnlineManager.lobby == null) return false;
+
             List<PlayerButton> playerButtons = PlayerButtons;
             List<OnlinePlayer> newPlayers = [.. OnlineManager.players.OrderBy(onlineP => onlineP.isMe ? 0 : 1)]; // will keep this logic for LAN
             List<OnlineCreature> realizedPlayers = [.. OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true)).OfType<OnlineCreature>().OrderBy(opo => opo.isMine ? 0 : 1)];
@@ -45,15 +43,31 @@ namespace RainMeadow
             }
             foreach (OnlinePlayer player in newPlayers)
             {
-                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
-                playerScroller.AddScrollObjects(playerButton);
+                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.PositionOfObject(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
+                playerScroller.AddButtons(playerButton);
             }
             playerScroller.ConstrainScroll();
             return true;
         }
+        public override void Init()
+        {
+            Page page = new(this, null, "spectator", 0);
+            pages.Add(page);
+
+            base.Init();
+
+            var pos = new Vector2(ScreenSize.x, ScreenSize.y / 2) + MenuShift - page.pos;
+
+            MenuLabel label = new(this, page, Translate("PLAYERS"), pos, new(110, 30), true);
+            page.subObjects.Add(label);
+
+            playerScroller = new(this, page, new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
+            page.subObjects.Add(playerScroller);
+        }
         public override void Update()
         {
             base.Update();
+
             UpdateList();
             foreach (PlayerButton button in PlayerButtons)
             {
@@ -217,7 +231,7 @@ namespace RainMeadow
             public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
 
-            public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => !avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead));
+            public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => avatar.isMine || (!avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead)));
             public List<OnlineCreature> avatars;
             public SimplerSymbolButton? kickbutton;
         }

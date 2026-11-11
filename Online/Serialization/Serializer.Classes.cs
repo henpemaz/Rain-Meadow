@@ -10,14 +10,14 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
-                writer.Write((byte)extEnum.Index);
+                writer.Write(extEnum.MeadowIndex());
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
             }
             if (IsReading)
             {
-                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { MeadowExtEnumSync.GetExtEnumValue<T>(reader.ReadByte()), false });
             }
         }
 
@@ -54,7 +54,7 @@ namespace RainMeadow
 #endif
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    writer.Write(extEnum[i].MeadowIndex());
                 }
             }
             if (IsReading)
@@ -62,7 +62,7 @@ namespace RainMeadow
                 extEnum = new T[reader.ReadByte()];
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { MeadowExtEnumSync.GetExtEnumValue<T>(reader.ReadByte()), false });
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace RainMeadow
 #endif
                 for (int i = 0; i < extEnum.Count; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    writer.Write(extEnum[i].MeadowIndex());
                 }
             }
             if (IsReading)
@@ -86,7 +86,7 @@ namespace RainMeadow
                 extEnum = new(count);
                 for (int i = 0; i < count; i++)
                 {
-                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false }));
+                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { MeadowExtEnumSync.GetExtEnumValue<T>(reader.ReadByte()), false }));
                 }
             }
         }

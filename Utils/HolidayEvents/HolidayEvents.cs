@@ -23,7 +23,7 @@ namespace RainMeadow
             public virtual void UpdateLoginMessage(Menu.Menu self)
             {
                 int chanceToShowMessage = UnityEngine.Random.Range(0, 11);
-                if (chanceToShowMessage > 5 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
+                if (chanceToShowMessage < 7 && RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0)
                 {
                     return;
                 }
@@ -48,7 +48,7 @@ namespace RainMeadow
                 return dialog;
             }
 
-            
+
         }
 
         private static readonly Event[] AllEvents = { AprilFoolsEvent, AnniversaryEvent };
@@ -81,11 +81,6 @@ namespace RainMeadow
 
         public static void LoadElement(string elementName)
         {
-            if (!SpecialEvents.IsSpecialEvent)
-            {
-                return;
-            }
-            
             if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
             {
                 return;

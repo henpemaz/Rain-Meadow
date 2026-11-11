@@ -171,9 +171,16 @@ namespace RainMeadow.UI.Components
                 bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
                 if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput && !TypingOnOtherObjects)
                 {
-                    SetFocused(true);
-                    forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
-                    if (!forceMenuMouseMode) menu.selectedObject = this;
+                    if (ChatTextBox.AnyShift && RainMeadow.rainMeadowOptions.EnableChatLogErrorToggle.Value)
+                    {
+                        ChatLogManager.ToggleLogErrorInChat();
+                    }
+                    else
+                    {
+                        SetFocused(true);
+                        forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
+                        if (!forceMenuMouseMode) menu.selectedObject = this;
+                    }
                 }
                 return;
             }

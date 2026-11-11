@@ -93,7 +93,7 @@
                 {
                     seedCob.opened = opened;
                     seedCob.spawnedUtility = spawnedUtility;
-                    seedCob.dead = seedCob.dead || opened || spawnedUtility;
+                    seedCob.dead = seedCob.dead || spawnedUtility;
                 }
             }
         }

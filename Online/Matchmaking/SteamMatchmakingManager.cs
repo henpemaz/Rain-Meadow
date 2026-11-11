@@ -9,10 +9,12 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class SteamLobbyInfo : LobbyInfo {
+    public class SteamLobbyInfo : LobbyInfo
+    {
         public CSteamID iD;
-        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "") : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "", bool whitelistMode = false) :
+            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline, whitelistMode)
+        {
             iD = id;
 
 
@@ -25,12 +27,8 @@ namespace RainMeadow
             }
 
         }
-        public override string GetLobbyJoinCode(string? password = null)
-        {
-            if (password != null)
-                return $"+connect_lobby {iD.m_SteamID} +lobby_password {password}";
-            return $"+connect_lobby {iD.m_SteamID}";
-        }
+        public override MatchmakingManager.MatchMakingDomain domain => MatchmakingManager.MatchMakingDomain.Steam;
+        protected override object[] JoinCodeArgs => new object[] { iD.m_SteamID };
     }
 
     public class SteamPlayerRep
@@ -100,13 +98,15 @@ namespace RainMeadow
                 return steamID.GetHashCode();
             }
 
-            public override string GetPersonaName() {
+            public override string GetPersonaName()
+            {
                 return UsernameGenerator.StreamerModeName(SteamFriends.GetFriendPersonaName(steamID));
             }
 
             public override bool canOpenProfileLink { get => true; }
             public override string DisplayName { get => UsernameGenerator.StreamerModeName(name); }
-            public override void OpenProfileLink() {
+            public override void OpenProfileLink()
+            {
                 string url = $"https://steamcommunity.com/profiles/{steamID}";
                 SteamFriends.ActivateGameOverlayToWebPage(url);
             }
@@ -115,6 +115,16 @@ namespace RainMeadow
         public override MeadowPlayerId GetEmptyId()
         {
             return new SteamPlayerId();
+        }
+
+        public override MatchMakingDomain domain => MatchMakingDomain.Steam;
+
+        protected override LobbyInfo? LobbyInfoFromJoinArgs(string[] parts, int argsStart)
+        {
+            if (parts.Length > argsStart && ulong.TryParse(parts[argsStart], out var id))
+                return new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4);
+            RainMeadow.Error("found +connect_lobby but no valid lobby id");
+            return null;
         }
 
         public bool filteringAvailable;
@@ -176,14 +186,17 @@ namespace RainMeadow
                     for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                        
-                        lobbies[i] = new SteamLobbyInfo(id, 
-                            Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), 
-                            SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), 
-                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY), out var hasPass) && hasPass, 
-                            SteamMatchmaking.GetLobbyMemberLimit(id), 
-                            SteamMatchmaking.GetLobbyData(id, MODS_KEY), 
-                            SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY));
+
+                        lobbies[i] = new SteamLobbyInfo(id,
+                            Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)),
+                            SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id),
+                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY), out var hasPass) && hasPass,
+                            SteamMatchmaking.GetLobbyMemberLimit(id),
+                            SteamMatchmaking.GetLobbyData(id, MODS_KEY),
+                            SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY),
+                            SteamMatchmaking.GetLobbyData(id, CAMPAIGN_KEY),
+                            bool.TryParse(SteamMatchmaking.GetLobbyData(id, WHITELIST_KEY), out var isWhitelist) && isWhitelist
+                        );
                     }
                 }
 
@@ -219,7 +232,8 @@ namespace RainMeadow
             "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
             "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=",
             "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ=",
-            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg="
+            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg=",
+            "M3smpDDQz/tATCx0pV4fdW1GDsSWgdbCaAxPhT46cH0="
         };
 
         public override bool IsDev(MeadowPlayerId player)
@@ -276,7 +290,7 @@ namespace RainMeadow
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }
 
-        public override void JoinLobby(bool success)
+        public override void JoinLobby(bool success, string failReason = "")
         {
             if (success)
             {
@@ -285,20 +299,19 @@ namespace RainMeadow
             else
             {
                 LeaveLobby();
-                RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
+                RainMeadow.Debug($"Failed to join local game. {failReason}");
+                OnLobbyJoinedEvent(false, Utils.Translate(failReason));
             }
         }
 
-        public override void JoinLobbyUsingArgs(params string?[] args)
+        public override string GetCurrentLobbyJoinCode(string? password)
         {
-            if (args.Length >= 1 && ulong.TryParse(args[0], out var id))
+            if (lobbyID == default)
             {
-                RainMeadow.Debug($"joining lobby with id {id} from the command line");
-                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length > 1 ? args[1] : null);
+                RainMeadow.Error("asked for a join code with no steam lobby");
+                return "";
             }
-            else
-                RainMeadow.Error($"failed to parse id: {string.Join(" ", args)}");
+            return new SteamLobbyInfo(lobbyID, "", "", 0, false, MAX_LOBBY).GetLobbyJoinCode(password);
         }
 
         private static string creatingWithMode;
@@ -318,8 +331,9 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
+                    SteamMatchmaking.SetLobbyData(lobbyID, WHITELIST_KEY, RainMeadowModManager.IsWhitelistActive() ? "true" : "false");
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
-                    SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned? "true" : "false");
+                    SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned ? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
@@ -342,9 +356,11 @@ namespace RainMeadow
 
         private void LobbyConnected(LobbyEnter_t param, bool bIOFailure)
         {
+            var enterResponse = (EChatRoomEnterResponse)param.m_EChatRoomEnterResponse;
+
             try
             {
-                if (!bIOFailure)
+                if (!bIOFailure && enterResponse == EChatRoomEnterResponse.k_EChatRoomEnterResponseSuccess)
                 {
                     RainMeadow.Debug("success");
                     lobbyID = new CSteamID(param.m_ulSteamIDLobby);
@@ -362,9 +378,9 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug("failure");
+                    RainMeadow.Debug($"failure, IO failure: {bIOFailure}, response: {enterResponse}");
                     OnlineManager.lobby = null;
-                    OnLobbyJoinedEvent(false, ((EChatRoomEnterResponse)param.m_EChatRoomEnterResponse).ToString());
+                    OnLobbyJoinedEvent(false, bIOFailure ? "Steam IO failure" : enterResponse.ToString());
                 }
             }
             catch (Exception e)
@@ -412,13 +428,14 @@ namespace RainMeadow
             }
         }
         public override bool canSendChatMessages => true;
-        public override void SendChatMessage(string message) {
+        public override void SendChatMessage(string message)
+        {
             byte[] msgBytes = System.Text.Encoding.UTF8.GetBytes(message);
             bool outputted = SteamMatchmaking.SendLobbyChatMsg(lobbyID, msgBytes, msgBytes.Length);
 
             if (!outputted) RainMeadow.Debug($"Failed to send message: {msgBytes} {msgBytes.Length}");
         }
-        
+
         private void LobbyChatMessageReceived(LobbyChatMsg_t callback)
         {
             CSteamID senderID;
@@ -533,19 +550,40 @@ namespace RainMeadow
             }
         }
 
+        private static bool CanAcceptLobbyJoinRequest(ProcessManager manager)
+        {
+
+            // unsafe menus like remix that might let us join during a sensitive process
+            if (manager.upcomingProcess != null) return false;
+            if (OnlineManager.lobby != null) return true;
+            var id = manager.currentMainLoop?.ID;
+            return id == ProcessManager.ProcessID.MainMenu
+                || id == RainMeadow.Ext_ProcessID.LobbySelectMenu
+                || id == RainMeadow.Ext_ProcessID.LobbyCreateMenu;
+        }
+
         private void GameLobbyJoinRequested(GameLobbyJoinRequested_t param)
         {
-            if (MatchmakingManager.currentDomain != MatchMakingDomain.Steam) {
-                OnlineManager.LeaveLobby();
-                MatchmakingManager.currentDomain = MatchMakingDomain.Steam;
-            }
-
             try
             {
                 if (param.m_steamIDLobby.m_SteamID == lobbyID.m_SteamID)
                 {
-                    RainMeadow.Debug("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
+                    RainMeadow.Warn("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
                     return;
+                }
+
+                var manager = Custom.rainWorld.processManager;
+                if (!CanAcceptLobbyJoinRequest(manager))
+                {
+                    RainMeadow.Warn($"rejecting steam join request while in {manager.currentMainLoop?.ID}, upcoming {manager.upcomingProcess}");
+                    manager.ShowDialog(new Menu.DialogNotify(manager.rainWorld.inGameTranslator.Translate("Cannot join a lobby from this screen. Return to the main menu and try again."), manager, null));
+                    return;
+                }
+
+                if (MatchmakingManager.currentDomain != MatchMakingDomain.Steam)
+                {
+                    OnlineManager.LeaveLobby();
+                    MatchmakingManager.currentDomain = MatchMakingDomain.Steam;
                 }
 
                 RainMeadow.Debug("trying to join lobby from steam with id: " + param.m_steamIDLobby);
@@ -555,10 +593,11 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
-                Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                var pendingLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
+                OnlineManager.currentlyJoiningLobby = pendingLobby;
+                pendingJoinCode = pendingLobby.GetLobbyJoinCode();
 
-                m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
+                Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             }
             catch (Exception e)
             {
@@ -567,9 +606,12 @@ namespace RainMeadow
             }
         }
 
+        /// <inheritdoc/>
         public override void LeaveLobby()
         {
             RainMeadow.DebugMe();
+            OnLobbyLeavingEvent();
+
             if (lobbyID != default)
             {
                 SteamMatchmaking.LeaveLobby(lobbyID);
@@ -626,7 +668,8 @@ namespace RainMeadow
             return lobbyID.ToString();
         }
 
-        public override void OpenInvitationOverlay() {
+        public override void OpenInvitationOverlay()
+        {
             SteamFriends.ActivateGameOverlayInviteDialog(lobbyID);
         }
     }

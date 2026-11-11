@@ -1,9 +1,26 @@
 ﻿using Menu;
+using OverseerHolograms;
 using System.Collections.Generic;
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        public void InitializeExtEnums()
+        {
+            // Run static initializers for each class
+            _ = Ext_HUD_OwnerType.RainMeadowOverlay;
+            _ = Ext_ProcessID.OnlineManager;
+            _ = Ext_SlugcatStatsName.OnlineSessionPlayer;
+            _ = Ext_SceneID.Slugcat_MeadowSquidcicada;
+            _ = Ext_PhysicalObjectType.MeadowPlant;
+            _ = Ext_SoundID.RM_Slugcat_Call;
+            _ = Ext_OverseerHologram_Message.OverseerEmote;
+        }
+
+        public class Ext_HUD_OwnerType
+        {
+            public static HUD.HUD.OwnerType RainMeadowOverlay = new("RainMeadowOverlay", true);
+        }
         public class Ext_ProcessID
         {
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
@@ -13,8 +30,9 @@ namespace RainMeadow
             public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
             public static ProcessManager.ProcessID StoryMenu = new("StoryMenu", true);
             public static ProcessManager.ProcessID SpectatorMode = new("SpectatorMode", true);
-            public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
+            // public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
             public static ProcessManager.ProcessID MeadowCredits = new("MeadowCredits", true);
+            public static ProcessManager.ProcessID RainMeadowOverlay = new("RainMeadowOverlay", true);
         }
 
         public class Ext_SlugcatStatsName
@@ -41,6 +59,7 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
             internal static MenuScene.SceneID Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
             internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
+            internal static MenuScene.SceneID Slugcat_MeadowOverseer = new("Slugcat_MeadowOverseer", true);
 
 
             internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);
@@ -69,6 +88,11 @@ namespace RainMeadow
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
             internal static SoundID Fartificer = new("Fartificer", true);
+        }
+
+        public static class Ext_OverseerHologram_Message
+        {
+            internal static OverseerHologram.Message OverseerEmote = new("Meadow_OverseerEmote", true);
         }
     }
 }

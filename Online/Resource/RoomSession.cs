@@ -1,7 +1,9 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Watcher;
+
+using Random = UnityEngine.Random;
 
 namespace RainMeadow
 {
@@ -21,7 +23,27 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
+            if (isActive) LoadPearlStrings();
+        }
 
+        public void LoadPearlStrings()
+        {
+            if (!isActive || !isAvailable) return;
+            if (absroom.realizedRoom == null) return;
+            RainMeadow.Debug("looking for pearls");
+            if (isOwner)
+            {
+                var list = absroom.realizedRoom.drawableObjects.Where(o => o is MoreSlugcats.HangingPearlString or ScavengerOutpost.PearlString).ToList();
+                for (int i = 0; i < list.Count; i++) 
+                {
+                    OnlinePearlString.InitializePearlString((UpdatableAndDeletable)list[i]);
+                }
+            }
+
+            foreach (var entity in activeEntities.OfType<OnlinePearlString>())
+            {
+                entity.FindPearlString(this);
+            }
         }
 
         protected override void ActivateImpl()
@@ -46,11 +68,13 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (isAvailable) LoadPearlStrings();
         }
 
         protected override void DeactivateImpl()
         {
-
+            
         }
 
         protected override void UnavailableImpl()
@@ -82,15 +106,19 @@ namespace RainMeadow
         {
             [OnlineFieldHalf]
             float FlameJetTime;
+
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts)
             {
                 if (resource.absroom.realizedRoom != null)
                 {
-                    FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
-                    if (firstJet != null)
+                    if (ModManager.Watcher)
                     {
-                        FlameJetTime = firstJet.time;
+                        FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
+                        if (firstJet != null)
+                        {
+                            FlameJetTime = firstJet.time;
+                        }
                     }
                 }
             }
@@ -105,9 +133,13 @@ namespace RainMeadow
 
                     if (rs.absroom.realizedRoom != null)
                     {
-                        foreach (FlameJet flameJet in rs.absroom.realizedRoom.updateList.OfType<FlameJet>())
+                        if (ModManager.Watcher)
                         {
-                            flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            var room = rs.absroom.realizedRoom;
+                            foreach (FlameJet flameJet in room.updateList.OfType<FlameJet>())
+                            {
+                                flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                            }
                         }
                     }
                 }

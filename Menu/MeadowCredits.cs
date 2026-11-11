@@ -43,6 +43,7 @@ namespace RainMeadow
                          Elizabeth - {Utils.Translate("Programming, story, UI")}
                          niacdoial - {Utils.Translate("LAN")}
                          CaptainRedstone - {Utils.Translate("Meadow, story")}
+                         EdEnStonne - {Utils.Translate("Arena")}
                          
                          {Utils.Translate("Thank you playtesters from the Rain Meadow discord as well.")}
 

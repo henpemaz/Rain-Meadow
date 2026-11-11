@@ -130,6 +130,10 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.bannedUsers.list.Add(steamUser.id);
             }
+            if (OnlineManager.lobby.isOwner && !steamUser.isMe)
+            {
+                OnlineManager.lobby.OnPlayerDisconnect(steamUser);
+            }
 
         }
 

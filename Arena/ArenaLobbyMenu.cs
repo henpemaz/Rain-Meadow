@@ -549,7 +549,8 @@ namespace RainMeadow
 
                     if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
                     {
-                        if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // normal. You should be removed when you quit back to lobby or on next level if you're missing
+                        if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)
+                            && !arena.playersQuitMidRound.Contains(OnlineManager.mePlayer.inLobbyId)) 
                         {
                             // noop
                         }

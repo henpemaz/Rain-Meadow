@@ -23,7 +23,7 @@ namespace RainMeadow
             loadingSpinner.Update();
         }
 
-        public void RemoveSprites()
+        public virtual void RemoveSprites()
         {
             loadingSpinner.RemoveFromContainer();
         }

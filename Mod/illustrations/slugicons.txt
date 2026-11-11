@@ -1,0 +1,392 @@
+{
+	"frames": {
+		"artificer_face.png": {
+			"frame": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"artificer_feature.png": {
+			"frame": {
+				"x": 24,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"basic_face.png": {
+			"frame": {
+				"x": 0,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"basic_head.png": {
+			"frame": {
+				"x": 24,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"dead_face.png": {
+			"frame": {
+				"x": 48,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"gourmand_head.png": {
+			"frame": {
+				"x": 48,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"hunter_face.png": {
+			"frame": {
+				"x": 0,
+				"y": 48,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"hunter_head.png": {
+			"frame": {
+				"x": 24,
+				"y": 48,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"inv_feature.png": {
+			"frame": {
+				"x": 48,
+				"y": 48,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"modded_feature.png": {
+			"frame": {
+				"x": 72,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"monk_face.png": {
+			"frame": {
+				"x": 72,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"rivulet_feature.png": {
+			"frame": {
+				"x": 72,
+				"y": 48,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"saint_face.png": {
+			"frame": {
+				"x": 0,
+				"y": 72,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"saint_head.png": {
+			"frame": {
+				"x": 24,
+				"y": 72,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"slugpup_dead_face.png": {
+			"frame": {
+				"x": 48,
+				"y": 72,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"slugpup_face.png": {
+			"frame": {
+				"x": 72,
+				"y": 72,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"slugpup_head.png": {
+			"frame": {
+				"x": 96,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"spearmaster_feature.png": {
+			"frame": {
+				"x": 96,
+				"y": 24,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		},
+		"watcher_feature.png": {
+			"frame": {
+				"x": 96,
+				"y": 48,
+				"w": 24,
+				"h": 24
+			},
+			"rotated": false,
+			"trimmed": false,
+			"sourceSize": {
+				"w": 24,
+				"h": 24
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 24,
+				"h": 24
+			}
+		}
+	},
+	"meta": {
+		"app": "https://goofybox-studios.github.io/tools/texture_packer",
+		"image": "slugicons",
+		"size": {
+			"w": 120,
+			"h": 96
+		}
+	}
+}

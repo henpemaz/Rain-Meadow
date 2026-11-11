@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
@@ -107,9 +107,9 @@ namespace RainMeadow.UI
                 new(120, 30)
             )
             {
-                Alpha = 0,
                 signalText = "ROLL",
             };
+            continueButton.GetScrollObject().LocalAlpha = 0;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var aprilfools))
             {
                 aprilfools.UpdateSlotsButton(continueButton, manager);
@@ -137,10 +137,11 @@ namespace RainMeadow.UI
                 queuedToClose = false;
                 isClosing = true;
             }
-            if (continueButton.Alpha < 1)
+            var continueBtnScrollObj = continueButton.GetScrollObject();
+            if (continueBtnScrollObj.LocalAlpha < 1)
             {
-                continueButton.Alpha += 0.05f;
-                if (continueButton.Alpha >= 1)
+                continueBtnScrollObj.LocalAlpha += 0.05f;
+                if (continueBtnScrollObj.LocalAlpha >= 1)
                 {
                     currentPage = 1;
                     if (!manager.menuesMouseMode)
@@ -201,16 +202,17 @@ namespace RainMeadow.UI
         {
             System.Random random = new();
             if (IsMatching)
-            {
+            { 
+
+                RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
+                RainMeadow.rainMeadowOptions.ArenaFlairActive.Value = 1;
                 if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
                 {
                     string meadowCoinsEarned = this.Translate("You just won 1,000 Meadow coins!!");
                     SpecialEvents.GainedMeadowCoin(1000);
-                    RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
+                    
                     return $"{winningDescriptions[random.Next(winningDescriptions.Count)]} {meadowCoinsEarned}";
-
                 }
-                RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value = true;
                 RainMeadow.rainMeadowOptions.config.Save();
                 return $"{winningDescriptions[random.Next(winningDescriptions.Count)]}";
             }
@@ -409,6 +411,7 @@ namespace RainMeadow.UI
             public SlugcatStats.Name[] slugcatList;
             public SlugcatColorableButton slugcatButton;
             public FLabel slugcatResult;
+            private static System.Random RandomGenerator = new();
 
             public SlugcatRandomizer(
                 Menu.Menu menu,
@@ -527,9 +530,8 @@ namespace RainMeadow.UI
                 rolling = false;
                 if (index == -1)
                 {
-                    System.Random random = new();
                     slugcatButton.LoadNewSlugcat(
-                        slugcatList[random.Next(slugcatList.Length)],
+                        slugcatList[RandomGenerator.Next(slugcatList.Length)],
                         false,
                         false
                     );

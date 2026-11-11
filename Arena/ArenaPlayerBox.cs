@@ -6,10 +6,11 @@ using UnityEngine;
 using HarmonyLib;
 using static RainMeadow.ButtonScroller;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Interfaces;
 
 namespace RainMeadow.UI.Components
 {
-    public class ArenaPlayerBox : RectangularMenuObject, IPartOfButtonScroller
+    public class ArenaPlayerBox : RectangularMenuObject, IOwnMenuScrollObject
     {
 
         public static float GetLerped(float alternatingSpeed = 0.167f, float length = 1) //3sf 1/6
@@ -47,9 +48,6 @@ namespace RainMeadow.UI.Components
             else OnlineManager.lobby.gameMode.mutedPlayers.Add(player.id.name);
         }
         public static Vector2 DefaultSize => new(290, 120);
-        public float Alpha { get; set; } = 1;
-        public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = value; }
         public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;
@@ -175,9 +173,9 @@ namespace RainMeadow.UI.Components
             }
             if (hostIdentifierButton != null)
             {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                if (TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle))
                 {
-                    hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
+                    hostIdentifierButton.symbolSprite.SetElementByName(teamBattle.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
                 }
                 else
                 {
@@ -214,11 +212,23 @@ namespace RainMeadow.UI.Components
             }
             if (OnlineManager.lobby != null && profileIdentifier == OnlineManager.lobby.owner)
             {
-                if (!RainMeadow.isArenaMode(out var arena))
-                {
+                if (!RainMeadow.isArenaMode(out _))
                     return;
-                }
-                hostIdentifierButton = new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
+
+                string hostIdentifierSymbolName = TeamBattleMode.IsTeamBattleMode(out TeamBattleMode teamBattle)
+                    ? teamBattle.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team]
+                    : "ChieftainA";
+
+                hostIdentifierButton = new ScrollSymbolButton(
+                    menu,
+                    this,
+                    hostIdentifierSymbolName,
+                    "HOST_INFO",
+                    new Vector2(
+                        infoKickButton.pos.x + infoKickButton.size.x + 30,
+                        basePos.y + 21
+                    )
+                );
                 UiLineConnector connector = new(menu, infoKickButton, hostIdentifierButton, false);
                 connector.MoveLineSpriteBeforeNode(hostIdentifierButton.roundedRect.sprites[0]);
                 lines.Add(connector);

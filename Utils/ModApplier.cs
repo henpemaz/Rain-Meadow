@@ -1,7 +1,6 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 namespace RainMeadow
@@ -13,6 +12,8 @@ namespace RainMeadow
 
         public bool ended = false;
         public bool cancelled = false;
+        public bool forcedRestart;
+        public bool WillRestart { get; private set; }
 
         private readonly Menu.Menu menu;
 
@@ -65,7 +66,9 @@ namespace RainMeadow
 
             if (!ended && IsFinished())
             {
-                EndModApplier(!this.requiresRestart);
+                WillRestart = this.applyError == null && (requiresRestart || forcedRestart);
+
+                EndModApplier(!WillRestart);
 
                 manager.rainWorld.options.Save();
 
@@ -80,23 +83,38 @@ namespace RainMeadow
                     checkUserConfirmation = new DialogNotify(menu.Translate("Error loading mods!"), new Vector2(480f, 320f), manager, cancelProceed);
                     manager.ShowDialog(checkUserConfirmation);
                 }
-                else if (!this.requiresRestart)
+                else if (WillRestart)
+                {
+                    //Indicate that a restart is required
+                    dialogBox?.SetText(menu.Translate("A restart is required to finish applying the mod changes.") + Environment.NewLine + Environment.NewLine + menu.Translate("Restarting now..."));
+                }
+                else
                 {
                     //loading mods without a restart required (e.g: loading/unloading MSC or Remix)
                     RainMeadow.Debug("Finalizing mod reordering");
                     menu.PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu); //requires a process switch to finalize mods
-                    Thread.Sleep(1000); //wait for mod finalization to begin
-                    while (!manager.modFinalizationDone)
-                        Thread.Sleep(5); //wait for finalization to finish
-                }
-                else
-                {
-                    //Indicate that a restart is required
-                    dialogBox?.SetText(menu.Translate("A restart is required to finish applying the mod changes.") + Environment.NewLine + Environment.NewLine + menu.Translate("Restarting now..."));
                 }
                 OnFinish?.Invoke(this);
             }
+        }
+
+        public void RestartFailed()
+        {
+            WillRestart = false;
+
+            Action cancelProceed = () =>
+            {
+                ClearPopups();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            };
+
+            ClearPopups();
+            checkUserConfirmation = new DialogNotify(
+                menu.Translate("Failed to restart the game automatically.") + Environment.NewLine + Environment.NewLine
+                    + menu.Translate("Please restart it manually to finish applying the mod changes."),
+                new Vector2(480f, 320f), manager, cancelProceed);
+            manager.ShowDialog(checkUserConfirmation);
         }
 
         public void ShowConfirmation(List<string> modsToEnable, List<string> modsToDisable, List<string> unknownMods)
@@ -108,18 +126,19 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             }
 
-            var modMismatchString = menu.Translate("Mod Mismatch!") + Environment.NewLine;
-
-            if (modsToEnable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable);
-            if (modsToDisable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable);
+            var lines = new List<ScrollableConfirmDialog.Line>();
+            AddModSection(lines, menu.Translate("Mods that have to be enabled: "), modsToEnable);
+            AddModSection(lines, menu.Translate("Mods that have to be disabled: "), modsToDisable);
             if (unknownMods.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be installed: ") + string.Join(", ", unknownMods);
+            {
+                AddModSection(lines, menu.Translate("Mods that have to be installed: "), unknownMods);
+            }
             else
-                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?") + Environment.NewLine + menu.Translate("A restart may take place to sync game objects");
-
-            //modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
+            {
+                lines.Add(new(""));
+                lines.Add(new(menu.Translate("Apply these changes now?"), true));
+                lines.Add(new(menu.Translate("A restart may take place to sync game objects")));
+            }
 
             Action confirmProceed = () =>
             {
@@ -131,15 +150,25 @@ namespace RainMeadow
 
             if (unknownMods.Count > 0)
             {
-                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
+                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), Cancel, null, false);
             }
             else
             {
-                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
+                checkUserConfirmation = new ScrollableConfirmDialog(manager, menu.Translate("Mod Mismatch!"), lines, new Vector2(520f, 420f), confirmProceed, Cancel, true);
             }
-            //checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
 
             manager.ShowDialog(checkUserConfirmation);
+        }
+
+        private static void AddModSection(List<ScrollableConfirmDialog.Line> lines, string header, List<string> mods)
+        {
+            if (mods.Count == 0)
+                return;
+            if (lines.Count > 0)
+                lines.Add(new(""));
+            lines.Add(new(header, true));
+            foreach (string mod in mods)
+                lines.Add(new(mod));
         }
 
         public void ConfirmReorder()

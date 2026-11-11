@@ -1,14 +1,89 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
+using RWCustom;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        private static bool devTools = false;
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+            On.Room.Update += Room_Update_FreezeDeactivatedWorld;
+
+            // IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor1; ;
+            On.LobeTree.ValidSpawnPos += LobeTree_ValidSpawnPos;
         }
+
+        // A deactivated world deregistered all its entities, but its rooms update until the process switches.
+        private void Room_Update_FreezeDeactivatedWorld(On.Room.orig_Update orig, Room self)
+        {
+            if (OnlineManager.lobby != null
+                && self.abstractRoom.GetResource() is RoomSession rs)
+            {
+                if (!rs.worldSession.isActive)
+                {
+                    RainMeadow.Debug($"froze room update for its world, it's never coming back");
+                    return;
+                }
+            }
+            orig(self);
+        }
+
+        private bool LobeTree_ValidSpawnPos(On.LobeTree.orig_ValidSpawnPos orig, Room room, IntVector2 pos, List<Vector2> lobeTreeSpawnLocsSoFar)
+        {
+            // Only allow room owner to spawn lobe trees
+            if (OnlineManager.lobby != null)
+            {
+                var roomSession = room.abstractRoom.GetResource();
+                if (roomSession != null && roomSession.isOwner)
+                {
+                    return orig(room, pos, lobeTreeSpawnLocsSoFar);
+                }
+                return false;
+            }
+            return orig(room, pos, lobeTreeSpawnLocsSoFar);
+        }
+
+        // private void ScavengerOutpost_ctor1(ILContext il)
+        // {
+        //     var c = new ILCursor(il);
+        //     ILLabel skip = null;
+
+        //     c.GotoNext(MoveType.Before,
+        //         i => i.MatchLdsfld<Futile>(nameof(Futile.atlasManager)),
+        //         i => i.MatchLdstr("outpostSkulls"),
+        //         i => i.MatchCallvirt<FAtlasManager>(nameof(FAtlasManager.DoesContainAtlas)),
+        //         i => i.MatchBrtrue(out skip));
+
+        //     c.GotoPrev(MoveType.After,
+        //         i => i.MatchLdarg(0),
+        //         i => i.MatchNewobj<List<ScavengerOutpost.PearlString>>(),
+        //         i => i.MatchStfld<ScavengerOutpost>(nameof(ScavengerOutpost.pearlStrings)));
+
+        //     c.Emit(OpCodes.Ldarg_0);
+        //     c.Emit(OpCodes.Ldloc_0);
+        //     c.EmitDelegate((ScavengerOutpost self, Random.State state) =>
+        //     {
+        //         if (OnlineManager.lobby != null && (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var session) || !session.isOwner))
+        //         {
+        //             // need to run this last bit here due to some weird error when trying to define a label.
+        //             Random.state = state;
+        //             if (!Futile.atlasManager.DoesContainAtlas("outpostSkulls"))
+        //             {
+        //                 Futile.atlasManager.LoadAtlas("Atlases/outPostSkulls");
+        //             }
+        //             return false;
+        //         }
+        //         return true;
+        //     });
+        //     c.Emit(OpCodes.Brfalse, skip);
+        // }
 
         private void Room_Update(ILContext il)
         {
@@ -22,6 +97,16 @@ namespace RainMeadow
                 i => i.MatchSub(),
                 i => i.MatchStfld<Room>("updateIndex")
                 );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    devTools = self.game.devToolsActive;
+                    self.game.devToolsActive = false;
+                }
+            });
 
             // surround this update call with a trycatch if in lobby, otherwise run vanilla
             // if ([...] & !flag){
@@ -103,6 +188,19 @@ namespace RainMeadow
             });
             c.Emit(OpCodes.Brtrue, skip);
 
+            c.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
+                x => x.MatchLdcI4(int.MaxValue),
+                x => x.MatchStfld<Room>(nameof(Room.updateIndex)));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Room self) =>
+            {
+                if (!OnlineManager.CheatsAllowed)
+                {
+                    self.game.devToolsActive = devTools;
+                }
+            });
         }
     }
 }

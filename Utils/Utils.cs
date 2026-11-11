@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using Menu;
 using RWCustom;
 using UnityEngine;
 
@@ -11,7 +12,10 @@ namespace RainMeadow
 {
     internal static class Utils
     {
+        [Obsolete("Use the provided Translator in the class (this.Translate()), pass in a translator to a dependent function, or use the ProcessManager's translator (processManager.rainWorld.inGameTranslator).")]
         public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
+
+        [Obsolete("Use the provided Translator in the class (this.Translate()), pass in a translator to a dependent function, or use the ProcessManager's translator (processManager.rainWorld.inGameTranslator).")]
         public static string Translate(string text)
         {
             return Translator.Translate(text);
@@ -67,9 +71,55 @@ namespace RainMeadow
             }
             processStartInfo.UseShellExecute = false;
             processStartInfo.FileName = text;
-            processStartInfo.Arguments = args;
+            processStartInfo.Arguments = string.IsNullOrEmpty(args)
+                ? $"{WaitForPidArg} {currentProcess.Id}"
+                : $"{args} {WaitForPidArg} {currentProcess.Id}";
             Process.Start(processStartInfo);
             Application.Quit();
+        }
+
+        public const string WaitForPidArg = "+meadow_wait_pid";
+        private const int WaitForPreviousInstanceTimeoutMs = 10000;
+
+        // creates some issues when trying to rejoin while closing previous game instance, so wait for the PID to close fully
+        public static void WaitForPreviousInstance()
+        {
+            try
+            {
+                string[] args = Environment.GetCommandLineArgs();
+                int idx = Array.IndexOf(args, WaitForPidArg);
+                if (idx < 0 || args.Length <= idx + 1 || !int.TryParse(args[idx + 1], out int pid))
+                    return;
+
+                RainMeadow.Info($"Waiting for the previous game instance ({pid}) to exit");
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                bool exited = false;
+
+                while (!exited && stopwatch.ElapsedMilliseconds < WaitForPreviousInstanceTimeoutMs)
+                {
+                    try
+                    {
+                        using Process previous = Process.GetProcessById(pid);
+                        exited = previous.HasExited;
+                    }
+                    catch (ArgumentException)
+                    {
+                        exited = true;
+                    }
+
+                    if (!exited)
+                        System.Threading.Thread.Sleep(50);
+                }
+
+                if (exited)
+                    RainMeadow.Info($"Previous game instance exited after {stopwatch.ElapsedMilliseconds}ms");
+                else
+                    RainMeadow.Error($"Previous game instance ({pid}) did not exit within {WaitForPreviousInstanceTimeoutMs}ms, continuing anyway");
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
         }
 
         /// <summary>
@@ -79,7 +129,7 @@ namespace RainMeadow
         /// <param name="items">The range of items to add.</param>
         public static void AddDistinctRange<T>(this IList<T> self, IEnumerable<T> items)
         {
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 if (self.Contains(item))
                 {
@@ -128,5 +178,19 @@ namespace RainMeadow
 
             return fromStart.Take(toTake).ToList();
         }
+
+        public static Color SafeHexToColor(string hex)
+        {
+            try
+            {
+                if (hex != "000000")
+                    return Custom.hexToColor(hex);
+            }
+            catch (Exception) { }
+            return new Color(0.01f, 0.01f, 0.01f, 1f);
+        }
+
+        public static int RealPing(int ping) => Math.Max(1, ping - 16);
+        public static Color RealPingColor(int realping) => Color.Lerp((realping > 200 ? Color.red : realping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
@@ -18,7 +16,7 @@ namespace RainMeadow.UI.Components
         public ArenaSetup.GameTypeSetup GetGameTypeSetup =>
             GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
-
+        public const string ROOMREPEAT = "ROOMREPEAT", SESSIONLENGTH = "SESSIONLENGTH", WILDLIFE = "WILDLIFE";
         public OnlineArenaSettingsInferface(
             Menu.Menu menu,
             MenuObject owner,
@@ -35,14 +33,20 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
             float textWidthOfSpearHit = 95;
+            float additionalLanguageWidth = menu.CurrLang == InGameTranslator.LanguageID.French 
+                || menu.CurrLang == InGameTranslator.LanguageID.Russian 
+                || menu.CurrLang == InGameTranslator.LanguageID.Japanese
+                    ? 50f
+                    : 0;
+            bool UseLargeFont = InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang);
 
             spearsHitCheckbox = new(
                 menu,
                 this,
                 this,
-                new(0, 425),
+                new(UseLargeFont ? -10f : 0, 425),
                 textWidthOfSpearHit,
-                menu.Translate("Spears Hit:"),
+                menu.Translate("Spears Hit:").Replace("<LINE>", "\r\n"),
                 "SPEARSHIT",
                 false
             );
@@ -50,9 +54,9 @@ namespace RainMeadow.UI.Components
                 menu,
                 this,
                 this,
-                new(settingsWidth - 24, spearsHitCheckbox.pos.y),
-                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Aggressive AI:"),
+                new(settingsWidth - 24 + (UseLargeFont ? 10f : 0), spearsHitCheckbox.pos.y),
+                UseLargeFont ? 120 : 100,
+                menu.Translate("Aggressive AI:").Replace("<LINE>", "\r\n"),
                 "EVILAI",
                 false
             );
@@ -61,8 +65,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new((settingsWidth - 24) / 2f, spearsHitCheckbox.pos.y),
-                InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100,
-                menu.Translate("Overseers Show:"),
+                UseLargeFont ? 120 : 100,
+                menu.Translate("Overseers Show:").Replace("<LINE>", "\r\n"),
                 "OVERSEER",
                 false
             );
@@ -82,8 +86,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 355),
-                menu.Translate("Repeat Rooms:"),
-                "ROOMREPEAT",
+                menu.Translate("Repeat Rooms:").Replace("<LINE>", "\r\n"),
+                ROOMREPEAT,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 115 : 95,
                 settingsWidth,
                 5,
@@ -97,8 +101,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 305),
-                menu.Translate("Rain Timer:"),
-                "SESSIONLENGTH",
+                menu.Translate("Rain Timer:").Replace("<LINE>", "\r\n"),
+                SESSIONLENGTH,
                 InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f,
                 settingsWidth,
                 6,
@@ -112,8 +116,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(0, 255),
-                menu.Translate("Wildlife:"),
-                "WILDLIFE",
+                menu.Translate("Wildlife:").Replace("<LINE>", "\r\n"),
+                WILDLIFE,
                 95,
                 settingsWidth,
                 4,
@@ -124,7 +128,7 @@ namespace RainMeadow.UI.Components
             arenaGameModeLabel = new(
                 menu,
                 this,
-                menu.Translate("Arena Game Mode:"),
+                menu.Translate("Arena Game Mode:").Replace("<LINE>", "\r\n"),
                 new Vector2(-95, 180f),
                 new Vector2(0, 20),
                 false
@@ -141,7 +145,7 @@ namespace RainMeadow.UI.Components
             arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena))
+                if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                     return;
                 arena.currentGameMode = value;
             };
@@ -149,7 +153,7 @@ namespace RainMeadow.UI.Components
             countdownTimerLabel = new(
                 menu,
                 this,
-                menu.Translate("Countdown Timer:"),
+                menu.Translate("Countdown Timer:").Replace("<LINE>", "\r\n"),
                 new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 45),
                 new Vector2(0, 20),
                 false
@@ -167,7 +171,7 @@ namespace RainMeadow.UI.Components
             };
             countdownTimerTextBox.OnValueUpdate += (config, value, lastValue) =>
             {
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
+                if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
             enableCorpseGrab = new(
@@ -175,8 +179,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, countdownTimerTextBox.pos.y),
-                100,
-                menu.Translate("Corpse grab"),
+                100 + additionalLanguageWidth,
+                menu.Translate("Corpse grab").Replace("<LINE>", "\r\n"),
                 "CORPSEGRAB"
             );
 
@@ -186,7 +190,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new Vector2(55f, countdownTimerTextBox.pos.y - 38),
                 150f,
-                menu.Translate("Item Stealing"),
+                menu.Translate("Item Stealing").Replace("<LINE>", "\r\n"),
                 "ITEMSTEAL"
             );
             allowMidGameJoinCheckbox = new(
@@ -194,8 +198,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, stealItemCheckBox.pos.y),
-                100,
-                menu.Translate("Join In Progress"),
+                100 + additionalLanguageWidth,
+                menu.Translate("Join In Progress").Replace("<LINE>", "\r\n"),
                 "MIDGAMEJOIN"
             );
 
@@ -205,7 +209,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38),
                 150f,
-                menu.Translate("Piggybacking"),
+                menu.Translate("Piggybacking").Replace("<LINE>", "\r\n"),
                 "PIGGY"
             );
             weaponCollisionCheckBox = new(
@@ -213,8 +217,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y),
-                100,
-                menu.Translate("Better Hitbox"),
+                100 + additionalLanguageWidth,
+                menu.Translate("Better Hitbox").Replace("<LINE>", "\r\n"),
                 "WEAPONCOLLISIONFIX"
             );
 
@@ -223,8 +227,8 @@ namespace RainMeadow.UI.Components
                 this,
                 this,
                 new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38),
-                100,
-                menu.Translate("Bees"),
+                100 + additionalLanguageWidth,
+                menu.Translate("Bees").Replace("<LINE>", "\r\n"),
                 "ENABLEBEES"
             );
             enableBombs = new(
@@ -233,7 +237,7 @@ namespace RainMeadow.UI.Components
                 this,
                 new(stealItemCheckBox.pos.x, enableBees.pos.y),
                 150f,
-                menu.Translate("Bombs"),
+                menu.Translate("Bombs").Replace("<LINE>", "\r\n"),
                 "ENABLEBOMBS"
             );
 
@@ -281,27 +285,53 @@ namespace RainMeadow.UI.Components
             countdownTimerLabel.label.color = countdownTimerTextBox.rect.colorEdge;
             arenaGameModeLabel.label.color = arenaGameModeComboBox._rect.colorEdge;
         }
-
+        // To hide buttons offscreen when gameModeComboBox is open. This gives us more breathing room for modes
+        private Dictionary<ButtonTemplate, Vector2> originalButtonPositions = new Dictionary<ButtonTemplate, Vector2>();
         public override void Update()
         {
             base.Update();
             foreach (MenuObject obj in subObjects)
             {
-                if (obj is ButtonTemplate btn)
+                if ((obj is ButtonTemplate btn) && !object.ReferenceEquals(btn, arenaGameModeComboBox))
+                {
                     btn.buttonBehav.greyedOut = SettingsDisabled;
+
+                    if (arenaGameModeComboBox.held)
+                    {
+                        // Cache the original position if we haven't already
+                        if (!originalButtonPositions.ContainsKey(btn))
+                        {
+                            originalButtonPositions[btn] = btn.pos;
+                        }
+
+                        btn.pos = new Vector2(-10000f, -10000f);
+                        btn.lastPos = btn.pos;
+                    }
+                    else
+                    {
+                        // Restore the position when the combobox is closed
+                        if (originalButtonPositions.ContainsKey(btn))
+                        {
+                            btn.pos = originalButtonPositions[btn];
+                            btn.lastPos = btn.pos;
+                            originalButtonPositions.Remove(btn);
+                        }
+                    }
+                }
+
                 if (obj is MultipleChoiceArray array)
                     array.greyedOut = SettingsDisabled;
             }
-            countdownTimerTextBox.greyedOut = SettingsDisabled;
+
+            countdownTimerTextBox.greyedOut = SettingsDisabled || arenaGameModeComboBox.held;
             arenaGameModeComboBox.greyedOut = SettingsDisabled;
             overseerCheckbox.buttonBehav.greyedOut = SettingsDisabled;
-            if (RainMeadow.isArenaMode(out ArenaMode arena))
+
+            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
             {
-                if (
-                    !countdownTimerTextBox.held
-                    && countdownTimerTextBox.valueInt != arena.setupTime
-                )
+                if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime)
                     countdownTimerTextBox.valueInt = arena.setupTime;
+
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld)
                     arenaGameModeComboBox.value = arena.currentGameMode;
             }
@@ -396,17 +426,17 @@ namespace RainMeadow.UI.Components
 
         public int GetSelected(MultipleChoiceArray array)
         {
-            if (array.IDString == "ROOMREPEAT")
+            if (array.IDString == ROOMREPEAT)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.levelRepeats - 1
                 );
-            if (array.IDString == "SESSIONLENGTH")
+            if (array.IDString == SESSIONLENGTH)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.sessionTimeLengthIndex
                 );
-            if (array.IDString == "WILDLIFE" && GetGameTypeSetup.wildLifeSetting.Index != -1)
+            if (array.IDString == WILDLIFE && GetGameTypeSetup.wildLifeSetting.Index != -1)
                 return ArenaHelpers.GetOptionFromArena(
                     array.IDString,
                     GetGameTypeSetup.wildLifeSetting.Index
@@ -416,11 +446,11 @@ namespace RainMeadow.UI.Components
 
         public void SetSelected(MultipleChoiceArray array, int i)
         {
-            if (array.IDString == "ROOMREPEAT")
+            if (array.IDString == ROOMREPEAT)
                 GetGameTypeSetup.levelRepeats = i + 1;
-            if (array.IDString == "SESSIONLENGTH")
+            if (array.IDString == SESSIONLENGTH)
                 GetGameTypeSetup.sessionTimeLengthIndex = i;
-            if (array.IDString == "WILDLIFE")
+            if (array.IDString == WILDLIFE)
                 GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(
                     ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i),
                     false
@@ -437,7 +467,7 @@ namespace RainMeadow.UI.Components
                 if (obj is MultipleChoiceArray array)
                     array.CheckedButton = array.CheckedButton;
             }
-            if (!RainMeadow.isArenaMode(out ArenaMode arena))
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
                 return;
             arena.setupTime = countdownTimerTextBox.valueInt;
             arena.currentGameMode = arenaGameModeComboBox.value;

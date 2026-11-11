@@ -30,14 +30,20 @@ namespace RainMeadow
             else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
                 RainMeadow.rainMeadowOptions.ShowFriends.Value ^= true;
 
-                if (Input.GetKeyDown(KeyCode.P))
-                {
-                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
-                }
-                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
-                {
-                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
-                }
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
+            }
+            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
+            {
+                RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
+            }
+
+            if (RainMeadow.isArenaMode(out var arena) && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ArenaToggleShowScoreKey.Value))
+            {
+                arena.ShowScore ^= true;
+                RainMeadow.rainMeadowOptions.ArenaShowScore.Value = arena.ShowScore;
+            }
 
             base.Draw(timeStacker);
         }
@@ -54,18 +60,20 @@ namespace RainMeadow
         public void AvatarAdded(OnlineEntity.EntityId avatar)
         {
             RainMeadow.DebugMe();
-            if (avatar.FindEntity() is not OnlineEntity entity) {
+            if (avatar.FindEntity() is not OnlineEntity entity)
+            {
                 RainMeadow.Error("Couldn't find online entity");
                 return;
             }
 
-            if (entity.owner is null) {
+            if (entity.owner is null)
+            {
                 RainMeadow.Error("Online Entity has no owner");
                 return;
             }
 
 
-            
+
             PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, OnlineManager.lobby.clientSettings[entity.owner], avatar);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);

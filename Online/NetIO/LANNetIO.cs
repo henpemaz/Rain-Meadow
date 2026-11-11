@@ -130,8 +130,7 @@ namespace RainMeadow
                 return;
             }
 
-            
-            while (manager.IsPacketAvailable())
+            for (int i = 0; i < 4 && manager.IsPacketAvailable(); i++)
             {
                 try
                 {
@@ -161,6 +160,7 @@ namespace RainMeadow
                     OnlineManager.serializer.EndRead();
                 }
             }
+            
         }
 
     }

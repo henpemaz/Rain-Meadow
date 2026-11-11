@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -7,8 +8,13 @@ namespace RainMeadow
     {
         public sealed class Definition : EntityDefinition
         {
+            [OnlineFieldColorRgb(nullable = true)]
+            public Color? chatUsernameColor;
             public Definition() : base() { }
-            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
+            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource)
+            {
+                this.chatUsernameColor = clientSettings.chatUsernameColor;
+            }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
@@ -18,16 +24,21 @@ namespace RainMeadow
 
         public bool inGame;
         public bool isInteracting;
+        public Color? chatUsernameColor;
+
+        public bool isThinking; // no need to sync this one
         public List<OnlineEntity.EntityId> avatars = new();
 
-        public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
+        public ClientSettings(Definition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
         {
-
+            this.chatUsernameColor = entityDefinition.chatUsernameColor;
         }
 
         public ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
         {
-
+            this.chatUsernameColor = RainMeadow.rainMeadowOptions.UseCustomChatUsernameColor.Value
+                ? Utils.SafeHexToColor(RainMeadow.rainMeadowOptions.CurrentlyActiveChatUsernameColor.Value)
+                : null;
         }
 
         public override EntityDefinition MakeDefinition(OnlineResource onlineResource)

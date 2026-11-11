@@ -10,13 +10,34 @@ namespace RainMeadow
         [RPCMethod]
         public static void ForceSaveNewDenLocation(string shelter, bool saveWorldStates)
         {
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out var story)) return;
+
+            // Adopt the den even with no game running. SaveStateHandler reads myLastDenPos on the next load.
+            story.myLastDenPos = shelter;
+            story.denForcedThisCycle = true;
+
+            var sender = RPCEvent.currentRPCEvent?.from;
+            if (OnlineManager.lobby.isOwner)
             {
-                if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
-                RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
-                story.myLastDenPos = shelter;
+                story.defaultDenPos = shelter;
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe && player != sender) player.InvokeOnceRPC(ForceSaveNewDenLocation, shelter, saveWorldStates);
+                }
             }
 
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+
+            bool wasApplying = story.applyingRemoteDenLocation;
+            story.applyingRemoteDenLocation = true;
+            try
+            {
+                RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
+            }
+            finally
+            {
+                story.applyingRemoteDenLocation = wasApplying;
+            }
         }
 
         [RPCMethod]
@@ -68,7 +89,9 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
+            // denForcedThisCycle: an echo already relocated us, and the sender's Win() ran before its own
+            // relocation, so denPos here is stale. Keep the forced den.
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered && !storyGameMode.denForcedThisCycle)
             {
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
@@ -78,6 +101,8 @@ namespace RainMeadow
                     warpPointData.FromString(warpPointTarget);
                     storyGameMode.myLastWarp = warpPointData;
                     game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
+                    if (game.StoryCharacter == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                        ApplyRippleLevelToSaveState(game.GetStorySession, new UnityEngine.Vector2(1f, 1f));
                 }
             }
             game.Win(malnourished, fromWarpPoint);
@@ -88,7 +113,7 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered && !storyGameMode.denForcedThisCycle)
             {
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
@@ -165,34 +190,108 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
         }
 
-        // Raises ripple level, usually client also tells
-        [RPCMethod]
-        public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
+        public static void DetermineRippleRaise(StoryGameMode story, int spinningTopID, UnityEngine.Vector2 vector, bool trustVector)
         {
-
-            if (RainMeadow.isStoryMode(out var story))
+            if (spinningTopID != -1)
             {
-                if (story.rippleLevel < vector.y)
+                if (story.hostRippleRaiser.TryGetValue(spinningTopID, out UnityEngine.Vector2 authoritative))
                 {
-                    RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
-                    if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-                    story.rippleLevel = vector.y;
-                    storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-                    storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-                    storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+                    RainMeadow.Debug($"discarding duplicate raise report for echo {spinningTopID} (reported {vector.y}, authoritative {authoritative.y})");
+                    return;
                 }
+
+                if (!trustVector)
+                {
+                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame hostGame
+                        && hostGame.session is StoryGameSession
+                        && hostGame.cameras != null && hostGame.cameras.Length > 0 && hostGame.cameras[0].room != null)
+                    {
+                        vector = Watcher.SpinningTop.NextMinMaxRippleLevel(hostGame.cameras[0].room);
+                    }
+                    else
+                    {
+                        UnityEngine.Vector2 oneStep = OneStepFromCurrent(story.minimumRippleLevel, story.maximumRippleLevel, story.rippleLevel);
+                        vector = new UnityEngine.Vector2(
+                            UnityEngine.Mathf.Min(vector.x, oneStep.x),
+                            UnityEngine.Mathf.Min(vector.y, oneStep.y));
+                    }
+                }
+
+                story.hostRippleRaiser[spinningTopID] = vector;
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+            }
+
+            if (story.maximumRippleLevel >= vector.y) return; // max vs max
+
+            RainMeadow.Debug($"Raising Ripple Level from: {story.maximumRippleLevel} to {vector.y} (echo {spinningTopID})");
+
+            story.minimumRippleLevel = UnityEngine.Mathf.Max(story.minimumRippleLevel, vector.x);
+            story.maximumRippleLevel = UnityEngine.Mathf.Max(story.maximumRippleLevel, vector.y);
+            story.rippleLevel = UnityEngine.Mathf.Max(story.rippleLevel, vector.y);
+
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession)
+            {
+                ApplyRippleLevelToSaveState(storyGameSession, vector);
+            }
+
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                if (!player.isMe) player.InvokeOnceRPC(PlayRaiseRippleLevelAnimation, spinningTopID, vector);
             }
         }
 
-        [RPCMethod]
-        public static void PlayRaiseRippleLevelAnimation(UnityEngine.Vector2 vector)
+        private static UnityEngine.Vector2 OneStepFromCurrent(float min, float max, float ripple)
         {
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-            storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-            storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-            storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
-            game.cameras[0].hud.karmaMeter.UpdateGraphic();
-            game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+            if (max == 0f) return new UnityEngine.Vector2(0.25f, 0.25f);
+            if (ripple == 0.25f) return new UnityEngine.Vector2(0.5f, 0.5f);
+            if (ripple == 0.5f) return new UnityEngine.Vector2(1f, 1f);
+            float newMax = UnityEngine.Mathf.Min(5f, max + 0.5f);
+            float newMin = max >= 5f ? UnityEngine.Mathf.Min(5f, min + 0.5f) : UnityEngine.Mathf.Max(1f, newMax - 2f);
+            return new UnityEngine.Vector2(newMin, newMax);
+        }
+
+        [RPCMethod]
+        public static void RaiseRippleLevelRequest(RPCEvent rpc, int spinningTopID, UnityEngine.Vector2 vector)
+        {
+            if (!OnlineManager.lobby.isOwner) return;
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) return;
+            vector = new UnityEngine.Vector2(
+                UnityEngine.Mathf.Clamp(vector.x, 0f, 5f),
+                UnityEngine.Mathf.Clamp(vector.y, 0f, 5f));
+            DetermineRippleRaise(story, spinningTopID, vector, trustVector: false);
+        }
+
+        [RPCMethod]
+        public static void PlayRaiseRippleLevelAnimation(int spinningTopID, UnityEngine.Vector2 vector)
+        {
+            if (RainMeadow.isStoryMode(out StoryGameMode story) && spinningTopID != -1)
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession)) return;
+
+            var karmaMeter = game.cameras?.FirstOrDefault()?.hud?.karmaMeter;
+            if (karmaMeter == null) return; // no hud yet (loading / mid warp)
+            karmaMeter.UpdateGraphic();
+            karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+        }
+        internal static void ApplyRippleLevelToSaveState(StoryGameSession storyGameSession, UnityEngine.Vector2 vector)
+        {
+            var deathPersistentSaveData = storyGameSession.saveState.deathPersistentSaveData;
+            deathPersistentSaveData.minimumRippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.minimumRippleLevel, vector.x);
+            deathPersistentSaveData.maximumRippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.maximumRippleLevel, vector.y);
+            deathPersistentSaveData.rippleLevel = UnityEngine.Mathf.Max(deathPersistentSaveData.rippleLevel, vector.y);
+        }
+
+        [RPCMethod]
+        public static void AddSpinningTopEncounter(uint generation, int spinningTopID)
+        {
+            if (!RainMeadow.isStoryMode(out var story)) return;
+            if (generation != story.campaignGeneration)
+            {
+                RainMeadow.Debug($"dropping spinning top encounter {spinningTopID} from campaign generation {generation}, current is {story.campaignGeneration}");
+                return;
+            }
+            StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
         }
 
         // Perform a warp (precast, host needs to "finish" to activate)
@@ -207,14 +306,15 @@ namespace RainMeadow
         [RPCMethod]
         public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, int spinningTopID, UnityEngine.Vector2 pos)
         {
+            // Record the encounter before attempting the warp. warp is allowed to fail, but losing
+            // the encounter desyncs which echo everyone is on for the rest of the campaign.
+            if (RainMeadow.isStoryMode(out var story)) StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
+
             Watcher.WarpPoint? warpPoint = StoryHelpers.PerformWarpHelper(sourceRoomName, warpData, false, true);
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                 warpPoint.placedObject.pos = pos;
-                var storySession = game.GetStorySession;
-                if (!storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Contains(spinningTopID))
-                    storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Add(spinningTopID);
                 StoryHelpers.SaveEchoWarp(game, warpPoint, true, true); //save string incase
             }
             else

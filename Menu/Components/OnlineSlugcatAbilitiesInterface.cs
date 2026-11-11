@@ -1,26 +1,25 @@
 using Menu;
-using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Systems;
 using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.UI.Components
 {
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
-        public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
+        public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", VANILLASETTINGS = "VANILLASETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
-        public MSCSettingsPage? mscSettingsTab;
-        public WatcherSettingsPage? watcherSettingsTab;
+        public VanillaSetting? vanillaSettingsTab;
+        public MSCSlugcatSettings? mscSettingsTab;
+        public WatcherSlugcatSetting? watcherSettingsTab;
         public SelectSettingsPage? selectSettings;
         public OnlineSlugcatAbilitiesInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
         {
@@ -31,26 +30,6 @@ namespace RainMeadow.UI.Components
                 AddSettingsTab(selectSettings = new(menu, this, settingSignals.Where(x => x.Key != BACKTOSELECT).ToDictionary()), BACKTOSELECT);
                 SwitchTab(selectSettings);
             }
-        }
-        public static void ShowSyncInRemixCheckbox(OpCheckBox config, bool greyout, bool tosync)
-        {
-            config.greyedOut = greyout;
-            if (!config.held)
-                config.SetValueBool(tosync);
-        }
-        public static void ShowSyncInTextbox(OpTextBox textbox, bool greyout, object obj)
-        {
-
-            textbox.greyedOut = greyout;
-            textbox.held = textbox._KeyboardOn;
-
-            if (textbox.held) return;
-
-            if (textbox.accept == OpTextBox.Accept.Int)
-                textbox.valueInt = (int)obj;
-            else if (textbox.accept == OpTextBox.Accept.Float)
-                textbox.valueFloat = (float)obj;
-            else textbox.value = (string)obj;
         }
         public void SaveAllInterfaceOptions(bool isOwner)
         {
@@ -69,14 +48,16 @@ namespace RainMeadow.UI.Components
         }
         public void AddAllSettings(string paincatName)
         {
+            vanillaSettingsTab = new(menu, this);
+            AddSettingsTab(vanillaSettingsTab, VANILLASETTINGS);
             if (ModManager.MSC)
             {
-                mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
+                mscSettingsTab = new(menu, this, paincatName);
                 AddSettingsTab(mscSettingsTab, MSCSETTINGS);
             }
             if (ModManager.Watcher)
             {
-                watcherSettingsTab = new(menu, this, new(0f, 50f));
+                watcherSettingsTab = new (menu, this);
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
         }
@@ -108,301 +89,8 @@ namespace RainMeadow.UI.Components
                 SettingsPage settings = settingSignals[message];
                 SettingsPage? prevSettings = activeSettings;
                 if (prevSettings == settings) return;
-                OnSwitchSettingsTab(settings, prevSettings);
                 SwitchTab(settings);
-            }
-        }
-
-        public class MSCSettingsPage : SettingsPage, CheckBox.IOwnCheckBox
-        {
-            public const string SAINOT = "SAINOT", PAINCATTHROWS = "PAINCATTHROWS", PAINCATEGG = "PAINCATEGG", DISABLEARTISTUN = "DISABLEARTISTUN", DISABLEMAUL = "DISABLEMAUL", PAINCATLIZARD = "PAINCATLIZARD", SAINTASENSIONTIMER = "SAINTASCENSIONTIMER";
-            public SimpleButton? backButton;
-            public MenuTabWrapper tabWrapper;
-            public OpTextBox saintAscendDurationTimerTextBox;
-            public MenuLabel saintAscendanceTimerLabel;
-            public RestorableCheckbox blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
-            public override string Name => "MSC Settings";
-            public MSCSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, string painCatName, float textSpacing = 300) : base(menu, owner)
-            {
-                tabWrapper = new(menu, this);
-                Vector2 positioner = new(360, 380);
-                blockMaulCheckBox = new(menu, this, this, positioner, textSpacing, Translate("Disable Mauling:"), DISABLEMAUL, false, Translate("Prevent Artificer and <PAINCATNAME> from mauling"));
-                blockArtiStunCheckBox = new(menu, this, this, positioner - spacing, textSpacing, Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, Translate("Prevent Artificer from stunning other players"));
-                sainotCheckBox = new(menu, this, this, positioner - spacing * 2, textSpacing, Translate("Sain't:"), SAINOT, false, Translate("Disable Saint ascendance ability, but allow it to throw spears"));
-                saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), positioner - spacing * 3 + new Vector2(-7.5f, 0), 40)
-                {
-                    alignment = FLabelAlignment.Center,
-                    description = Translate("How long Saint's ascendance ability lasts for. Default: 3s")
-                };
-                saintAscendDurationTimerTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
-                };
-                saintAscendanceTimerLabel = new(menu, this, Translate("Saint Ascendance Duration:"), saintAscendDurationTimerTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
-                saintAscendanceTimerLabel.label.alignment = FLabelAlignment.Left;
-                new PatchedUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
-                painCatEggCheckBox = new(menu, this, this, positioner - spacing * 4, 300, Translate("<PAINCATNAME> gets egg at 0 throw skill:"), PAINCATEGG, description: Translate("If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0"));
-                painCatThrowsCheckBox = new(menu, this, this, positioner - spacing * 5, 300, Translate("<PAINCATNAME> can always throw spears:"), PAINCATTHROWS, description: Translate("Always allow <PAINCATNAME> to throw spears, even if throw skill is 0"));
-                painCatLizardCheckBox = new(menu, this, this, positioner - spacing * 6, 300, Translate("<PAINCATNAME> sometimes gets a friend:"), PAINCATLIZARD, description: Translate("Allow <PAINCATNAME> to rarely spawn with a little friend"));
-                this.SafeAddSubobjects(tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox);
-                string Translate(string s) => menu.LongTranslate(s).Replace("<PAINCATNAME>", painCatName);
-            }
-            public void SyncMenuObjectStatus(MenuObject obj)
-            {
-                if (obj is CheckBox checkBox)
-                    checkBox.Checked = checkBox.Checked;
-            }
-            public override void SaveInterfaceOptions()
-            {
-                RainMeadow.rainMeadowOptions.BlockMaul.Value = blockMaulCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.BlockArtiStun.Value = blockArtiStunCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.ArenaSAINOT.Value = sainotCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.PainCatEgg.Value = painCatEggCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.PainCatThrows.Value = painCatThrowsCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.PainCatLizard.Value = painCatLizardCheckBox.Checked;
-                RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = saintAscendDurationTimerTextBox.valueInt;
-            }
-            public override void CallForSync()
-            {
-                foreach (MenuObject menuObj in subObjects)
-                    SyncMenuObjectStatus(menuObj);
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
-            }
-            public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
-            {
-                if (backButton == null)
-                {
-                    backButton = new(menu, this, menu.Translate("BACK"), BACKTOSELECT, new(30, 30), new(80, 30));
-                    AddObjects(backButton);
-                    menu.MutualVerticalButtonBind(backButton, painCatLizardCheckBox);
-                    menu.MutualVerticalButtonBind(blockMaulCheckBox, backButton); //loop
-                }
-                if (forceSelectedObject) menu.selectedObject = blockMaulCheckBox;
-            }
-            public override void Update()
-            {
-                base.Update();
-
-                if (IsActuallyHidden) return; //lets not update this when hidden
-                bool greyoutAll = SettingsDisabled;
-                foreach (MenuObject obj in subObjects)
-                {
-                    if (obj != backButton && obj is ButtonTemplate btn)
-                        btn.buttonBehav.greyedOut = greyoutAll;
-                }
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
-                    ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
-            }
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                if (IsActuallyHidden) return;
-                saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.rect.colorEdge;
-            }
-            public bool GetChecked(CheckBox box)
-            {
-                string id = box.IDString;
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
-                {
-                    if (id == DISABLEMAUL) return arena.disableMaul;
-                    if (id == DISABLEARTISTUN) return arena.disableArtiStun;
-                    if (id == SAINOT) return arena.sainot;
-                    if (id == PAINCATEGG) return arena.painCatEgg;
-                    if (id == PAINCATTHROWS) return arena.painCatThrows;
-                    if (id == PAINCATLIZARD) return arena.painCatLizard;
-                }
-                return false;
-            }
-            public void SetChecked(CheckBox box, bool c)
-            {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                string id = box.IDString;
-                if (id == DISABLEMAUL) arena.disableMaul = c; //owner can only edit it, its fine
-                if (id == DISABLEARTISTUN) arena.disableArtiStun = c;
-                if (id == SAINOT) arena.sainot = c;
-                if (id == PAINCATEGG) arena.painCatEgg = c;
-                if (id == PAINCATTHROWS) arena.painCatThrows = c;
-                if (id == PAINCATLIZARD) arena.painCatLizard = c;
-            }
-        }
-        public class WatcherSettingsPage : SettingsPage
-        {
-            public SimplerButton? backButton;
-            public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel;
-            public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox;
-            public OpCheckBox weaverWatcherCheckBox, voidMasterCheckbox, amoebaControlCheckbox;
-            public override string Name => "Watcher Settings";
-            public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
-            {
-                tabWrapper = new(menu, this);
-                Vector2 positioner = new(360, 380);
-                watcherCamoLimitTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value), new(positioner.x - 7.5f, positioner.y), 40)
-                {
-                    alignment = FLabelAlignment.Center,
-                    description = menu.Translate("How long Watcher's abilities last for. Default: 12s")
-                };
-                watcherCamoLimitTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
-                };
-                new PatchedUIelementWrapper(tabWrapper, watcherCamoLimitTextBox);
-                watcherCamoLimitLabel = new(menu, this, menu.Translate("Watcher Camo Duration:"), watcherCamoLimitTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
-                watcherCamoLimitLabel.label.alignment = FLabelAlignment.Left;
-
-
-                watcherRippleLevelTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value), positioner - spacing + new Vector2(-7.5f, 0), 40)
-                {
-                    alignment = FLabelAlignment.Center,
-                    description = menu.Translate("Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1")
-
-                };
-                watcherRippleLevelTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.watcherRippleLevel = Mathf.Clamp(watcherRippleLevelTextBox.valueInt, 1, 9);
-                };
-                new PatchedUIelementWrapper(tabWrapper, watcherRippleLevelTextBox);
-                watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
-                watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
-
-                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 2)
-                {
-                    colorEdge = RainWorld.GoldRGB * 1.5f
-                };
-                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher has synced weaver cosmetics") : menu.Translate("Your watcher has synced normal cosmetics");
-                new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
-                weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
-                weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
-
-                weaverWatcherCheckBox.Change(); //update desc
-
-
-                // Voidmaster
-                voidMasterCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.VoidMaster.Value), positioner - spacing * 3)
-                {
-                    colorEdge = RainWorld.RippleColor * 1.5f
-                };
-                voidMasterCheckbox.OnChange += () =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at the cost of your camo timer") : menu.Translate("Amoeba summoning is disabled lobby-wide");
-
-                };
-                new PatchedUIelementWrapper(tabWrapper, voidMasterCheckbox);
-                voidMasterLabel = new(menu, this, menu.Translate("Voidkeeper:"), voidMasterCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
-                voidMasterLabel.label.alignment = FLabelAlignment.Left;
-
-                voidMasterCheckbox.Change(); //update desc
-
-
-                //Amoeba duration
-                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
-                {
-                    alignment = FLabelAlignment.Center,
-                    description = menu.Translate("Amoeba duration time in seconds")
-
-                };
-                amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
-                };
-                new PatchedUIelementWrapper(tabWrapper, amoebaLifespanTextBox);
-                amoebaDurationLabel = new(menu, this, menu.Translate("Voidkeeper Amoeba Duration:"), amoebaLifespanTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
-                amoebaDurationLabel.label.alignment = FLabelAlignment.Left;
-
-
-                amoebaLifespanTextBox.Change();
-
-                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 5);
-                amoebaControlCheckbox.OnChange += () =>
-                {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
-                    amoebaControlCheckbox.description = amoebaControlCheckbox.GetValueBool() ? menu.Translate("Amoeba's direction is influenced by pointing") : menu.Translate("Amoebas chase targets at-will");
-
-                };
-                new PatchedUIelementWrapper(tabWrapper, amoebaControlCheckbox);
-                amoebaControlLabel = new(menu, this, menu.Translate("Void's Vengeance:"), amoebaControlCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
-                amoebaControlLabel.label.alignment = FLabelAlignment.Left;
-
-                amoebaControlCheckbox.Change();
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel);
-
-            }
-            public override void SaveInterfaceOptions()
-            {
-                RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value = watcherCamoLimitTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value = watcherRippleLevelTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
-                RainMeadow.rainMeadowOptions.VoidMaster.Value = voidMasterCheckbox.GetValueBool();
-                RainMeadow.rainMeadowOptions.AmoebaDuration.Value = amoebaLifespanTextBox.valueInt;
-                RainMeadow.rainMeadowOptions.AmoebaControl.Value = amoebaControlCheckbox.GetValueBool();
-
-            }
-            public override void SaveInterfaceClientOptions()
-            {
-                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
-            }
-            public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
-            {
-                if (backButton == null)
-                {
-                    backButton = new(menu, this, menu.Translate("BACK"), new(30, 30), new(80, 30))
-                    {
-                        signalText = BACKTOSELECT,
-                    };
-                    AddObjects(backButton);
-                    menu.TrySequentialMutualBind([backButton, amoebaControlCheckbox.wrapper, amoebaLifespanTextBox.wrapper, voidMasterCheckbox.wrapper, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
-                }
-                if (forceSelectedObject)
-                    menu.selectedObject = watcherCamoLimitTextBox.wrapper;
-            }
-            public override void CallForSync()
-            {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
-                arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
-                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
-                arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-                arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
-                arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
-            }
-            public override void Update()
-            {
-                base.Update();
-
-                if (IsActuallyHidden) return;
-
-                bool greyoutall = SettingsDisabled;
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-
-                ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
-                ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
-
-                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
-
-                ShowSyncInRemixCheckbox(voidMasterCheckbox, greyoutall, arena.voidMasterEnabled);
-
-                bool lockvoidmastersettings = !voidMasterCheckbox.GetValueBool() || greyoutall;
-                ShowSyncInRemixCheckbox(amoebaControlCheckbox, lockvoidmastersettings, arena.amoebaControl);
-                ShowSyncInTextbox(amoebaLifespanTextBox, lockvoidmastersettings, arena.amoebaDuration);
-            }
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                if (IsActuallyHidden) return;
-                watcherCamoLimitLabel.label.color = watcherCamoLimitTextBox.rect.colorEdge;
-                watcherRippleLevelLabel.label.color = watcherRippleLevelTextBox.rect.colorEdge;
-                weaverWatcherLabel.label.color = weaverWatcherCheckBox.rect.colorEdge;
-                voidMasterLabel.label.color = voidMasterCheckbox.rect.colorEdge;
-                amoebaDurationLabel.label.color = amoebaLifespanTextBox.rect.colorEdge;
-                amoebaControlLabel.label.color = amoebaControlCheckbox.rect.colorEdge;
+                OnSwitchSettingsTab(settings, prevSettings);
             }
         }
         public class SelectSettingsPage : SettingsPage
@@ -426,16 +114,16 @@ namespace RainMeadow.UI.Components
                     color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey)
                 };
                 Container.AddChild(titleDivider);
-                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeYOffset: -40);
+                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeAxisOffset: -40);
                 scroller.CreateSideButtonLines();
                 KeyValuePair<string, SettingsPage>[] array = [.. allSettings];
                 for (int i = 0; i < array.Length; i++)
                 {
                     KeyValuePair<string, SettingsPage> pair = array[i];
-                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, new(0, scroller.GetIdealYPosWithScroll(i)), new(290, 45));
+                    SettingsButton btn = new(menu, scroller, pair.Value, pair.Key, scroller.PositionOfObject(i), new(290, 45));
                     if (i > 0)
                         btn.CreateTopDivider();
-                    scroller.AddScrollObjects(btn);
+                    scroller.AddButtons(btn);
                 }
                 this.SafeAddSubobjects(scroller);
             }
@@ -469,12 +157,12 @@ namespace RainMeadow.UI.Components
                 titleDivider.x = titleLabel.x;
                 titleDivider.y = titleLabel.y - titleLabel.textRect.height - 3;
             }
-            public class SettingsButton : BigSimpleButton, ButtonScroller.IPartOfButtonScroller
+            public class SettingsButton : BigSimpleButton, IOwnMenuScrollObject
             {
                 public float Alpha { get; set; } = 1;
                 public Vector2 Pos { get => pos; set => pos = value; }
                 public Vector2 Size { get => size; set => size = value; }
-                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(scroller.buttons.IndexOf(this) - 1)?.Alpha ?? 0 : 0;
+                public float AlphaOfButtonAbove => owner is ButtonScroller scroller ? scroller.buttons.GetValueOrDefault(this.GetScrollObject().indexInScroller - 1)?.GetScrollObject().LocalAlpha ?? 0 : 0;
                 public FSprite? topDivSprite;
                 public FSprite arrowSprite;
                 public SettingsPage settingsPage;
@@ -557,5 +245,3 @@ namespace RainMeadow.UI.Components
 
     }
 }
-
-

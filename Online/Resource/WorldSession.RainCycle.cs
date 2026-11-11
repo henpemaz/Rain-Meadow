@@ -26,7 +26,7 @@
             public byte stage;
 
             //GlobalRain
-            [OnlineField(group = "counter")]
+            [OnlineField(group = "counters")]
             public int waterFluxTicker;
 
             public RainCycleData()

@@ -1,18 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
-using MoreSlugcats;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
-using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI;
 
@@ -123,6 +116,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             default
         );
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
+        
+        RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
+
+        ChatLogManager.MessageLogged += arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         moderationPage.SafeAddSubobjects(arenaModerationPage);
@@ -131,7 +128,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
         if (RainMeadow.isArenaMode(out var arena))
-            arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
+            arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1 && arena.enableMeadowCosmetics;
+        Arena.AddToPostGameStatsDialog();
+        // Arena.DisableMeadowCosmetics(); 
     }
 
     public void ChangeScene()
@@ -270,7 +269,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
                 if (RainMeadow.isArenaMode(out _))
-                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaUnhandledOptimizations.Value;
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1 && Arena.enableMeadowCosmetics;
             }
         );
         manager.ShowDialog(selector);
@@ -286,6 +285,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (Arena.lobbyCountDown > 0)
             {
                 Arena.initiateLobbyCountdown = true;
+                Arena.timerTicks = 0;
                 return;
             }
         }
@@ -379,7 +379,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out _))
             Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
-        ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
+        ChatLogManager.MessageLogged -= arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
 
         bool owner = OnlineManager.lobby?.isOwner == true;
         if (owner)
@@ -458,6 +458,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 Arena.hasPermissionToRejoin
                 && !initiateStartGameAfterCountDown
                 && Arena.arenaClientSettings.ready
+                && !Arena.playersQuitMidRound.Contains(OnlineManager.mePlayer.inLobbyId) // quit this round; wait for the next one
             )
             {
                 initiateStartGameAfterCountDown = true;
@@ -581,7 +582,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "scug select")
             {
                 if (OnlineManager.lobby?.isOwner == true)
-                    return Translate("Press grab to toggle active slugcats");
+                    return Translate(manager.menuesMouseMode
+                        ? "Press shift + click to toggle active slugcats"
+                        : "Press grab to toggle active slugcats");
                 else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
                     return Translate("You aren't allowed to play as this slugcat");
             }
@@ -623,13 +626,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (selectedObject is ButtonScroller.SideButton sideBtn)
         {
             string id = sideBtn.signalText;
-            if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)
+            if (id == "THUMBS" && sideBtn.owner is ArenaLevelSelector.PlaylistSelector playSelector)
                 return Translate(
                     playSelector.ShowThumbsStatus
                         ? "Showing level thumbnails"
                         : "Showing level names"
                 );
-            if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
+            if (id == "SHUFFLE" && sideBtn.owner is ArenaLevelSelector.PlaylistHolder playHolder)
                 return Translate(
                     playHolder.ShuffleStatus
                         ? "Playing levels in random order"

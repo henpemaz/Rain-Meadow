@@ -1,9 +1,10 @@
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -40,9 +41,20 @@ namespace RainMeadow
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
             On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+            On.Watcher.PrinceBulb.AIMapReady += PrinceBulb_AIMapReady;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+
+        private void PrinceBulb_AIMapReady(On.Watcher.PrinceBulb.orig_AIMapReady orig, PrinceBulb self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject().isMine)
+            {
+                self.room.abstractRoom.AddEntity(self.abstractPhysicalObject);
+            }
+        }
+
         private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
         {
             try
@@ -244,11 +256,28 @@ namespace RainMeadow
         private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
         {
             if (OnlineManager.lobby != null && !self.CanMove()) return;
+            bool wasdestroyonabstraction = self.destroyOnAbstraction;
+            if (self.GetOnlineObject(out var oe) && (oe.isTransferable || !oe.isMine)) self.destroyOnAbstraction = false;
+
             orig(self, coord);
-            if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe) && oe.isMine)
+
+            if (OnlineManager.lobby != null && oe is not null)
             {
-                if (oe.realized && oe.isTransferable && !oe.isPending) oe.Release();
+                self.destroyOnAbstraction = wasdestroyonabstraction;
+                if (!oe.isPending && oe.isMine)
+                {
+                    if (oe.isTransferable && oe.realized) oe.Release();
+                }
+                
                 oe.realized = false;
+
+                if (self.destroyOnAbstraction && !self.slatedForDeletion)
+                {
+                    if (!oe.isPending && oe.isMine)
+                    {
+                        self.Destroy();
+                    }
+                }
             }
         }
 
@@ -275,7 +304,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && apo is not null && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                self.world.GetResource().ApoEnteringWorld(apo);
+                self.world.GetResource()?.ApoEnteringWorld(apo);
                 self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
@@ -342,7 +371,7 @@ namespace RainMeadow
 
 
 
-        // echo warps from the waher
+        // echo warps from the watcher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
             if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)
@@ -539,17 +568,20 @@ namespace RainMeadow
 
         private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
         {
-            System.Func<bool> waitCondition = null;
+            System.Func<bool>? waitCondition = null;
 
             if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner))
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
+            // orig already ran  so there is nothing left to execute here.
+            // This only holds transitionInProgress until the old world's participants clear
+            // used to throw an exception literally every warp
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
                 waitCondition,
-                () => self.WorldLoaded(warpUsed)
+                null
             );
         }
 
@@ -560,12 +592,14 @@ namespace RainMeadow
             { // there exists "warps" to the same world, twice, for some bloody reason
                 //this in fact probably is required for now because rain world devs DESPISE US
                 RainMeadow.Debug("Unsubscribing from old world");
-                oldWorldSession.Deactivate();
+                // NotNeeded first!
+                // it only cascades to the room sessions while we're still active.
+                // Deactivating first nulls out subresources
                 oldWorldSession.NotNeeded(); // done? let go
+                oldWorldSession.Deactivate();
             }
 
             self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-            oldWorldSession.transitionInProgress = true;
             return;
         }
         // world transition at gatesactiveEntities
@@ -573,9 +607,10 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                Debug($"Warp Status -> worldLoader: {self.worldLoader?.ReturnWorld().name ?? "NULL"}, activeWorld: {self.activeWorld.name}");
+                World returnedWorld = self.worldLoader?.ReturnWorld();
+                Debug($"Warp Status -> worldLoader: {returnedWorld?.name ?? "NULL"}, activeWorld: {self.activeWorld.name}");
 
-                World newWorld = self.worldLoader?.ReturnWorld() ?? self.activeWorld;
+                World newWorld = returnedWorld ?? self.activeWorld;
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException("New world session not found.");
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession; // Do not throw for the old world to prevent error during coroutine
 
@@ -604,7 +639,7 @@ namespace RainMeadow
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (!opo.isMine)
                             {
                                 // not-online-aware removal
                                 opo.RemoveEntityFromGame(false);

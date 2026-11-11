@@ -19,9 +19,8 @@ namespace RainMeadow
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
-            
+
             On.Creature.SpitOutOfShortCut += Creature_SpitOutOfShortCut;
-            // On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -32,6 +31,13 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
+                if (NeedsGraphicsAttach(self, obj))
+                {
+                    self.updateList.Remove(obj);
+                    orig(self, obj);
+                    return;
+                }
+
                 Debug($"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
@@ -47,6 +53,13 @@ namespace RainMeadow
                     self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
                 }
             }
+        }
+
+        internal static bool NeedsGraphicsAttach(Room room, UpdatableAndDeletable obj)
+        {
+            if (obj is not PhysicalObject po) return false;
+            if (po.graphicsModule == null) return room.BeingViewed;
+            return !room.drawableObjects.Contains(po.graphicsModule);
         }
 
         // removes entities that should be deleted when going between rooms
@@ -92,18 +105,20 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null) {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
-                            creature.MoveMovable(cord);
                             try
                             {
-                                if (creature.GetAllConnectedObjects().Contains(handler.game.cameras[0].followAbstractCreature))
+                                if (creature.FollowedByCamera(0))
                                 {
-                                    handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
+                                    handler.game.world.ActivateRoom(handler.betweenRoomsWaitingLobby[inbetween_room_index].room);
+                                    // handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
                                 }
                             }
                             catch (Exception except)
                             {
                                 RainMeadow.Debug(except);
                             }
+
+                            creature.MoveMovable(cord);
                             
                             return true;
                         }
@@ -184,7 +199,7 @@ namespace RainMeadow
 
                             bool ready = orig_result;
                             if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null) {
-                                apo.world.ActivateRoom(vessel.room);
+                                apo.world.game.roomRealizer.MeadowRealizeAndTrackRoom(vessel.room, true);
                                 if (apo is AbstractCreature critter)
                                 {
                                     ready = ready && self.CreatureAllowedInRoom(critter, vessel.room.realizedRoom);

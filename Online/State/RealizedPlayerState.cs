@@ -98,7 +98,7 @@ namespace RainMeadow
         public byte malnourishedState = 0;
         const byte MALNOURISHED = 1 << 0;
         const byte MALNOURISHED_BY_CREATURE = 1 << 1;
-        
+
 
 
 
@@ -126,7 +126,7 @@ namespace RainMeadow
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? slugcatRidingOnBack;
-        private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
+        // private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
@@ -155,6 +155,10 @@ namespace RainMeadow
 
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
+        [OnlineFieldHalf]
+        public float rippleDeathIntensity;
+        [OnlineFieldHalf]
+        public float aerobicLevel;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -171,6 +175,8 @@ namespace RainMeadow
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             lungsExhausted = p.lungsExhausted;
+            rippleDeathIntensity = p.rippleDeathIntensity;
+            aerobicLevel = p.aerobicLevel;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             afkSleep = extras.afkSleep;
@@ -228,7 +234,7 @@ namespace RainMeadow
 
             malnourishedState = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
         }
-        
+
         byte GetMalnourishedState(bool malnourished, bool malnourishedByCreature)
         {
             return (byte)((malnourished ? MALNOURISHED : 0)
@@ -277,6 +283,7 @@ namespace RainMeadow
 
             //watcher
             p.isCamo = isCamo;
+            p.rippleDeathIntensity = rippleDeathIntensity;
             p.monkAscension = monkAscension;
             p.gourmandExhausted = gourmandExhausted;
             p.burstY = burstY;
@@ -289,6 +296,7 @@ namespace RainMeadow
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
             p.lungsExhausted = lungsExhausted;
+            p.aerobicLevel = aerobicLevel;
 
             var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
             extras.afkSleep = afkSleep;
@@ -296,29 +304,16 @@ namespace RainMeadow
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
 
-            if (p.slugOnBack != null)
+            if (p.slugOnBack != null && !onlineEntity.IsLocked("slugonback"))
             {
-                if (p.slugOnBack.slugcat != null)
+                Player? onback = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+                if (p.slugOnBack.slugcat != onback)
                 {
-                    slugcatOnBackTemp = p.slugOnBack.slugcat;
-                    p.slugOnBack.slugcat.onBack = p;
-                }
-
-                p.slugOnBack.slugcat = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
-
-                if (p.slugOnBack.slugcat == null && slugcatOnBackTemp != null)
-                {
-                    p.slugOnBack.slugcat = slugcatOnBackTemp;
-                    slugcatOnBackTemp.onBack = p;
-
                     p.slugOnBack.DropSlug();
-                    if (!slugcatOnBackTemp.isNPC && slugcatOnBackTemp.input[0].jmp && slugcatOnBackTemp.IsLocal())
+                    if (onback != null)
                     {
-                        slugcatOnBackTemp.jumpChunk = p.mainBodyChunk;
-                        slugcatOnBackTemp.JumpOnChunk();
+                        p.slugOnBack.SlugToBack(onback);
                     }
-                    slugcatOnBackTemp.onBack = null;
-                    slugcatOnBackTemp = null;
                 }
             }
 
@@ -374,8 +369,9 @@ namespace RainMeadow
             }
 
             byte curmalstate = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
-            if (curmalstate != malnourishedState) {
-                p.SetMalnourished((malnourishedState & MALNOURISHED) != 0,  (malnourishedState & MALNOURISHED_BY_CREATURE) != 0);
+            if (curmalstate != malnourishedState)
+            {
+                p.SetMalnourished((malnourishedState & MALNOURISHED) != 0, (malnourishedState & MALNOURISHED_BY_CREATURE) != 0);
             }
         }
     }

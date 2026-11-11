@@ -16,6 +16,7 @@ namespace RainMeadow
         public void CustomizationHooks()
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
+            IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SaintTongue;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.FFacetNode.PopulateRenderLayer += FFacetNode_PopulateRenderLayer;
             On.FSprite.PopulateRenderLayer += FSprite_PopulateRenderLayer;
@@ -54,7 +55,7 @@ namespace RainMeadow
         public void FFacetNode_PopulateRenderLayer(On.FFacetNode.orig_PopulateRenderLayer orig, FFacetNode self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -64,7 +65,7 @@ namespace RainMeadow
         public void FSprite_PopulateRenderLayer(On.FSprite.orig_PopulateRenderLayer orig, FSprite self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -74,7 +75,7 @@ namespace RainMeadow
         public void TriangleMesh_PopulateRenderLayer(On.TriangleMesh.orig_PopulateRenderLayer orig, TriangleMesh self)
         {
             orig(self);
-            
+
             if (OnPopulateRenderLayer.table.TryGetValue(self, out var onevent))
             {
                 onevent.OnEvent(self);
@@ -109,6 +110,11 @@ namespace RainMeadow
                         if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                         {
                             customization.ModifyEyeColor(ref originalEyeColor);
+                            // Keep Watcher camo eye transition
+                            if (ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                            {
+                                originalEyeColor = Color.Lerp(originalEyeColor, Color.white, self.player.camoProgress);
+                            }
                         }
                     });
                 }
@@ -147,6 +153,25 @@ namespace RainMeadow
             }
         }
 
+        private void PlayerGraphics_ApplyPalette_SaintTongue(ILContext il)
+        {
+            // was:  if (useJollyColor || CustomColorsEnabled())
+            // now:  if (useJollyColor || (CustomColorsEnabled() && hackySlugcatCustomization is null))
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchCall<PlayerGraphics>("get_useJollyColor"),
+                    i => i.MatchBrtrue(out _),
+                    i => i.MatchCall(typeof(PlayerGraphics), nameof(PlayerGraphics.CustomColorsEnabled)));
+                c.EmitDelegate((bool enabled) => enabled && hackySlugcatCustomization is null);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         // SlugcatCustomization stuff
         private static SlugcatCustomization? hackySlugcatCustomization;  // HACK: CustomColorSafety has no ref to player so we use this
 
@@ -170,7 +195,7 @@ namespace RainMeadow
                 orig(self, sLeaser, rCam);
 
                 // dev nightsky skin
-                if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
+                if (customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
                     if (customization.overlaySkin is OverlaySkin skin && skin.Available(entity))
                     {
@@ -255,6 +280,23 @@ namespace RainMeadow
             {
                 hackySlugcatCustomization = null;
                 PlayerGraphics.customColors = cachedCustomColors;
+            }
+
+            // Disable graphics manually when in ripple mode
+            int meRippleLayer = self.player.room?.game?.ActiveRippleLayer ?? 0;
+            int otherRippleLayer = self.player.abstractCreature.rippleLayer;
+            bool isWatcher = ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher;
+
+            if (otherRippleLayer == 0 && !self.culled)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i == 9 && isWatcher) continue;
+                    bool isVisibilityAlreadySet = i >= 4 && i <= 8;
+                    sLeaser.sprites[i].isVisible = isVisibilityAlreadySet
+                        ? meRippleLayer == otherRippleLayer && sLeaser.sprites[i].isVisible
+                        : meRippleLayer == otherRippleLayer;
+                }
             }
         }
         private void PlayerGraphics_Update_SlugcatCustomization(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)

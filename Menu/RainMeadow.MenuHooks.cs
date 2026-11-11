@@ -1,11 +1,19 @@
 using HarmonyLib;
 using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI;
+using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Menus;
+using RainMeadow.UI.Systems;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,6 +27,7 @@ namespace RainMeadow
     {
         private void EssentialMenuHooks()
         {
+            IL.Menu.MainMenu.AddMainMenuButton += IL_MainMenu_AddMainMenuButton;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
         }
 
@@ -27,7 +36,7 @@ namespace RainMeadow
             IntroRollReplacement.OnEnable();
             IL.Menu.Menu.Update += IL_Menu_Update;
             On.Menu.Menu.SelectNewObject += On_Menu_SelectNewObject;
-            
+
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
             On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
@@ -46,10 +55,19 @@ namespace RainMeadow
             On.Menu.MenuObject.ctor += On_MenuObject_Ctor;
             On.Menu.MenuObject.Update += On_MenuObject_Update;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
-            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
-            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
+
+            HookSelectableMenuObject<ButtonTemplate>();
+            HookSelectableMenuObject<UIelementWrapper>();
+            new Hook(typeof(UIelement).GetProperty("MousePos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetMethod, UiElement_MousePos);
+            new Hook(typeof(UIelement).GetProperty("IsInactive", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, UiElement_IsInactive);
+
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
+            new Hook(typeof(PositionedMenuObject).GetProperty("ScreenLastPos", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, PositionedMenuObject_GetScreenPos);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasMark)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.HasGlow)).GetGetMethod(), SlugcatPageContinue_SaveDataFlag);
+            new Hook(typeof(SlugcatSelectMenu.SlugcatPageContinue).GetProperty(nameof(SlugcatSelectMenu.SlugcatPageContinue.CurrentFood)).GetGetMethod(), SlugcatPageContinue_SaveDataInt);
 
             On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
@@ -57,6 +75,177 @@ namespace RainMeadow
             On.MoreSlugcats.BackgroundOptionsMenu.PopulateButtons += BackgroundOptionsMenu_PopulateButtons;
 
             new Hook(typeof(MoreSlugcats.BackgroundOptionsMenu).GetProperty(nameof(MoreSlugcats.BackgroundOptionsMenu.NonRegionButtons)).GetGetMethod(), BackgroundOptionsMenu_NonRegionButtons);
+
+            _ = Ext_HUD_OwnerType.RainMeadowOverlay;
+            On.ProcessManager.Update += ProcessManager_Update_UpdateOverlay;
+            IL.ProcessManager.InitFadeSprite += ProcessManager_InitFadeSprite_SwitchTextSide;
+            IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
+
+            if (rainMeadowOptions.CurrentLogLevel.Value <= LogLevel.Debug)
+            {
+                IL.Menu.MenuObject.Update += MenuObject_Update_AbnormallyLongUpdate;
+                IL.Menu.MenuObject.GrafUpdate += MenuObject_GrafUpdate_AbnormallyLongUpdate;
+            }
+        }
+
+        private const int UpdateAbnormalThreshold = 70;
+        private const int GrafUpdateAbnormalThreshold = 35;
+        private void MenuObject_Update_AbnormallyLongUpdate(ILContext il)
+            => MenuObject_AbnormallyLongUpdate(il, false);
+        private void MenuObject_GrafUpdate_AbnormallyLongUpdate(ILContext il)
+            => MenuObject_AbnormallyLongUpdate(il, true);
+        private void MenuObject_AbnormallyLongUpdate(ILContext il, bool isGraf)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                MethodBody body = il.Body;
+
+                VariableDefinition stopWatch = new(
+                    il.Module.ImportReference(typeof(Stopwatch))
+                );
+                body.Variables.Add(stopWatch);
+                body.InitLocals = true;
+
+                cursor.EmitDelegate(Stopwatch.StartNew);
+                cursor.Emit(OpCodes.Stloc, stopWatch);
+
+                if (isGraf)
+                    cursor.GotoNext(MoveType.After, x => x.MatchCallvirt<MenuObject>(nameof(MenuObject.GrafUpdate)));
+                else
+                    cursor.GotoNext(MoveType.After, x => x.MatchCallvirt<MenuObject>(nameof(MenuObject.Update)));
+
+                cursor.Emit(OpCodes.Ldloc, stopWatch);
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_0);
+                cursor.EmitDelegate((Stopwatch sw, MenuObject self, int subIndex) =>
+                {
+                    if (sw.ElapsedMilliseconds > (isGraf ? GrafUpdateAbnormalThreshold : UpdateAbnormalThreshold))
+                        Warn($"{(isGraf ? "GrafUpdate" : "Update")} of {self.subObjects[subIndex].GetType().Name} took {sw.ElapsedMilliseconds}ms !! (owner : {self.GetType().Name})");
+
+                    if (subIndex == self.subObjects.Count - 1)
+                        sw.Stop();
+                    else
+                        sw.Restart();
+                });
+            }
+            catch (Exception e)
+            {
+                Error($"Error while IL hooking : {e}");
+            }
+        }
+
+        private void SlugcatSelectMenu_ctor(ILContext il)
+        {
+            try
+            {
+                // this.saveGameData[this.slugcatColorOrder[i]] = global::Menu.SlugcatSelectMenu.MineForSaveData(manager, this.slugcatColorOrder[i]);
+                ILCursor c = new ILCursor(il);
+
+                ILLabel skip = c.DefineLabel();
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchLdcI4(0),
+                    x => x.MatchStloc(5),
+                    x => x.MatchBr(out _),
+                    x => x.MatchLdarg(0)
+                    );
+
+                c.Emit(OpCodes.Ldloc, 5);
+                c.EmitDelegate((Menu.SlugcatSelectMenu self, int index) =>
+                {
+                    if (isStoryMode(out var story) && !OnlineManager.lobby.isOwner)
+                    {
+                        var pageIndex = self.indexFromColor(story.currentCampaign);
+                        if (index == pageIndex)
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = story.menuSaveGameData;
+                            self.slugcatPageIndex = index;
+                        }
+                        else
+                        {
+                            self.saveGameData[self.slugcatColorOrder[index]] = null;
+                        }
+                        return true;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+
+                c.Emit(OpCodes.Ldarg_0);
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchCallvirt(typeof(Dictionary<SlugcatStats.Name, SlugcatSelectMenu.SaveGameData>).GetMethod("set_Item"))
+                    );
+
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Error($"Error while IL hooking : {e}");
+            }
+        }
+        private bool UiElement_IsInactive(Func<UIelement, bool> orig, UIelement self)
+        {
+            if (self.wrapper is PatchedUIelementWrapper wrapper && wrapper.IsHidden)
+                return true;
+            return orig(self);
+        }
+        private Vector2 UiElement_MousePos(Func<UIelement, Vector2> orig, UIelement element)
+        {
+            var origMousePos = orig(element);
+            if (element.wrapper is UIelementWrapper wrapper && wrapper.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
+                {
+                    return new Vector2(-600000, -600000);
+                }
+            }
+            return origMousePos;
+        }
+        private void HookSelectableMenuObject<T>() where T : MenuObject, SelectableMenuObject
+        {
+            new Hook(typeof(T).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_SelectableMenuObj_MouseSelectable<T>);
+            new Hook(typeof(T).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_SelectableMenuObj_NonMouseSelectable<T>);
+        }
+        private void ProcessManager_InitFadeSprite_SwitchTextSide(ILContext il)
+        {
+            try
+            {
+                var cursor = new ILCursor(il);
+                cursor.GotoNext(MoveType.After, x => x.MatchLdcR4(100.2f));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(
+                    (float orig, ProcessManager self) =>
+                    {
+                        // Put it on the right, so chat can don't overlap with it
+                        if (RMOverlayHUDMenu.GetOverlay()?.chatHud is not null)
+                        {
+                            // RainMeadow.Debug($"orig was <{orig}>, now <{self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x)}> (<{self.rainWorld.options.ScreenSize.x}><{self.loadingLabel.textRect.x}>)");
+                            return self.rainWorld.options.ScreenSize.x - orig - Mathf.Abs(self.loadingLabel.textRect.x); // textRech can be negative ????
+                        }
+                        return orig;
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                Error("Error while hooking : " + e);
+            }
+        }
+
+        private void ProcessManager_Update_UpdateOverlay(On.ProcessManager.orig_Update orig, ProcessManager self, float deltaTime)
+        {
+            orig(self, deltaTime);
+            if (RMOverlayHUDMenu.TryGetOverlayMenu(out var overlayHUDsManager))
+            {
+                overlayHUDsManager.RawUpdate(deltaTime);
+            }
+            else
+            {
+                new RMOverlayHUDMenu(self).AddOverlayHUD();
+                Debug("Rain Meadow Overlay HUD had been added");
+            }
         }
 
         public void BackgroundOptionsMenu_PopulateButtons(On.MoreSlugcats.BackgroundOptionsMenu.orig_PopulateButtons orig, MoreSlugcats.BackgroundOptionsMenu self)
@@ -170,29 +359,40 @@ namespace RainMeadow
         void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
         {
             orig(self, menu, owner);
-            if (self is ButtonScroller.IPartOfButtonScroller && self.myContainer == null)
-            {
-                self.myContainer = new();
-                (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
-            }
+            self.TryGetOrAddScrollObject();
         }
         void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
         {
             orig(self);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                foreach (ButtonScroller.IPartOfButtonScroller subObj in self.subObjects.OfType<ButtonScroller.IPartOfButtonScroller>())
-                    subObj.Alpha = buttonScroll.Alpha;
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+                obj.UpdateInObject();
 
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
-            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-                self.myContainer.alpha = self.owner is not ButtonScroller.IPartOfButtonScroller ? buttonScroll.Alpha : 1;
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+                obj.GrafUpdateInObject(timestacker);
         }
-        bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
+        bool On_SelectableMenuObj_MouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
         {
-            return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1);
+            bool origSelect = orig(self);
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsMouseWithinBounds)
+                    origSelect = false;
+            }
+            return origSelect;
+        }
+        bool On_SelectableMenuObj_NonMouseSelectable<T>(Func<T, bool> orig, T self) where T : MenuObject, SelectableMenuObject
+        {
+            bool origSelect = orig(self);
+            if (self.TryGetScrollObject() is MenuScrollObject obj)
+            {
+                if (obj.ContainedAlpha < 1 || !obj.IsWithinBounds)
+                    origSelect = false;
+            }
+            return origSelect;
         }
         private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
         {
@@ -204,11 +404,18 @@ namespace RainMeadow
             }
             return orig(self);
         }
+        private Vector2 PositionedMenuObject_GetScreenPos(Func<PositionedMenuObject,Vector2> orig, PositionedMenuObject self)
+        {
+            var origScreenPos = orig(self);
+            if (self.owner is ScrollableContainer.Scrollable scrollable)
+                origScreenPos = scrollable.GetNewScreenPos(self, origScreenPos);
+            return origScreenPos;
+        }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
             if (self is StoryOnlineMenu sOM)
             {
-                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system. 
+                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system.
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
@@ -468,6 +675,26 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowOverseer)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - overseer";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowOverseer - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 5", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 3", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.SoftLight));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 2", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "overseer - 1", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+
             if (string.IsNullOrEmpty(self.sceneFolder))
             {
                 return;
@@ -548,6 +775,12 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
+                    else if (mcsp.character == MeadowProgression.Character.Overseer)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowOverseer;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
                     else
                     {
                         //throw new InvalidProgrammerException("implement me");
@@ -590,6 +823,8 @@ namespace RainMeadow
             orig(self, ID);
         }
 
+        private static bool consumedCommandLineJoinCode; // for rejoins on restart
+
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
             if (ID == Ext_ProcessID.LobbySelectMenu) self.currentMainLoop = new LobbySelectMenu(self);
@@ -599,20 +834,53 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-            if (ID == ProcessManager.ProcessID.IntroRoll)
+            orig(self, ID);
+
+            if (ID == ProcessManager.ProcessID.MainMenu && !consumedCommandLineJoinCode)
             {
+                consumedCommandLineJoinCode = true;
                 try
                 {
                     var args = System.Environment.GetCommandLineArgs();
+                    var code = string.Join(" ", args);
 
-                    MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
+                    if (MatchmakingManager.TryParseJoinCode(code, out var domain, out _, out _)
+                        && MatchmakingManager.supported_matchmakers.Contains(domain))
+                    {
+                        RainMeadow.Info($"Rejoining lobby from the command line: {domain}");
+                        MatchmakingManager.pendingJoinCode = code;
+                        if (MatchmakingManager.currentDomain != domain)
+                            MatchmakingManager.currentDomain = domain;
+                        self.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
+                    }
                 }
                 catch (Exception ex)
                 {
                     RainMeadow.Debug(ex);
                 }
             }
-            orig(self, ID);
+        }
+
+        private static void IL_MainMenu_AddMainMenuButton(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                const int maxCountLoc = 1; // int, max amount of buttons in a column
+
+                // int maxCount = _;
+                cursor.GotoNext(code => code.MatchStloc(maxCountLoc));
+                cursor.GotoPrev(MoveType.After, code => code.MatchLdcI4(out _));
+
+                // int maxCount = _ + 1;
+                cursor.Emit(OpCodes.Ldc_I4, 1);
+                cursor.Emit(OpCodes.Add);
+            }
+            catch (Exception ex)
+            {
+                Warn("failed to increase main menu button limit");
+                Error(ex);
+            }
         }
 
         private bool showed_no_steam_warning = false;
@@ -626,7 +894,7 @@ namespace RainMeadow
                 self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
-            
+
             SpecialEvents.GetActiveEvent()?.UpdateLoginMessage(self);
 
             // we might get here from quitting out of game
@@ -649,11 +917,25 @@ namespace RainMeadow
             }, self.mainMenuButtons.Count - 2);
         }
 
+        // while the host scrolls  campaigns (or someone joins mid-scroll)
+        // SlugcatPageContinue can Update itself for a frame
+        // after its data is gone and nullref.
+        private bool SlugcatPageContinue_SaveDataFlag(Func<SlugcatSelectMenu.SlugcatPageContinue, bool> orig, SlugcatSelectMenu.SlugcatPageContinue self)
+        {
+            if (OnlineManager.lobby != null && self.saveGameData == null) return false;
+            return orig(self);
+        }
+        private int SlugcatPageContinue_SaveDataInt(Func<SlugcatSelectMenu.SlugcatPageContinue, int> orig, SlugcatSelectMenu.SlugcatPageContinue self)
+        {
+            if (OnlineManager.lobby != null && self.saveGameData == null) return 0;
+            return orig(self);
+        }
+
         private Menu.SlugcatSelectMenu.SaveGameData? SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
             {
-                if (isStoryMode(out var story) && story.menuSaveGameData != null)
+                if (isStoryMode(out var story))// && story.menuSaveGameData != null)
                 {
                     return story.menuSaveGameData; // we will get this from the owner  if null next lobby tick
                 }

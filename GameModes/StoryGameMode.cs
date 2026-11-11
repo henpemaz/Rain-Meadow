@@ -1,4 +1,5 @@
 using Menu;
+using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
@@ -41,14 +42,27 @@ namespace RainMeadow
         public StoryClientSettingsData storyClientData;
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
+        // Set when ForceSaveNewDenLocation relocates us (echo / warp save). Without this
+        // it lands after and puts the stale den straight back over the one the echo just set. STOP DOING THAT
+        public bool denForcedThisCycle = false;
+        // Just used to manage watcher crap when invoking RainWorldGame_ForceSaveNewDenLocation
+        public bool applyingRemoteDenLocation = false;
         public bool hasSheltered = false;
         public float rippleLevel;
+        public float minimumRippleLevel;
+        public float maximumRippleLevel;
+        public List<int> spinningTopEncounters = new();
+        public uint campaignGeneration = 0;
+        public string? appliedSaveStateString = null;
+
+        public Dictionary<int, Vector2> hostRippleRaiser = new();
 
         public List<AbstractCreature> pups;
 
         public StoryLobbyData.MenuSaveStateState? menuSaveState;
         public SlugcatSelectMenu.SaveGameData? menuSaveGameData;
         public bool needMenuSaveUpdate = false;
+        public bool shouldMineForSaveData;
 
 
         public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
@@ -63,12 +77,18 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastWarp = null;
             myLastDenPos = null;
+            denForcedThisCycle = false;
             lastWarpIsEcho = false;
             region = null;
             saveStateString = null;
             pups = new();
             storyClientData?.Sanitize();
             rippleLevel = 0.0f;
+            minimumRippleLevel = 0.0f;
+            maximumRippleLevel = 0.0f;
+            spinningTopEncounters = new();
+            appliedSaveStateString = null;
+            hostRippleRaiser = new();
             this.ResetOverWorld();
 
         }
@@ -94,7 +114,7 @@ namespace RainMeadow
         public HashSet<PlacedObject.Type> disallowedPlacedObjects = new()
         {
             //PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle (UPDATE: probably doesn't anymore)
-            PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
+            // PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
             //DLCSharedEnums.PlacedObjectType.Stowaway, // No longer causes visual glitches but still needs some work, excluding for now
             Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };
@@ -136,6 +156,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            MoreSlugcatsEnums.AbstractObjectType.Bullet, // Too many spawned objects
             Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //Causes issues, plus its per player thing
         };
 
@@ -155,6 +176,7 @@ namespace RainMeadow
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.type == Watcher.WatcherEnums.AbstractObjectType.Prince) return false;
             return true;
         }
 
@@ -252,6 +274,7 @@ namespace RainMeadow
                 {
                     OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.StoryMenu);
                 }
+                if (!lobby.isOwner) shouldMineForSaveData = true;
             }
 
             if (lobby.isOwner)

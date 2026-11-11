@@ -6,47 +6,35 @@ using UnityEngine;
 namespace RainMeadow
 {
     public class RealizedStowawayState : RealizedCreatureState
-    {
-        // Todo figure out whats needed and what isn't
-        // TODO sync tentacle firing correctly so it fires at the same time for everyone
+    {        
         [OnlineField]
         Generics.DynamicOrderedStates<StowawayTentacleState> heads;
 
         [OnlineField]
         bool mawOpen;
-        //[OnlineFieldHalf]
-        //Vector2 originalPos;
-        //[OnlineFieldHalf]
-        //Vector2 placedDirection;
+        [OnlineField(group = "setup")]
+        bool activeThisCycle;
+               
+        [OnlineField]
+        byte behavior; // heads can be buggy if not synced
+
+        [OnlineFieldHalf(group = "setup")]
+        float headLength; // needed cause can somethimes be diferent, and when diferent this makes heads to be buggy        
+        
         [OnlineFieldHalf]
         Vector2 currentDirection;
-        [OnlineFieldHalf]
-        float sleepScale;
-        [OnlineFieldHalf]
-        float[] headCooldown;
-        [OnlineField(group = "counters")]
-        int spitCooldown;
-        [OnlineField(group = "counters")]
-        int huntDelay;
+
         public RealizedStowawayState() { }
 
         public RealizedStowawayState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             StowawayBug stowaway = (StowawayBug)onlineEntity.realizedCreature;
 
+            behavior = (byte)stowaway.AI.behavior.index;            
             mawOpen = stowaway.mawOpen;
-
-            //originalPos = stowaway.originalPos;
-
-            //placedDirection = stowaway.placedDirection;
-            currentDirection = stowaway.currentDirection;
-
-            headCooldown = stowaway.headCooldown;
-
-            sleepScale = stowaway.sleepScale;
-
-            spitCooldown = stowaway.spitCooldown;
-            huntDelay = stowaway.huntDelay;
+            currentDirection = stowaway.currentDirection;                        
+            headLength = stowaway.headLength;
+            activeThisCycle = stowaway.AI.activeThisCycle;
 
             heads = new(stowaway.heads.Select((t, i) => new StowawayTentacleState(t, i)).ToList());
         }
@@ -54,69 +42,80 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
+
             if ((onlineEntity as OnlineCreature).apo.realizedObject is not StowawayBug stowaway) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            stowaway.AI.behavior = behavior switch
+            {
+                0 => StowawayBugAI.Behavior.Idle,
+                1 => StowawayBugAI.Behavior.EscapeRain,
+                2 => StowawayBugAI.Behavior.Hidden,
+                3 => StowawayBugAI.Behavior.Attacking,
+                4 => StowawayBugAI.Behavior.Digesting,
+                5 => StowawayBugAI.Behavior.Sleeping
+            };
+
             stowaway.mawOpen = mawOpen;
+            stowaway.currentDirection = currentDirection;            
+            stowaway.headLength = headLength;
+            stowaway.AI.activeThisCycle = activeThisCycle;
 
-            //stowaway.originalPos = originalPos;
 
-            //stowaway.placedDirection = placedDirection;
-            stowaway.currentDirection = currentDirection;
-
-            stowaway.headCooldown = headCooldown;
-
-            stowaway.sleepScale = sleepScale;
-
-            stowaway.spitCooldown = spitCooldown;
-            stowaway.huntDelay = huntDelay;
-
-            for(int i = 0; i < stowaway.heads.Length; i++)
+            for (int i = 0; i < stowaway.heads.Length; i++)
             {
                 heads.list[i].ReadTo(stowaway.heads[i], i);
             }
         }
-
-        //public override bool ShouldPosBeLenient(PhysicalObject po)
-        //{
-        //    return true;
-        //}
     }
 
     public class StowawayTentacleState : OnlineState
     {
+        const int chunksToSync = 3;
+        
         [OnlineFieldHalf]
-        float retractFac;
-        [OnlineField]
-        bool fired;
-        [OnlineFieldHalf(group = "counters")]
-        float cooldown;
+        float retractFac;        
         [OnlineFieldHalf]
-        Vector2 pos;
+        float idealLength;
+
+        [OnlineFieldHalf(nullable = true)]
+        Vector2? grabdest;
+        [OnlineFieldHalf]
+        Vector2[] vel;
+        [OnlineFieldHalf]
+        Vector2[] pos;
+
         public StowawayTentacleState() { }
 
         public StowawayTentacleState(Tentacle tentacle, int index)
         {
-            StowawayBug owner = (StowawayBug)tentacle.owner;
-
             retractFac = tentacle.retractFac;
+            
+            pos = new Vector2[chunksToSync];
+            vel = new Vector2[chunksToSync];
 
-            fired = owner.headFired[index];
-            cooldown = owner.headCooldown[index];
-            pos = tentacle.Tip.pos;
-            //floatGrabDest = tentacle.floatGrabDest;
+            for (int i = 0; i < chunksToSync; i++)
+            {
+                pos[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos;
+                vel[i] = tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel;
+            }
+
+            idealLength = tentacle.idealLength;
+            grabdest = tentacle.floatGrabDest;
         }
 
         public void ReadTo(Tentacle tentacle, int index)
         {
-            StowawayBug owner = (StowawayBug)tentacle.owner;
-
             tentacle.retractFac = retractFac;
 
-            owner.headFired[index] = fired;
-            owner.headCooldown[index] = cooldown;
+            for (int i = 0; i < chunksToSync; i++)
+            {
+                tentacle.tChunks[tentacle.tChunks.Length - i - 1].pos = pos[i];
+                tentacle.tChunks[tentacle.tChunks.Length - i - 1].vel = vel[i];
+            }
 
-            tentacle.Tip.pos = pos;
-            //tentacle.floatGrabDest = floatGrabDest;
+            tentacle.idealLength = idealLength;
+            tentacle.floatGrabDest = grabdest;
+
         }
     }
 }

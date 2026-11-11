@@ -39,6 +39,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
     public Dialog? dialog;
     public int painCatIndex,
         holdSlugcatBtnCounter;
+    private bool lastSyncedShufflePlayList;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
     public NullLobbyError nullLobbyError;
@@ -162,19 +163,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         matchSettingsTab.AddObjects(arenaSettingsInterface);
         tabContainer.AddTab(matchSettingsTab, menu.Translate("Match Settings"));
 
-        if (ShouldOpenSlugcatAbilitiesTab())
-        {
-            slugabilitiesTab = new(menu, tabContainer);
-            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(
-                menu,
-                slugabilitiesTab,
-                new(0, 0),
-                menu.Translate(painCatName)
-            );
-            slugcatAbilitiesInterface.CallForSync();
-            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
-            tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
-        }
+        slugabilitiesTab = new(menu, tabContainer);
+        slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(
+            menu,
+            slugabilitiesTab,
+            new(0, 0),
+            menu.Translate(painCatName)
+        );
+        slugcatAbilitiesInterface.CallForSync();
+        slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
+        tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
 
         this.SafeAddSubobjects(
             readyButton,
@@ -189,8 +187,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 
         menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
     }
-
-    public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
 
     public void BuildPlayerDisplay()
     {
@@ -217,7 +213,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         ]);
     }
 
-    public ButtonScroller.IPartOfButtonScroller GetPlayerButton(
+    public MenuObject GetPlayerButton(
         PlayerDisplayer playerDisplay,
         bool isLargeDisplay,
         OnlinePlayer player,
@@ -359,7 +355,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         );
 
         TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];
-        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.LevelItems)
+        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.buttons)
             lvlBtn.TryBind(tabBtnToBind.wrapper, left: true);
     }
 
@@ -383,52 +379,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         );
     }
 
-    public void BindMSCSettingsPage(bool isHidden)
-    {
-        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
-        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
-        MSCSettingsPage mscSettings = slugcatAbilitiesInterface!.mscSettingsTab!;
-        if (isHidden)
-        {
-            foreach (var btn in tabButtons)
-                btn.wrapper.RemoveBind(right: true);
-            mscSettings.backButton.RemoveMutualBind(leftRight: true, inverted: true);
-            return;
-        }
-        foreach (var tabBtn in tabButtons)
-            tabBtn.wrapper.TryBind(mscSettings.blockMaulCheckBox, right: true);
-        var btnToBind = abilitiesTabBtn ?? tabButtons.Last();
-        mscSettings.backButton.TryBind((abilitiesTabBtn ?? tabButtons.Last()).wrapper, left: true);
-    }
-
-    public void BindWatcherSettingsPage(bool isHidden)
-    {
-        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
-        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
-        WatcherSettingsPage watcherSettings = slugcatAbilitiesInterface!.watcherSettingsTab!;
-        if (isHidden)
-        {
-            foreach (var tabBtn in tabButtons)
-                tabBtn.wrapper.RemoveBind(right: true);
-            watcherSettings.backButton.RemoveMutualBind(leftRight: true, inverted: true);
-            return;
-        }
-        foreach (var tabBtn in tabButtons)
-            tabBtn.wrapper.TryBind(watcherSettings.watcherCamoLimitTextBox.wrapper, right: true);
-        watcherSettings.backButton.TryBind(
-            (abilitiesTabBtn ?? tabButtons.Last()).wrapper,
-            left: true
-        );
-    }
-
     public void BindSlugcatAbilitiesSelectables(SettingsPage settingsPage, bool isHidden)
     {
         if (settingsPage == slugcatAbilitiesInterface!.selectSettings)
             BindSelectSettingsPage(isHidden);
-        if (settingsPage == slugcatAbilitiesInterface.mscSettingsTab)
-            BindMSCSettingsPage(isHidden);
-        if (settingsPage == slugcatAbilitiesInterface.watcherSettingsTab)
-            BindWatcherSettingsPage(isHidden);
     }
 
     public void SaveInterfaceOptions(bool saveOwnerOptions)
@@ -464,14 +418,14 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         slugcatAbilitiesInterface?.SaveAllInterfaceOptions(saveOwnerOptions);
     }
 
-    public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
+    public void UpdatePlayerButtons(MenuObject button)
     {
         if (button is ArenaPlayerBox playerBox)
         {
             ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(
                 playerBox.profileIdentifier
             );
-            bool slugSlots = clientSettings?.gotSlugcat == true;
+            bool slugSlots = clientSettings?.gotSlugcat == true && Arena.enableMeadowCosmetics;
 
             if (
                 ModManager.MSC
@@ -499,7 +453,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                     false
                 );
 
-            playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", playerBox.showGoldTemporarily);
+            playerBox.ToggleTextOverlay("SlugSlots<LINE>Winner!!", playerBox.showGoldTemporarily);
             if (clientSettings?.ready == true)
                 playerBox.ToggleTextOverlay(
                     Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!",
@@ -615,7 +569,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
-            foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
+            foreach (MenuObject button in playerDisplayer.buttons)
                 UpdatePlayerButtons(button);
         }
 
@@ -654,24 +608,18 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
                 subObjects.Add(startButton);
                 ArenaMenu?.UpdateElementBindings();
             }
-            Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
+            if (Arena.shufflePlayList != lastSyncedShufflePlayList) //changed outside of the playlist ui, ie settings import
+                levelSelector.selectedLevelsPlaylist.ShuffleStatus = Arena.shufflePlayList;
+            else
+                Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
         }
         else
         {
             levelSelector.LoadNewPlaylist(Arena.playList, true);
             levelSelector.selectedLevelsPlaylist.ShuffleStatus = Arena.shufflePlayList;
-            levelSelector.selectedLevelsPlaylist.shuffleButton.label.text = menu.Translate(
-                levelSelector.selectedLevelsPlaylist.ShuffleStatus
-                    ? "Shuffling Levels"
-                    : "Playing in order"
-            );
-            levelSelector.selectedLevelsPlaylist.shuffleButton.UpdateSymbol(
-                levelSelector.selectedLevelsPlaylist.ShuffleStatus
-                    ? "Menu_Symbol_Shuffle"
-                    : "Menu_Symbol_Dont_Shuffle"
-            );
             this.ClearMenuObject(ref startButton);
         }
+        lastSyncedShufflePlayList = Arena.shufflePlayList;
         UpdateMatchButtons();
     }
 

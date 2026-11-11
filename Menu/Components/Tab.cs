@@ -20,15 +20,18 @@ public class TabContainer : RectangularMenuObject
         public bool Active => container.activeTab == myTab;
         public readonly Tab myTab;
         public TabContainer container;
-        public TabButton(string name, Tab myTab, TabContainer container, MenuTabWrapper myTabWrapper, Vector2 pos, float ySize = 125) : base(pos, new(30, ySize))
+        private bool buttonOnRight;
+        public TabButton(string name, Tab myTab, TabContainer container, MenuTabWrapper myTabWrapper, Vector2 pos, bool buttonOnRight, float ySize = 125) : base(pos, new(30, ySize))
         {
             this.container = container;
+            this.buttonOnRight = buttonOnRight;
             wrapper = new PatchedUIelementWrapper(myTabWrapper, this);
             this.myTab = myTab;
-            _rect.hiddenSide = DyeableRect.HiddenSide.Right;
-            _rectH.hiddenSide = DyeableRect.HiddenSide.Right;
+            DyeableRect.HiddenSide hiddenSide = buttonOnRight ? DyeableRect.HiddenSide.Left : DyeableRect.HiddenSide.Right;
+            _rect.hiddenSide = hiddenSide;
+            _rectH.hiddenSide = hiddenSide;
             _label.alignment = FLabelAlignment.Left;
-            _label.rotation = -90f;
+            _label.rotation = buttonOnRight ? 90f : -90f;
             _label.text = name;
             description = Menu.Translate("Click to open <TABNAME> tab").Replace("<TABNAME>", name);
 
@@ -43,17 +46,17 @@ public class TabContainer : RectangularMenuObject
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            float num = Active ? 1f : base.bumpBehav.AddSize;
-            _label.x = (0f - num) * 4f + 15f;
-            _label.y = 6f + num;
-            _rect.addSize = new Vector2(8f, 4f) * num;
-            _rect.pos.x = (0f - _rect.addSize.x) * 0.5f;
-            _rectH.addSize = new Vector2(4f, -4f) * num;
-            _rectH.pos.x = (0f - _rectH.addSize.x) * 0.5f;
+            float sizeBumpFactor = Active ? 1f : bumpBehav.AddSize;
+            _label.x = (0f + (buttonOnRight ? sizeBumpFactor : -sizeBumpFactor)) * 4f + (buttonOnRight ? 17f : 15);
+            _label.y = 6f + sizeBumpFactor + (buttonOnRight ? size.y - 20 : 0);
+            _rect.addSize = new Vector2(8f, 4f) * sizeBumpFactor;
+            _rect.pos.x = (0 + (buttonOnRight ? _rect.addSize.x : -_rect.addSize.x)) * 0.5f;
+            _rectH.addSize = new Vector2(4f, -4f) * sizeBumpFactor;
+            _rectH.pos.x = (0 + (buttonOnRight ? _rectH.addSize.x : -_rectH.addSize.x)) * 0.5f;
 
-            float num3 = MouseOver ? ((0.5f + 0.5f * base.bumpBehav.Sin(10f)) * num) : 0f;
+            float selectionFade = MouseOver ? ((0.5f + 0.5f * bumpBehav.Sin(10f)) * sizeBumpFactor) : 0f;
             for (int i = 0; i < 8; i++)
-                _rectH.sprites[i].alpha = Active ? 1f : num3;
+                _rectH.sprites[i].alpha = Active ? 1f : selectionFade;
         }
     }
     public class TabButtonsContainer : PositionedMenuObject
@@ -64,8 +67,10 @@ public class TabContainer : RectangularMenuObject
         public bool PagesOn => registeredTabButtons.Count > PerPage;
         public float DefaultTabButtonYSize { get => tabButtonYSize; set => tabButtonYSize = Mathf.Max(value, LabelTest.GetWidth(LongestName) + 20); }
         public string LongestName => registeredTabButtons.Select(x => x.Item2).FirstOrDefault(s => s.Length == registeredTabButtons.Max(str => str.Item2 == null ? 0 : str.Item2.Length));
-        public TabButtonsContainer(Menu.Menu menu, TabContainer container) : base(menu, container, new(-23, 0))
+        private bool buttonsOnRight;
+        public TabButtonsContainer(Menu.Menu menu, TabContainer container, bool buttonsOnRight = false) : base(menu, container, new(buttonsOnRight ? container.size.x - 8 : -23, 0))
         {
+            this.buttonsOnRight = buttonsOnRight;
             registeredTabButtons = [];
             activeTabButtons = [];
             this.container = container;
@@ -78,7 +83,7 @@ public class TabContainer : RectangularMenuObject
             float flash = Mathf.PingPong(Time.time * 1.5f, 1f);
             Color pulseColor = new Color(flash, flash, flash);
             if (topArrowButton != null)
-            {   
+            {
                 topArrowButton.rectColor = pulseColor.ToHSL();
                 topArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset > 0);
                 TabButton? topTabBtn = activeTabButtons.First();
@@ -140,7 +145,6 @@ public class TabContainer : RectangularMenuObject
         }
         public void PopulatePages(int offset)
         {
-            TabButton[] oldTabButtons = [..activeTabButtons];
             ClearVisibleTabButtons();
             CurrentOffset = offset;
             int num = CurrentOffset * PerPage, max = Mathf.Min(registeredTabButtons.Count - num, PerPage);
@@ -148,7 +152,7 @@ public class TabContainer : RectangularMenuObject
             {
                 ValueTuple<Tab, string> registeredTab = registeredTabButtons[i + num];
                 float sizeY = DefaultTabButtonYSize, posY = container.size.y - (sizeY + 15) + (-(sizeY + 5) * i);
-                TabButton tabButton = new(registeredTab.Item2, registeredTab.Item1, container, tabWrapper, new(0, posY), DefaultTabButtonYSize);
+                TabButton tabButton = new(registeredTab.Item2, registeredTab.Item1, container, tabWrapper, new(0, posY), buttonsOnRight, DefaultTabButtonYSize);
                 activeTabButtons.Add(tabButton);
                 TabButton? prevBtn = activeTabButtons.GetValueOrDefault(i - 1);
                 menu.TryMutualBind(tabButton.wrapper, prevBtn?.wrapper, bottomTop: true);
@@ -174,13 +178,13 @@ public class TabContainer : RectangularMenuObject
         {
             if (topArrowButton == null)
             {
-                topArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveUp", new(-5, container.size.y));
+                topArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveUp", new(buttonsOnRight ? 12 : -5, container.size.y));
                 topArrowButton.OnClick += _ => GoPrevPage();
                 subObjects.Add(topArrowButton);
             }
             if (bottomArrowButton == null)
             {
-                bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveDown", new(-5, -24));
+                bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveDown", new(buttonsOnRight ? 12 : -5, -24));
                 bottomArrowButton.symbolSprite.rotation = 180f;
                 bottomArrowButton.OnClick += _ => GoNextPage();
                 subObjects.Add(bottomArrowButton);
@@ -359,7 +363,7 @@ public class TabContainer : RectangularMenuObject
     public RoundedRect background;
     public MenuTabWrapper tabWrapper;
 
-    public TabContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+    public TabContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool buttonsOnRight = false) : base(menu, owner, pos, size)
     {
         background = new(menu, this, new(0, 0), this.size, true)
         {
@@ -367,7 +371,7 @@ public class TabContainer : RectangularMenuObject
         };
         background.fillAlpha = 0.3f;
         tabWrapper = new(menu, this);
-        tabButtonContainer = new(menu, this);
+        tabButtonContainer = new(menu, this, buttonsOnRight);
         subObjects.AddRange([background, tabWrapper, tabButtonContainer]);
     }
     /// <summary>

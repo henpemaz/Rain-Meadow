@@ -72,7 +72,7 @@ namespace RainMeadow
                         {
                             if (obj.apo.realizedObject is PhysicalObject realobj)
                             {
-                                CapeManager.RefreshGraphicalModule(realobj);
+                                CosmeticManager.RefreshGraphicalModule(realobj);
                             }
                         }
                     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,23 +13,22 @@ namespace RainMeadow
 
         /// <summary>
         /// A centralized coroutine helper that waits for a WorldSession's participants to clear before proceeding.
-        /// It enforces a 5-second safety timeout to prevent softlocks (deadlocks) if entities fail to remove.
+        /// It enforces an 8-second safety timeout to prevent softlocks (deadlocks) if entities fail to remove.
         /// </summary>
         /// <param name="session">The WorldSession currently transitioning.</param>
         /// <param name="extraWaitCondition">Optional: An additional condition that must remain true to keep waiting (e.g., !newWorldSession.isAvailable). Pass null if not needed.</param>
-        /// <param name="onComplete">The action/method to execute once the wait finishes or times out (e.g., orig(self, ...)).</param>
+        /// <param name="onComplete">Optional: the action to execute once the wait finishes or times out. Pass null when the caller has already done its work and only needs transitionInProgress.</param>
         public static System.Collections.IEnumerator WaitAndExecuteSession(
             WorldSession session,
-            System.Func<bool> extraWaitCondition,
-            System.Action onComplete
+            System.Func<bool>? extraWaitCondition,
+            System.Action? onComplete
         )
         {
             float startTime = UnityEngine.Time.time;
-            float timeoutSeconds = 5f;
-            bool cleanupTriggered = false;
+            float timeoutSeconds = 8f;
 
             session.transitionInProgress = true;
-            bool isMeadow = OnlineManager.lobby.gameMode is MeadowGameMode;
+            bool canSkipWaitLoop = OnlineManager.lobby.gameMode is MeadowGameMode;
 
             while (true)
             {
@@ -38,37 +37,22 @@ namespace RainMeadow
                 bool conditionMet = extraWaitCondition == null || !extraWaitCondition();
 
                 // In Meadow, we only care about the extra condition.
-                // In Story/Arena, we wait for participants to be 0 AND the condition to be met.
+                // In Story/Arena, we wait for participants to be 0 AND the condition to be met or timeout to be hit.
 
-                bool isDoneWaiting = isMeadow
+                bool isDoneWaiting = canSkipWaitLoop
                     ? conditionMet
                     : (participants.Count == 0 && conditionMet);
 
                 if (isDoneWaiting)
                     break;
 
-                if (!isMeadow && elapsed > timeoutSeconds && !cleanupTriggered)
+                if (!canSkipWaitLoop && elapsed > timeoutSeconds)
                 {
-                    cleanupTriggered = true; // Only do this once
                     RainMeadow.Debug(
-                        "WaitLoop: Timeout reached. Forcing participant cleanup, but continuing to wait for conditions..."
+                        "WaitLoop: Timeout reached. Breaking..."
                     );
-                    foreach (var player in participants)
-                    {
-                        RainMeadow.Debug($"WaitLoop: Force-removing {player} from session.");
-                        var remainingPlayers = session
-                            .participants.Where(x => x != player)
-                            .ToList();
-                        if (session.overworldSession != null)
-                        {
-                            session.overworldSession.UpdateParticipants(remainingPlayers);
-                            OnlineManager.RemoveSubscription(session.overworldSession, player);
-                        }
-                        session.UpdateParticipants(remainingPlayers);
-                        OnlineManager.RemoveSubscription(session, player);
-                    }
+                    break;
 
-                    // After removing, let the loop check isDoneWaiting again.
                 }
 
                 yield return null;

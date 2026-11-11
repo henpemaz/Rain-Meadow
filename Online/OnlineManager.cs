@@ -29,6 +29,14 @@ namespace RainMeadow
         public static LobbyInfo currentlyJoiningLobby;
         public int milisecondsPerFrame;
 
+        /// <summary>
+        /// Returns true if cheats are enabled in the lobby, if you're the lobby host or if you're offline.
+        /// </summary>
+        /// <remarks>
+        /// If your mod is considered a cheat use this to comply with the cheat setting set by the host.
+        /// </remarks>
+        public static bool CheatsAllowed => lobby == null || lobby.cheats || lobby.isOwner;
+
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             // if steam installed 

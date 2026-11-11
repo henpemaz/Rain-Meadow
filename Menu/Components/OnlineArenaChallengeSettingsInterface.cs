@@ -5,10 +5,7 @@ using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.ArenaChallengeModeNS;
 using RainMeadow.UI.Components.Patched;
 using UnityEngine;
-using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
-using System.Linq;
-using Expedition;
 
 namespace RainMeadow.UI.Components
 {
@@ -28,7 +25,7 @@ namespace RainMeadow.UI.Components
             dividerY = 160;
         private int currentOffset;
 
-        public ArenaMode arenaMode;
+        public ArenaOnlineGameMode arenaMode;
         public ArenaChallengeMode challengeMode;
 
         public ChallengeInformation.ChallengeMeta meta;
@@ -45,7 +42,7 @@ namespace RainMeadow.UI.Components
             !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
         public FSprite previewSprite;
         public OnlineArenaChallengeSettingsInterface(
-            ArenaMode arena,
+            ArenaOnlineGameMode arena,
             ArenaChallengeMode challenge,
             Menu.Menu menu,
             MenuObject owner,

@@ -1,12 +1,14 @@
 henpemaz_rainmeadow-description|Мультиплеерный движок; кастомный игровой режим, вдохновленный игрой «Meadow» от Might & Delight, а также онлайн история и арена.<LINE><LINE>Полный список создателей можно найти в мастерской или в отдельном окне меню «Meadow».
+Henpemaz - Lead Developer<LINE><LINE>Wolfycatt(Ana) - Lead Artist<LINE><LINE>Intikus - Lead Audio Designer<LINE><LINE>Noircatto - Programming, engine<LINE><LINE>HelloThere - Programming, sound<LINE><LINE>A1iex - UI Design<LINE><LINE>FranklyGD - Programming, engine<LINE><LINE>MC41Games - Programming, menus<LINE><LINE>Silvyger - Programming, arena<LINE><LINE>Vigaro - Programming, menus<LINE><LINE>BitiLope - Programming, story<LINE><LINE>Pudgy Turtle - Programming, story<LINE><LINE>ddemile - Programming, modsync<LINE><LINE>UO - Programming, story, arena<LINE><LINE>Saddest - Programming, UI, chat<LINE><LINE>notchoc - Programming, story<LINE><LINE>phanie_ - Illustration<LINE><LINE>Timbits - Programming, UI, menus<LINE><LINE>Zedreus - Programming, UI, story<LINE><LINE>Persondotexe - Programming, modsync<LINE><LINE>invalidunits - Programming, UI, LAN<LINE><LINE>forthfora - Programming, modsync<LINE><LINE> WillowWisp - Programming, story<LINE><LINE>@None - Programming, gameplay<LINE><LINE>DustyLemmy - Arena, story, UI<LINE><LINE>Elizabeth - Programming, story, UI<LINE><LINE>niacdoial - LAN<LINE><LINE>Capt. Redstone - Meadow, story<LINE><LINE>EdEnStonne - Arena|Henpemaz - Главный разработчик<LINE><LINE>Wolfycatt(Ana) - Главный художник<LINE><LINE>Intikus - Главный аудио дизайнер<LINE><LINE>Noircatto - Программирование, движок<LINE><LINE>HelloThere - Программирование, движок<LINE><LINE>A1iex - Дизайн пользовательского интерфейса<LINE><LINE>FranklyGD - Программирование, движок<LINE><LINE>MC41Games - Программирование, меню<LINE><LINE>Silvyger - Программирование, арена<LINE><LINE>Vigaro - Программирование, меню<LINE><LINE>BitiLope - Программирование, история<LINE><LINE>Pudgy Turtle - Программирование, история<LINE><LINE>ddemile - Программирование, синхронизация модов<LINE><LINE>UO - Программирование, история и арена<LINE><LINE>Saddest - Программирование, пользовательский интерфейс, чат<LINE><LINE>notchoc - Программирование, история<LINE><LINE>phanie_ - Иллюстрации<LINE><LINE>Timbits - Программирование, пользовательский интерфейс, меню<LINE><LINE>Zedreus - Программирование, пользовательский интерфейс, история<LINE><LINE>Persondotexe - Программирование, синхронизация модов<LINE><LINE>invalidunits - Программирование, пользовательский интерфейс, LAN<LINE><LINE>forthfora - Программирование, синхронизация модов<LINE><LINE> WillowWisp - Программирование, история<LINE><LINE>@None - Программирование, игровой процесс<LINE><LINE>DustyLemmy - Арена, история, пользовательский интерфейс<LINE><LINE>Элизабет - Программирование, история, пользовательский интерфейс<LINE><LINE>niacdoial - Локальная сеть<LINE><LINE>Capt. Redstone - Meadow, история<LINE><LINE>EdEnStonne - Арена
 
 ///Меню
+Rain Meadow failed to start|Rain Meadow не смог запуститься
 Rain Meadow|Rain Meadow
 MEADOW|MEADOW
 Lobby Mode|Режим лобби
 All|Все
 Public Lobbies Only|Только публичные лобби
-Max Lobby Size|Максимальный размер лобби
+Max Lobby Size|Макс. размер лобби
 Lobby Mods|Моды в лобби
 Unfiltered|Без фильтра
 Exact order|Точный порядок
@@ -23,15 +25,17 @@ Failed to join lobby.<LINE>|Не удалось присоединиться к 
 Password Required|Пароль:
 Wrong password!|Неверный пароль!
 Joining lobby...|Присоединение к лобби...
+(Attempt <NUM>)|(Попытка: <NUM>)
+Pinned:|Закреплено:
 Online:|Онлайн:
 Lobbies:|Лобби:
 Rain Meadow Version:|Версия Rain Meadow:
 Credits|Создатели
 Search Lobbies|Поиск лобби
-Click to join|Нажми, чтобы присоединиться к
 <USERNAME>'s Lobby|Лобби <USERNAME>
 Private|Прив.
 max|макс.
+PLAYER|ИГРОК
 player|игрок
 players|игрока(-ов)
 Sort by Ping|Сортировка по Пингу
@@ -41,20 +45,64 @@ Sort by Fullest Lobby|Сортировка по наиболее полным Л
 Sort by Emptiest Lobby|Сортировка по наименее полным Лобби
 Unknown Sorting Method|Неизвестный способ сортировки
 Refresh list|Обновить список
+Watcher|Созерцатель
+MSC + Watcher|MSC + Созерцатель
+Msc + Watcher|MSC + Созерцатель
+MSC|MSC
++Rain World Remix|+Rain World Ремикс
++More Slugcats Expansion|+More Slugcats Expansion
++The Watcher|+Созерцатель
+<PLAYER_COUNT>/<MAX_PLAYERS> Players|<PLAYER_COUNT>/<MAX_PLAYERS> Игроков
+Filters|Фильтры
+Network|Сеть
+Lobby Gamemode|Игр. режим лобби
+JOIN|ПРИСОЕДИНИТЬСЯ
+Direct Connection|Прямое подключение
+Password|Пароль
+Selected Lobby|Выбранное лобби
+Join selected lobby|Присоединиться к выбранному лобби
+View Rain Meadow credits|Посмотреть титры Rain Meadow
+Directly connect to a local IP|Подключиться напрямую к локальному IP
+No Lobby Selected|Лобби не выбрано
+Refresh lobbies list|Обновить лист лобби
+Sort by fullest lobby|Отсортировать по наиболее заполненным лобби
+Sort by emptiest lobby|Отсортировать по наименее заполненным лобби
+Any|Любой
+Search lobbies by name|Искать лобби по имени
+Mods to Install|Моды которые нужно установить
+Mods to Enable|Моды которые нужно включить
+Mods to Disable|Моды которые нужно выключить
+Filter for only public lobbies|Отфильтровать только публичные лобби
+Filter for a maximum lobby size|Отфильтровать по максимальному размеру лобби
+Filter for a specific lobby gamemode|Отфильтровать лобби по конкретному игровому режиму
+Filter lobbies for specific mods|Отфильтровать лобби по конкретным модам
+Click to view <LOBBY>|Нажми, чтобы посмотреть подробности <LOBBY>
+Click to join <LOBBY>|Нажми, чтобы присоединиться к <LOBBY>
+
+Rain Meadow version |Версия 
+ is now available.| Rain Meadow теперь доступна!
+Update to join the newest lobbies and get the latest features & fixes.|Советуем обновить мод для доступа в новые лобби, актуального функционала и фиксов.
+How to Update|Как обновить?
+For Steam: Restart your game, if Rain Meadow doesn't update automatically resubscribe to force an update.|Для Steam версии: перезапусти Rain World. Если мод автоматически не обновился, переподпишись на него в Мастерской Steam для принудительной загрузки последней версии. 
+For Other Platforms: Visit our GitHub releases page to download the latest release.|Для других платформ: последние версии мода доступны на странице релизов на Github.  
+Updating won't affect your save data.|Обновление не затронет сохранения игры.
 
 ///Меню создания лобби
 CREATE!|СОЗДАТЬ!
+Create a new lobby|Создать новое лобби
 Mode:|Режим:
 Meadow|Meadow
 A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|Мирный режим, позволяющий исследовать окрестности и<LINE>открывать маленькие секреты, вместе или в одиночку.
 Story|История
 Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|Путешествуй вместе с друзьями по миру Rain World,<LINE>сражайтесь вместе и умирайте вместе.
 ArenaCompetitive|Арена
+Fight against unforgiving creatures and foes where only the strong survive.|Сражайся с неумолимыми созданиями и врагами,<LINE>где выживут только сильнейшие.
 Fight against unforgiving creatues and foes where only the strong survive.|Сражайся с неумолимыми созданиями и врагами,<LINE>где выживут только сильнейшие.
 Visibility:|Видимость:
-Public|Для всех
+Public|Публичная
 Friends Only|Для друзей
 Invite Only|По приглашению
+The Steam invite feature is currently unstable, and may not work properly. <LINE> Consider using a public lobby with a password instead.|Функция приглашений Steam на данный момент недоступна, и может работать неправильно. <LINE> Вместо этого советуем создать публичное лобби с паролем.
 Password|Пароль
 Lobby Password|Пароль лобби.
 Player max:|Игроки:
@@ -62,6 +110,8 @@ Maximum number of players that can be in the lobby (up to 32)|Максималь
 Creating lobby...|Создание лобби...
 Timeline:|Хронология:
 Spear|Мастер Копья
+Cheats:|Читы:
+If enabled, players will be allowed to use most Dev Tools cheats. Use with caution.|Если включено, игроки смогут использовать большинство читов Dev Tools. Используй с осторожностью.
 
 ///Создатели
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow — это уникальный многопользовательский движок для уникальной игры. Ничто другое не подошло бы. — Henpemaz
@@ -74,31 +124,48 @@ Programming, engine|Программирование, движок
 Programming, sound|Программирование, звук
 UI Design|Дизайн пользовательского интерфейса
 Programming, menus|Программирование, меню
-Programming, arena|Программирование, режим арены
-Programming, story|Программирование, режим истории
+Programming, arena|Программирование, арена
+Programming, story|Программирование, история
 Programming, modsync|Программирование, синхронизация модов
-Programming, story, arena|Программирование, режим истории и арены
+Programming, story, arena|Программирование, история и арена
 Programming, UI, chat|Программирование, пользовательский интерфейс, чат
 Illustration|Иллюстрации
 Programming, UI, menus|Программирование, пользовательский интерфейс, меню
-Programming, UI, story|Программирование, пользовательский интерфейс, режим истории
+Programming, UI, story|Программирование, пользовательский интерфейс, история
 Programming, UI, LAN|Программирование, пользовательский интерфейс, LAN
 Programming, gameplay|Программирование, игровой процесс
 Arena, story, UI|Арена, история, пользовательский интерфейс
-Programming, story, UI|Программирование, история, пользовательский интервейс
+Programming, story, UI|Программирование, история, пользовательский интерфейс
 Meadow, story|Meadow, история
 Thank you playtesters from the Rain Meadow discord as well.|Также спасибо тестировщикам с Discord сервера Rain Meadow.
 
 ///Ремикс
 Arena|Арена
-LAN|LAN
+LAN|Локальная сеть
 Gameplay|Игровой процесс
+General|Основное
+BACK|НАЗАД
+Chat|Чат
+Rain Timer:|Таймер дождя:
+Aggressive AI:|Агрессивный ИИ:
+Normal Rain World AI|Обычный ИИ Rain World
+Creatures are vicious and aggressive|Существа чрезвычайно агрессивны
+Wildlife:|Живность:
+Dev options|Настройки разработчика
 Note: These inputs are not used in Meadow mode|ВАЖНО: настройки ниже не влияют на режим Meadow.
 Show usernames|Показать имена игроков
 Username Toggle|Режим переключения имён
+Custom Chat Username Color|Пользовательский цвет имени игрока в чате
+Custom colors|Пользовательские цвета
+Enable Meadow Cosmetics|Включить косметику Meadow
+Toggle Show Score|Переключение показа счёта
+Countdown Safety Time (ticks)|Время безопасности отсчёта
+Arena Score Auto-Scroll|Автопрокрутка счёта в Арене
+How long the countdown will wait for everyone to join. Default : 300 ticks (7.5s)|На протяжении какого времени отсчёт будет ждать остальных. По умолчанию: 300 тиков (7,5сек)
 Replace holding with toggling|Заменить удержание на переключение.
 Key used for toggling spectator mode|Включить/выключить режим наблюдения
 Stop Inputs While Spectating|Отключить управление во время наблюдения
+Use simpler slugcat indicator icons above usernames|Более простые иконки слизнекотов над именами
 Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Можно изменить список разрешённых/запрещённых модов в твоем лобби.<LINE>Он находится в файлах ниже; прилагается инструкция на английском.
 Edit High-Impact Mods|Разрешённые моды
 Edit Banned Mods|Запрещённые моды
@@ -108,6 +175,8 @@ Chat Log Toggle|Открыть/закрыть окно чата
 Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
 Show Ping|Показать пинг
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists.|Управляйте модами, которые будут разрешены у клиентов, редактируя файлы снизу.<LINE>Инструкция прилагается. Когда файл белого листа не пуст, он заменяет два других листа.
+Edit Whitelist|Изменить белый лист
 Playtesting Gift|Подарок за тест
 Anniversary Gift|Подарок на годовщину
 Pointing Key|Клавиша указания лапой
@@ -116,7 +185,11 @@ Vanilla|Стандартный
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|DLC Downpour не включён, будет использовано стандартное вступление.
 Watcher DLC is not activated, vanilla intro will be used instead|DLC Watcher не включён, будет использовано стандартное вступление.
-Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: 10
+Player Menu Scroll Speed for Spectate, Story menu, Arena results. Default: <SCROLLSPEED>|Скорость прокрутки меню наблюдателя, меню истории, результатов арены. По умолчанию: <SCROLLSPEED>
+Text Downscroll|Спуск текста
+Clear On New Session|Чистка каждую сессию
+Death|Смерть
+System|Система
 Disable Pause Menu Animation|Отключить анимацию в меню паузы.
 If selected, disables the sway animation in the pause menu|Если этот параметр включен, отключает анимацию раскачивания в меню паузы.
 Input “cheats” to access cheats|Введи «cheats», чтобы получить доступ к читам.
@@ -134,13 +207,20 @@ Ready to shelter/gate|Готов для спячки/перехода
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Если выбрано, имена и значки всегда будут появляться на экране для<LINE>Слизнекотов в переходе или убежище.
 [Experimental Features]|[Экспериментальные функции]
 WARNING: Experimental features may cause data corruption, back up your saves|ВАЖНО: Возможно повреждение данных, рекомендуется сделать резервную копию сохранений 
-Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|Скорость пролистывания для наблюдения над игроками, меню Истории, результатов Арены. По умолчанию: 10
 Gain achievements online|Получать достижения в сетевой игре
 Streamer Mode|Режим стримера
+None|Нет
 Me|Я
 Everyone|Все
 Profanity Filter|Фильтр нецензурной лексики
 Sound on Mention|Звук при упоминании
+Sound On New Message|Звук при новом сообщении
+Death Notification|- Уведомление о смерти
+Session Notification|- Уведомление сессии
+Join Notification|- Уведомление о входе
+Round Notification|- Уведомление о раунде
+Enable Chat Logging Toggle|Переключ. логирования в чате
+Enable chat logging toggle (enabled by SHIFT + [CHAT KEY]) to display incoming errors in the chat.|Переключение логирования в чате (включается с помощью SHIFT + [CHAT KEY]) чтобы показывать входящие ошибки в чат."
 Chat Background Opacity|Прозрачность фона чата
 Chat Inactivity Opacity|Прозрачность неактивного чата
 Chat Inactivity Timer|Таймер неактивности чата
@@ -150,6 +230,26 @@ Steal items from other players in Story mode|Разрешить красть п�
 Username|Имя
 UDP timeout (ms)|Максимальное время ожидания (мс)
 UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (мс)
+Cape Color|Цвет плаща
+Cape Colors|Цвета плащей
+Cosmetic|Косметика
+Cosmetic Color|Цвет косметики
+Cosmetic Skin|Скин косметики
+Nightsky Skin|Скин ночного неба
+Gold|Золото
+Silver|Серебро
+Greedy|Жадный
+Flair|Стиль
+Enable Meadow Cosmetics|Включить косметику Meadow
+Log Level|Уровень записи логов
+Debug|Отладка
+Warn|Предупреждение
+Error|Ошибка
+Lobby Joining Timeout (seconds)|Тайм-аут входа в Лобби (сек)
+Lobby Joining Extra Info|Время ожидания входа в Лобби
+Global Mute|Глобальное отключение звука
+solid|солидный
+
 
 ///Игра
 
@@ -157,6 +257,11 @@ UDP heartbeat (ms)|Частота отправки Heartbeat-сигнала (м�
 Press '|Нажми «
 ' to chat, press '|», чтобы написать в чате, нажми «
 ' to toggle the chat log|», чтобы открыть окно чата.
+Mute player|Выключить звук игрока
+Unmute player|Включить звук игрока
+Kick player from lobby|Выгнать игрока из лобби
+Disabled Error Logging in chat.|Логирование ошибок в чате выключено.
+Enabled Error Logging in chat.|Логирование ошибок в чате включено.
 
 ///Присоединение/Отключение
 joined the game.|присоединился к игре.
@@ -185,16 +290,22 @@ Collision|Коллизия
 New character unlocked|Разблокировано новое существо
 New emote unlocked|Разблокирована новая эмоция
 New skin unlocked|Разблокирован новый скин
+UNLOCKS|РАЗБЛОКИРОВКИ
 
 ///Режим Истории
  - New Game| — Новая игра
+Unknonw Region|Неизвестный регион
 Current Campaign: |Текущая кампания: 
 Selected Slugcat|Выбор Слизнекота
 Slugpup|Слизнекотёнок
-Invite Friends|Пригласить друзей
-Friendly Fire|Друж. огонь
-Require Campaign Slugcat|Отключить выбор Кота
-Sync Save|Скоп. сохр.
+Invite Friends|Пригласить
+Invite friends|Пригласить друзей
+Friendly Fire|Огонь по своим
+Require Campaign Slugcat|Отключить<LINE>выбор слизнекота
+Sync Save|Синхр. сохр.
+Wait for others to shelter or rescue you or press |Подождите пока остальные заснут, либо спасут вас, или же нажмите 
+ to spectate| чтобы наблюдать
+Restart game|Перезапустить кампанию
 PLAYERS|ИГРОКИ
 Press again to ban player!|Нажми ещё раз, чтобы забанить игрока!
 Wait for others to shelter or rescue you, press |Жди, пока другие не переживут цикл или спасут тебя, нажми «
@@ -204,7 +315,7 @@ Press on the button to open/close the slugcat selection list|Нажми на к�
 
 ///Режим Арены
 ME|Я
-Got All<LINE>ScugSlots!!|Получил все<LINE>СлизнеСлоты!
+Got All<LINE>ScugSlots!!|Получил все<LINE>СлизнеСлоты!!
 Joining<LINE>soon!|Скоро<LINE>присоединится!
 Ready!|Готов!
 Selecting<LINE>Slugcat|Выбирает<LINE>Слизнекота
@@ -217,6 +328,8 @@ FORCE READY|ГРУППА ГОТОВА
 LOBBY WILL LOCK|ЗАКРЫТЬ ЛОББИ
 GAME IN SESSION|ИГРА В ПРОЦЕССЕ
 READY?|ГОТОВ?
+Player vs player deathmatch|Бой насмерть, игрок против игрока
+Players: <num_p>|Игроки: <num_p>
 Waiting for others...|Ждём других...
 Waiting for host...|Ждём хоста...
 Welcome to Arena Online!<LINE>All players must ready up to begin.|Добро пожаловать на арену!<LINE>Все игроки должны быть готовы, чтобы начать игру.
@@ -252,15 +365,25 @@ Click to open <TABNAME> tab|Нажми, чтобы открыть вкладку
 Arena Playlist|Список арен
 Search for levels|Искать арены
 Search levels|Поиск арен
+Clear playlist|Очистить плейлист
+Kill & survive to buy your escape<LINE><LINE>Turn off Spear Hits for Co-Op|Выживай и убивай, чтобы заработать свой побег<LINE><LINE>Выключи "Удары Копьями" для кооперативной игры
 Match Settings|Настройки матча
+Overseers Show:|Наблюдатели:
+Overseer Spectators spawn in-game|Зрители появляются как Наблюдатели
+Overseer Spectators do not spawn in-game|Зрители не появляются как Наблюдатели
 Repeat Rooms:|Повторение:
+Spears Hit:|Удары копьями:
 Item Stealing|Воровство предметов:
+No rain|Без дождя
+Allow Item Stealing:|Разрешить воровство предметов:
 Players can steal items from each other|Игроки могут воровать у друг друга
 Players cannot steal items from each other|Игроки не могут воровать у друг друга
-Join In Progress|Вход всегда:
+Join In Progress|Вход посреди игры:
+Allow Mid-Game Join:|Разрешить вход всегда:
 Players can join each round|Игроки могут присоединяться каждый раунд
 Players can only join at the first round|Игроки могут присоединиться только на первом раунде
 Better Hitbox|Лучше хитбокс:
+Better Hitbox:|Лучше хитбокс:
 Piggybacking|Переноска игроков:
 Players cannot piggyback each other|Игроки не могут залезать друг другу на спину
 Players can piggyback each other|Игроки могут залезать друг другу на спину
@@ -268,9 +391,12 @@ Bombs|Спавн бомб:
 Scavenger bombs follow vanilla spawn behavior|Бомбы мусорщиков используют стандартные условия для спавна
 No scavenger bombs spawn|Бомбы мусорщиков не будут спавниться
 Bees|Спавн ульев:
+bee hives and scavenger bombs are disabled|ульи и бомбы мусорщиков выключены
 Bee hives follow vanilla spawn behavior|Ульи используют стандартные условия для спавна
+Bee hives and scavenger bombs follow vanilla spawn behavior|Ульи и бомбы мусорщиков используют стандартные условия для спавна
 No beehives spawn|Ульи не не будут спавниться
-Corpse grab|Носка трупов:
+Corpse grab|Переноска трупов:
+Corpes grab|Носка трупов:
 Players can grab dead players|Игроки могут таскать мёртвых игроков
 Players cannot grab dead players|Игроки не могут таскать мёртвых игроков
 Thrown weapons are corrected to prevent no-clips|Брошенные оружия исправлены чтобы предотвратить клипы
@@ -279,6 +405,7 @@ Countdown Timer:|Таймер отсчёта:
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Длительность обратного отсчёта в начале раунда. По умолчанию: 5 сек.
 Arena Game Mode:|Игровой режим арены:
 The game mode for this match|Игровой режим для этого матча
+This game mode doesnt have any info to give|У этого игрового режима нет информации о себе
 Showing players in thumbnail view|Отображение игроков в виде миниатюр
 Showing players in list view|Отображение игроков в виде списка
 Current Mode:|Текущий режим:
@@ -289,9 +416,12 @@ Team Battle|Командная битва
 Choose a faction. Last team standing wins.|Выбери фракцию. Оставшаяся команда побеждает
 Join Team "<TEAMNAME>"|Присоединиться к команде «<TEAMNAME>»
 POST-GAME STATS|СТАТИСТИКА ПРОШЛОГО МАТЧА
+View post-Game Stats|Посмотреть статистику прошлого матча
 WINS|ПОБЕД
 KILLS|УБИЙСТВ
 DEATHS|СМЕРТЕЙ
+SCORE|СЧЁТ
+STATS|СТАТИСТИКА
 WAIT FOR OTHERS|ЖДИ ДРУГИХ
 FORCE READY|ГРУППА ГОТОВА
 LOBBY WILL LOCK|ЗАКРЫТЬ ЛОББИ
@@ -302,14 +432,24 @@ UNREADY|НЕ ГОТОВ
 WAITING|ЖДЁМ
 Slugcat Abilities|Балансирование
 Select Settings|Разделы настроек
+Vanilla Settings|Стандартные настройки
 MSC Settings|Настройки MSC
 Watcher Settings|Настройки Созерцателя
 Go to <SETTINGSNAME> Page|Перейти на страницу «<SETTINGSNAME>»
 Return to Select Settings Page|Вернуться на страницу «Разделы настроек»
+Monk Spawns With Fruit:|Монах спавниться с фруктом:
+Monk starts each arena round holding a dangle fruit|Монах начинает каждый раунд арены с синим фруктом в руках
+Camo|Камуфляж
+Weaver|Ткач
+Voidkeeper|Хранитель пустоты
 Watcher Camo Duration:|Длительность камуфляжа Созерцателя:
 How long Watcher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
+How long Wacher's abilities last for. Default: 12s|Длительность способности Созерцателя. По умолчанию: 12 сек.
 Watcher Ripple Level:|Уровень ряби Созерцателя:
 Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|Обновляет уровень ряби Созерцателя. Диапазон от 1 до 9. По умолчанию: 1
+Watcher will be fully invisible to everyone when in ripple space|Созерцатель будет полностью невидим для всех пока он в Пространстве Ряби 
+Watcher will leave a faint glow at their position when in ripple space. Other Watchers will also be able to see their eyes.|Созерцатель будет оставлять за собой слабое свечение когда он в Пространстве Ряби. Другие Созерцатели также смогут видеть их глаза.
+Full Invisibility In Ripple Space:|Полная невидимость в Пространстве Ряби:
 Weaver Watcher:|Созерцатель-ткач
 Your watcher has synced weaver cosmetics|Твой Созерцатель будет выглядеть как после встречи Ткача
 Your watcher has synced normal cosmetics|Твой Соцерцатель будет выглядеть как обычно
@@ -319,15 +459,24 @@ Amoeba summoning is disabled lobby-wide|Призывание амёб выклю
 Voidkeeper Amoeba Duration:|Длительность амёбы Хранителя Пустоты:
 Amoeba duration time in seconds|Длительность амёбы в секундах:
 Void's Vengeance:|Месть пустоты:
+Amoeba Lethality Factor:|Фактор летальности амёб:
+Multiplier for amoeba lethality|Множитель летальности амёб
 Amoeba's direction is influenced by pointing|Направление амёбы зависит от указания лапой
 Amoebas chase targets at-will|Амёбы сами преследуют цели
-Disable Mauling:|Отключить Укус:
+How many explosions Artificer can use before cooldown|Сколько взрывов может использовать Техник до перезарядки?
+Artificer Stun Range Multiplier|Множитель расстояния оглушения Техником:
+Multiplier on how far Artificer can stun other players compared to vanilla range. Default: 0.5|Как далеко Техник может оглушать других игроков по сравнению со стандартным радиусом? По умолчанию: 0.5
+Artificer Parry Range Multiplier|Множитель расстояния отражений Техником:
+How far Artificer can parry from compared to vanilla range. Default: 0.3|Как далеко Техник может отражать копья по сравнению со стандартным радиусом? По умолчанию: 0.3
+Disable Artificer Stun:|Отключить оглушение Техника:
+Prevent Artificer from stunning other players|Запретить Технику оглушать других игроков
+Artificer Parry Leniency:|Более надёжное парирование Техника:
+Gives Artificer more leniency frames in the concussive blast's parry|Даёт больше времени Технику для парирования копья с помощью Оглушающего Взрыва
+Disable Mauling:|Отключить укус:
 Prevent Artificer and <PAINCATNAME> from mauling|Предотвратить укусы Техника и <PAINCATNAME>
-Disable Artificer Stun:|Отключить Оглушение Техника:
-Prevent Artificer from stunning other players|Предотвратить Техника от оглушения других игроков
 Sain't:|Несвятой:
 Disable Saint ascendance ability, but allow it to throw spears|Отключить способность вознесения Святого, но разрешить ему кидать копья 
-Saint Ascendance Duration:|Длительность Вознесения Святого:
+Saint Ascendance Duration:|Длительность вознесения Святого:
 How long Saint's ascendance ability lasts for. Default: 3s|Длительность способности вознесения Святого. По умолчанию: 3 сек.
 <PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> получает яйцо на 0 навыке броска:
 If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Если <PAINCATNAME> появляется с 0 навыком броска, он также появляется с Яйцен0лём
@@ -339,43 +488,105 @@ Team Settings|Настройки команд
 TEAM|КОМАНДА
 Team Lerp Color:|Сила цвета команды:
 How much do you want team color to show on players? From 0 to 1|Как сильно влияет цвет команды на цвет игроков? От 0 до 1
-You cant color without Remix on!|Без включенного Remix красить нельзя!
+You cant color without Remix on!|Нельзя менять цвет без включенного Remix!
 Waiting|Ожидание
 Prepare for combat,|Приготовься к бою,
 Prepare for war,|Приготовься к войне,
+Survive,|Выживи,
+Starting match in|Матч начнётся через
 <TEAMNAME> WIN!|«<TEAMNAME>» ПОБЕДИЛИ!
+<TEAMNAME> WINS!|«<TEAMNAME>» ПОБЕЖДАЕТ!
+<USERNAME> WINS!|<USERNAME> ПОБЕЖДАЕТ!
+SESSION RESULTS|РЕЗУЛЬТАТЫ СЕССИИ
+SESSION ENDED!|СЕССИЯ ОКОНЧЕНА!
+IT'S A DRAW!|НИЧЬЯ!
 TO LOBBY|В ЛОББИ
-View Post-Game Stats|Посмотреть послематчевую статистику
-View Current Mode Info|Посмотреть информацию о текущем режиме
-Customize your colors|Настроить свои цвета
+View Post-Game Stats|Посмотреть послематчевую статистику.
+View Current Mode Info|Посмотреть информацию о текущем режиме.
+Customize your colors|Настроить свои цвета.
 Go to Slugcat Selection Page|Перейти к выбору Слизнекота
-This user is the lobby host|Этот пользователь является владельцем лобби
-Overseer:|Наблюдатель:
-Overseer Spectator spawn|Появление наблюдателей как зрителей
-No overseers|Без наблюдателей
+This user is the lobby host|Этот пользователь является владельцем лобби.
+Overseers Show:|Наблюдатели:
+Overseer Spectators spawn in-game|Появление зрителей как Наблюдателей в игре 
+Overseer Spectator do not spawn in-game|Зрители не появляются как Наблюдатели в игре
 Challenge|Испытание
-Pit yourself against a series of challenges|Испытайте себя пройдя ряд испытаний
+Pit yourself against a series of challenges|Испытайте себя, пройдя ряд испытаний.
 Arena Settings|Настройки арены
 Challenge Settings|Настройки испытаний
 Challenge ID|ID Испытания
+Scoring|Подсчёт Очков
+Dens|Убежища
+Import & Export|Импорт и Экспорт
+Copy the match settings to your clipboard|Скопировать настройки матча в буфер обмена
+Load match settings from your clipboard|Загрузить настройки матча из буфера обмена
+Copy the level playlist to your clipboard|Скопировать плейлист арен в буфер обмена
+Load a level playlist from your clipboard|Загрузить плейлист арен из буфера обмена
+Food Score:|Счёт еды:
+Food points multiplier|Множитель очков за еду.
+Spear Hit Score:|Счёт попаданий:
+Points a spear is worth (non-lethal)|Количество очков за попадание копьём (нелетальным).
 Kill Score:|Счёт убийств:
-Points a kill is worth|Баллов за убийство
-Survival Score|Счёт выживаний:
-Points for surviving inside the shelter|Баллов за выживание
-Den Score:|Счёт для спячки:
-Points required to open dens|Баллов для открытия убежища
+Points a kill is worth|Количество очков за убийство.
+Survival Score:|Счёт выживаний:
+Points for surviving inside the shelter|Количество очков за выживание.
+Empty Death Score:|Счёт без убийц:
+Points lost from self-inflicted death|Количество очков которые отнимаются за смерть по собственной вине
+Unlock Dens:|Счёт для спячки:
+Points required to unlock dens|Количество очков, требуемых для открытия убежища.
 Den Entry:|Вход в убежище:
-Den entry behavior|Поведение входа в убежище
-Score|По счёту
+Den entry behavior|Поведение входа в убежище.
+Den Ejection:|Выталкивание:
+Dens eject and block players after some time|Убежища выталкивают и блокируют игроков спустя время.
+Normal den behavior|Стандартное поведение убежищ.
+RESTART|ПЕРЕЗАПУСТИТЬ
+Remove level from playlist|Удалить уровень из плейлиста
+Playlist:|Плейлист:
+Copy playlist to clipboard|Скопировать плейлист
+Import playlist from clipboard|Импортировать плейлист
+Settings:|Настройки:
+Copy|Скопировать
+Copied|Скопировано
+Imported|Импортировано
+Failed|Не удалось
+Import|Импортировать
+Failed import|Импортирование не удалось
+Score|По очкам
 Standard|Стандартное
 Always|Всегда
+Friendly Fire:|Огонь по своим:
+RESET|СБРОСИТЬ
+Drown Settings|Настройки Drown
+Store keybind|Кнопка для магазина
+Points required to buy a ... rock?|Количество очков для покупки... камня?
+Points required to buy a spear|Количество очков для покупки копья
+Points required to buy an explosive spear|Количество очков для покупки взрывного копья
+Points required to buy a scav bomb|Количество очков для покупки бомбы мусорщиков
+[MSC]: Points required to buy an electric spear|[MSC]: Количество очков для покупки электрического копья
+[Watcher]: Points required to buy a boomerang|[Созерцатель]: Количество очков для покупки бумеранга
+Points required to buy a respawn|Очков для покупки возрождения
+Points required to open dens|Очков для открытия убежищ
+How many waves before creature cleanup|Количество волн до очистки существ
+Max creatures in level|Максимальное количество существ в уровне
+STORE|МАГАЗИН
+Rock|Камень
+Electric Spear|Электр. копьё
+Boomerang|Бумеранг
+Respawn|Возрождение
+Open Dens|Открыть убеж.
+LOADING|ЗАГРУЗКА
+LOADING...|ЗАГРУЗКА...
+LOADING :|ЗАГРУЗКА :
+Cheats are disabled in this lobby.|Читы отключены в этом лобби.
+
 
 ///Выбор персонажа в Арене
 Back To Lobby|Назад в лобби
-Go back to main lobby|Вернуться назад в лобби
+Go back to main lobby|Вернуться назад в лобби.
+Playlist: |Плейлист: 
+Players will rotate through all slugcats|Игроки будут поочерёдно играть за всех слизнекотов
 CHOOSE YOUR CHARACTER|ВЫБЕРИ СВОЕГО ПЕРСОНАЖА
-Press grab to toggle active slugcats|Нажми «Взять», чтобы переключить активных Слизнекотов
-You have been unreadied. Switch back to re-ready yourself automatically|Вы перестали быть готовыми. Переключитесь обратно, чтобы сразу стать готовым снова.
+You aren't allowed to play as this slugcat|Вам нельзя играть за этого слизнекота
+You have been unreadied. Switch back to re-ready yourself automatically|Ты перестал быть готовым. Переключись обратно, чтобы снова стать готовым.
 The match is starting in <COUNTDOWN>! Ready up!!|Матч начнётся через <COUNTDOWN>! Приготовься!!
 THE NIGHTCAT|НОЧНОЙ КОТ
 THE FARTIFICER|ПЕРДЁЖНИК
@@ -385,18 +596,38 @@ THE UNKNOWN|НЕИЗВЕСТНЫЙ
 Unknown|Неизвестный
 THE OVERSEER|НАБЛЮДАТЕЛЬ
 Observe without peril|Наблюдайте без риска
-Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Твои враги окружают тебя, но это не будет как в первый раз.<LINE>Хватай свои копье и камень.
+///Выживший
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Твои враги окружают тебя, но это не будет как в первый раз.<LINE>Хватай свои копьё и камень.
+///Монах
 Remember: they struck first, so you'll need to hit back harder.|Помни: они напали первыми. Ответь им ещё сильнее.
+///Охотник
 Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Страдающий с самого начала и боец до конца.<LINE>Покажи им, что такое страдание.
 Observe all weakness - then strike while cloaked in shadows.|Наблюдай за всеми слабостями, а затем наноси удар, скрываясь в тени.
+///Гурман
 Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Твоя история с неожиданными поворотами почти завершена.<LINE>Выполни это последнее задание.
+///Техник
 An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|Взрывной характер и непревзойденная ярость.<LINE>Исполни месть зубами и бомбами.
+///Мастер копья
 A gnawing hunger grows inside you. Feed it with spears.|Внутри тебя растет грызущий голод. Насыти его копьями.
 In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|В мире, лишённом смысла, возможно, ты наконец-то нашел свой.<LINE>Действуй быстро, чтобы не упустить его.
-The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|Копье — слабый сосуд. Формируй мир<LINE>по отпечаткам своего разума.
+///Святой
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|Копьё — слабый сосуд. Формируй мир<LINE>по отпечаткам своего разума.
 The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|Разум — слабый сосуд. Продемонстрируй свое мастерство<LINE>с помощью копья в твоей руке. 
+///Слизнекотёнок
 Desperate. Fearful. Violent.|Отчаянный. Боязливый. Жестокий.
+
+
+///Созерцатель
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Открыто: Голоса. Выбор. Бремя.<LINE>Закрыто: Шепот. Конвергенция. Утопление.<LINE>Открыто: Эхо. Ясность. Невесомость.
+With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.|Поскольку привязанности больше нет, единственным вариантом остаётся уход.<LINE>Прячься и бей осторожно, пока и это не забрали.
+My little shadow, show them your peeping eyes!|Моя маленькая тень, покажи им свои любопытные глазки!
+Abandoned, separated from your kin, bound by your fate.<LINE>You've hidden, walked places no others have.<LINE>But now is the time to come out and fight.|Покинутый, оторванный от своих сородичей, связанный своей судьбой.<LINE>Ты прятался, ходил там, где не бывал никто другой.<LINE>Но теперь пришло время выйти и сразиться.
+A failed warp has brought you here.<LINE>You must now fight for your life<LINE>With no difference between friend and foe.|Неудачный варп-прыжок привёл тебя сюда.<LINE>Теперь тебе предстоит сражаться за свою жизнь, не различая друзей и врагов.
+Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?|Далеко-далеко, затерянный среди волн. Будешь плыть по течению или против него?
+Shattered by destiny, exiled to the unknown.<LINE>Step out of your ripple to find answers.<LINE>No matter the cost.|Разбитый судьбой, изгнанный в неизвестность.<LINE>Выйди из своей ряби, чтобы найти ответы.<LINE>Чего бы это ни стоило.
 You have bore witness to unforeseen catastrophes<LINE>Watched as the world crumbles around you<LINE>You have stood in the shadows long enough.|Ты был свидетелем непредвиденных катастроф<LINE>Наблюдал, как мир рушится вокруг тебя<LINE>Ты достаточно долго стоял в тенях.
+CONSIDER:<LINE>A ripple in silent waters,<LINE>an echo of fear,<LINE>a cycle of violence.|ПОДУМАЙ:<LINE>Рябь на спокойной воде,<LINE>отголосок страха,<LINE>порочный круг насилия.
+Oh, before you go... a gift.<LINE>Perhaps we are not so different after all.|О, прежде чем ты уйдёшь... подарок.<LINE>Возможно, мы не так уж сильно отличаемся.
 Am I Warrior from the past, or a Messiah from the future?|Я воин из прошлого или мессия из будущего?
 Am I Cat Searching for many, or a Mouse searching for one?|Я кошка, ищущая многих, или мышь, ищущая одного?
 <LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>Я обреченный самаритянин или аномалия, пересекающая время и пространство?
@@ -439,14 +670,15 @@ bleh|блех
 inv? like invalidunits?|inv? типа как invalidunits?
 
 // Слизнеслоты
-Press and hold something on screen to spin the slots / Hope you brought green|Зажми кое-что, чтобы крутить слоты / Надеюсь, бумажки у тебя с собой
-One, two three of a kind / Somewhere on this page you will find|Один, два, их всего три / На этой странице ты сможешь найти
-A joke started from the Meadow Discord / Makes all players broke, and none can afford|Началась шутка в Meadow Discord / По банкротству побит был рекорд
+Press and hold something on screen to spin the slots / Hope you brought green|Зажми кое-что, чтобы крутить слоты / Надеюсь, бумажки у тебя с собой.
+One, two three of a kind / Somewhere on this page you will find|Один, два, их всего три / На этой странице ты сможешь найти.
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|Началась шутка в Meadow Discord / По банкротству побит был рекорд.
 SCUGSLOTS|СЛИЗНЕСЛОТЫ
+SlugSlots<LINE>Winner!!|Победитель<LINE>Слизнеслотов!!
 LET'S ROLL!|КРУТАНЁМ!
 Oops, better luck next time!|Упс, в следующий раз точно повезёт!
 Try your luck again!|Попытай удачу снова!
-99% of gamblers quit before they win big|99% игроков сдаются до того как срывают куш
+99% of gamblers quit before they win big|99% игроков сдаются до того, как срывают куш!
 So Close! Keep trying!|Так близко! Продолжай крутить!
 Almost there!|Уже почти!
 Congratulations! You have achieved the ultimate gamble skill!!!|Поздравляем! Ты достиг максимального уровня азарта!!!
@@ -520,16 +752,24 @@ New character!|Новое существо!
 ///Предсмертные послания
 died.|умер.
 was crushed by the rain.|был раздавлен дождём.
+was consumed by the swarm.|был поглащён роем.
 fell into the abyss.|упал в бездну.
-was drowned by|был утоплен существом
+fell into the abyss thanks to|упал в бездну благодаря
+was ambushed by a|попал в засаду которую устроил
+was drowned by|был утоплен
+was drowned by a|был утоплен существом
 drowned.|утонул.
+asphyxiated.|задохнулся.
 hit the ground too hard.|слишком сильно врезался в землю.
+hit the ground too hard thanks to|слишком сильно врезался в землю благодаря
 was killed through unknown means.|был убит неведомым методом.
-tried to swim in burning liquid.|пытался плавать в обжигающей жидкости.
+tried to swim in burning liquid.|попытался поплавать в обжигающей жидкости.
+tried to swim in burning liquid to escape|попытался поплавать в обжигающей жидкости избегая
 spontaneously combusted.|внезапно взорвался.
 froze to death.|замёрз до смерти.
 was swallowed by the grass.|был поглощён травой.
 was swallowed by the walls.|был поглощён стеной.
+was swallowed by the walls thanks to|был поглощён стеной благодаря
 was electrocuted.|был поражён электрическим током.
 licked the power.|лизнул источник питания.
 was consummed by the swarm.|был поглощён роем.
@@ -540,13 +780,17 @@ was struck by lightning.|был поражён молнией.
 was consumed by locusts.|был съеден саранчой.
 swam with the ripples.|плыл вместе с рябью.
 experienced the force of fresh fruit.|прочувствовал силу свежих фруктов.
-was burnt to a crisp.|был поджарен до хрустящей косточки.
-was slain by|был(-а) повержен(-а)
-was ascended by|был(-а) вознесён(-а)
+was burnt to a crisp.|сгорел дотла.
+was slain by|был повержен
+was ascended by|был вознесён
+was blown up by|был взорван
 was zapped by a|был поражён существом
 was taken by a|был захвачен существом
-was taken into the abyss by|был(-а) унесен(-а) в бездну
+was taken into the abyss thanks to|был унесен в бездну благодаря
+was taken into the abyss by|был унесен в бездну
 was slain by a|был убит существом
+blew up.|взорвался.
+blew up thanks to|взорвался благодаря
 
 ///Имена существ для сообщений о смерти
 Pink Lizard|Розовый Ящер
@@ -641,19 +885,15 @@ This address is possibly not local to your current network.|Скорее все�
 If so, This is very unstable and will most likely NOT work|В таком случае, соединение будет нестабильным или вообще НЕ будет работать.
 Are you SURE you know what you're doing?|Ты ТОЧНО уверен в своих действиях?
 
-///LAN Менеджер
-LAN Lobby|LAN Лобби
+///Менеджер Локальной сети
+LAN Lobby|Лобби локальной сети
 Nobody|Никого
 Your network interface(s) are|Список твоих сетевых адресов:
 <NAME> network interface is |Сетевой адрес у <NAME>:
-You are |Ты 
-This player is |Он 
-the owner of the lobby.|владелец лобби.
-Players can “Direct Connect” to this lobby through |Другие должны ввести 
-your|твой адрес из сети с ними
-their|его адрес из сети между ними
- interface(s).| через «Прямое подключение».
- player index is | индекс игрока 
+You are the owner of the lobby.|Ты - владелец лобби.
+This player is the owner of the lobby.|Этот игрок - владелец лобби.
+Players can “Direct Connect” to this lobby through your interface(s).|Другие игроки должны ввести твой адрес из вашей сети через «Прямое подключение».
+Players can “Direct Connect” to this lobby through their interface(s).|Другие игроки должны ввести его адрес из вашей сети через «Прямое подключение».
 You cannot use this feature here.|Ты не можешь использовать эту функцию здесь.
 
 ///Модификатор
@@ -664,13 +904,14 @@ Mod Mismatch!|Несоответствие модов!
 Mods that have to be enabled: |Моды, которые надо включить: 
 Mods that have to be disabled: |Моды, которые надо отключить: 
 Mods that have to be installed: |Моды, которые надо загрузить: 
-Apply these changes now?<LINE>A restart may take place to sync game objects|Принять изменения прямо сейчас?<LINE>Потребуется перезапуск для синхронизации объектов в игре.
+Apply these changes now?<LINE>A restart may take place to sync game objects|Принять изменения прямо сейчас?<LINE>Может потребоваться перезапуск для синхронизации объектов в игре.
 Apply these changes now?|Принять изменения прямо сейчас?
+A restart may take place to sync game objects|Может потребоваться перезапуск для синхронизации объектов в игре.
 Warning: Differing Mod Load Orders!|Внимание: отличающийся порядок загрузки модов!
 This may cause unstable play.|Это может привести к нестабильной игре.
 Reorder your mods now?|Изменить порядок модов прямо сейчас?
 Cannot join due to missing DLC!|Не удаётся присоединиться из-за отсутствующего(-их) DLC!
-Missing DLC Mods that have to be enabled: |Отсутствующие DLC-моды, которые надо включить:
+Missing DLC Mods that have to be enabled: |Отсутствующие DLC-моды, которые надо включить: 
 
 ///Разное
 Players|Игроки
@@ -681,26 +922,39 @@ This player does not have a profile.|У этого игрока нет проф�
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam в данный момент недоступен.<LINE>Некоторые функции Rain Meadow были отключены.
 Meadow failed to start|Meadow не смог запуститься.
 Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: просьба использовать отдельный мод для доступа к кампании Inv.
+mod_menu_apply_mods|Применяю изменения в модах, пожалуйста подождите...
+cancel|отмена
+CANCEL|ОТМЕНА
+ok|окей
+OK|ОКЕЙ
+Restore Default|Восстановить
+SAT|НАСЫЩ.
+LIT|ЯРК.
+HUE|ЦВЕТ
+PLAYER|ИГРОК
+Press any button to continue|Нажмите любую кнопку чтобы продолжить
+Eating contest|Соревнование по поеданию
+number|номер
 
 //События
 Rain Meadow Anniversary|Годовщина Rain Meadow
 April Fool's!|Первое апреля!
 COINS:|МОНЕТ:
 YOU ARE POOR|ТЫ НИЩИЙ
-You need more Meadow Coins to play this game|Вам нужно больше Meadow Монет чтобы сыграть в эту игру
+You need more Meadow Coins to play this game|Вам нужно больше Meadow Монет, чтобы сыграть в эту игру
 Game Over! Try again?|Игра окончена! Попробовать ещё раз?
 What's the secret password?|Какой секретный пароль?
-I heard they were removing capes|Я слышал они удаляют плащи
-That crash was probably your fault|Тот вылет скорее всего был из-за тебя
+I heard they were removing capes|Есть слухи, что они уберут плащи
+That crash was probably your fault|Тот вылет, скорее всего, случился из-за тебя
 Rain Meadow definitely failed to start|Rain Meadow определённо не смог запуститься
 Rain Meadow servers will go offline soon for maintenance|Сервера Rain Meadow скоро отключатся для технического обслуживания
 Would you like to erase all save progress?|Хотите ли вы удалить весь прогресс сохранений?
-Take ¤10 Meadow Coins|Получите ¤10 Meadow Монет
+Take ¤10 Meadow Coins|Получите ¤10 Meadow монет
 Coins remaining:|Монет осталось:
 wawa|wawa
 Good.|Хорошо.
-It was.|Он был.
-Please work|Пожалуйста работай
+It was.|Это точно.
+Please work|Пожалуйста, работай
 Ok|Ок
 Yep|Угу
 Special event:|Особое событие: 
@@ -711,8 +965,11 @@ Explosive Spear|Взрывное Копьё
 Scavenger Bomb|Бомба Мусорщиков
 Joke Rifle|Винтовка Шуток
 Meadow Coin|Meadow Монета
-Silver Cape|Серебряный Плащ
-Golden Cape|Золотой Плащ
 Rainbow Cape|Радужный плащ
-Cape Colors|Цвета Плащей
+Silver|Серебряный
+Gold|Золотой
+Days remaining|Осталось дней
+Special event|Специальное событие
 Event Gags:|Приколы по событию:
+Anniversary Gags:|Приколы на годовщину:
+You just won 1,000 Meadow coins!!|Ты только что сорвал куш в размере 1,000 Meadow монет!!

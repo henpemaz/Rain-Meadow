@@ -30,11 +30,13 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
+            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
             On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
+            On.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_GetDataFromGame;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
             On.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor;
             IL.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor_ClientDontFilterRegions;
@@ -199,15 +201,25 @@ namespace RainMeadow
             orig(game, roomName, saveWorldStates);
             if (RainMeadow.isStoryMode(out var story))
             {
+                // Whoever we are, this is now OUR den. The client used to skip this, so SaveStateHandler
+                // put the stale myLastDenPos straight back over the forced location 
+                story.myLastDenPos = roomName;
+                story.denForcedThisCycle = true;
 
-                if (!OnlineManager.lobby.isOwner)
+                if (story.applyingRemoteDenLocation) return;
+
+                if (OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
+                    story.defaultDenPos = roomName;
+                    // A forced relocation (echo, warp save) moves everyone, so it has to reach everyone.
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates);
+                    }
                 }
                 else
                 {
-                    story.myLastDenPos = roomName;
-
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates);
                 }
             }
         }
@@ -239,8 +251,8 @@ namespace RainMeadow
                     }
                 }
                 bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
-                if (!OnlineManager.lobby.isOwner || !readyForWarp)
-                { // clients cant activate or update warp points unless it is an echo
+                if (!readyForWarp) //||!OnlineManager.lobby.isOwner // 04-24-2026: Removed this so that clients correctly get added to rooms
+                {
                     self.triggerTime = 0;
                     self.lastTriggerTime = 0;
                 }
@@ -420,41 +432,52 @@ namespace RainMeadow
             }
         }
 
-        // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
+
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
-            orig(room);
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) { orig(room); return; }
+            if (room.game.session is not StoryGameSession storySession)
             {
-                var vector = new UnityEngine.Vector2(
-                    room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel,
-                    room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel
-                );
-                if (OnlineManager.lobby.isOwner)
-                {
-                    story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
-                }
+                Error("echo raised ripple level outside of a story session?");
+                orig(room);
+                return;
+            }
 
-                bool hostIsDead = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value)
-                    .Any(playerAvatar =>
-                        playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none && // is in game
-                        playerAvatar.FindEntity(true) is OnlinePhysicalObject opo &&
-                        opo.owner == OnlineManager.lobby.owner &&
-                        opo.apo is AbstractCreature ac &&
-                        (ac.realizedObject is null || ac.realizedCreature.dead));
+            int spinningTopID = StoryHelpers.ResolveSpinningTopID(room);
+            if (spinningTopID != -1 && story.spinningTopEncounters.Contains(spinningTopID))
+            {
+                Debug($"skipping duplicate ripple raise for spinning top {spinningTopID}");
+                StoryRPCs.ApplyRippleLevelToSaveState(storySession,
+                    new UnityEngine.Vector2(story.minimumRippleLevel, story.maximumRippleLevel));
+                return; // block orig
+            }
 
-
-                if (!OnlineManager.lobby.isOwner && hostIsDead && story.rippleLevel < vector.y)
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
-                }
+            if (spinningTopID != -1)
+            {
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
-                    if (!player.isMe)
-                    {
-                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
-                    }
+                    if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, story.campaignGeneration, spinningTopID);
                 }
+            }
+            else
+            {
+                Error("could not resolve spinning top id for ripple raise; skipping duplicate-encounter dedupe and echo bookkeeping for this raise");
+            }
+
+            DeathPersistentSaveData d = storySession.saveState.deathPersistentSaveData;
+
+            orig(room);
+
+            Vector2 vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                StoryRPCs.DetermineRippleRaise(story, spinningTopID, vector, trustVector: true);
+            }
+            else if (story.maximumRippleLevel < vector.y) // max vs max, not current vs max — see 06
+            {
+                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevelRequest, spinningTopID, vector);
             }
         }
 
@@ -1366,8 +1389,12 @@ namespace RainMeadow
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
 
-                if (MatchmakingManager.currentInstance.canSendChatMessages)
-                    self.AddPart(new ChatHud(self, cam));
+                if (MatchmakingManager.currentInstance.canSendChatMessages
+                    && RMOverlayHUDMenu.TryGetOverlay(out var overlayHUD))
+                {
+                    if (overlayHUD.chatHud is null) overlayHUD.AddChatHUD(cam);
+                    else overlayHUD.SetNewChatHUDCamera(cam);
+                }
             }
         }
         private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self)
@@ -1569,6 +1596,16 @@ namespace RainMeadow
             orig(self, buttonBlack);
         }
 
+        // never, ever have a reason to force grey our buttons. We need those to move on
+        private void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, Menu.SleepAndDeathScreen self, Menu.KarmaLadderScreen.SleepDeathScreenDataPackage package)
+        {
+            orig(self, package);
+            if (isStoryMode(out _) && self.RippleLadderMode)
+            {
+                self.forceWatchAnimation = false;
+            }
+        }
+
         private void CustomEndGameScreen_GetDataFromSleepScreen(On.Menu.CustomEndGameScreen.orig_GetDataFromSleepScreen orig, Menu.CustomEndGameScreen self, WinState.EndgameID endGameID)
         {
             if (isStoryMode(out _) && OnlineManager.lobby.isOwner)
@@ -1763,6 +1800,17 @@ namespace RainMeadow
             return null;
         }
 
+        private static SaveState ApplyClientSaveState(SaveState host, SaveState client)
+        {
+            // Loading host on-top of client causes duplication of some fields, so let's target exact fields
+            host.deathPersistentSaveData.tutorialMessages = client.deathPersistentSaveData.tutorialMessages;
+            host.deathPersistentSaveData.songsPlayRecords = client.deathPersistentSaveData.songsPlayRecords;
+            host.deathPersistentSaveData.karmaFlowerPosition = client.deathPersistentSaveData.karmaFlowerPosition;
+            host.swallowedItems = client.swallowedItems;
+            host.unrecognizedSwallowedItems = client.unrecognizedSwallowedItems;
+            return host;
+        }
+
         private void SaveStateHandler(PlayerProgression self, StoryGameMode storyGameMode, RainWorldGame game)
         {
             RainMeadow.Debug("story: found loaded game state");
@@ -1770,12 +1818,24 @@ namespace RainMeadow
             inVoidSea = false;
             if (OnlineManager.lobby.isOwner)
             {
+                // Must happen before the save string  is built, since that string is what every client reloads for the new cycle.
+                var hostEncounters = self.currentSaveState.deathPersistentSaveData?.spinningTopEncounters;
+                if (hostEncounters != null)
+                {
+                    foreach (int encounter in storyGameMode.spinningTopEncounters)
+                    {
+                        if (!hostEncounters.Contains(encounter)) hostEncounters.Add(encounter);
+                    }
+                }
                 storyGameMode.saveStateString = SaveStateToString(self.currentSaveState);
             }
             else
             {
-                // this already syncs the denpos
-                self.currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
+                // This already syncs the denpos
+                var hostSaveState = new SaveState(self.currentSaveState.saveStateNumber, self);
+                hostSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
+                self.currentSaveState = ApplyClientSaveState(hostSaveState, self.currentSaveState);
+                storyGameMode.appliedSaveStateString = storyGameMode.saveStateString;
             }
 
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
@@ -1788,7 +1848,8 @@ namespace RainMeadow
             }
             else
             {
-                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                bool isSameRegion = storyGameMode.myLastDenPos?.Split('_')[0] == self.currentSaveState.denPosition.Split('_')[0];
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null || !isSameRegion)
                 {
                     // user is freshly joining the game
                     storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
@@ -1811,12 +1872,17 @@ namespace RainMeadow
                 }
             }
 
-            RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition}");
+            RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition} forced:{storyGameMode.denForcedThisCycle}");
             RainMeadow.Debug($"FINAL WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave}");
+            // The forced den has been baked into the save state now so stop protecting it. the next
+            // cycle's GoToWinScreen should be free to move us again
+            storyGameMode.denForcedThisCycle = false;
             if (OnlineManager.lobby.isOwner && storyGameMode.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher && self.currentSaveState.deathPersistentSaveData != null)
             {
                 RainMeadow.Debug($"ripple level was: {storyGameMode.rippleLevel}");
                 storyGameMode.rippleLevel = self.currentSaveState.deathPersistentSaveData.rippleLevel;
+                storyGameMode.minimumRippleLevel = self.currentSaveState.deathPersistentSaveData.minimumRippleLevel;
+                storyGameMode.maximumRippleLevel = self.currentSaveState.deathPersistentSaveData.maximumRippleLevel;
                 RainMeadow.Debug($"ripple level now: {storyGameMode.rippleLevel}");
 
             }
@@ -1852,18 +1918,21 @@ namespace RainMeadow
 
                 self.currentSaveState = new SaveState(saveStateNumber, self);
 
+                bool blockClientSaveLoad = !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk;
 
-                if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
+                if (blockClientSaveLoad || self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
                 {
                     self.currentSaveState.LoadGame("", game);
                 }
                 else
                 {
+                    // Returns `self.currentSaveState` or `null`
                     SaveState saveState = self.LoadGameState(null, game, saveAsDeathOrQuit);
                     if (saveState != null)
                     {
+                        // Modifies `self.currentSaveState`, so `saveState` is invalid now
                         SaveStateHandler(self, storyGameMode, game);
-                        return saveState;
+                        return self.currentSaveState;
                     }
 
                     self.currentSaveState.LoadGame("", game);
@@ -1887,6 +1956,25 @@ namespace RainMeadow
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
         }
 
+        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk)
+            {
+                var origLoadInProgress = self.loadInProgress;
+                self.loadInProgress = true;
+                try
+                {
+                    orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+                }
+                finally
+                {
+                    self.loadInProgress = origLoadInProgress;
+                }
+                return;
+            }
+            orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+        }
+
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
             if (isStoryMode(out var storyGameMode))
@@ -1906,20 +1994,44 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded_DontAssumePlayerRealized(ILContext il)
         {
-            // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
-            //becomes
-            // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);
             try
             {
                 var c = new ILCursor(il);
                 var vanilla = il.DefineLabel();
                 var cont = il.DefineLabel();
                 var skip = il.DefineLabel();
+
                 c.GotoNext(
                     i => i.MatchLdsfld<ModManager>("CoopAvailable"),
                     i => i.MatchBrfalse(out vanilla)
                     );
                 c.GotoLabel(vanilla);
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInStomach;
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInStomach;
+
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>()
+                    );
+                c.Emit(OpCodes.Dup);
+                c.Emit(OpCodes.Brtrue, cont);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, skip);
+                c.MarkLabel(cont);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCallOrCallvirt<Player>("get_FoodInStomach"),
+                    i => i.MatchAdd()
+                    );
+                c.MarkLabel(skip);
+
+                cont = il.DefineLabel();
+                skip = il.DefineLabel();
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);            
+
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchIsinst<Player>()
                     );
@@ -2022,16 +2134,24 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
-                {
-                    self.continueButton.signalText = "CONTINUE";
-                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled) self.Singal(self.continueButton, "CONTINUE");
-                }
                 else
                 {
-                    self.continueButton.signalText = "READY";
-                    self.continueButton.menuLabel.text = self.Translate("READY");
+
+                    if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                    {
+                        self.continueButton.signalText = "CONTINUE";
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        if (self.continueButton.toggled)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                            self.continueButton.toggled = false;
+                        }
+                    }
+                    else
+                    {
+                        self.continueButton.signalText = "READY";
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
                 }
             }
         }
@@ -2053,9 +2173,12 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
+                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening)
+                        {
+                            story.storyClientData.readyForTransition = true;
+                            return true;
+                        }
                         story.storyClientData.readyForTransition = false;
-                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
-
                     }
                     return false;
                 });
@@ -2070,7 +2193,7 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-
+                        return false;
                     }
                     return true;
 
@@ -2139,11 +2262,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                // NOTE: Sometimes, just sometimes, an echo may raise watcher to >= 1 ripple level
-                // before metting the third echo; thus soft locking the game, this is a prevention
-                // for said case, it does not happen often, but it does happen.
-                var ret = (self.room.game.Players[0].realizedCreature is Player player && player.maxRippleLevel >= 1f) || orig(self);
-                if (ret) StoryRPCs.RegionGateOrWarpMeetRequirement();
+                if (orig(self)) StoryRPCs.RegionGateOrWarpMeetRequirement();
                 return storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
             }
             return orig(self);

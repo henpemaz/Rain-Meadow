@@ -39,12 +39,12 @@ namespace RainMeadow
 
         public static OnlineState ParsePolymorph(Serializer serializer)
         {
-            return handlersByEnum[new StateType(StateType.values.GetEntry(serializer.reader.ReadByte()))].factory();
+            return handlersByEnum[new StateType(MeadowExtEnumSync.GetExtEnumValue<StateType>(serializer.reader.ReadByte()))].factory();
         }
 
         public void WritePolymorph(Serializer serializer)
         {
-            serializer.writer.Write((byte)handler.stateType.index);
+            serializer.writer.Write(handler.StateTypeIndex);
         }
 
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
@@ -227,6 +227,36 @@ namespace RainMeadow
                 nullable ? m.Name == nameof(Serializer.SerializeHalfNullable)
                 : m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
+            public override Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
+            {
+                Expression? halfComparisonExpression = null;
+                Type halfType = f.FieldType;
+                
+                // Compare field cut in half instead of the full one
+                if (typeof(Extensions).GetMethod(nameof(Extensions.EqualHalf), [halfType, halfType]) is MethodInfo haftComparisonMethod)
+                {
+                    // RainMeadow.Debug($"Found method {haftComparisonMethod} for type {halfType} !");
+                    halfComparisonExpression = Expression.Call(
+                        haftComparisonMethod,
+                        Expression.Convert(currentField, halfType),
+                        Expression.Convert(baselineField, halfType)
+                    );
+                }
+
+                if (halfComparisonExpression is not null)
+                {
+                    return Expression.Condition(
+                        halfComparisonExpression,
+                        Expression.Constant(true),
+                        Expression.Block(Expression.Call(
+                            Expression.Field(null, typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons))),
+                            typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons)).FieldType.GetMethod("Add"),
+                            Expression.Constant(f)
+                        ), Expression.Constant(false))
+                    );
+                }
+                return base.ComparisonMethod(f, currentField, baselineField);
+            }
         }
         /// <summary>
         /// Optimizes sending <see cref="Color"/> data.
@@ -267,6 +297,20 @@ namespace RainMeadow
             public Func<OnlineState, OnlineState, OnlineState> delta;
             public Func<OnlineState, OnlineState, OnlineState> applydelta;
             public int ngroups;
+            private byte _stateTypeIndex;
+            private int _stateTypeIndexVersion;
+            public byte StateTypeIndex
+            {
+                get
+                {
+                    if (MeadowExtEnumSync.OnlineStateTypeMap.version != _stateTypeIndexVersion)
+                    {
+                        _stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
+                        _stateTypeIndex = this.stateType.MeadowIndex();
+                    }
+                    return _stateTypeIndex;
+                }
+            }
 
             /// <summary>
             /// DeltaSupport allows for only sending out variables when they've updated. This can help reduce bandwidth usage
@@ -292,6 +336,8 @@ namespace RainMeadow
                 {
                     if (!type.IsValueType && !type.IsClass) throw new InvalidProgrammerException("not class or struct");
                     this.stateType = stateType;
+                    this._stateTypeIndexVersion = MeadowExtEnumSync.OnlineStateTypeMap.version;
+                    this._stateTypeIndex = stateType.MeadowIndex();
                     this.type = type;
                     this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 

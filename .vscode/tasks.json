@@ -2,81 +2,32 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Steam Build",
+			"label": "Build",
 			"command": "dotnet",
 			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/Rain Meadow.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
+			"args": ["build", "${workspaceFolder}/Rain Meadow.csproj"],
 			"problemMatcher": "$msCompile",
 			"group": {
-				"kind": "build",
-				"isDefault": true
+				"kind": "build"
 			}
 		},
 		{
-			"label": "Steam Build & Run",
+			"label": "Build & Run (Steam) (Linux Only)",
 			"command": "steam",
 			"type": "process",
 			"args": ["steam://rungameid/312520"],
-			"dependsOn": ["Steam Build"],
+			"dependsOn": ["Build"],
 			"group": {
-				"kind": "build",
-				"isDefault": true
+				"kind": "build"
 			}
 		},
 		{
-			"label": "Local Build",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/Rain Meadow.csproj",
-				"/property:Configuration=LocalP2P",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"problemMatcher": "$msCompile",
+			"label": "Build & Run (Local) (PROVIDE YOUR OWN LAUNCH COMMAND)",
+			"command": "./run.sh",
+			"type": "shell",
+			"dependsOn": ["Build"],
 			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"label": "Story Build",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/Rain Meadow.csproj",
-				"/property:Configuration=StoryP2P",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"problemMatcher": "$msCompile",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"label": "Arena Build",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/Rain Meadow.csproj",
-				"/property:Configuration=ArenaP2P",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"problemMatcher": "$msCompile",
-			"group": {
-				"kind": "build",
-				"isDefault": true
+				"kind": "build"
 			}
 		}
 	]
