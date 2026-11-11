@@ -8,7 +8,7 @@
 
 # Release 1.16.2
 - Fixed an issue with the Modmamanger whitelist
-- Fixes missing library on startup
+- Fixed missing library on startup
 
 # Release 1.16.1
 
