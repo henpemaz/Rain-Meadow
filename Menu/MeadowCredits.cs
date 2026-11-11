@@ -171,28 +171,36 @@ namespace RainMeadow
                         break;
                 }
 
-                float offset = 0;
-
                 if (creditsFile != null)
                 {
                     string path = AssetManager.ResolveFilePath("Text" + Path.DirectorySeparatorChar.ToString() + "Credits" + Path.DirectorySeparatorChar.ToString() + creditsFile + ".txt");
 
                     string[] text;
                     text = File.Exists(path) ? File.ReadAllLines(path) : [];
+                    float illustrationOffset = 0;
                     for (int i = 0; i < text.Length; i++)
                     {
                         string line = text[i];
                         line.Replace("<LINE>", "\r\n");
-                        if (line.StartsWith("<T>"))
+                        if (line.StartsWith("<I>"))
                         {
-                            line = menu.Translate(line.Substring(3));
+                            var illustration = new MenuIllustration(menu, this, "illustrations/rainmeadowcredits", line.Substring(3), new(683f, 0f), true, true);
+                            illustrationOffset += illustration.texture.height / 2;
+                            illustration.pos.y = -i * 40 - illustrationOffset;
+                            subObjects.Add(illustration);
                         }
-                        var label = new MenuLabel(menu, this, line, new(433f, -i * 40f), new(500f, 30f), false);
-                        label.label.alignment = FLabelAlignment.Center;
-                        label.label.x = -1000f;
-                        subObjects.Add(label);
+                        else
+                        {
+                            if (line.StartsWith("<T>"))
+                            {
+                                line = menu.Translate(line.Substring(3));
+                            }
+                            var label = new MenuLabel(menu, this, line, new(433f, -i * 40f - illustrationOffset), new(500f, 30f), false);
+                            label.label.alignment = FLabelAlignment.Center;
+                            label.label.x = -1000f;
+                            subObjects.Add(label);
+                        }
                     }
-                    offset = text.Length * 40f + 800f;
                 }
 
                 scroll = -100f;
