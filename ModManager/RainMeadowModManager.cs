@@ -34,14 +34,15 @@ namespace RainMeadow
 
         public static string WhitelistedModsExplanationComment =>
             """
-            // Whitelist. When any line is uncommented, this file replaces both
-            // meadow-highimpactmods.txt and meadow-bannedmods.txt.
-            // Clients must run exactly the mods uncommented here (plus their dependencies).
-            // Every other mod on the client is disabled.
-            // Built-in sync-required mods (like More Slugcats, Watcher) that the host has
-            // enabled are still required even if they aren't listed here.
+            // Whitelist. When any line is uncommented, lobbies you host are in whitelist mode.
+            // Clients may only run mods uncommented here (plus their dependencies).
+            // Clients don't need all of them; running fewer is fine.
+            // High-impact mods (meadow-highimpactmods.txt) still apply on top of this:
+            // if you run one, clients must too; if you don't, clients can't.
+            // Other mods you run that aren't listed here stay on your side only.
+            // meadow-bannedmods.txt is ignored while the whitelist is on.
             // Uncomment a line by removing its leading '//'. Leave every line commented to
-            // disable whitelist mode and go back to the high-impact / banned lists.
+            // turn whitelist mode off.
 
             """;
 
@@ -55,21 +56,11 @@ namespace RainMeadow
                     Watcher.Watcher.MOD_ID
 
                 };
-        public static string[] GetRequiredMods(bool includeWhitelist = true)
+        public static string[] GetRequiredMods()
         {
-            var whitelistedMods = includeWhitelist ? GetWhitelistedMods() : [];
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
             var generatedSyncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-
-            List<string> requiredMods;
-            if (whitelistedMods.Count > 0)
-            {
-                requiredMods = whitelistedMods.Union(generatedSyncRequiredMods).ToList();
-            }
-            else
-            {
-                requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, generatedSyncRequiredMods, SyncRequiredModsExplanationComment);
-            }
+            var requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, generatedSyncRequiredMods, SyncRequiredModsExplanationComment);
 
             //add dependencies
             foreach (var mod in ModManager.ActiveMods)
@@ -110,13 +101,6 @@ namespace RainMeadow
 
         public static string[] GetBannedMods()
         {
-            if (IsWhitelistActive())
-            {
-                // Whitelist mode ignores meadow-bannedmods.txt and CheckMods gets the disable
-                // list from the required list instead
-                return [];
-            }
-
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
             var syncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
@@ -124,6 +108,8 @@ namespace RainMeadow
 
             syncRequiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, syncRequiredMods, SyncRequiredModsExplanationComment);
             bannedOnlineMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedOnlineMods, BannedOnlineModsExplanationComment);
+            if (IsWhitelistActive())
+                bannedOnlineMods.Clear();
 
             // (required + banned) - enabled
             return syncRequiredMods.Concat(bannedOnlineMods)
@@ -188,20 +174,65 @@ namespace RainMeadow
         }
 
         /// <summary>
-        /// Whether meadow-whitelistmods.txt has any uncommented entries. If true then the
-        /// high impact and banned mod lists are ignored and clients must match the whitelist exactly.
+        /// Whether meadow-whitelistmods.txt has any uncommented entries.
         /// </summary>
         public static bool IsWhitelistActive()
         {
             return GetWhitelistedMods().Count > 0;
         }
 
-        public static List<string> ModsToDisable(string[] requiredMods, string[] bannedMods, bool whitelistMode)
+        public static List<string> ModsToDisable(string[] requiredMods, string[] bannedMods, string[] whitelistMods)
         {
             var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
-            return whitelistMode
-                ? active.Except(requiredMods).ToList()
-                : GetRequiredMods(includeWhitelist: false).Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+            var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+            if (whitelistMods.Length == 0)
+                return disable;
+            var allowed = WithDependencies(whitelistMods.Where(active.Contains), ModManager.ActiveMods);
+            allowed.UnionWith(WithDependencies(requiredMods, ModManager.InstalledMods));
+            return disable.Union(active.Where(id => !allowed.Contains(id))).ToList();
+        }
+
+        public static List<string> ModsToEnable(string[] requiredMods)
+        {
+            var active = ModManager.ActiveMods.Select(mod => mod.id);
+            return requiredMods
+                .Union(WithDependencies(requiredMods, ModManager.InstalledMods))
+                .Except(active)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList();
+        }
+
+        public static void AddDisabledDependents(List<string> disable)
+        {
+            bool added;
+            do
+            {
+                added = false;
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    if (disable.Contains(mod.id)) continue;
+                    if (!disable.Exists(id => mod.requirements.Contains(id))) continue;
+                    disable.Add(mod.id);
+                    added = true;
+                }
+            } while (added);
+        }
+
+        private static HashSet<string> WithDependencies(IEnumerable<string> ids, List<ModManager.Mod> source)
+        {
+            var result = new HashSet<string>(ids);
+            var queue = new Queue<string>(result);
+            while (queue.Count > 0)
+            {
+                var id = queue.Dequeue();
+                var mod = source.FirstOrDefault(m => m.id == id);
+                if (mod == null)
+                    continue;
+                foreach (var req in mod.requirements)
+                    if (result.Add(req))
+                        queue.Enqueue(req);
+            }
+            return result;
         }
 
         /// <summary>
@@ -212,18 +243,20 @@ namespace RainMeadow
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
-        /// <param name="whitelistMode">Whether the host's lobby is whitelist mode <paramref name="requiredMods"/>, and <paramref name="bannedMods"/> is ignored.</param>
+        /// <param name="whitelistMods">Host's whitelist. When non-empty, any active mod not in it, its dependencies or <paramref name="requiredMods"/> is disabled.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "", bool whitelistMode = false)
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "", string[]? whitelistMods = null)
         {
             try
             {
+                whitelistMods ??= [];
                 RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
+                RainMeadow.Debug($"whitelist: [ {string.Join(", ", whitelistMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = ModsToDisable(requiredMods, bannedMods, whitelistMode);
-                var enable = requiredMods.Except(active).ToList();
+                var disable = ModsToDisable(requiredMods, bannedMods, whitelistMods);
+                var enable = ModsToEnable(requiredMods);
 
                 //clear phony entries to the mod list
                 enable.RemoveAll(mod => mod == null || mod == "" /* || mod == "henpemaz_rainmeadow" */);
@@ -291,10 +324,7 @@ namespace RainMeadow
                 }
 
                 //add mods that have their dependencies disabled to the disable list (e.g: a mod that requires Slugbase)
-                foreach (var mod in ModManager.ActiveMods)
-                    if (!disable.Contains(mod.id)) //ignore mods that are already in disable; no change necessary
-                        if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
-                            disable.Add(mod.id); //disable the mod
+                AddDisabledDependents(disable);
 
                 //clear phony entries to the mod list again, just in case
                 enable.RemoveAll(mod => mod == null || mod == "");

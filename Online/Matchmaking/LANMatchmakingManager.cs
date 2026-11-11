@@ -20,8 +20,8 @@ namespace RainMeadow
         public class LANLobbyInfo : LobbyInfo
         {
             public IPEndPoint endPoint;
-            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "", bool whitelistMode = false) :
-                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline, whitelistMode)
+            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "", string activeTimeline = "", string whitelistMods = "") :
+                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods, activeTimeline, whitelistMods)
             {
                 this.endPoint = endPoint;
             }
@@ -210,7 +210,7 @@ namespace RainMeadow
                         RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()),
                         RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()),
                         OnlineManager.lobby.ActiveTimeline,
-                        RainMeadowModManager.IsWhitelistActive()
+                        RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetWhitelistedMods().ToArray())
                     );
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }

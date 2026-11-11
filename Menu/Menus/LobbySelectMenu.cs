@@ -259,7 +259,7 @@ public class LobbySelectMenu : SmartMenu
             () => RequestJoinLobby(lobbyInfo, password),
             false,
             lobbyInfo.GetLobbyJoinCode(password),
-            lobbyInfo.whitelistMode
+            lobbyInfo.WhitelistModArray
         );
     }
 
