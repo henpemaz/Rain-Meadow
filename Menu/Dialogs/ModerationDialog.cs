@@ -23,7 +23,8 @@ public class ModerationDialog : Dialog
     public ModerationDialog(ProcessManager manager) : base(manager)
     {
         Vector2 center = UIUtils.ScreenCenter(manager);
-        darkSprite.alpha = 0.85f;
+        //darkSprite.alpha = 0.95f;
+        darkSprite.alpha = 0f;
 
         pages.Add(selectPage = new(this, null, "Moderation", 1));
         selectPage.pos.y = 1500;
@@ -70,6 +71,7 @@ public class ModerationDialog : Dialog
                 0.35f,
                 0.1f
             );
+            darkSprite.alpha = Mathf.Lerp(0f, 0.90f, Mathf.InverseLerp(1500, desiredSelectPagePosY, selectPage.pos.y));
             return;
         }
         else if (infoLabel != null)

@@ -16,6 +16,8 @@ namespace RainMeadow
         public static List<RecentPlayer> recents = new();
         public const int MAX_RECENTS = 25;
 
+        public static bool dirty;
+
         public static bool IsBlocked(OnlinePlayer player)
         {
             if (player.id is SteamMatchmakingManager.SteamPlayerId steamID && blocked.Any(x => x.id == steamID.steamID.m_SteamID)) 
@@ -27,22 +29,16 @@ namespace RainMeadow
         public static void UpdateCustomization(OnlinePlayer player, SlugcatCustomization customization)
         {
             if (player.id is not SteamMatchmakingManager.SteamPlayerId steamID) return;
-            bool dirty = false;
             foreach (var recent in recents.Where(x => x.id == steamID.steamID.m_SteamID))
             {
                 var newCustom = new RecentPlayer.Customization(customization);
                 if (recent.customization != newCustom) dirty = true;
                 recent.customization = newCustom;
             }
-            if (dirty)
-            {
-                Save(RecentUsers, recents);
-            }
         }
 
-        public static void AddRecent(RecentPlayer recent, bool save = true)
+        public static void AddRecent(RecentPlayer recent)
         {
-            bool dirty = false;
             var lastOrder = recents.ToArray();
             recents.RemoveAll(x => x.id == recent.id);
             recents.Add(recent);
@@ -51,14 +47,11 @@ namespace RainMeadow
             {
                 dirty = true;
             }
-
-            if (save && dirty) Save(RecentUsers, recents);
         }
 
         public static void AddLobbyList(OnlinePlayer[] players)
         {
             RainMeadow.DebugMe();
-            bool dirty = false;
             foreach(var player in players)
             {
                 if (player.isMe) continue;
@@ -79,8 +72,6 @@ namespace RainMeadow
                     dirty = true;
                 }
             }
-            if (dirty) 
-                Save(RecentUsers, recents);
         }
 
         public static void Block(RecentPlayer recent)
@@ -89,7 +80,7 @@ namespace RainMeadow
             blocked.Add(recent);
             blocked = blocked.OrderByDescending(x => x.id == recent.id).ToList();
 
-            Save(BlockedUsers, blocked);
+            dirty = true;
         }
         public static void Block(OnlinePlayer player)
         {
@@ -103,14 +94,20 @@ namespace RainMeadow
             recents.Add(recent);
             recents = recents.OrderByDescending(x => x.id == recent.id).Take(MAX_RECENTS).ToList();
 
-            Save(BlockedUsers, blocked);
-            Save(RecentUsers, recents);
+            dirty = true;
         }
 
         public static void ReloadAll()
         {
             Reload(BlockedUsers, ref blocked);
             Reload(RecentUsers, ref recents);
+        }
+
+        public static void SaveIfDirty()
+        {
+            if (!dirty) return;
+            Save(BlockedUsers, blocked);
+            Save(RecentUsers, recents);
         }
 
         public static void Reload(string file, ref List<RecentPlayer> list)
