@@ -14,7 +14,7 @@ public class ModerationDialog : Dialog
     bool isClosed, queuedToClose;
     float desiredSelectPagePosY;
     public Page selectPage;
-    public FLabel title;
+    public FLabel title, recentLabel, blockedLabel;
 
     public RecentPlayerDisplayer recentsDisplay, blockedDisplay;
 
@@ -32,6 +32,16 @@ public class ModerationDialog : Dialog
             scale = 1.7f,
             shader = manager.rainWorld.Shaders["MenuTextCustom"],
         };
+        recentLabel = new(Custom.GetFont(), Translate("Recently played with"))
+        {
+            scale = 1.2f,
+            alignment = FLabelAlignment.Center,
+        };
+        blockedLabel = new(Custom.GetFont(), Translate("Blocked"))
+        {
+            scale = 1.2f,
+            alignment = FLabelAlignment.Center,
+        };
 
         continueButton = new(this, selectPage, Translate("Close"),
             new(center.x - 60, center.y / 2 - 100), new(120, 30))
@@ -42,6 +52,9 @@ public class ModerationDialog : Dialog
         blockedDisplay = new(this, selectPage, new(center.x - 430, center.y - 190), true);
 
         selectPage.Container.AddChild(title);
+        selectPage.Container.AddChild(recentLabel);
+        selectPage.Container.AddChild(blockedLabel);
+
         selectPage.SafeAddSubobjects(continueButton, recentsDisplay, blockedDisplay);
         selectPage.selectables.Add(continueButton);
     }
@@ -58,6 +71,11 @@ public class ModerationDialog : Dialog
                 0.1f
             );
             return;
+        }
+        else if (infoLabel != null)
+        {
+            infoLabel.text = Translate("Blocking a player will prevent them from joining any lobbies you host.");
+            infoLabelFade = 1f;
         }
         var continueBtnScrollObj = continueButton.GetScrollObject();
         if (continueBtnScrollObj.LocalAlpha < 1)
@@ -83,8 +101,14 @@ public class ModerationDialog : Dialog
     {
         base.GrafUpdate(timeStacker);
         Vector2 selectPagepos = selectPage.DrawPos(timeStacker);
+        Vector2 center = UIUtils.ScreenCenter(manager);
         title.x = selectPagepos.x + manager.rainWorld.options.ScreenSize.x / 2;
         title.y = selectPagepos.y + manager.rainWorld.options.ScreenSize.y - 80;
+
+        recentLabel.x = selectPagepos.x + center.x + 305;
+        recentLabel.y = selectPagepos.y + center.y + 190;
+        blockedLabel.x = selectPagepos.x + center.x - 305;
+        blockedLabel.y = selectPagepos.y + center.y + 190;
     }
 
     public override void Singal(MenuObject sender, string message)
