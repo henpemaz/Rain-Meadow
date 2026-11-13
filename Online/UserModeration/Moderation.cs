@@ -108,6 +108,7 @@ namespace RainMeadow
             if (!dirty) return;
             Save(BlockedUsers, blocked);
             Save(RecentUsers, recents);
+            dirty = false;
         }
 
         public static void Reload(string file, ref List<RecentPlayer> list)
