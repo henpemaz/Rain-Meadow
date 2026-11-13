@@ -22,6 +22,7 @@ namespace RainMeadow
                 return true;
             return false;
         }
+        public static bool IsBlocked(RecentPlayer recent) => blocked.Any(x => x.id == recent.id);
 
         public static void UpdateCustomization(OnlinePlayer player, SlugcatCustomization customization)
         {
@@ -86,7 +87,7 @@ namespace RainMeadow
         {
             blocked.RemoveAll(x => x.id == recent.id);
             blocked.Add(recent);
-            blocked = recents.OrderByDescending(x => x.id == recent.id).ToList();
+            blocked = blocked.OrderByDescending(x => x.id == recent.id).ToList();
 
             Save(BlockedUsers, blocked);
         }

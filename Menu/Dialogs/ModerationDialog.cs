@@ -2,19 +2,17 @@
 using Menu.Remix;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Interfaces;
-using RainMeadow.UI.Systems;
 using RWCustom;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
-using static RainMeadow.UI.Components.LobbyCardSelector;
-using static RainMeadow.UI.SlugcatSelector;
+using static RainMeadow.UI.Dialogs.ModerationDialog.RecentPlayerDisplayer;
 
 namespace RainMeadow.UI.Dialogs;
 
 public class ModerationDialog : Dialog
 {
     bool isClosed, queuedToClose;
+    float desiredSelectPagePosY;
     public Page selectPage;
     public FLabel title;
 
@@ -28,6 +26,7 @@ public class ModerationDialog : Dialog
         darkSprite.alpha = 0.85f;
 
         pages.Add(selectPage = new(this, null, "Moderation", 1));
+        selectPage.pos.y = 1500;
         title = new(Custom.GetDisplayFont(), Translate("Moderation"))
         {
             scale = 1.7f,
@@ -37,6 +36,7 @@ public class ModerationDialog : Dialog
         continueButton = new(this, selectPage, Translate("Close"),
             new(center.x - 60, center.y / 2 - 100), new(120, 30))
         { signalText = "CLOSE" };
+        continueButton.GetScrollObject().LocalAlpha = 0;
 
         recentsDisplay = new(this, selectPage, new(center.x + 180, center.y - 190), false);
         blockedDisplay = new(this, selectPage, new(center.x - 430, center.y - 190), true);
@@ -49,6 +49,28 @@ public class ModerationDialog : Dialog
     public override void Update()
     {
         base.Update();
+        if (selectPage.pos.y != desiredSelectPagePosY)
+        {
+            selectPage.pos.y = Custom.LerpAndTick(
+                selectPage.pos.y,
+                desiredSelectPagePosY,
+                0.35f,
+                0.1f
+            );
+            return;
+        }
+        var continueBtnScrollObj = continueButton.GetScrollObject();
+        if (continueBtnScrollObj.LocalAlpha < 1)
+        {
+            continueBtnScrollObj.LocalAlpha += 0.05f;
+            if (continueBtnScrollObj.LocalAlpha >= 1)
+            {
+                currentPage = 1;
+                if (!manager.menuesMouseMode)
+                    selectedObject = continueButton;
+            }
+            return;
+        }
         if (queuedToClose)
         {
             manager.StopSideProcess(this);
@@ -69,6 +91,12 @@ public class ModerationDialog : Dialog
     {
         base.Singal(sender, message);
         if (message == "CLOSE") Close(SoundID.MENU_Remove_Level, true);
+    }
+
+    public void RefreshAll()
+    {
+        recentsDisplay.Refresh();
+        blockedDisplay.Refresh();
     }
 
     public void Close(SoundID id, bool recieveSlugcat)
@@ -113,6 +141,7 @@ public class ModerationDialog : Dialog
         public void Refresh()
         {
             RemoveAllButtons();
+            recentCards.Clear();
             var recents = isBlockList ? Moderation.blocked : Moderation.recents;
             foreach(var recent in recents)
             {
@@ -141,14 +170,28 @@ public class ModerationDialog : Dialog
                 this.isBlockList = isBlockList;
                 OnClick += (btn) =>
                 {
-                    Description = menu.Translate($"Click to " + (isBlockList ? "unblock" : "block") + " <PLAYER>")
-                    .Replace("<LOBBY>", recent.name);
+                    if (isBlockList)
+                    {
+                        Moderation.Unblock(recent);
+                    }
+                    else
+                    {
+                        if (Moderation.IsBlocked(recent)) return;
+                        Moderation.Block(recent);
+                    }
+                    (owner.menu as ModerationDialog)?.RefreshAll();
                 };
 
                 slugIcon = new(menu, this, new(5, 7), recent.customization.slugcatClass, 
-                    [recent.customization.Primary(), recent.customization.Secondary(), recent.customization.Special()], isBlockList);
+                    [recent.customization.Primary(), recent.customization.Secondary(), recent.customization.Special()], Moderation.IsBlocked(recent));
 
                 this.SafeAddSubobjects(slugIcon);
+            }
+
+            public override void RemoveSprites()
+            {
+                slugIcon.ClearSprites();
+                base.RemoveSprites();
             }
         }
     }
