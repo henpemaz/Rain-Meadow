@@ -79,6 +79,10 @@ public class ModerationDialog : Dialog
             infoLabel.text = Translate("Blocking a player will prevent them from joining any lobbies you host.");
             infoLabelFade = 1f;
         }
+        if (Moderation.dirty)
+        {
+            RefreshAll();
+        }
         var continueBtnScrollObj = continueButton.GetScrollObject();
         if (continueBtnScrollObj.LocalAlpha < 1)
         {
@@ -205,7 +209,6 @@ public class ModerationDialog : Dialog
                         if (Moderation.IsBlocked(recent)) return;
                         Moderation.Block(recent);
                     }
-                    (owner.menu as ModerationDialog)?.RefreshAll();
                 };
 
                 slugIcon = new(menu, this, new(5, 7), recent.customization.slugcatClass, 
