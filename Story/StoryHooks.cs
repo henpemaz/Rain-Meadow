@@ -175,24 +175,31 @@ namespace RainMeadow
 
         private void FixPupGate(ILContext il)
         {
-            var c = new ILCursor(il);
-            var skip = c.DefineLabel();
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = c.DefineLabel();
 
-            // if (this.AI == null) --> if (this.AI == null && abstractCreature.abstractAI == null)
+                // if (this.AI == null) --> if (this.AI == null && abstractCreature.abstractAI == null)
 
-            c.GotoNext(MoveType.After,
-                x => x.MatchBrfalse(out _),
-                x => x.MatchLdarg(0),
-                x => x.MatchCall<Player>("get_AI"),
-                x => x.MatchBrtrue(out skip));
+                c.GotoNext(MoveType.After,
+                    x => x.MatchBrfalse(out _),
+                    x => x.MatchLdarg(0),
+                    x => x.MatchCall<Player>("get_AI"),
+                    x => x.MatchBrtrue(out skip));
 
-            c.Emit(OpCodes.Ldarg_1);
+                c.Emit(OpCodes.Ldarg_1);
 
-            c.EmitDelegate((AbstractCreature abstractCreature) => {
-                if (isStoryMode(out _) && abstractCreature.abstractAI != null) return true;
-                return false;
-            });
-            c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((AbstractCreature abstractCreature) => {
+                    if (isStoryMode(out _) && abstractCreature.abstractAI != null) return true;
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private int World_SpawnPupNPCs(On.World.orig_SpawnPupNPCs orig, World self)
