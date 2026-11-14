@@ -218,11 +218,14 @@ namespace RainMeadow
         }
 
         public void HandleJoin(OnlinePlayer player) {
-            if (OnlineManager.lobby != null && OnlineManager.mePlayer == OnlineManager.lobby.owner && OnlineManager.lobby.bannedUsers.list.Contains(player.id))
+            if (OnlineManager.lobby != null && OnlineManager.mePlayer == OnlineManager.lobby.owner)
             {
-                BanHammer.BanUser(player);
-                ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."), ChatLogManager.SystemMessageType.PlayerJoinFail);
-                return;
+                if (OnlineManager.lobby.bannedUsers.list.Contains(player.id) || Moderation.IsBlocked(player))
+                {
+                    BanHammer.BanUser(player);
+                    ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."), ChatLogManager.SystemMessageType.PlayerJoinFail);
+                    return;
+                }
             }
             ChatLogManager.LogSystemMessage((player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."), ChatLogManager.SystemMessageType.PlayerJoin);
         }

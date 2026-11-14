@@ -119,6 +119,8 @@ namespace RainMeadow
                 }
                 Update(); // outgoing data
             }
+
+            Moderation.Update();
         }
 
         // from a force-load situation

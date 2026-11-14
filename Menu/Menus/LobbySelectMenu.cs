@@ -71,6 +71,16 @@ public class LobbySelectMenu : SmartMenu
         );
         creditsButton.OnClick += (btn) =>
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowCredits);
+        SimplerButton moderationButton = new(
+            this,
+            mainPage,
+            Translate("M"),
+            new Vector2(320, 660),
+            new Vector2(30, 30),
+            Translate("View Rain Meadow credits")
+        );
+        moderationButton.OnClick += (btn) =>
+            manager.ShowDialog(new ModerationDialog(manager));
 
         statisticsLabel = new ProperlyAlignedMenuLabel(
             this,
@@ -178,6 +188,7 @@ public class LobbySelectMenu : SmartMenu
 
         mainPage.subObjects.AddRange([
             creditsButton,
+            moderationButton,
             statisticsLabel,
             versionLabel,
             joinButton,
