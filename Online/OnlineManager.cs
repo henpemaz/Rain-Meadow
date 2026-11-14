@@ -120,7 +120,7 @@ namespace RainMeadow
                 Update(); // outgoing data
             }
 
-            Moderation.SaveIfDirty();
+            Moderation.Update();
         }
 
         // from a force-load situation

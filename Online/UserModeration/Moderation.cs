@@ -51,6 +51,7 @@ namespace RainMeadow
 
         public static void AddLobbyList(OnlinePlayer[] players)
         {
+            // TODO optimize me
             RainMeadow.DebugMe();
             foreach(var player in players)
             {
@@ -62,8 +63,19 @@ namespace RainMeadow
                 bool exists = recents.Any(x => x.id == recent.id);
                 if (exists)
                 {
+                    foreach (var entry in recents.Where(x => x.id == recent.id))
+                    {
+                        if (entry.name != recent.name)
+                        {
+                            entry.name = recent.name;
+                            dirty = true;
+                        }
+                    }
                     recents = recents.OrderByDescending(x => x.id == recent.id).ToList();
-                    // I'm not gonna save if nothing but the order changed
+                    if (!recents.SequenceEqual(lastOrder))
+                    {
+                        dirty = true;
+                    }
                 }
                 else
                 {
@@ -103,7 +115,7 @@ namespace RainMeadow
             Reload(RecentUsers, ref recents);
         }
 
-        public static void SaveIfDirty()
+        public static void Update()
         {
             if (!dirty) return;
             Save(BlockedUsers, blocked);
