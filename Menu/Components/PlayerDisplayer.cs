@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Menu;
+using RainMeadow.UI.Dialogs;
 using UnityEngine;
 namespace RainMeadow.UI.Components
 {
@@ -20,6 +21,11 @@ namespace RainMeadow.UI.Components
             {
                 SimpleDialogBoxNotify dialogBox = new(menu, owner, "The Steam invite feature is currently unstable, and may not work properly.\nConsider using a public lobby with a password instead.", buttonText: "OKAY");
                 MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            };
+            moderationMenu = this.AddSideButton("Meadow_Menu_MutePlayerChat10", description: menu.Translate("Moderation"), signal: "MODERATION_MENU");
+            moderationMenu.OnClick += (_) =>
+            {
+                menu.manager.ShowDialog(new ModerationDialog(menu.manager));
             };
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(onlinePlayers);
@@ -51,6 +57,6 @@ namespace RainMeadow.UI.Components
         public (float, float) largeButtonHeightSpacing, smallButtonHeightSpacing;
         public List<OnlinePlayer> onlinePlayers;
         public Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, MenuObject> getPlayerButton;
-        public SideButton inviteFriends;
+        public SideButton inviteFriends, moderationMenu;
     }
 }

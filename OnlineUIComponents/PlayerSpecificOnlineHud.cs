@@ -154,6 +154,8 @@ namespace RainMeadow
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
                 this.playerDisplay = new OnlinePlayerDisplay(this, customization, clientSettings.owner);
                 this.parts.Add(this.playerDisplay);
+
+                Moderation.UpdateCustomization(clientSettings.owner, customization);
             }
 
             Vector2 rawPos = new();
