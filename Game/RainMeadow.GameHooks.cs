@@ -270,6 +270,14 @@ namespace RainMeadow
                 return orig(self);
             }
 
+            if (isExpeditionMode(out _))
+            {
+                if (ModManager.Expedition && self.saveSlot < 0)
+                {
+                    return "online_exp" + Math.Abs(self.saveSlot);
+                }
+            }
+
             if (self.saveSlot != 0)
             {
                 return "online_sav" + (self.saveSlot + 1);
