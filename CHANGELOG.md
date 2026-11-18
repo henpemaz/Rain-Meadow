@@ -5,6 +5,7 @@
 - Fixed pups sending players though the walls when players find them in shelters
 - Fixed pups blocking shelters to close when appearing inside them
 - Pups no longer duplicate per player
+- Synced pup's foodbar 
 
 # Release 1.16.1
 
