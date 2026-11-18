@@ -1532,46 +1532,49 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context)
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext il)
         {
             try
             {
-                ILCursor cursor = new(context);
-                cursor.GotoNext(MoveType.After,x => x.MatchNewobj<List<FoodMeter>>());
+                var c = new ILCursor(il);
 
-                cursor.EmitDelegate(() =>
+                // this.pupBars = new global::System.Collections.Generic.List<global::HUD.FoodMeter>();
+
+                c.GotoNext(MoveType.Before,x => x.MatchNewobj<List<FoodMeter>>());
+
+                c.EmitDelegate(() =>
                 {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    if (isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
-                        story.pups = new();
+                        story.pups = new(); // recreating here to be send in StoryLobbyData
                     }
                 });
 
-                
-                cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
-                cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
+                // if ((this.hud.owner as global::Player).abstractCreature.Room.creatures[i].state.alive && (this.hud.owner as global::Player).abstractCreature.Room.creatures[i].creatureTemplate.type == global::MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
+
+                c.GotoNext(MoveType.Before, x => x.MatchNewobj<FoodMeter>());
+                c.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
 
                 // Add pups to gamemode list
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.Emit(OpCodes.Ldloc_1);
-                cursor.EmitDelegate((FoodMeter self, int i) =>
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc_1);
+                c.EmitDelegate((FoodMeter self, int i) =>
                 {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    if (isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
 
-                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
+                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i]; // maybe extend this to pups with players on other sheltrs too
                         if (pup != null) story.pups.Add(pup.GetOnlineCreature().id);
                     }
                 });
 
             }
-            catch (Exception except)
+            catch (Exception ex)
             {
-                Logger.LogError(except);
+                Logger.LogError(ex);
             }
-            RainMeadow.Debug(context);
         }
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
