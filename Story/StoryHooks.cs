@@ -1495,8 +1495,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && isStoryMode(out var story))
             {
                 if (!OnlineManager.lobby.isOwner)
-                {
-
+                {                    
                     // base game checks copied over
                     if (ModManager.MSC &&
                         !self.IsPupFoodMeter && self.pupBars == null &&
@@ -1506,8 +1505,10 @@ namespace RainMeadow
                         self.pupBars = new();
                         int num = 1;
                         if (story.pups is not null)
-                            foreach (AbstractCreature pup in story.pups)
-                            {
+                            foreach (OnlineEntity.EntityId pupid in story.pups)
+                            {                     
+                                OnlineCreature opup = (OnlineCreature)pupid.FindEntity();
+                                AbstractCreature pup = (AbstractCreature)opup.apo;
                                 if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null)
                                 {
                                     continue;
@@ -1536,14 +1537,18 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(context);
+                cursor.GotoNext(MoveType.After,x => x.MatchNewobj<List<FoodMeter>>());
+
                 cursor.EmitDelegate(() =>
                 {
                     if (OnlineManager.lobby != null && isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
-                        story.pups.Clear();
+                        story.pups = new();
                     }
                 });
+
+                
                 cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
                 cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
 
@@ -1557,7 +1562,7 @@ namespace RainMeadow
                         if (!OnlineManager.lobby.isOwner) return;
 
                         var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
-                        if (pup != null) story.pups.Add(pup);
+                        if (pup != null) story.pups.Add(pup.GetOnlineCreature().id);
                     }
                 });
 
@@ -1566,6 +1571,7 @@ namespace RainMeadow
             {
                 Logger.LogError(except);
             }
+            RainMeadow.Debug(context);
         }
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
