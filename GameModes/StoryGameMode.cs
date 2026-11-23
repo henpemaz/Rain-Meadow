@@ -57,7 +57,7 @@ namespace RainMeadow
 
         public Dictionary<int, Vector2> hostRippleRaiser = new();
 
-        public List<AbstractCreature> pups;
+        public List<OnlineEntity.EntityId> pups;
 
         public StoryLobbyData.MenuSaveStateState? menuSaveState;
         public SlugcatSelectMenu.SaveGameData? menuSaveGameData;

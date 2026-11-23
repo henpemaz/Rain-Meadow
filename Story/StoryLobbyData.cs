@@ -131,14 +131,8 @@ namespace RainMeadow
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
 
-                pups = new();
-                foreach (AbstractCreature apo in storyGameMode.pups)
-                {
-                    if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                    {
-                        pups.Add(oe.id);
-                    }
-                }
+                pups = storyGameMode.pups;
+                
                 friendlyFire = storyGameMode.friendlyFire;
                 region = storyGameMode.region;
             }
@@ -240,15 +234,8 @@ namespace RainMeadow
 
                 story.saveStateString = saveStateString;
                 story.itemSteal = storyItemSteal;
-
-
-                foreach (OnlineEntity.EntityId pupid in pups)
-                {
-                    if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo)
-                    {
-                        (lobby.gameMode as StoryGameMode).pups.Add(apo);
-                    }
-                }
+                
+                story.pups = pups;
             }
         }
 
