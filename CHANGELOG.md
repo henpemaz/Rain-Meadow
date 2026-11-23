@@ -7,6 +7,18 @@
 - Pups no longer duplicate per player
 - Synced pup's foodbar 
 
+# Release 1.16.3
+## General
+- Fixed whitelist, host can now specify allowed mods for clients
+- Fixed ModManager not always loading mod dependencies
+
+## Arena
+- Fixed Watcher's Amoeba not pursuing combatants in Team Battle mode 
+
+# Release 1.16.2
+- Fixed an issue with the Modmamanger whitelist
+- Fixed missing library on startup
+
 # Release 1.16.1
 
 ## General

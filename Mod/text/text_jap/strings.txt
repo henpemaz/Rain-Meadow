@@ -876,7 +876,7 @@ TowerCrab|タワークラブ
 
 // Remix
 Arena Score Auto-Scroll|自動スクロールスコア
-Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the other two lists.|以下のファイルを編集することで,クライアントで許可されるMODを制御できます.<LINE>空でないホワイトリストが、他の2つのリストに取って代わります。
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within. A non-empty whitelist replaces the banned list.|以下のファイルを編集することで,クライアントで許可されるMODを制御できます.<LINE>空でないホワイトリストが、他の2つのリストに取って代わります。
 Edit Whitelist|ホワイトリスト編集
 
 // Arena

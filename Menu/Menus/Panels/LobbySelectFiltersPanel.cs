@@ -131,7 +131,7 @@ class LobbySelectFiltersPanel : PositionedMenuObject, CheckBox.IOwnCheckBox
             new("All", menu.Translate("Any order"), int.MaxValue),
         ];
 
-        string[] requiredModIDs = RainMeadowModManager.GetRequiredMods(includeWhitelist: false);
+        string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
         foreach (string id in requiredModIDs)
         {
             if (id == "henpemaz_rainmeadow")

@@ -102,15 +102,12 @@ public class AmoebaSummonBehavior(VoidSpawn owner) : VoidSpawn.Behavior(owner)
                 if (!voidSpawn.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers)
                     continue;
                 
-                if (TeamBattleMode.IsTeamBattleMode(out var tb))
-                {
-                    ArenaTeamClientSettings? playerTeam =
-                        ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(
-                            voidSpawn.abstractPhysicalObject.GetOnlineObject()?.owner
-                        );
-                    if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
-                        continue;
-                }
+                if (TeamBattleMode.IsTeamBattleMode(out _)
+                    && !arena.friendlyFire
+                    && ArenaHelpers.CheckSameTeam(
+                        player.GetOnlineCreature()?.owner,
+                        voidSpawn.abstractPhysicalObject.GetOnlineObject()?.owner))
+                    continue;
 
                 if (player.realizedCreature != null && player.realizedCreature.State.dead)
                     continue;

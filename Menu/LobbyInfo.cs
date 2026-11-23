@@ -10,19 +10,21 @@ public abstract class LobbyInfo(
     string highImpactMods = "",
     string bannedMods = "",
     string activeTimeline = "",
-    bool whitelistMode = false
+    string whitelistMods = ""
 )
 {
     public string name = name,
         mode = mode,
         requiredMods = highImpactMods,
-        bannedMods = bannedMods;
+        bannedMods = bannedMods,
+        whitelistMods = whitelistMods;
     public string activeTimeline = activeTimeline;
     public int playerCount = playerCount,
         maxPlayerCount = maxPlayerCount ?? 0;
     public bool hasPassword = hasPassword,
-        pinned,
-        whitelistMode = whitelistMode;
+        pinned;
+
+    public string[] WhitelistModArray => whitelistMods.Split(new[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
 
     public abstract MatchmakingManager.MatchMakingDomain domain { get; }
     protected abstract object[] JoinCodeArgs { get; }
