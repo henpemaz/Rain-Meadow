@@ -1,4 +1,4 @@
-﻿using RainMeadow.Generics;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +65,24 @@ namespace RainMeadow
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
 
+            if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam)
+            {
+                string[] permaBannedUsers = BanHammer.bannedUsers.Select(x => x.SteamID).ToArray();
+                foreach (var idString in permaBannedUsers)
+                {
+                    if (ulong.TryParse(idString.Trim(), out ulong steamID64))
+                    {
+                        var bannedPlayerId = new SteamMatchmakingManager.SteamPlayerId(new Steamworks.CSteamID(steamID64));
+                        
+                        bannedUsers.list.Add(bannedPlayerId);
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"Invalid SteamID format in banned users file: {idString}");
+                    }
+                }
+            }
+            
             RainMeadowModInfoManager.RefreshDebugModInfo();
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
