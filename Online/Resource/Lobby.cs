@@ -81,9 +81,9 @@ namespace RainMeadow
 
             // Clear chat logs
             ChatLogManager.ClearChatLog();
-            
+
             // Reset Enum Mapping
-            MeadowExtEnumSync.ResetEnumEntriesMapping();
+            ExtEnumSync.ResetEnumEntriesMapping();
 
             if (isOwner)
             {
@@ -112,7 +112,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Requesting lobby enum list");
             enumSyncAttempts++;
-            joiningEvent = owner.InvokeRPC(MeadowExtEnumSync.RequestCompressedExtEnums).Then(ResolveEnumCompression);
+            joiningEvent = owner.InvokeRPC(ExtEnumSync.CompressedExtEnumsRequested).Then(ResolveEnumCompression);
         }
         public void ResolveEnumCompression(GenericResult requestResult)
         {
@@ -288,7 +288,7 @@ namespace RainMeadow
         public class LobbyState : ResourceWithSubresourcesState
         {
             [OnlineField]
-            public string timeline; 
+            public string timeline;
 
             [OnlineField]
             public ushort nextId;
@@ -397,7 +397,7 @@ namespace RainMeadow
 
                     lobby.modsChecked = true;
                 }
-                
+
                 lobby.eventGags = eventGags;
                 lobby.cheats = cheats;
                 base.ReadTo(resource);

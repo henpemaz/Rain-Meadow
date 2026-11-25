@@ -7,6 +7,9 @@
 - Pups no longer duplicate per player
 - Synced pup's foodbar 
 
+## Engine
+- Fixed synced ExtEnum added mid-game making Rain Meadow throw
+
 # Release 1.16.3
 ## General
 - Fixed whitelist, host can now specify allowed mods for clients

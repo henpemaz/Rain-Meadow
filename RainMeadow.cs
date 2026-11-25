@@ -261,6 +261,8 @@ namespace RainMeadow
                 JollyHooks();
                 ExpeditionHooks();
 
+                ExtEnumSync.ApplyHooks();
+
                 CosmeticManager.FetchCosmetics();
                 CosmeticManager.ParseAvailableCosmetics();
 
