@@ -20,9 +20,21 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
     public PositionedSprite separator;
     public PositionedSlugIcon timelineIcon;
 
-    public LobbySelectMetadataPanel(Menu.Menu menu, MenuObject owner, Vector2 pos)
+    public event Action? OnAlbumClicked;
+    public string? albumFile;
+    public AlbumButton? albumButton;
+    public List<ProperlyAlignedMenuLabel> albumLabels = [];
+
+    public LobbySelectMetadataPanel(
+        Menu.Menu menu,
+        MenuObject owner,
+        Vector2 pos,
+        string? albumFile = null
+    )
         : base(menu, owner, pos)
     {
+        this.albumFile = albumFile;
+
         ProperlyAlignedMenuLabel EmptyLabel() =>
             new(menu, this, "", Vector2.zero, Vector2.zero, false);
 
@@ -77,10 +89,73 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
             separator,
             highImpactModsTextScroller,
         ]);
+
+        ShowAlbum();
+    }
+
+    public void ShowAlbum()
+    {
+        if (albumFile == null || albumButton != null)
+            return;
+
+        string[] captionLines = MenuHelpers.SmartSplitIntoStrings(
+            menu.Translate("Listen to the official Rain Meadow album while waiting for your friends!"),
+            240,
+            false
+        );
+        const float CaptionTopY = 430f;
+        const float CaptionLineHeight = 15f;
+        const float CaptionToButtonGap = 15f;
+        for (int i = 0; i < captionLines.Length; i++)
+        {
+            ProperlyAlignedMenuLabel line = new(
+                menu,
+                this,
+                captionLines[i].TrimEnd(),
+                new Vector2(20, CaptionTopY - CaptionLineHeight * i),
+                Vector2.zero,
+                false
+            );
+            albumLabels.Add(line);
+            subObjects.Add(line);
+        }
+
+        albumButton = new AlbumButton(
+            menu,
+            this,
+            new Vector2(50, 0),
+            200f,
+            albumFile,
+            menu.Translate("Listen to the Rain Meadow soundtrack")
+        );
+        float captionBottomY =
+            CaptionTopY - CaptionLineHeight * Math.Max(captionLines.Length - 1, 0) - CaptionLineHeight / 2f;
+        albumButton.pos.y = captionBottomY - CaptionToButtonGap - albumButton.size.y;
+        albumButton.OnClick += _ => OnAlbumClicked?.Invoke();
+        subObjects.Add(albumButton);
+    }
+
+    public void HideAlbum()
+    {
+        if (albumButton != null)
+        {
+            if (menu.selectedObject == albumButton)
+                menu.selectedObject = null;
+            albumButton.RemoveSprites();
+            RemoveSubObject(albumButton);
+            albumButton = null;
+        }
+        foreach (ProperlyAlignedMenuLabel line in albumLabels)
+        {
+            line.RemoveSprites();
+            RemoveSubObject(line);
+        }
+        albumLabels.Clear();
     }
 
     public void UpdateLobbyInfo(LobbyInfo lobbyInfo)
     {
+        HideAlbum();
         string[] splitName = MenuHelpers.SmartSplitIntoStrings(lobbyInfo.name, 260, true);
         int nameLineCountSpacingMultiplier = Math.Min(splitName.Length, 3) - 1;
         string name = "";
@@ -242,5 +317,6 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
         separator.Sprite.alpha = 0;
         highImpactModsTextScroller.RemoveAllButtons();
         highImpactModsTextScroller.Container.isVisible = false;
+        ShowAlbum();
     }
 }

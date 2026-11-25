@@ -24,7 +24,11 @@ public class LobbySelectMenu : SmartMenu
     private const string ERROR_Unexpected = "Something went wrong...";
     private const string ERROR_Cancelled = "Cancelled";
     public const string ALBUM_URL = "https://google.com";
-    private const string ALBUM_FILE = "rainmeadowalbum";
+    private readonly string albumFile = $"meadow_album{UnityEngine.Random.Range(1, 3)}";
+
+    private bool HasAlbum =>
+        !string.IsNullOrEmpty(ALBUM_URL)
+        && File.Exists(AssetManager.ResolveFilePath($"illustrations/{albumFile}.png"));
 
     public override MenuScene.SceneID GetScene =>
         ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -97,43 +101,6 @@ public class LobbySelectMenu : SmartMenu
             false
         );
 
-        const float AlbumWidth = 150f;
-        if (
-            !string.IsNullOrEmpty(ALBUM_URL)
-            && File.Exists(AssetManager.ResolveFilePath($"illustrations/{ALBUM_FILE}.png"))
-        )
-        {
-            AlbumButton albumButton = new(
-                this,
-                mainPage,
-                new Vector2(
-                    (1366f - manager.rainWorld.screenSize.x) / 2f + 10f,
-                    manager.rainWorld.screenSize.y - 768f + 45f
-                ),
-                AlbumWidth,
-                ALBUM_FILE,
-                Translate("Listen to the Rain Meadow soundtrack")
-            );
-            albumButton.OnClick += (btn) =>
-            {
-                manager.ShowDialog(
-                    new ScrollableConfirmDialog(
-                        manager,
-                        Translate("Open link?"),
-                        [
-                            new(Translate("This will open the following page in your browser:"), true),
-                            new(ALBUM_URL),
-                        ],
-                        UIUtils.DIALOG_SIZE,
-                        () => Utils.OpenWebPage(ALBUM_URL),
-                        null,
-                        true
-                    )
-                );
-            };
-            mainPage.subObjects.Add(albumButton);
-        }
-
         lobbyCardSelector = new LobbyCardSelector(this, mainPage, new Vector2(225, 115));
 #pragma warning disable IDE0200
         // this forces RefreshLobbies to fetch the actual currentInstance instead of just forcefully pointing at the original currentInstance
@@ -188,7 +155,13 @@ public class LobbySelectMenu : SmartMenu
         );
 
         TabContainer.Tab metadataTab = new(this, tabContainer);
-        metadataPanel = new LobbySelectMetadataPanel(this, metadataTab, Vector2.zero);
+        metadataPanel = new LobbySelectMetadataPanel(
+            this,
+            metadataTab,
+            Vector2.zero,
+            HasAlbum ? albumFile : null
+        );
+        metadataPanel.OnAlbumClicked += ShowAlbumLinkDialog;
         metadataTab.AddObjects(metadataPanel);
         tabContainer.AddTab(metadataTab, Translate("Selected Lobby"));
 
@@ -244,6 +217,24 @@ public class LobbySelectMenu : SmartMenu
 
         if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
             manager.ShowDialog(new UpdateDialog(manager));
+    }
+
+    public void ShowAlbumLinkDialog()
+    {
+        manager.ShowDialog(
+            new ScrollableConfirmDialog(
+                manager,
+                Translate("Open link?"),
+                [
+                    new(Translate("This will open the following page in your browser:"), true),
+                    new(ALBUM_URL),
+                ],
+                UIUtils.DIALOG_SIZE,
+                () => Utils.OpenWebPage(ALBUM_URL),
+                null,
+                true
+            )
+        );
     }
 
     public void UpdateStats()
@@ -381,8 +372,8 @@ public class LobbySelectMenu : SmartMenu
         {
             if (RainMeadow.rainMeadowOptions.JoiningExtraInfo.Value)
             {
-                int attempts = OnlineManager.lobby.enumsChecked 
-                    ? OnlineManager.lobby.joiningAttempts 
+                int attempts = OnlineManager.lobby.enumsChecked
+                    ? OnlineManager.lobby.joiningAttempts
                     : OnlineManager.lobby.enumSyncAttempts;
                 int step = !OnlineManager.lobby.enumsChecked
                     ? 0
@@ -397,8 +388,8 @@ public class LobbySelectMenu : SmartMenu
 
             if (TimeoutTicks > 0)
             {
-                if (OnlineManager.lobby.enumsChecked 
-                && !OnlineManager.lobby.isRequesting 
+                if (OnlineManager.lobby.enumsChecked
+                && !OnlineManager.lobby.isRequesting
                 && TimeoutTicks - joiningTimeoutCount > FastTimeoutCount) // Something went wrong, you should've joined by now
                 {
                     joiningTimeoutCount = TimeoutTicks - FastTimeoutCount; // Making the timeout shorter
