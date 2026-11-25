@@ -24,7 +24,7 @@ zbiotr
 Alex 3.14159
 
 
-<T>Special thanks to all our playtesters
+<T>Special thanks to all our playtesters, we could not have done it without you and your incessant logs
 
 Lanta
 yawijion
@@ -246,3 +246,7 @@ ilikehhh
 Dovefeatherisalwaysnumber1
 somethingdelusional
 ZentYrul
+
+
+
+<T> You are all replaceable :)
