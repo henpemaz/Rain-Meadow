@@ -3,9 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -14,6 +12,7 @@ namespace RainMeadow
         // TODO: possibly rename these
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
+        public static string WhitelistedModsFileName => "meadow-whitelistmods.txt";
 
         public static string SyncRequiredModsExplanationComment =>
             """
@@ -33,6 +32,20 @@ namespace RainMeadow
 
             """;
 
+        public static string WhitelistedModsExplanationComment =>
+            """
+            // Whitelist. When any line is uncommented, lobbies you host are in whitelist mode.
+            // Clients may only run mods uncommented here (plus their dependencies).
+            // Clients don't need all of them; running fewer is fine.
+            // High-impact mods (meadow-highimpactmods.txt) still apply on top of this:
+            // if you run one, clients must too; if you don't, clients can't.
+            // Other mods you run that aren't listed here stay on your side only.
+            // meadow-bannedmods.txt is ignored while the whitelist is on.
+            // Uncomment a line by removing its leading '//'. Leave every line commented to
+            // turn whitelist mode off.
+
+            """;
+
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
@@ -46,10 +59,8 @@ namespace RainMeadow
         public static string[] GetRequiredMods()
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
-
-            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-
-            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+            var generatedSyncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, generatedSyncRequiredMods, SyncRequiredModsExplanationComment);
 
             //add dependencies
             foreach (var mod in ModManager.ActiveMods)
@@ -87,7 +98,7 @@ namespace RainMeadow
         {
             return requiredMods.Split('\n');
         }
-      
+
         public static string[] GetBannedMods()
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
@@ -97,12 +108,131 @@ namespace RainMeadow
 
             syncRequiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, syncRequiredMods, SyncRequiredModsExplanationComment);
             bannedOnlineMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedOnlineMods, BannedOnlineModsExplanationComment);
+            if (IsWhitelistActive())
+                bannedOnlineMods.Clear();
 
             // (required + banned) - enabled
             return syncRequiredMods.Concat(bannedOnlineMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .Where(mod => mod != "henpemaz_rainmeadow")
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Returns the list of mod IDs uncommented in meadow-whitelistmods.txt and creates the file
+        /// with all currently active mods all commented out if it doesn't exist yet.
+        /// </summary>
+        public static List<string> GetWhitelistedMods()
+        {
+            var path = Path.Combine(Custom.RootFolderDirectory(), WhitelistedModsFileName);
+
+            if (!File.Exists(path))
+            {
+                var seedLines = ModIdsToIdAndName(ModManager.ActiveMods.Select(mod => mod.id).ToList())
+                    .Select(line => CommentPrefix + line)
+                    .ToList();
+                seedLines.Insert(0, WhitelistedModsExplanationComment);
+
+                try
+                {
+                    File.WriteAllLines(path, seedLines);
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+
+                return [];
+            }
+
+            var whitelistedMods = new List<string>();
+
+            try
+            {
+                foreach (var line in File.ReadAllLines(path))
+                {
+                    if (!TryParseModListLine(line, out var modId, out var isDisabledLine))
+                    {
+                        continue;
+                    }
+
+                    if (isDisabledLine || modId == "")
+                    {
+                        continue;
+                    }
+
+                    whitelistedMods.Add(modId);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                return [];
+            }
+
+            return whitelistedMods.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Whether meadow-whitelistmods.txt has any uncommented entries.
+        /// </summary>
+        public static bool IsWhitelistActive()
+        {
+            return GetWhitelistedMods().Count > 0;
+        }
+
+        public static List<string> ModsToDisable(string[] requiredMods, string[] bannedMods, string[] whitelistMods)
+        {
+            var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
+            var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+            if (whitelistMods.Length == 0)
+                return disable;
+            var allowed = WithDependencies(whitelistMods.Where(active.Contains), ModManager.ActiveMods);
+            allowed.UnionWith(WithDependencies(requiredMods, ModManager.InstalledMods));
+            return disable.Union(active.Where(id => !allowed.Contains(id))).ToList();
+        }
+
+        public static List<string> ModsToEnable(string[] requiredMods)
+        {
+            var active = ModManager.ActiveMods.Select(mod => mod.id);
+            return requiredMods
+                .Union(WithDependencies(requiredMods, ModManager.InstalledMods))
+                .Except(active)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList();
+        }
+
+        public static void AddDisabledDependents(List<string> disable)
+        {
+            bool added;
+            do
+            {
+                added = false;
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    if (disable.Contains(mod.id)) continue;
+                    if (!disable.Exists(id => mod.requirements.Contains(id))) continue;
+                    disable.Add(mod.id);
+                    added = true;
+                }
+            } while (added);
+        }
+
+        private static HashSet<string> WithDependencies(IEnumerable<string> ids, List<ModManager.Mod> source)
+        {
+            var result = new HashSet<string>(ids);
+            var queue = new Queue<string>(result);
+            while (queue.Count > 0)
+            {
+                var id = queue.Dequeue();
+                var mod = source.FirstOrDefault(m => m.id == id);
+                if (mod == null)
+                    continue;
+                foreach (var req in mod.requirements)
+                    if (result.Add(req))
+                        queue.Enqueue(req);
+            }
+            return result;
         }
 
         /// <summary>
@@ -113,17 +243,20 @@ namespace RainMeadow
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
+        /// <param name="whitelistMods">Host's whitelist. When non-empty, any active mod not in it, its dependencies or <paramref name="requiredMods"/> is disabled.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "")
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "", string[]? whitelistMods = null)
         {
             try
             {
+                whitelistMods ??= [];
                 RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
+                RainMeadow.Debug($"whitelist: [ {string.Join(", ", whitelistMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
-                var enable = requiredMods.Except(active).ToList();
+                var disable = ModsToDisable(requiredMods, bannedMods, whitelistMods);
+                var enable = ModsToEnable(requiredMods);
 
                 //clear phony entries to the mod list
                 enable.RemoveAll(mod => mod == null || mod == "" /* || mod == "henpemaz_rainmeadow" */);
@@ -167,7 +300,8 @@ namespace RainMeadow
                 RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
                 RainMeadow.Debug($"reorder: {reorder}");
 
-                if (!reorder) {
+                if (!reorder)
+                {
                     onFinish?.Invoke();
                     return;
                 }
@@ -190,10 +324,7 @@ namespace RainMeadow
                 }
 
                 //add mods that have their dependencies disabled to the disable list (e.g: a mod that requires Slugbase)
-                foreach (var mod in ModManager.ActiveMods)
-                    if (!disable.Contains(mod.id)) //ignore mods that are already in disable; no change necessary
-                        if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
-                            disable.Add(mod.id); //disable the mod
+                AddDisabledDependents(disable);
 
                 //clear phony entries to the mod list again, just in case
                 enable.RemoveAll(mod => mod == null || mod == "");
@@ -241,40 +372,44 @@ namespace RainMeadow
                         missingDLC.Add(ModManager.InstalledMods[i].LocalizedName);
 
                 ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
+                modApplier.forcedRestart = modsRequiringForcedRestart
+                    .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
+                    .Any();
 
-                //mod applier code moved to a task so the game doesn't get frozen?
-                
-                Task.Run(() =>
+                RainMeadow.Debug("Showing mod check popups");
+                if (missingDLC.Count > 0)
+                    modApplier.ShowMissingDLCMessage(missingDLC);
+                else if (enable.Any() || disable.Any() || missingMods.Count > 0)
+                    modApplier.ShowConfirmation(modNamesToEnable, modNamesToDisable, missingMods);
+                else
+                    modApplier.ConfirmReorder();
+
+                modApplier.OnFinish += (ModApplier modApplyer) =>
                 {
-                    RainMeadow.Debug("Showing mod check popups");
-                    if (missingDLC.Count > 0)
-                        modApplier.ShowMissingDLCMessage(missingDLC);
-                    else if (enable.Any() || disable.Any() || missingMods.Count > 0)
-                        modApplier.ShowConfirmation(modNamesToEnable, modNamesToDisable, missingMods);
-                    else
-                        modApplier.ConfirmReorder();
+                    RainMeadow.Debug("Finished applying");
 
-                    modApplier.OnFinish += (ModApplier modApplyer) =>
+                    if (modApplier.WillRestart)
                     {
-                        RainMeadow.Debug("Finished applying");
-
-                        if (modApplier.requiresRestart || 
-                        modsRequiringForcedRestart
-                                .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
-                                .Any())
+                        RainMeadow.Debug($"Restarting game with code {restartCode}");
+                        try
                         {
-                            RainMeadow.Debug($"Restarting game with code {restartCode}");
                             Utils.Restart(restartCode);
                         }
-                        else if (modApplier.WasSuccessful())
+                        catch (Exception ex)
                         {
-                            RainMeadow.Debug("Successfully applied mods");
-                            onFinish?.Invoke();
+                            RainMeadow.Error("Failed to restart the game");
+                            RainMeadow.Error(ex);
+                            modApplier.RestartFailed();
                         }
-                        else
-                            RainMeadow.Debug("Error in mod applier; unsuccessful");
-                    };
-                });
+                    }
+                    else if (modApplier.WasSuccessful())
+                    {
+                        RainMeadow.Debug("Successfully applied mods");
+                        onFinish?.Invoke();
+                    }
+                    else
+                        RainMeadow.Debug("Error in mod applier; unsuccessful");
+                };
             }
             catch (Exception ex)
             {
@@ -328,28 +463,10 @@ namespace RainMeadow
             // Trim non-leading comments (leading comments will be used to exclude mods)
             foreach (var line in existingLines)
             {
-                if (string.IsNullOrWhiteSpace(line))
+                if (!TryParseModListLine(line, out var trimmedLine, out var isDisabledLine))
                 {
                     linesToWrite.Add(line);
                     continue;
-                }
-
-                var trimmedLine = line.Trim();
-                var isDisabledLine = false;
-
-                // Leading comment disables the whole line
-                if (trimmedLine.StartsWith(CommentPrefix))
-                {
-                    trimmedLine = trimmedLine.TrimStart(CommentPrefix);
-                    isDisabledLine = true;
-                }
-
-                var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
-
-                // Trim any additional (non-leading) comments
-                if (commentStartIndex != -1)
-                {
-                    trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
                 }
 
                 // Discard duplicate active lines
@@ -384,6 +501,42 @@ namespace RainMeadow
         private static List<string> ModIdsToIdAndName(List<string> modIds)
         {
             return modIds.Select(x => IsModInstalled(x) ? x + " // " + ModIdToName(x) : x).ToList();
+        }
+
+        /// <summary>
+        /// Parses a single line from one of the user defined mod list files
+        /// </summary>
+        /// <param name="line">The raw line to parse</param>
+        /// <param name="modId">The parsed mod id or "" if <paramref name="line"/> was blank</param>
+        /// <param name="isDisabledLine">Whether the line had a leading comment prefix</param>
+        /// <returns>False if the line was blank and should be left alone</returns>
+        private static bool TryParseModListLine(string line, out string modId, out bool isDisabledLine)
+        {
+            modId = "";
+            isDisabledLine = false;
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return false;
+            }
+
+            var trimmedLine = line.Trim();
+
+            if (trimmedLine.StartsWith(CommentPrefix))
+            {
+                trimmedLine = trimmedLine.TrimStart(CommentPrefix);
+                isDisabledLine = true;
+            }
+
+            var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
+
+            if (commentStartIndex != -1)
+            {
+                trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
+            }
+
+            modId = trimmedLine;
+            return true;
         }
     }
 }

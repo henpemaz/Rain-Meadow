@@ -30,11 +30,13 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.Update += SlugcatSelectMenu_Update;
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
+            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
             On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
+            On.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_GetDataFromGame;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
             On.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor;
             IL.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor_ClientDontFilterRegions;
@@ -165,6 +167,99 @@ namespace RainMeadow
                     //throw; nonfatal
                 }
             };
+
+            IL.AbstractRoom.RealizeRoom += DelayPupSpawn;
+            On.World.SpawnPupNPCs += World_SpawnPupNPCs;
+            IL.Player.ctor += FixPupGate;
+        }
+
+        private void FixPupGate(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = c.DefineLabel();
+
+                // if (this.AI == null) --> if (this.AI == null && abstractCreature.abstractAI == null)
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchBrfalse(out _),
+                    x => x.MatchLdarg(0),
+                    x => x.MatchCall<Player>("get_AI"),
+                    x => x.MatchBrtrue(out skip));
+
+                c.Emit(OpCodes.Ldarg_1);
+
+                c.EmitDelegate((AbstractCreature abstractCreature) => {
+                    if (isStoryMode(out _) && abstractCreature.abstractAI != null) return true;
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private int World_SpawnPupNPCs(On.World.orig_SpawnPupNPCs orig, World self)
+        {
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner) return 0;
+            return orig(self);
+        }
+
+        private void DelayPupSpawn(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                var skip = c.DefineLabel();
+
+                // if (global::ModManager.MSC && this.shelter && (...) && this.name != game.GetStorySession.saveState.denPosition)
+
+                c.GotoNext(MoveType.After,
+                    x => x.MatchLdfld<SaveState>(nameof(SaveState.denPosition)),
+                    x => x.MatchCall<String>("op_Inequality"),
+                    x => x.MatchBrfalse(out skip)
+                    );
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+
+                c.EmitDelegate((AbstractRoom self, World world) =>
+                {
+                    if (isStoryMode(out _))
+                    {
+                        StartCoroutine(SpawnPup(self, world));
+                        return true;
+                    }
+                    return false;
+                });
+
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        System.Collections.IEnumerator SpawnPup(AbstractRoom self, World world)
+        {
+            while (RoomSession.map.TryGetValue(self, out var _rs) && _rs.owner == null) yield return null;
+            if (!self.GetResource().isOwner) yield break;
+
+            WorldCoordinate worldCoordinate = new WorldCoordinate(self.index, -1, -1, 0);
+
+            AbstractCreature abstractCreature = new AbstractCreature(
+                world, StaticWorld.GetCreatureTemplate(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC),
+                null, worldCoordinate, world.game.GetNewID()
+                );
+            self.AddEntity(abstractCreature);
+
+            ((MoreSlugcats.PlayerNPCState)abstractCreature.state).foodInStomach = 1;
+            world.game.GetStorySession.saveState.miscWorldSaveData.cyclesSinceLastSlugpup = 0;
         }
 
         // Always show "Sync Save" to clients
@@ -430,41 +525,52 @@ namespace RainMeadow
             }
         }
 
-        // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
+
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
-            orig(room);
-            if (RainMeadow.isStoryMode(out var story))
+            if (!RainMeadow.isStoryMode(out StoryGameMode story)) { orig(room); return; }
+            if (room.game.session is not StoryGameSession storySession)
             {
-                if (room.game.session is not StoryGameSession storySession)
-                {
-                    Error("echo raised ripple level outside of a story session?");
-                    return;
-                }
-                var deathPersistentSaveData = storySession.saveState.deathPersistentSaveData;
-                var vector = new UnityEngine.Vector2(
-                    deathPersistentSaveData.minimumRippleLevel,
-                    deathPersistentSaveData.maximumRippleLevel
-                );
+                Error("echo raised ripple level outside of a story session?");
+                orig(room);
+                return;
+            }
 
-                if (OnlineManager.lobby.isOwner)
-                {
-                    story.rippleLevel = deathPersistentSaveData.rippleLevel;
-                    story.minimumRippleLevel = deathPersistentSaveData.minimumRippleLevel;
-                    story.maximumRippleLevel = deathPersistentSaveData.maximumRippleLevel;
-                }
-                else if (story.rippleLevel < vector.y)
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
-                }
+            int spinningTopID = StoryHelpers.ResolveSpinningTopID(room);
+            if (spinningTopID != -1 && story.spinningTopEncounters.Contains(spinningTopID))
+            {
+                Debug($"skipping duplicate ripple raise for spinning top {spinningTopID}");
+                StoryRPCs.ApplyRippleLevelToSaveState(storySession,
+                    new UnityEngine.Vector2(story.minimumRippleLevel, story.maximumRippleLevel));
+                return; // block orig
+            }
 
+            if (spinningTopID != -1)
+            {
+                StoryHelpers.RecordSpinningTopEncounter(story, spinningTopID);
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
-                    if (!player.isMe)
-                    {
-                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
-                    }
+                    if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.AddSpinningTopEncounter, story.campaignGeneration, spinningTopID);
                 }
+            }
+            else
+            {
+                Error("could not resolve spinning top id for ripple raise; skipping duplicate-encounter dedupe and echo bookkeeping for this raise");
+            }
+
+            DeathPersistentSaveData d = storySession.saveState.deathPersistentSaveData;
+
+            orig(room);
+
+            Vector2 vector = new UnityEngine.Vector2(d.minimumRippleLevel, d.maximumRippleLevel);
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                StoryRPCs.DetermineRippleRaise(story, spinningTopID, vector, trustVector: true);
+            }
+            else if (story.maximumRippleLevel < vector.y) // max vs max, not current vs max — see 06
+            {
+                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevelRequest, spinningTopID, vector);
             }
         }
 
@@ -1389,8 +1495,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && isStoryMode(out var story))
             {
                 if (!OnlineManager.lobby.isOwner)
-                {
-
+                {                    
                     // base game checks copied over
                     if (ModManager.MSC &&
                         !self.IsPupFoodMeter && self.pupBars == null &&
@@ -1400,8 +1505,10 @@ namespace RainMeadow
                         self.pupBars = new();
                         int num = 1;
                         if (story.pups is not null)
-                            foreach (AbstractCreature pup in story.pups)
-                            {
+                            foreach (OnlineEntity.EntityId pupid in story.pups)
+                            {                     
+                                OnlineCreature opup = (OnlineCreature)pupid.FindEntity();
+                                AbstractCreature pup = (AbstractCreature)opup.apo;
                                 if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null)
                                 {
                                     continue;
@@ -1425,40 +1532,48 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context)
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext il)
         {
             try
             {
-                ILCursor cursor = new(context);
-                cursor.EmitDelegate(() =>
+                var c = new ILCursor(il);
+
+                // this.pupBars = new global::System.Collections.Generic.List<global::HUD.FoodMeter>();
+
+                c.GotoNext(MoveType.Before,x => x.MatchNewobj<List<FoodMeter>>());
+
+                c.EmitDelegate(() =>
                 {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    if (isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
-                        story.pups.Clear();
+                        story.pups = new(); // recreating here to be send in StoryLobbyData
                     }
                 });
-                cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
-                cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
+
+                // if ((this.hud.owner as global::Player).abstractCreature.Room.creatures[i].state.alive && (this.hud.owner as global::Player).abstractCreature.Room.creatures[i].creatureTemplate.type == global::MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
+
+                c.GotoNext(MoveType.Before, x => x.MatchNewobj<FoodMeter>());
+                c.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
 
                 // Add pups to gamemode list
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.Emit(OpCodes.Ldloc_1);
-                cursor.EmitDelegate((FoodMeter self, int i) =>
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc_1);
+                c.EmitDelegate((FoodMeter self, int i) =>
                 {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    if (isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
 
-                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
-                        if (pup != null) story.pups.Add(pup);
+                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i]; // maybe extend this to pups with players on other sheltrs too
+                        if (pup != null) story.pups.Add(pup.GetOnlineCreature().id);
                     }
                 });
 
             }
-            catch (Exception except)
+            catch (Exception ex)
             {
-                Logger.LogError(except);
+                Logger.LogError(ex);
             }
         }
 
@@ -1581,6 +1696,16 @@ namespace RainMeadow
         {
             if (isStoryMode(out _) && !OnlineManager.lobby.isOwner) return;
             orig(self, buttonBlack);
+        }
+
+        // never, ever have a reason to force grey our buttons. We need those to move on
+        private void SleepAndDeathScreen_GetDataFromGame(On.Menu.SleepAndDeathScreen.orig_GetDataFromGame orig, Menu.SleepAndDeathScreen self, Menu.KarmaLadderScreen.SleepDeathScreenDataPackage package)
+        {
+            orig(self, package);
+            if (isStoryMode(out _) && self.RippleLadderMode)
+            {
+                self.forceWatchAnimation = false;
+            }
         }
 
         private void CustomEndGameScreen_GetDataFromSleepScreen(On.Menu.CustomEndGameScreen.orig_GetDataFromSleepScreen orig, Menu.CustomEndGameScreen self, WinState.EndgameID endGameID)
@@ -1812,6 +1937,7 @@ namespace RainMeadow
                 var hostSaveState = new SaveState(self.currentSaveState.saveStateNumber, self);
                 hostSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 self.currentSaveState = ApplyClientSaveState(hostSaveState, self.currentSaveState);
+                storyGameMode.appliedSaveStateString = storyGameMode.saveStateString;
             }
 
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
@@ -1824,7 +1950,8 @@ namespace RainMeadow
             }
             else
             {
-                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                bool isSameRegion = storyGameMode.myLastDenPos?.Split('_')[0] == self.currentSaveState.denPosition.Split('_')[0];
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null || !isSameRegion)
                 {
                     // user is freshly joining the game
                     storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
@@ -1893,8 +2020,9 @@ namespace RainMeadow
 
                 self.currentSaveState = new SaveState(saveStateNumber, self);
 
+                bool blockClientSaveLoad = !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk;
 
-                if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
+                if (blockClientSaveLoad || self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
                 {
                     self.currentSaveState.LoadGame("", game);
                 }
@@ -1930,6 +2058,25 @@ namespace RainMeadow
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
         }
 
+        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner && !storyGameMode.saveToDisk)
+            {
+                var origLoadInProgress = self.loadInProgress;
+                self.loadInProgress = true;
+                try
+                {
+                    orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+                }
+                finally
+                {
+                    self.loadInProgress = origLoadInProgress;
+                }
+                return;
+            }
+            orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+        }
+
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
             if (isStoryMode(out var storyGameMode))
@@ -1949,20 +2096,44 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded_DontAssumePlayerRealized(ILContext il)
         {
-            // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
-            //becomes
-            // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);
             try
             {
                 var c = new ILCursor(il);
                 var vanilla = il.DefineLabel();
                 var cont = il.DefineLabel();
                 var skip = il.DefineLabel();
+
                 c.GotoNext(
                     i => i.MatchLdsfld<ModManager>("CoopAvailable"),
                     i => i.MatchBrfalse(out vanilla)
                     );
                 c.GotoLabel(vanilla);
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInStomach;
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInStomach;
+
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>()
+                    );
+                c.Emit(OpCodes.Dup);
+                c.Emit(OpCodes.Brtrue, cont);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, skip);
+                c.MarkLabel(cont);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCallOrCallvirt<Player>("get_FoodInStomach"),
+                    i => i.MatchAdd()
+                    );
+                c.MarkLabel(skip);
+
+                cont = il.DefineLabel();
+                skip = il.DefineLabel();
+
+                // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
+                //becomes
+                // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);            
+
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchIsinst<Player>()
                     );
@@ -2065,20 +2236,24 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
-                {
-                    self.continueButton.signalText = "CONTINUE";
-                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    if (self.continueButton.toggled)
-                    {
-                        self.Singal(self.continueButton, "CONTINUE");
-                        self.continueButton.toggled = false;
-                    }
-                }
                 else
                 {
-                    self.continueButton.signalText = "READY";
-                    self.continueButton.menuLabel.text = self.Translate("READY");
+
+                    if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                    {
+                        self.continueButton.signalText = "CONTINUE";
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        if (self.continueButton.toggled)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                            self.continueButton.toggled = false;
+                        }
+                    }
+                    else
+                    {
+                        self.continueButton.signalText = "READY";
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
                 }
             }
         }
@@ -2100,9 +2275,12 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
+                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening)
+                        {
+                            story.storyClientData.readyForTransition = true;
+                            return true;
+                        }
                         story.storyClientData.readyForTransition = false;
-                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
-
                     }
                     return false;
                 });
@@ -2117,7 +2295,7 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-
+                        return false;
                     }
                     return true;
 

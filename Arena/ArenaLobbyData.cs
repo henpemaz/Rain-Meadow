@@ -177,12 +177,18 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool artiParryLeniency;
 
+            [OnlineField(group = "arenaSetup")]
+            public bool arenaMonkShield;
+
 
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
 
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> playersLateWaitingInLobby;
+
+            [OnlineField(group = "arenaGameplay")]
+            public List<ushort> playersQuitMidRound;
 
             [OnlineField(nullable = true, group = "arenaGameplay")]
             public Generics.DynamicOrderedPlayerIDs reigningChamps;
@@ -282,6 +288,7 @@ namespace RainMeadow
                 );
 
                 playersLateWaitingInLobby = new List<ushort>(arenaOnline.playersLateWaitingInLobbyForNextRound);
+                playersQuitMidRound = new List<ushort>(arenaOnline.playersQuitMidRound);
 
                 playersChoosingSlugs = new Dictionary<string, int>(arenaOnline.playersInLobbyChoosingSlugs);
                 countdownSafetyCatchTimer = arenaOnline.countdownSafetyCatchTimer;
@@ -336,6 +343,7 @@ namespace RainMeadow
                 artiExplosionCapacity = arenaOnline.artiExplosionCount;
                 artiParryDistance = arenaOnline.artiParryDistanceMult;
                 artiParryLeniency = arenaOnline.artiParryLeniency;
+                arenaMonkShield = arenaOnline.arenaMonkShield;
                 enableMeadowCosmetics = arenaOnline.enableMeadowCosmetics;
 
             }
@@ -402,6 +410,7 @@ namespace RainMeadow
                 );
 
                 arenaOnline.playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
+                arenaOnline.playersQuitMidRound = playersQuitMidRound;
 
                 arenaOnline.countdownSafetyCatchTimer = countdownSafetyCatchTimer;
                 arenaOnline.countdownInitiatedHoldFire = countdownInitiatedHoldFire;
@@ -461,6 +470,7 @@ namespace RainMeadow
                 arenaOnline.artiExplosionCount = artiExplosionCapacity;
                 arenaOnline.artiParryDistanceMult = artiParryDistance;
                 arenaOnline.artiParryLeniency = artiParryLeniency;
+                arenaOnline.arenaMonkShield = arenaMonkShield;
                 arenaOnline.enableMeadowCosmetics = enableMeadowCosmetics;
             }
 

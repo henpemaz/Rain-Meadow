@@ -120,18 +120,14 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
 
         highImpactModsTextScroller.pos = new Vector2(30, 180 - 30 * nameLineCountSpacingMultiplier);
 
-        UpdateModTextSections(lobbyInfo.requiredMods.Split('\n'), lobbyInfo.bannedMods.Split('\n'));
+        UpdateModTextSections(lobbyInfo.requiredMods.Split('\n'), lobbyInfo.bannedMods.Split('\n'), lobbyInfo.WhitelistModArray);
     }
 
-    // NOTE: Taken from RainMeadow.RainMeadowModManager.CheckMods
-    // I (Timbits) tried my own implementation but it always had some inaccuracy/bug in it.
-    // I don't have the time or will to figure out why since the bug is so random and this works so whatever.
-    // This has been refactored and trimmed, leaving the logic completely intact and untouched as far as I can tell.
-    public void UpdateModTextSections(string[] requiredMods, string[] bannedMods)
+    public void UpdateModTextSections(string[] requiredMods, string[] bannedMods, string[] whitelistMods)
     {
         highImpactModsTextScroller.RemoveAllButtons();
 
-        if (requiredMods.Length == 1 && requiredMods.Contains("henpemaz_rainmeadow"))
+        if (whitelistMods.Length == 0 &&requiredMods.Length == 1 && requiredMods.Contains("henpemaz_rainmeadow"))
         {
             highImpactModsTextScroller.Container.isVisible = false;
             return;
@@ -139,16 +135,8 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
 
         highImpactModsTextScroller.Container.isVisible = true;
 
-        List<string> enabledModIds = ModManager.ActiveMods.ConvertAll(mod => mod.id);
-        List<string> modIdsToEnable = [.. requiredMods.Except(enabledModIds)];
-        List<string> modIdsToDisable =
-        [
-            .. RainMeadowModManager
-                .GetRequiredMods()
-                .Union(bannedMods)
-                .Except(requiredMods)
-                .Intersect(enabledModIds),
-        ];
+        List<string> modIdsToEnable = RainMeadowModManager.ModsToEnable(requiredMods);
+        List<string> modIdsToDisable = RainMeadowModManager.ModsToDisable(requiredMods, bannedMods, whitelistMods);
 
         modIdsToEnable.RemoveAll(string.IsNullOrEmpty);
         modIdsToDisable.RemoveAll(string.IsNullOrEmpty);
@@ -171,13 +159,7 @@ public class LobbySelectMetadataPanel : PositionedMenuObject
             modNamesToEnable.Add(ModManager.InstalledMods[index].LocalizedName);
         }
 
-        foreach (ModManager.Mod mod in ModManager.ActiveMods)
-        {
-            if (modIdsToDisable.Contains(mod.id))
-                continue;
-            if (modIdsToDisable.Exists(id => mod.requirements.Contains(id)))
-                modIdsToDisable.Add(mod.id);
-        }
+        RainMeadowModManager.AddDisabledDependents(modIdsToDisable);
 
         // this has to be paranoia
         modIdsToDisable.RemoveAll(string.IsNullOrEmpty);

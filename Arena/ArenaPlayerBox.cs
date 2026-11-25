@@ -6,10 +6,11 @@ using UnityEngine;
 using HarmonyLib;
 using static RainMeadow.ButtonScroller;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Interfaces;
 
 namespace RainMeadow.UI.Components
 {
-    public class ArenaPlayerBox : RectangularMenuObject, IPartOfButtonScroller
+    public class ArenaPlayerBox : RectangularMenuObject, IOwnMenuScrollObject
     {
 
         public static float GetLerped(float alternatingSpeed = 0.167f, float length = 1) //3sf 1/6
@@ -47,9 +48,6 @@ namespace RainMeadow.UI.Components
             else OnlineManager.lobby.gameMode.mutedPlayers.Add(player.id.name);
         }
         public static Vector2 DefaultSize => new(290, 120);
-        public float Alpha { get; set; } = 1;
-        public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = value; }
         public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;

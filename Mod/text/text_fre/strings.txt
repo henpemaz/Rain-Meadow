@@ -215,10 +215,10 @@ Waiting for host...|En attente de l'hôte...
 Welcome to Arena Online!<LINE>All players must ready up to begin.|Bienvenue dans l'arène en ligne !<LINE>Tous les joueurs doivent être prêt pour commencer.
 Exit to Lobby Select|Revenir au lobby
 Click to open <TABNAME> tab|Cliquez pour ouvrir l'onglet «<TABNAME>»
-Arena Playlist|Playliste d'arène
+Arena Playlist|Playlist d'arène
 Search for levels|Recherchez un niveau
 Search levels|Rechercher un niveau
-Match Settings|Paramètre du match
+Match Settings|Param. Match
 Spears Hit:|Dégats de lance:
 Repeat Rooms:|Répéter salles :
 Allow Item Stealing:|Vol d'object:
@@ -234,7 +234,7 @@ Countdown Timer:|Compte à rebours :
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Durée du temps de grâce au début du round. Défaut : 5s.
 Arena Game Mode:|Mode de jeu Arène :
 The game mode for this match|Le mode de jeu pour ce match
-Slugcat Abilities|Abilités des chat-limaces
+Slugcat Abilities|Chat-limaces
 Disable Mauling:|Désactiver la morsure :
 Prevent Artificer and <PAINCATNAME> from mauling|Désactive l'abilité de l'Artificier et de <PAINCATNAME> de pouvoir mordre.
 Disable Artificer Stun:|Désactiver l'onde de choc de l'Artificier :
@@ -251,7 +251,7 @@ Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permet à <
 Allow <PAINCATNAME> to rarely spawn with a little friend|Permet à <PAINCATNAME> d'apparaître occassionellement avec un certain ami
 Watcher Camo Duration:|Durée du camouflage du Guetteur :
 How long Wacher's abilities last for. Default: 12s|Le temps maximum que le Guetteur peut utiliser son pouvoir. Défaut : 12s.
-Team Settings|Paramètre d'équipe
+Team Settings|Param. d'équipe
 TEAM|ÉQUIPE
 Team Lerp Color:|Couleur d'interpolation de l'équipe :
 How much do you want team color to show on players? From 0 to 1|Quel atténuation de la couleur d'équipe voulez-vous montrer sur les joueurs ? De 0 à 1
@@ -298,7 +298,7 @@ Void's Vengeance:|Vengeance du Néant :
 Amoeba's direction is influenced by pointing|L'Amibe peut être dirigé en pointant du doigt
 Amoebas chase targets at-will|L'Amibe choisi elle-même sa proie
 How many explosions Artificer can use before cooldown|Combient d'explosion l'Artificier peut utiliser avant de subir le temps de recharge
-Arena Settings|Paramètre d'arène
+Arena Settings|Param. Score
 Food Score:|Score de Nourriture :
 Food points multiplier|Multiplieur des points gagnés par la nourriture
 Spear Hit Score:|Score de coup de lance :
@@ -325,7 +325,7 @@ Import playlist from clipboard|Importer la playlist depuis le presse-papier
 Imported|Importé
 Friendly Fire:|Tir amical :
 Challenge ID|ID du challenge
-Challenge Settings|Paramètre du challenge
+Challenge Settings|Param. challenge
 View Post-Game Stats|Voir les stats post-partie
 View Current Mode Info|Voir les infos du mode actuel
 Customize your colors|Personnaliser vos couleurs
@@ -348,7 +348,7 @@ IT'S A DRAW!|MATCH NUL !
 Settings:|Paramètres :
 Copy|Copier
 Import|Importer
-Drown Settings|Paramètre de Drown
+Drown Settings|Param. Drown
 Store keybind|Ouvrir le shop
 Points required to buy a ... rock?|Points requis pour acheter... un cailloux ?
 Points required to buy a spear|Points requis pour acheter une lance

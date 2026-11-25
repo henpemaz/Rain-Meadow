@@ -16,6 +16,7 @@ namespace RainMeadow
         public void CustomizationHooks()
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
+            IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SaintTongue;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.FFacetNode.PopulateRenderLayer += FFacetNode_PopulateRenderLayer;
             On.FSprite.PopulateRenderLayer += FSprite_PopulateRenderLayer;
@@ -152,6 +153,25 @@ namespace RainMeadow
             }
         }
 
+        private void PlayerGraphics_ApplyPalette_SaintTongue(ILContext il)
+        {
+            // was:  if (useJollyColor || CustomColorsEnabled())
+            // now:  if (useJollyColor || (CustomColorsEnabled() && hackySlugcatCustomization is null))
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchCall<PlayerGraphics>("get_useJollyColor"),
+                    i => i.MatchBrtrue(out _),
+                    i => i.MatchCall(typeof(PlayerGraphics), nameof(PlayerGraphics.CustomColorsEnabled)));
+                c.EmitDelegate((bool enabled) => enabled && hackySlugcatCustomization is null);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         // SlugcatCustomization stuff
         private static SlugcatCustomization? hackySlugcatCustomization;  // HACK: CustomColorSafety has no ref to player so we use this
 
@@ -175,7 +195,7 @@ namespace RainMeadow
                 orig(self, sLeaser, rCam);
 
                 // dev nightsky skin
-                if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
+                if (customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
                     if (customization.overlaySkin is OverlaySkin skin && skin.Available(entity))
                     {

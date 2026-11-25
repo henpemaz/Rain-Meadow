@@ -247,7 +247,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                     slugcats[UnityEngine.Random.Range(0, slugcats.Length)]
                 );
                 if (RainMeadow.isArenaMode(out _))
-                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1;
+                    Arena.arenaClientSettings.gotSlugcat = RainMeadow.rainMeadowOptions.ArenaFlairActive.Value == 1 && Arena.enableMeadowCosmetics;
             }
         );
         manager.ShowDialog(selector);
@@ -436,6 +436,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 Arena.hasPermissionToRejoin
                 && !initiateStartGameAfterCountDown
                 && Arena.arenaClientSettings.ready
+                && !Arena.playersQuitMidRound.Contains(OnlineManager.mePlayer.inLobbyId) // quit this round; wait for the next one
             )
             {
                 initiateStartGameAfterCountDown = true;
@@ -559,7 +560,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "scug select")
             {
                 if (OnlineManager.lobby?.isOwner == true)
-                    return Translate("Press shift + click to toggle active slugcats");
+                    return Translate(manager.menuesMouseMode
+                        ? "Press shift + click to toggle active slugcats"
+                        : "Press grab to toggle active slugcats");
                 else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
                     return Translate("You aren't allowed to play as this slugcat");
             }

@@ -19,7 +19,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.15.2";
+        public const string MeadowVersionStr = "0.1.16.3";
         public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
@@ -35,6 +35,8 @@ namespace RainMeadow
             {
                 instance = this;
                 rainMeadowOptions = new RainMeadowOptions(this);
+
+                Utils.WaitForPreviousInstance();
 
                 On.RainWorld.OnModsInit += RainWorld_OnModsInit;
                 On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
@@ -53,7 +55,7 @@ namespace RainMeadow
 
                 fullyEnabled = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 fullyEnabled = false;
                 Logger.LogError(e);
@@ -62,7 +64,7 @@ namespace RainMeadow
 
         private bool AdvancedProfilingEnabled()
         {
-            foreach(var arg in Environment.GetCommandLineArgs())
+            foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "-meadowprofiler") return true;
             }
@@ -238,7 +240,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
-                        if (shader.name == "RippleGlowColored" 
+                        if (shader.name == "RippleGlowColored"
                             || shader.name == "RippleSpawnBodyColored")
                         {
                             RainMeadow.Debug("also registering ripple side variant");
@@ -263,6 +265,7 @@ namespace RainMeadow
                 ItemHooks();
                 ObjectHooks();
                 JollyHooks();
+                ExpeditionHooks();
 
                 CosmeticManager.FetchCosmetics();
                 CosmeticManager.ParseAvailableCosmetics();
@@ -300,7 +303,7 @@ namespace RainMeadow
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     json = JObject.Parse(request.downloadHandler.text);
-                } 
+                }
                 else
                 {
                     Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
@@ -332,7 +335,7 @@ namespace RainMeadow
                         yield break;
                     }
                     NewVersionAvailable = latestVersion;
-                    
+
                 }
             }
         }

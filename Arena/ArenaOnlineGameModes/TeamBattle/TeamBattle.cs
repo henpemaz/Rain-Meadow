@@ -78,6 +78,45 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return teamGroupedArenaPlayers;
         }
 
+        public int? GetTeamIndex(ArenaOnlineGameMode arenaOnline, ArenaSitting.ArenaPlayer arenaPlayer)
+        {
+            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                arenaOnline,
+                arenaPlayer.playerNumber
+            );
+
+            return ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(onlinePlayer)?.team;
+        }
+
+        /// <summary>
+        /// Sums <paramref name="valueSelector"/> over every non-spectating player sharing
+        /// <paramref name="arenaPlayer"/>'s team.
+        /// </summary>
+        /// <returns>
+        /// The team's total, or <paramref name="arenaPlayer"/>'s own value if their team
+        /// cannot be determined.
+        /// </returns>
+        public int SumTeamValue(
+            ArenaOnlineGameMode arenaOnline,
+            List<ArenaSitting.ArenaPlayer> arenaPlayers,
+            ArenaSitting.ArenaPlayer arenaPlayer,
+            Func<ArenaSitting.ArenaPlayer, int> valueSelector)
+        {
+            if (GetTeamIndex(arenaOnline, arenaPlayer) is not int teamIndex)
+                return valueSelector(arenaPlayer);
+
+            int total = 0;
+            foreach (ArenaSitting.ArenaPlayer other in arenaPlayers)
+            {
+                if (other.playerClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+                    continue;
+                if (GetTeamIndex(arenaOnline, other) == teamIndex)
+                    total += valueSelector(other);
+            }
+
+            return total;
+        }
+
         public override void ResetOnSessionEnd()
         {
             martyrsSpawn = 0;
@@ -744,6 +783,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 $"lerp={lerp}",
                 $"martyrsTeamName={martyrsTeamName}",
                 $"outlawTeamNames={outlawTeamNames}",
+                $"showTeamScoreTotals={showTeamScoreTotals}",
             };
 
             string combined = string.Join("|", pairs);
@@ -795,6 +835,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         case "outlawTeamNames":
                             outlawTeamNames = val;
                             teamNames[1] = val;
+                            break;
+                        case "showTeamScoreTotals":
+                            if (bool.TryParse(val, out bool b1)) showTeamScoreTotals = b1;
                             break;
                     }
                 }

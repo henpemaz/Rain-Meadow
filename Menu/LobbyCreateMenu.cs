@@ -225,6 +225,30 @@ public class LobbyCreateMenu : SmartMenu
             meadowTimeline = "";
         }
 
+        if (modeDropDown.value == OnlineGameMode.OnlineGameModeType.Expedition.value && !ModManager.Expedition)
+        {
+            if (!createButton.buttonBehav.greyedOut)
+            {
+                visibilityDropDown.greyedOut = true;
+                passwordInputBox.greyedOut = true;
+                lobbyLimitNumberTextBox.greyedOut = true;
+                lobbyCheats.greyedOut = true;
+                createButton.buttonBehav.greyedOut = true;
+                
+                ShowErrorDialog(Utils.Translate("Expedition mod needs to be enabled on remix")); // needs a better text
+            }         
+        }
+        else
+        {
+            if (createButton.buttonBehav.greyedOut)
+            {
+                visibilityDropDown.greyedOut = false;
+                passwordInputBox.greyedOut = false;
+                lobbyLimitNumberTextBox.greyedOut = false;
+                lobbyCheats.greyedOut = false;
+                createButton.buttonBehav.greyedOut = false;
+            }
+        }
     }
 
     private void UpdateMeadowTimeline()

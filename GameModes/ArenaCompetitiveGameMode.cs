@@ -77,7 +77,7 @@ namespace RainMeadow
 
         public bool ShowScore = RainMeadow.rainMeadowOptions.ArenaShowScore.Value;
         public bool challengeDenEjection = RainMeadow.rainMeadowOptions.ChallengeDenEjection.Value;
-
+        
         public string paincatName;
         public int lizardEvent;
 
@@ -109,6 +109,11 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = [];
+
+        // Saves data of players that left (accidentally or not). 
+        // If the player logs back on, their data gets loaded in the others persistents tables and gets removed from this one. 
+        // There might be some issue with LAN since MeadowPlayerId isn't fully unique there... welp.
+        public Dictionary<MeadowPlayerId, ArenaPersistentStats> PersistentArenaStatsByOfflinePlayer = []; 
 
         public Dictionary<OnlinePlayer, int> PersistentWinsByOPlayer { get; set; } = [];
         public Dictionary<OnlinePlayer, int> PersistentDeathsByOPlayer { get; set; } = [];
@@ -148,6 +153,7 @@ namespace RainMeadow
         public int artiExplosionCount = ModManager.MSC ? MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value : 0;
         public float artiParryDistanceMult = RainMeadow.rainMeadowOptions.ArtificerParryDistanceMult.Value;
         public bool artiParryLeniency = RainMeadow.rainMeadowOptions.ArtificerParryLeniency.Value;
+        public bool arenaMonkShield = RainMeadow.rainMeadowOptions.ArenaMonkShield.Value;
         public float artiStunDistanceMult = RainMeadow.rainMeadowOptions.ArtificerStunDistanceMult.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
@@ -164,6 +170,7 @@ namespace RainMeadow
         public bool shufflePlayList;
         public List<string> playList = [];
         public List<ushort> arenaSittingOnlineOrder = [];
+        public List<ushort> playersQuitMidRound = [];
         public List<ushort> playersLateWaitingInLobbyForNextRound = [];
         public List<int> bannedSlugs = [];
 
@@ -208,9 +215,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            spearHitScore = 0;
-            killScore = 0;
-            survivalScore = 0;
             hostLoadedOverlay = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
@@ -532,13 +536,13 @@ namespace RainMeadow
             ArenaSitting.ArenaPlayer arenaPlayer,
             OnlinePlayer onlinePlayer)
         {
-            WinsByOPlayer[onlinePlayer]        = arenaPlayer.wins;
-            DeathsByOPlayer[onlinePlayer]      = arenaPlayer.deaths;
+            WinsByOPlayer[onlinePlayer] = arenaPlayer.wins;
+            DeathsByOPlayer[onlinePlayer] = arenaPlayer.deaths;
             RoundDeathsByOPlayer[onlinePlayer] = arenaPlayer.RoundDeaths;
-            TotalScoreByOPlayer[onlinePlayer]  = arenaPlayer.totScore;
-            ScoreByOPlayer[onlinePlayer]       = arenaPlayer.score;
-            AllKillsByOPlayer[onlinePlayer]    = arenaPlayer.allKills.ToList();
-            RoundKillsByOPlayer[onlinePlayer]  = arenaPlayer.roundKills.ToList();
+            TotalScoreByOPlayer[onlinePlayer] = arenaPlayer.totScore;
+            ScoreByOPlayer[onlinePlayer] = arenaPlayer.score;
+            AllKillsByOPlayer[onlinePlayer] = arenaPlayer.allKills.ToList();
+            RoundKillsByOPlayer[onlinePlayer] = arenaPlayer.roundKills.ToList();
         }
 
         /// <summary>
@@ -555,13 +559,13 @@ namespace RainMeadow
         {
             AddMissingStatEntries(onlinePlayer);
 
-            arenaPlayer.wins        = WinsByOPlayer[onlinePlayer];
-            arenaPlayer.deaths      = DeathsByOPlayer[onlinePlayer];
+            arenaPlayer.wins = WinsByOPlayer[onlinePlayer];
+            arenaPlayer.deaths = DeathsByOPlayer[onlinePlayer];
             arenaPlayer.RoundDeaths = RoundDeathsByOPlayer[onlinePlayer];
-            arenaPlayer.totScore    = TotalScoreByOPlayer[onlinePlayer];
-            arenaPlayer.score       = ScoreByOPlayer[onlinePlayer];
-            arenaPlayer.allKills    = AllKillsByOPlayer[onlinePlayer].ToList();
-            arenaPlayer.roundKills  = RoundKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.totScore = TotalScoreByOPlayer[onlinePlayer];
+            arenaPlayer.score = ScoreByOPlayer[onlinePlayer];
+            arenaPlayer.allKills = AllKillsByOPlayer[onlinePlayer].ToList();
+            arenaPlayer.roundKills = RoundKillsByOPlayer[onlinePlayer].ToList();
         }
 
         public void ResetInvDetails()
@@ -700,14 +704,15 @@ namespace RainMeadow
 
             for (int i = arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
             {
-                OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
-                    arenaSittingOnlineOrder[i]
-                );
-                if (missingPlayer is null)
+                ushort lobbyId = arenaSittingOnlineOrder[i];
+                if (ArenaHelpers.FindOnlinePlayerByLobbyId(lobbyId) is null
+                    || playersQuitMidRound.Contains(lobbyId))
                 {
                     arenaSittingOnlineOrder.RemoveAt(i);
                 }
             }
+
+            playersQuitMidRound.Clear();
 
             AbstractRoom absRoom = game.world.abstractRooms[0];
             Room room = absRoom.realizedRoom;
@@ -762,7 +767,7 @@ namespace RainMeadow
             [
                 .. OnlineManager.players.Where(x =>
                     ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe
-                ),
+                ).OrderBy(x => x.inLobbyId),
             ];
             arenaSitting.players.Clear();
             for (int i = 0; i < arenaSittingOnlineOrder.Count; i++)
@@ -796,16 +801,20 @@ namespace RainMeadow
                 {
                     if (player != null) // always gotta check in case something happened to them
                     {
-                        if (
-                            !arenaSittingOnlineOrder.Contains(player.inLobbyId)
-                            && OnlineManager.lobby.isOwner
-                        )
+                        int sittingIndex = arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
+                        if (sittingIndex < 0)
                         {
                             arenaSittingOnlineOrder.Add(player.inLobbyId);
+                            sittingIndex = arenaSittingOnlineOrder.Count - 1;
                         }
-                        ArenaSitting.ArenaPlayer newArenaPlayer = new(
-                            arenaSittingOnlineOrder.Count - 1
-                        )
+                        if (arenaSitting.players.Any(p => p.playerNumber == sittingIndex))
+                        {
+                            RainMeadow.Error(
+                                $"Arena: duplicate player number {sittingIndex} for {player}"
+                            );
+                            continue;
+                        }
+                        ArenaSitting.ArenaPlayer newArenaPlayer = new(sittingIndex)
                         {
                             playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
                             hasEnteredGameArea = true,
@@ -955,6 +964,7 @@ namespace RainMeadow
             }
             currentLevel = 0;
             arenaSittingOnlineOrder.Clear();
+            playersQuitMidRound.Clear();
             playersReadiedUp.list.Clear();
             playersLateWaitingInLobbyForNextRound.Clear();
         }
@@ -981,6 +991,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arenaSittingOnlineOrder.Clear();
+                playersQuitMidRound.Clear();
                 ClearAllLobbyDataStats();
             }
         }
@@ -1154,11 +1165,54 @@ namespace RainMeadow
             return true;
         }
 
+        public ArenaPersistentStats CreatePersistentArenaStatsForPlayer(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentWinsByOPlayer.ContainsKey(onlinePlayer)) // I'm betting on the fact that only checking this checks all 4
+            {
+                return new(
+                    PersistentWinsByOPlayer[onlinePlayer],
+                    PersistentDeathsByOPlayer[onlinePlayer],
+                    PersistentTotalScoreByOPlayer[onlinePlayer],
+                    PersistentAllKillsByOPlayer[onlinePlayer].Count
+                );
+            }
+            return new(); // default with all 0
+        }
+        public void SavePersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            PersistentArenaStatsByOfflinePlayer[onlinePlayer.id] = CreatePersistentArenaStatsForPlayer(onlinePlayer);
+        }
+        public void LoadPersistentArenaStats(OnlinePlayer onlinePlayer)
+        {
+            if (PersistentArenaStatsByOfflinePlayer.ContainsKey(onlinePlayer.id))
+            {
+                PersistentWinsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].wins;
+                PersistentDeathsByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].death;
+                PersistentTotalScoreByOPlayer[onlinePlayer] = PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].totscore;
+                PersistentAllKillsByOPlayer[onlinePlayer] = [.. Enumerable.Repeat(
+                    new IconSymbol.IconSymbolData(CreatureTemplate.Type.Slugcat, AbstractPhysicalObject.AbstractObjectType.Creature, -1),
+                    PersistentArenaStatsByOfflinePlayer[onlinePlayer.id].kills)
+                ]; // you do lose the info of what you killed. not that it was used anywhere anyway.
+
+                PersistentArenaStatsByOfflinePlayer.Remove(onlinePlayer.id);
+            }
+        }
+
+        public override void NewPlayerInLobby(OnlinePlayer onlinePlayer)
+        {
+            base.NewPlayerInLobby(onlinePlayer);
+
+            // Load persistent data if it's there
+            LoadPersistentArenaStats(onlinePlayer);
+        }
         public override void PlayerLeftLobby(OnlinePlayer onlinePlayer)
         {
+            // Save Persistent data in the case the player rejoins
+            SavePersistentArenaStats(onlinePlayer);
+            
             // Clients should change the lobby data here so the dictionaries behave as excepted.
             // (Looping over the dictionary keys should NOT give you players that aren't contained in OnlineManager.players)
-
+    
             PersistentDeathsByOPlayer.Remove(onlinePlayer);
             PersistentWinsByOPlayer.Remove(onlinePlayer);
             PersistentTotalScoreByOPlayer.Remove(onlinePlayer);
@@ -1171,6 +1225,20 @@ namespace RainMeadow
             ScoreByOPlayer.Remove(onlinePlayer);
             AllKillsByOPlayer.Remove(onlinePlayer);
             RoundKillsByOPlayer.Remove(onlinePlayer);
+
+            if (OnlineManager.lobby.isOwner
+                && isInGame
+                && arenaSittingOnlineOrder.Contains(onlinePlayer.inLobbyId)
+                && !playersQuitMidRound.Contains(onlinePlayer.inLobbyId))
+            {
+                playersQuitMidRound.Add(onlinePlayer.inLobbyId); // clients receive this via ArenaLobbyData
+                RainMeadow.Debug($"{onlinePlayer} left mid-round; recording as a quitter");
+            }
+
+            if (ArenaSession is not null) 
+             { 
+                 ArenaSession.Players.RemoveAll(ac => ac?.GetOnlineCreature()?.owner == onlinePlayer); 
+             }
 
             base.PlayerLeftLobby(onlinePlayer);
         }
@@ -1297,5 +1365,6 @@ namespace RainMeadow
         //         avatarSettings.eventCape = null;
         //     }
         // }
+        public record struct ArenaPersistentStats(int wins, int death, int totscore, int kills);
     }
 }

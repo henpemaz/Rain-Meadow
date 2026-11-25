@@ -52,12 +52,17 @@ namespace RainMeadow
         public float minimumRippleLevel;
         public float maximumRippleLevel;
         public List<int> spinningTopEncounters = new();
+        public uint campaignGeneration = 0;
+        public string? appliedSaveStateString = null;
 
-        public List<AbstractCreature> pups;
+        public Dictionary<int, Vector2> hostRippleRaiser = new();
+
+        public List<OnlineEntity.EntityId> pups;
 
         public StoryLobbyData.MenuSaveStateState? menuSaveState;
         public SlugcatSelectMenu.SaveGameData? menuSaveGameData;
         public bool needMenuSaveUpdate = false;
+        public bool shouldMineForSaveData;
 
 
         public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
@@ -82,6 +87,8 @@ namespace RainMeadow
             minimumRippleLevel = 0.0f;
             maximumRippleLevel = 0.0f;
             spinningTopEncounters = new();
+            appliedSaveStateString = null;
+            hostRippleRaiser = new();
             this.ResetOverWorld();
 
         }
@@ -267,6 +274,7 @@ namespace RainMeadow
                 {
                     OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.StoryMenu);
                 }
+                if (!lobby.isOwner) shouldMineForSaveData = true;
             }
 
             if (lobby.isOwner)

@@ -107,9 +107,9 @@ namespace RainMeadow.UI
                 new(120, 30)
             )
             {
-                Alpha = 0,
                 signalText = "ROLL",
             };
+            continueButton.GetScrollObject().LocalAlpha = 0;
             if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>(out var aprilfools))
             {
                 aprilfools.UpdateSlotsButton(continueButton, manager);
@@ -137,10 +137,11 @@ namespace RainMeadow.UI
                 queuedToClose = false;
                 isClosing = true;
             }
-            if (continueButton.Alpha < 1)
+            var continueBtnScrollObj = continueButton.GetScrollObject();
+            if (continueBtnScrollObj.LocalAlpha < 1)
             {
-                continueButton.Alpha += 0.05f;
-                if (continueButton.Alpha >= 1)
+                continueBtnScrollObj.LocalAlpha += 0.05f;
+                if (continueBtnScrollObj.LocalAlpha >= 1)
                 {
                     currentPage = 1;
                     if (!manager.menuesMouseMode)
