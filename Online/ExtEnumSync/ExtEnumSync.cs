@@ -51,17 +51,6 @@ public static partial class ExtEnumSync
         return false;
     }
 
-    public static byte MappedIndex<T>(this T extEnum) where T : ExtEnum<T>
-    {
-        if (OnlineManager.lobby is not null && IsSyncedExtEnum(typeof(T), out var compressedExtEnum))
-        {
-            return (byte)compressedExtEnum.GetIndex(extEnum);
-        }
-        else
-        {
-            return (byte)extEnum.Index;
-        }
-    }
     public static string? GetExtEnumValue<T>(byte index) where T : ExtEnum<T>
     {
         string? entry = null;
