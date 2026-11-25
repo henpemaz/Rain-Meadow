@@ -624,4 +624,358 @@ Desperate. Fearful. Violent.|Отчаянный. Боязливый. Жесто�
 
 
 ///Созерцатель
-Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Открыто: Голоса. Выбор. Бремя.... (24 KB left)
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Открыто: Голоса. Выбор. Бремя.<LINE>Закрыто: Шепот. Конвергенция. Утопление.<LINE>Открыто: Эхо. Ясность. Невесомость.
+With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.|Поскольку привязанности больше нет, единственным вариантом остаётся уход.<LINE>Прячься и бей осторожно, пока и это не забрали.
+My little shadow, show them your peeping eyes!|Моя маленькая тень, покажи им свои любопытные глазки!
+Abandoned, separated from your kin, bound by your fate.<LINE>You've hidden, walked places no others have.<LINE>But now is the time to come out and fight.|Покинутый, оторванный от своих сородичей, связанный своей судьбой.<LINE>Ты прятался, ходил там, где не бывал никто другой.<LINE>Но теперь пришло время выйти и сразиться.
+A failed warp has brought you here.<LINE>You must now fight for your life<LINE>With no difference between friend and foe.|Неудачный варп-прыжок привёл тебя сюда.<LINE>Теперь тебе предстоит сражаться за свою жизнь, не различая друзей и врагов.
+Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?|Далеко-далеко, затерянный среди волн. Будешь плыть по течению или против него?
+Shattered by destiny, exiled to the unknown.<LINE>Step out of your ripple to find answers.<LINE>No matter the cost.|Разбитый судьбой, изгнанный в неизвестность.<LINE>Выйди из своей ряби, чтобы найти ответы.<LINE>Чего бы это ни стоило.
+You have bore witness to unforeseen catastrophes<LINE>Watched as the world crumbles around you<LINE>You have stood in the shadows long enough.|Ты был свидетелем непредвиденных катастроф<LINE>Наблюдал, как мир рушится вокруг тебя<LINE>Ты достаточно долго стоял в тенях.
+CONSIDER:<LINE>A ripple in silent waters,<LINE>an echo of fear,<LINE>a cycle of violence.|ПОДУМАЙ:<LINE>Рябь на спокойной воде,<LINE>отголосок страха,<LINE>порочный круг насилия.
+Oh, before you go... a gift.<LINE>Perhaps we are not so different after all.|О, прежде чем ты уйдёшь... подарок.<LINE>Возможно, мы не так уж сильно отличаемся.
+Am I Warrior from the past, or a Messiah from the future?|Я воин из прошлого или мессия из будущего?
+Am I Cat Searching for many, or a Mouse searching for one?|Я кошка, ищущая многих, или мышь, ищущая одного?
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>Я обреченный самаритянин или аномалия, пересекающая время и пространство?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>Я обреченный самаритянин или я навсегда застрял в твоей тени?
+<LINE>I do not know, for I am not one. I am many.|<LINE>Я не знаю, потому что я не один. Я многочисленный.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Те, кто идут по одному пути, могут найти великое сокровище.<LINE>Те, кто блуждают по многим путям, найдут великую истину.
+
+///Енот
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Ты прошёл через ад и назад, но сейчас, настало<LINE>время искупить свои грехи, совершённые в прошлых циклах.
+...why are you here|... почему ты здесь
+Thanks, Andrew.|Спасибо, Andrew.
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.ьнемак и еьпок иовс йатавХ<LINE>.зар йывреп в как тедуб ен отэ он ,ябет тюажурко игарв иовТ
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Добро пожаловать в tower of gains: где ты будешь делать тяжелый подъём до<LINE> конца своих дней. Надеюсь ты взял попить чего-нибудь, <USERNAME>!
+$5 to unlock this description.|Разблокировка этого описания стоит 5$.
+egg|яйцо
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|Поиск любви тебя приведёт к прекрасной<LINE>тропе душераздирающих разочарований.
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|Карл у Клары украл кораллы,<LINE>а Клара у Карла украла кларнет
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|Чувствуешь себя удачливым?<LINE>Попробуй зажать портрет своего Слизнекота ;)
+Did you know:<LINE>Meadow was released this Friday|Знали ли вы:<LINE>Meadow вышла в эту пятницу?
+Did you know:<LINE>You're bad at Arena|Знали ли вы:<LINE>Вы плохи в Арене
+Did you know:<LINE>There's more "Did you know"s.|Знали ли вы:<LINE>Здесь есть больше «Знали ли вы»
+Did you know:<LINE>This is the only "Did you know".|Знали ли вы:<LINE>Это единственный «Знали ли вы»
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|Ты в этом раунде побеждён<LINE>Навек под землёю погребён<LINE>Крышка гроба - твой последний заслон
+"<USERNAME>, youre gonna get us both killed"|«<USERNAME>, ты нас обоих угробишь»
+"no srsly wheres my egg"|«не серьезно где мое яйцо»
+"u dont need 2 be alone, bby."|«тебе не нужно быть одной, детка.»
+"sometimes i wake up with a friend ive never met b4"|«иногда я просыпаюсь с другом с которым я никогда не виделся»
+"i luv u <3"|«я лю тя <3»
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|ПОЧЕМУ ЭТО ДОЛЖНО БЫТЬ ПЕРЕМЕННОЙ<LINE>num2 ЭТО БУКВАЛЬНО 0
+Don't Care<LINE>Nuh<LINE>Yuh|Мне всё равно<LINE>Неа<LINE>Ага
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|Неожиданно, прямоугольник результатов не появился, вы засофтлочились.<LINE>Какого чёрта.<LINE>Я думал, этот глитч был давно исправлен...
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|Когда-нибудь думал помочь с разработкой<LINE>https://github.com/henpemaz/Rain-Meadow?
+Be careful when selecting the Fartificer|Будь аккуратен, если выбираешь Пердёжника
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|отдаёт вайбами «зелье амогус в 3 часа ночи» <LINE>добавь это /мс
+Playtesters<LINE>Are<LINE>Replaceable|Тестировщики<LINE>Заменяемы
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|Уже достаточно описаний для Inv.<LINE>НЕ НАПОЛНЯЕТ МОЙ ПУСТОЙ ЖЕЛУДОК
+"hiiii!"|«куууу!»
+"i'm ded"|«я умир»
+bleh|блех
+inv? like invalidunits?|inv? типа как invalidunits?
+
+// Слизнеслоты
+Press and hold something on screen to spin the slots / Hope you brought green|Зажми кое-что, чтобы крутить слоты / Надеюсь, бумажки у тебя с собой.
+One, two three of a kind / Somewhere on this page you will find|Один, два, их всего три / На этой странице ты сможешь найти.
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|Началась шутка в Meadow Discord / По банкротству побит был рекорд.
+SCUGSLOTS|СЛИЗНЕСЛОТЫ
+SlugSlots<LINE>Winner!!|Победитель<LINE>Слизнеслотов!!
+LET'S ROLL!|КРУТАНЁМ!
+Oops, better luck next time!|Упс, в следующий раз точно повезёт!
+Try your luck again!|Попытай удачу снова!
+99% of gamblers quit before they win big|99% игроков сдаются до того, как срывают куш!
+So Close! Keep trying!|Так близко! Продолжай крутить!
+Almost there!|Уже почти!
+Congratulations! You have achieved the ultimate gamble skill!!!|Поздравляем! Ты достиг максимального уровня азарта!!!
+Gahh?? Impossible?!|Гахх?? Как это?!
+You got a <SLUGCATNAME>!|Тебе выпал <SLUGCATNAME>!
+
+///Выбор персонажа в Meadow
+Locked|Недоступно
+ENTER|ВОЙТИ
+Eye color|Цвет глаз
+Tint color|Цвет оттенка
+Tint amount|Сила оттенка
+SKINS|СКИНЫ
+SLUGCAT|СЛИЗНЕКОТ
+Survivor|Выживший
+Monk|Монах
+Hunter|Охотник
+Fluffy|Пушистый
+Night|Ночной
+LIZARD|ЯЩЕР
+Pink|Розовый
+Blue|Синий
+Yellow|Желтый
+Red|Красный
+Black|Черный
+Axo|Аксолотль
+Sala|Саламандра
+Cyan|Циановый
+Fluffers|Пушистый
+CICADA|КАЛЬМАРОКАДА
+White|Темный
+Dark|Светлый
+SCAVENGER|МУСОРЩИК
+Twigs|Прутик
+Acorn|Желудь
+Oak|Дуб
+Shrub|Кустик
+Branches|Ветка
+Sage|Шалфей
+Cherry|Вишня
+Lavender|Лаванда
+Peppermint|Мята
+Juniper|Можжевельник
+NOODLEFLY|ЛАПШЕМУХА
+Lily|Лилия
+Rose|Роза
+Poppy|Мак
+Lotus|Лотус
+Lilac|Сирень
+Petunia|Петуния
+Jasmine|Жасмин
+Gardenia|Гардения
+EGGBUG|ЯЙЦЕЖУК
+Citrus|Цитрус
+Blueberry|Голубика
+Kiwi|Киви
+Mango|Манго
+Dragonfruit|Драгон фрукт
+LANTERN MOUSE|ФОНАРНАЯ МЫШЬ
+Saphire|Сапфир
+Ruby|Рубин
+Acquamarine|Аквамарин
+Citrine|Цитрин
+Emerald|Изумруд
+Quartz|Кварц
+Amethyst|Аметист
+Opal|Опал
+Garnet|Гранат
+New character!|Новое существо!
+
+///Предсмертные послания
+died.|умер.
+was crushed by the rain.|был раздавлен дождём.
+was consumed by the swarm.|был поглащён роем.
+fell into the abyss.|упал в бездну.
+fell into the abyss thanks to|упал в бездну благодаря
+was ambushed by a|попал в засаду которую устроил
+was drowned by|был утоплен
+was drowned by a|был утоплен существом
+drowned.|утонул.
+asphyxiated.|задохнулся.
+hit the ground too hard.|слишком сильно врезался в землю.
+hit the ground too hard thanks to|слишком сильно врезался в землю благодаря
+was killed through unknown means.|был убит неведомым методом.
+tried to swim in burning liquid.|попытался поплавать в обжигающей жидкости.
+tried to swim in burning liquid to escape|попытался поплавать в обжигающей жидкости избегая
+spontaneously combusted.|внезапно взорвался.
+froze to death.|замёрз до смерти.
+was swallowed by the grass.|был поглощён травой.
+was swallowed by the walls.|был поглощён стеной.
+was swallowed by the walls thanks to|был поглощён стеной благодаря
+was electrocuted.|был поражён электрическим током.
+licked the power.|лизнул источник питания.
+was consummed by the swarm.|был поглощён роем.
+was electrocuted in the water.|был поражён электричеством в воде.
+was obliterated by the sandstorm.|был уничтожен песчаной бурей.
+died from poison.|умер от яда.
+was struck by lightning.|был поражён молнией.
+was consumed by locusts.|был съеден саранчой.
+swam with the ripples.|плыл вместе с рябью.
+experienced the force of fresh fruit.|прочувствовал силу свежих фруктов.
+was burnt to a crisp.|сгорел дотла.
+was slain by|был повержен
+was ascended by|был вознесён
+was blown up by|был взорван
+was zapped by a|был поражён существом
+was taken by a|был захвачен существом
+was taken into the abyss thanks to|был унесен в бездну благодаря
+was taken into the abyss by|был унесен в бездну
+was slain by a|был убит существом
+blew up.|взорвался.
+blew up thanks to|взорвался благодаря
+
+///Имена существ для сообщений о смерти
+Pink Lizard|Розовый Ящер
+Green Lizard|Зелёный Ящер
+Blue Lizard|Синий Ящер
+Yellow Lizard|Жёлтый Ящер
+White Lizard|Белый Ящер
+Red Lizard|Красный Ящер
+Black Lizard|Чёрный Ящер
+Salamander|Саламандра
+Cyan Lizard|Циановый Ящер
+Leech|Пиявка
+Sea Leech|Морская Пиявка
+Snail|Улитка
+Vulture|Стервятник
+Garbage Worm|Мусорный Червь
+Lantern Mouse|Фонарная Мышь
+Cicada A|Светлая Кальмарокада
+Cicada B|Тёмная Кальмарокада
+Jet Fish|Крабокатица
+Big Eel|Левиафан
+Deer|Олень
+Tube Worm|Крюк-Червь
+Daddy Long Legs|Отец-Долгоног
+Brother Long Legs|Брат-Долгоног
+Tentacle Plant|Хищная Водоросль
+Pole Mimic|Шестовик
+Miros Bird|Стриж
+Temple Guard|Страж
+Centipede|Сколопендра
+Red Centipede|Красная Сколопендра
+Scavenger|Мусорщик
+Centiwing|Сколокрылка
+Small Centipede|Маленькая Сколопендра
+Overseer|Наблюдатель
+Vulture Grub|Личинка Стервятника
+Big Spider|Большой Паук
+Spitter Spider|Паук-Ядоплюй
+Egg Bug|Яйцежук
+Small Needle|Детёныш Лапшемухи
+Big Needle|Лапшемуха
+Drop Bug|Спусковёртка
+King Vulture|Королевский Стервятник
+Hazer|Осьминог
+Miros Vulture|Стриж-Стервятник
+Caramel Lizard|Карамельный Ящер
+Eel|Ящер-Угорь
+Strawberry|Клубничный Ящер
+Mother Spider|Паучья Мать
+Terror Long Legs|Мать-Долгоног
+Aquapede|Водоножка
+Stowaway Bug|Спрятник
+Elite Scavenger|Элитный Мусорщик
+Inspector|Инспектор
+Yeek|Ика
+Big Jellyfish|Гигантская Медуза
+Jungle Leech|Тропическая Пиявка
+Hell Bug|Огнежук
+MothGrub|Личинка Моли
+King Scavenger|Вождь Мусорщиков
+Slugcat NPC|Слизнекот NPC
+Train Lizard|Ящер-Поезд
+Barnacle|Усоног
+DrillCrab|Бурокраб
+SandGrub|Песчаная Личинка
+BigSandGrub|Песчаный Червь
+BigMoth|Большая Моль
+SmallMoth|Маленькая Моль
+Box Worm|Коробчатый Червь
+Fire Sprite|Огнедух
+Rattler|Костотряс
+SkyWhale|Небесный Кит
+ScavengerTemplar|Паладин Мусорщиков
+ScavengerDisciple|Адепт Мусорщиков
+Loach|Вьюн
+Peach Lizard|Персиковый Ящер
+Rot Behemoth|Гнилой Гигант
+Blizzard Lizard|Метелица
+Basilisk Lizard|Василиск
+Indigo Lizard|Индиго Ящер
+Rat|Крыса
+Frog|Лягушка
+Tardigrade|Тихоходка
+Angler|Удильщик
+TowerCrab|Бурокраб
+
+///Диалог прямого подключения
+Direct Connection... |IP-адрес:                   
+Password:|Пароль:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|Неверный адрес. Формат IP-адреса должен быть «xxx.xxx.xxx.xxx:порт».
+This address is possibly not local to your current network.|Скорее всего, этот адрес из глобальной сети.
+If so, This is very unstable and will most likely NOT work|В таком случае, соединение будет нестабильным или вообще НЕ будет работать.
+Are you SURE you know what you're doing?|Ты ТОЧНО уверен в своих действиях?
+
+///Менеджер Локальной сети
+LAN Lobby|Лобби локальной сети
+Nobody|Никого
+Your network interface(s) are|Список твоих сетевых адресов:
+<NAME> network interface is |Сетевой адрес у <NAME>:
+You are the owner of the lobby.|Ты - владелец лобби.
+This player is the owner of the lobby.|Этот игрок - владелец лобби.
+Players can “Direct Connect” to this lobby through your interface(s).|Другие игроки должны ввести твой адрес из вашей сети через «Прямое подключение».
+Players can “Direct Connect” to this lobby through their interface(s).|Другие игроки должны ввести его адрес из вашей сети через «Прямое подключение».
+You cannot use this feature here.|Ты не можешь использовать эту функцию здесь.
+
+///Модификатор
+Error loading mods!|Ошибка загрузки модов!
+A restart is required to finish applying the mod changes.|Для применения модов необходимо перезапустить игру.
+Restarting now...|Перезапускаем...
+Mod Mismatch!|Несоответствие модов!
+Mods that have to be enabled: |Моды, которые надо включить: 
+Mods that have to be disabled: |Моды, которые надо отключить: 
+Mods that have to be installed: |Моды, которые надо загрузить: 
+Apply these changes now?<LINE>A restart may take place to sync game objects|Принять изменения прямо сейчас?<LINE>Может потребоваться перезапуск для синхронизации объектов в игре.
+Apply these changes now?|Принять изменения прямо сейчас?
+A restart may take place to sync game objects|Может потребоваться перезапуск для синхронизации объектов в игре.
+Warning: Differing Mod Load Orders!|Внимание: отличающийся порядок загрузки модов!
+This may cause unstable play.|Это может привести к нестабильной игре.
+Reorder your mods now?|Изменить порядок модов прямо сейчас?
+Cannot join due to missing DLC!|Не удаётся присоединиться из-за отсутствующего(-их) DLC!
+Missing DLC Mods that have to be enabled: |Отсутствующие DLC-моды, которые надо включить: 
+
+///Разное
+Players|Игроки
+CONFIRM|ПРИНЯТЬ
+Leaving Lobby|Выходим из лобби...
+You were removed from the previous online game|Тебя исключили из предыдущей онлайн игры.
+This player does not have a profile.|У этого игрока нет профиля.
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam в данный момент недоступен.<LINE>Некоторые функции Rain Meadow были отключены.
+Meadow failed to start|Meadow не смог запуститься.
+Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: просьба использовать отдельный мод для доступа к кампании Inv.
+mod_menu_apply_mods|Применяю изменения в модах, пожалуйста подождите...
+cancel|отмена
+CANCEL|ОТМЕНА
+ok|окей
+OK|ОКЕЙ
+Restore Default|Восстановить
+SAT|НАСЫЩ.
+LIT|ЯРК.
+HUE|ЦВЕТ
+PLAYER|ИГРОК
+Press any button to continue|Нажмите любую кнопку чтобы продолжить
+Eating contest|Соревнование по поеданию
+number|номер
+
+//События
+Rain Meadow Anniversary|Годовщина Rain Meadow
+April Fool's!|Первое апреля!
+COINS:|МОНЕТ:
+YOU ARE POOR|ТЫ НИЩИЙ
+You need more Meadow Coins to play this game|Вам нужно больше Meadow Монет, чтобы сыграть в эту игру
+Game Over! Try again?|Игра окончена! Попробовать ещё раз?
+What's the secret password?|Какой секретный пароль?
+I heard they were removing capes|Есть слухи, что они уберут плащи
+That crash was probably your fault|Тот вылет, скорее всего, случился из-за тебя
+Rain Meadow definitely failed to start|Rain Meadow определённо не смог запуститься
+Rain Meadow servers will go offline soon for maintenance|Сервера Rain Meadow скоро отключатся для технического обслуживания
+Would you like to erase all save progress?|Хотите ли вы удалить весь прогресс сохранений?
+Take ¤10 Meadow Coins|Получите ¤10 Meadow монет
+Coins remaining:|Монет осталось:
+wawa|wawa
+Good.|Хорошо.
+It was.|Это точно.
+Please work|Пожалуйста, работай
+Ok|Ок
+Yep|Угу
+Special event:|Особое событие: 
+number:|номер:
+Event days remaining:|Дней осталось до конца:
+Spear|Копьё
+Explosive Spear|Взрывное Копьё
+Scavenger Bomb|Бомба Мусорщиков
+Joke Rifle|Винтовка Шуток
+Meadow Coin|Meadow Монета
+Rainbow Cape|Радужный плащ
+Silver|Серебряный
+Gold|Золотой
+Days remaining|Осталось дней
+Special event|Специальное событие
+Event Gags:|Приколы по событию:
+Anniversary Gags:|Приколы на годовщину:
+You just won 1,000 Meadow coins!!|Ты только что сорвал куш в размере 1,000 Meadow монет!!
