@@ -44,6 +44,26 @@ namespace RainMeadow
         }
 
 
+        public static void OpenWebPage(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return;
+            try
+            {
+                if (SteamManager.Instance != null && SteamManager.Instance.m_bInitialized && Steamworks.SteamUtils.IsOverlayEnabled())
+                {
+                    Steamworks.SteamFriends.ActivateGameOverlayToWebPage(url);
+                }
+                else
+                {
+                    Application.OpenURL(url);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Failed to open web page {url}: {e}");
+            }
+        }
+
         public static void Restart(string args = "")
         {
             Process currentProcess = Process.GetCurrentProcess();
