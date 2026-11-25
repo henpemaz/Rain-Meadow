@@ -43,6 +43,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.artiParryLeniency)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.challengeDenEjection)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.denEntryRule)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.disableMaul)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.emptyDeathScore)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.enableMeadowCosmetics)),
@@ -54,6 +55,7 @@ namespace RainMeadow
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.friendlyFire)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.itemSteal)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.killScore)),
+            new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.arenaMonkShield)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatEgg)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatLizard)),
             new ExternalArenaGameModeFieldSetting(nameof(ArenaOnlineGameMode.painCatThrows)),
@@ -89,7 +91,7 @@ namespace RainMeadow
             self.survivalScore = arenaOnline.survivalScore;
             self.KillScore = arenaOnline.killScore;
             self.EmptyDeathScore = arenaOnline.emptyDeathScore;
-            self.spearHitScore = arenaOnline.spearHitScore;
+            self.spearHitScore = ModManager.MSC ? arenaOnline.spearHitScore : 0;
             self.foodScore = arenaOnline.foodScore;
 
             self.repeatSingleLevelForever = false;
@@ -402,6 +404,11 @@ namespace RainMeadow
             if (self.sessionEnded || ModManager.MSC && attacker.AI is not null)
                 return;
 
+            if (attacker == target)
+            {
+                RainMeadow.Debug("No points given on SD! Returning early.");
+                return;
+            }
             if (attacker.abstractCreature.GetOnlineCreature() is not OnlineCreature attackerOCreature)
             {
                 RainMeadow.Error("Unable to find attacker's online creature.");
@@ -496,9 +503,7 @@ namespace RainMeadow
                 );
 
                 // Cash Money Slugs
-                ArenaClientSettings? attackerClientData = ArenaHelpers.GetArenaClientSettings(attackerOCreature.owner);
-                if (attackerClientData?.gotSlugcat == true
-                    || SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>())
+                if (ArenaHelpers.ShowSlugSlotsFlair(attackerOCreature.owner))
                 {
                     attackerOCreature.BroadcastRPCInRoom(ArenaRPCs.ShowMeTheMoney, attackerOCreature, targetOCreature);
 
@@ -566,9 +571,14 @@ namespace RainMeadow
                 );
                 return;
             }
-            if (attackerOCreature is not { isAvatar: true, isMine: true })
+            if (!attackerOCreature.isAvatar)
             {
-                RainMeadow.Debug("Attacker is not my avatar. Returning early.");
+                RainMeadow.Debug("Attacker is not an avatar. Returning early.");
+                return;
+            }
+            if (!targetOCreature.isMine)
+            {
+                RainMeadow.Debug("Target is not mine; the target's owner scores spear hits. Returning early.");
                 return;
             }
             if (!targetOCreature.isAvatar)
@@ -688,8 +698,7 @@ namespace RainMeadow
             }
 
 
-            bool playerGotSlots = ArenaHelpers.GetArenaClientSettings(player) != null && ArenaHelpers.GetArenaClientSettings(player).gotSlugcat;
-            if (SpecialEvents.EventActiveInLobby<SpecialEvents.AprilFools>() || playerGotSlots)
+            if (ArenaHelpers.ShowSlugSlotsFlair(player))
             {
                 SpecialEvents.LoadElement("meadowcoin");
                 return "meadowcoin";
@@ -836,6 +845,41 @@ namespace RainMeadow
             )
             {
                 player.slugcatStats.throwingSkill = 1;
+            }
+            if (player.SlugCatClass == SlugcatStats.Name.Yellow && arenaOnline.arenaMonkShield)
+            {
+                int freeHand = player.FreeHand();
+
+                if (freeHand >= 0)
+                {
+                    AbstractPhysicalObject monkFruit = new DangleFruit.AbstractDangleFruit(
+                        room.world,
+                        null,
+                        abstractCreature.pos,
+                        room.world.game.GetNewID(),
+                        -1,
+                        -1,
+                        false,
+                        null
+                    );
+                    room.abstractRoom.AddEntity(monkFruit);
+                    monkFruit.RealizeInRoom();
+
+
+                    // remove the stalk
+                    if (monkFruit.realizedObject is DangleFruit spawnedFruit && spawnedFruit.stalk != null)
+                    {
+                        spawnedFruit.stalk.fruit = null;
+                        spawnedFruit.stalk.Destroy();
+                        spawnedFruit.stalk = null;
+                    }
+
+                    self.room.world.GetResource().ApoEnteringWorld(monkFruit);
+                    self.room.abstractRoom.GetResource()
+                        ?.ApoEnteringRoom(monkFruit, monkFruit.pos);
+
+                    player.SlugcatGrab(monkFruit.realizedObject, freeHand);
+                }
             }
             if (ModManager.MSC)
             {
@@ -1167,6 +1211,10 @@ namespace RainMeadow
             OnlineCreature onlineCreature = self.abstractCreature.GetOnlineCreature()!;
 
             bool wasAlreadyDead = self.dead;
+            if (ModManager.Watcher)
+            {
+                self.rippleDeathIntensity = 0f;
+            }
             orig(self);
 
             if (wasAlreadyDead)
@@ -1184,7 +1232,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (self.killTag is null)
+            if (self.killTag is null || self.killTag == self.abstractCreature)
             {
                 int scoreChange = -arenaSitting.gameTypeSetup.EmptyDeathScore;
 
@@ -1392,7 +1440,21 @@ namespace RainMeadow
                 }
 
                 if (!isInserted)
+                {
                     sortedArenaPlayers.Add(arenaPlayer);
+                }
+
+                // For the Arena tournament
+                if (ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                        arenaOnline,
+                        arenaPlayer.playerNumber
+                    ) is OnlinePlayer onlinePlayer)
+                {
+                    RainMeadow.Info(
+                        $"RMEL;{onlinePlayer.id.DisplayName};{arenaPlayer.wins};"
+                        + $"{arenaPlayer.allKills.Count};{arenaPlayer.deaths};{arenaPlayer.totScore}"
+                    );
+                }
             }
 
             return sortedArenaPlayers;
@@ -1967,6 +2029,14 @@ namespace RainMeadow
                     return list;
                 }
                 return elements;
+            }
+            else if (settingType.IsExtEnum())
+            {
+                if (ExtEnumBase.TryParse(settingType, value, false, out ExtEnumBase extEnum))
+                {
+                    return extEnum;
+                }
+                RainMeadow.Debug($"Value {value} is not a registered entry of ExtEnum {settingType}");
             }
             else if (TryParseSimpleType(value, settingType, out var result) && result is not null)
             {

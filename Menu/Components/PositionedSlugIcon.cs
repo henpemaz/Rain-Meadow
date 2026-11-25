@@ -7,6 +7,8 @@ namespace RainMeadow.UI.Components;
 
 public class PositionedSlugIcon : PositionedMenuObject
 {
+    public const float iconLenght = 24f;
+    public static readonly Vector2 iconSize = new(iconLenght, iconLenght);
     public SlugIcon slugIcon;
     public List<PositionedSprite> PositionedSprites = [];
 

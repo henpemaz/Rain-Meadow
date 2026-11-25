@@ -134,6 +134,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage * maxScugsPerPage));
             SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
+            btn.OnClick += _ => OnSlugcatButtonClicked(btn.buttonArrayIndex);
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
             btn.subObjects.Add(slugcatIllustrations[i]);
@@ -294,11 +295,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         menu.PlaySound(Arena.AddRemoveBannedSlug(index) ? SoundID.MENU_Checkbox_Uncheck : SoundID.MENU_Checkbox_Check); //true = no wawa
         OnMakingNewAvailableSlugcats();
     }
+    public void OnSlugcatButtonClicked(int index)
+    {
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            OnSlugcatPressedBan(index);
+    }
     public override void Update()
     {
         base.Update();
         lastBanSlugInput = banSlugInput;
-        banSlugInput = menu.manager.menuesMouseMode? Input.GetMouseButtonDown(0) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) : RWInput.PlayerInput(0).pckp;
+        banSlugInput = RWInput.PlayerInput(0).pckp;
         if (warningCounter >= 0) warningCounter++;
         if (readyWarning)
             warningCounter = Mathf.Max(warningCounter, 0);

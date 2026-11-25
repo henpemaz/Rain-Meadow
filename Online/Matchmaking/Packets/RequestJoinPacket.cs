@@ -37,8 +37,8 @@ namespace RainMeadow
                     OnlineManager.players.Count,
                     RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()),
                     RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()),
-                    RainMeadowModManager.IsWhitelistActive()
-                ), NetIO.SendType.Reliable);
+                    RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetWhitelistedMods().ToArray())
+                ),NetIO.SendType.Reliable);
 
             }
         }

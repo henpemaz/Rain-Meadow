@@ -1,21 +1,75 @@
+# Release 1.17.0
+
+## Story
+- Fixed a bug that cause pups to break gates
+- Fixed pups sending players though the walls when players find them in shelters
+- Fixed pups blocking shelters to close when appearing inside them
+- Pups no longer duplicate per player
+- Synced pup's foodbar 
+
+## Engine
+- Fixed synced ExtEnum added mid-game making Rain Meadow throw
+
+# Release 1.16.3
+## General
+- Fixed whitelist, host can now specify allowed mods for clients
+- Fixed ModManager not always loading mod dependencies
+
+## Arena
+- Fixed Watcher's Amoeba not pursuing combatants in Team Battle mode 
+
+# Release 1.16.2
+- Fixed an issue with the Modmamanger whitelist
+- Fixed missing library on startup
+
+# Release 1.16.1
+
+## General
+- Fixed chat position at certain resolutions 
+- Adjusted scarf cosmetic
+- Scarfs and capes are now affected by (Vanilla) wind
+- Added additional Russian and Japanese language support for text
+
+## Arena
+- Amoeba will now chase players with highest score or highest kills, dependent on if scoring is active in the gamemode 
+- Fixed scoring occurrences if an attacker hit but a defender parried; scoring will now rely on the defender’s post-parry result to determine if scoring should’ve occurred 
+- Fixed an issue capturing menu inputs at higher frame rates
+
+## Story 
+- Fixed an issue that would break the menu when playing the game with Russian language active
+  
+## Engine
+- ModManager restarting mods won't brick lobby joins anymore
+- You can finally join friends' lobbies from the Steam Overlay!
+- Fixed a source of invisible creatures
+- Fixed a bug in banning users where custom builds could ignore bans and rejoin lobbies 
+- Fixed a bug where spears created unexpected latency
+
 # Release 1.16.0
 
 ## Story
 - Fixed gates starting region transitions before all players are ready and closing the middle door before all players have crossed
 - Fixed client lobby menu UI crashing sometimes when changing from a campaign with a save to an empty campaign
 - fixed client lobby menu getting local save of the current campaign when host doesn't have a save on it
-- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor 
+- Joining a story lobby will now start directly at the current campaign instead of scrolling to it from survivor
+- Entering a story session while in the lobby chat box won't lock you as chatting
 
 ## Arena
 - Fixed infinite tinnitus again
+- Fixed part of the spear state being sent every tick no matter what
+- Overhauled the Slugcat Ability menu and the Arena Settings menu
+- Stopped self-destruct giving kill points (it will be treated as a suicide now)
+- Added a Remix setting to toggle arena result autoscroll
+- Permanent score stats are now stored for disconnected players
 
 ## Chat
+- Temporaly removed the buggy chat scrolling on the chat HUD of Story and Arena.
 
 ### Modders
 - Replaced interface `ChatLogManager.IChatSubscriber` with event `ChatLogManager.MessageLogged`, indirectly removing unexpected behavior when `ChatLogManager.IChatSubscriber.Active` is false. (See [PR #1584](https://github.com/henpemaz/Rain-Meadow/pull/1584) for details)
 ## Engine
 - Fixed RandomSeed not being saved across cycles (was causing e.g. slugpup colour to change)
-- Fixed synced ExtEnum added mid-game making Rain Meadow throw
+- `OnlineFieldHalf` with cut the value in half before comparing it to the last one, reducing the sending rate of floats and some Vector2 values.
 ## Arena
 - Watcher's camo bar will now show the Voidmaster ability's cooldown with the purple fill
 - Watcher cannot summon more than one Amoeba at a time

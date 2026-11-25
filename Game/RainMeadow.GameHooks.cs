@@ -270,6 +270,14 @@ namespace RainMeadow
                 return orig(self);
             }
 
+            if (isExpeditionMode(out _))
+            {
+                if (ModManager.Expedition && self.saveSlot < 0)
+                {
+                    return "online_exp" + Math.Abs(self.saveSlot);
+                }
+            }
+
             if (self.saveSlot != 0)
             {
                 return "online_sav" + (self.saveSlot + 1);
@@ -495,7 +503,19 @@ namespace RainMeadow
 
         private void Futile_OnApplicationQuit(On.Futile.orig_OnApplicationQuit orig, Futile self)
         {
-            //TODO: Impliment graceful exist
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    RainMeadow.Info("Leaving lobby on application quit");
+                    MatchmakingManager.currentInstance.LeaveLobby();
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+
             orig(self);
         }
 

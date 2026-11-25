@@ -2008,7 +2008,7 @@ namespace RainMeadow
 
                 self.topMiddle.y = GameplayOverrides.MoveMenuItemFromYInput(self.topMiddle.y);
 
-                if (OnlineManager.players.Count > 4)
+                if (OnlineManager.players.Count > 4 && rainMeadowOptions.ArenaScoreAutoScroll.Value)
                 {
                     if (self.phase == Menu.MultiplayerResults.Phase.Done)
                     {

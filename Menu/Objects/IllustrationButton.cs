@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using RainMeadow.UI.Interfaces;
 
 namespace RainMeadow.UI.Components
 {
-    public class IllustrationButton : ButtonTemplate, ButtonScroller.IPartOfButtonScroller
+    public class IllustrationButton : ButtonTemplate, IOwnMenuScrollObject
     {
-        public float Alpha { get; set; } = 1;
-        public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = value; }
         public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName, string signal = "") : base(menu, owner, pos, Vector2.zero)
         {
             signalText = signal;
@@ -22,6 +20,8 @@ namespace RainMeadow.UI.Components
             selectRect = new(menu, this, Vector2.zero, size, false);
             portrait.sprite.MoveInFrontOfOtherNode(selectRect.sprites.Last());
             subObjects.AddRange([portrait, roundedRect, selectRect]);
+
+            GrafUpdate(1);
         }
         public override Color InterpColor(float timeStacker, HSLColor baseColor)
         {

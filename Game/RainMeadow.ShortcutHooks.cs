@@ -31,6 +31,13 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
+                if (NeedsGraphicsAttach(self, obj))
+                {
+                    self.updateList.Remove(obj);
+                    orig(self, obj);
+                    return;
+                }
+
                 Debug($"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
@@ -45,7 +52,14 @@ namespace RainMeadow
                     self.world.GetResource()?.ApoEnteringWorld(apo);
                     self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
                 }
-            }            
+            }
+        }
+
+        internal static bool NeedsGraphicsAttach(Room room, UpdatableAndDeletable obj)
+        {
+            if (obj is not PhysicalObject po) return false;
+            if (po.graphicsModule == null) return room.BeingViewed;
+            return !room.drawableObjects.Contains(po.graphicsModule);
         }
 
         // removes entities that should be deleted when going between rooms

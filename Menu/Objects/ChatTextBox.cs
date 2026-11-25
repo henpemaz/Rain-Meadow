@@ -784,11 +784,11 @@ namespace RainMeadow
             {
                 cs.isInteracting = false;
             }
-            OnShutDownRequest.Invoke();
+            OnShutDownRequest?.Invoke();
         }
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
-        // thanks to SlimeCubed's dev console 
+        // thanks to SlimeCubed's dev console
         public static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)

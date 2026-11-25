@@ -71,6 +71,17 @@ namespace RainMeadow
             if (saveString) game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(warpData.ToString());
             game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpData;
             if (RainMeadow.isStoryMode(out var storyGameMode)) storyGameMode.myLastWarp = warpData;
+            // we need to ensure the first warp is succesful
+            if (RainMeadow.isStoryMode(out var rippleStory) && game.StoryCharacter == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    rippleStory.minimumRippleLevel = Mathf.Max(rippleStory.minimumRippleLevel, 1f);
+                    rippleStory.maximumRippleLevel = Mathf.Max(rippleStory.maximumRippleLevel, 1f);
+                    rippleStory.rippleLevel = Mathf.Max(rippleStory.rippleLevel, 1f);
+                }
+                StoryRPCs.ApplyRippleLevelToSaveState(game.GetStorySession, new Vector2(1f, 1f));
+            }
             game.Win(false, true);
         }
         public static void ForceLoadDesiredWarp(OverWorld overWorld, WarpPoint warpPoint, WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)

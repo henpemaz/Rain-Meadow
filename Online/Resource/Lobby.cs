@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -15,9 +14,9 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] requiredmods;
-        public string[] bannedmods;
-        public bool whitelistmode;
+        public string[] requiredmods = [];
+        public string[] bannedmods = [];
+        public string[] whitelistmods = [];
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
@@ -68,10 +67,6 @@ namespace RainMeadow
 
             RainMeadowModInfoManager.RefreshDebugModInfo();
 
-            requiredmods = RainMeadowModManager.GetRequiredMods();
-            bannedmods = RainMeadowModManager.GetBannedMods();
-            whitelistmode = RainMeadowModManager.IsWhitelistActive();
-
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
@@ -92,16 +87,17 @@ namespace RainMeadow
 
             if (isOwner)
             {
+                requiredmods = RainMeadowModManager.GetRequiredMods();
+                bannedmods = RainMeadowModManager.GetBannedMods();
+                whitelistmods = RainMeadowModManager.GetWhitelistedMods().ToArray();
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
 
-                if (whitelistmode)
+                if (whitelistmods.Length > 0)
                 {
-                    var unlisted = ModManager.ActiveMods.Select(mod => mod.id).Except(requiredmods).ToList();
-                    if (unlisted.Count > 0)
-                    {
-                        RainMeadow.Error($"Whitelist lobby: host has active mods not on the whitelist, clients will not receive them: [ {string.Join(", ", unlisted)} ]");
-                    }
+                    var hostOnly = ModManager.ActiveMods.Select(mod => mod.id).Except(requiredmods).Except(whitelistmods).ToList();
+                    if (hostOnly.Count > 0)
+                        RainMeadow.Debug($"Whitelist lobby: host-only mods, not required or allowed on clients: [ {string.Join(", ", hostOnly)} ]");
                 }
             }
             else
@@ -170,6 +166,11 @@ namespace RainMeadow
         [RPCMethod(security = RPCSecurity.NoSecurity)]
         public void RequestedLobby(RPCEvent request, string? key)
         {
+            if (bannedUsers.list.Contains(request.from.id))
+            {
+                request.from.QueueEvent(new GenericResult.Fail(request));
+                return;
+            }
             if (this.hasPassword)
             {
                 if (this.password != key)
@@ -210,6 +211,7 @@ namespace RainMeadow
             else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
             {
                 RainMeadow.Error("locked request for " + this);
+                MatchmakingManager.lastJoinFailWasWrongPassword = true;
                 MatchmakingManager.currentInstance.JoinLobby(false, ERROR_WrongPassword);
             }
             else if (requestResult is GenericResult.Error) // I should retry
@@ -295,7 +297,7 @@ namespace RainMeadow
             [OnlineField]
             public string[] bannedmods;
             [OnlineField]
-            public bool whitelistmode;
+            public string[] whitelistmods;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -320,7 +322,7 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 requiredmods = lobby.requiredmods;
                 bannedmods = lobby.bannedmods;
-                whitelistmode = lobby.whitelistmode;
+                whitelistmods = lobby.whitelistmods;
                 bannedUsers = lobby.bannedUsers;
                 onlineBoolRemixSettings = lobby.configurableBools;
                 onlineFloatRemixSettings = lobby.configurableFloats;
@@ -352,6 +354,10 @@ namespace RainMeadow
 
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p is not null).ToList());
+                if (!lobby.isOwner)
+                {
+                    lobby.bannedUsers = bannedUsers != null ? new(bannedUsers.list.ToList()) : new();
+                }
                 if (lobby.bannedUsersChecked == false)
                 {
                     // Need to get the participants before we check
@@ -373,12 +379,13 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
-                    //Made asyncronous so that the game doesn't get totally frozen
-                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, whitelistMode: whitelistmode));
+                    string rejoinCode = MatchmakingManager.currentInstance.GetCurrentLobbyJoinCode(lobby.password ?? lobby.enteredPassword);
+
+                    RainMeadowModManager.CheckMods(requiredmods, bannedmods, null, true, rejoinCode, whitelistmods);
 
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
-                    lobby.whitelistmode = whitelistmode;
+                    lobby.whitelistmods = whitelistmods;
                     if (ModManager.MMF && lobby.gameMode.nonGameplayRemixSettings != null)
                     {
                         OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
