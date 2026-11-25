@@ -29,6 +29,7 @@ namespace RainMeadow
             this.camera = camera;
             this.game = camera.game;
             ChatLogManager.MessageLogged += OnMessageLogged;
+            ChatLogManager.MessagesCleared += OnMessagesCleared;
             if (!ChatLogManager.shownChatTutorial)
             {
                 this.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
@@ -101,6 +102,11 @@ namespace RainMeadow
                 chatLogOverlay.UpdateLogDisplay();
                 if (shouldGoDown) chatLogOverlay.scroller.MoveToBoundary(UI.Systems.ScrollSystem.Direction.Bottom, true);
             }
+        }
+
+        public void OnMessagesCleared(Predicate<(string User, string Message)> match)
+        {
+            ClearMessages(match);
         }
 
         public override void Draw(float timeStacker)
@@ -191,6 +197,7 @@ namespace RainMeadow
             if (chatLogOverlay != null) ShutDownChatLog();
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
             ChatLogManager.MessageLogged -= OnMessageLogged;
+            ChatLogManager.MessagesCleared -= OnMessagesCleared;
         }
         public override void ClearSprites()
         {

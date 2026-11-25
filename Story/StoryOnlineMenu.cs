@@ -141,6 +141,7 @@ namespace RainMeadow
 
             ChatTextBox.OnShutDownRequest += ResetChatInput;
             ChatLogManager.MessageLogged += OnMessageLogged;
+            ChatLogManager.MessagesCleared += OnMessagesCleared;
         }
 
         public void SetupSelectableSlugcats()
@@ -492,6 +493,7 @@ namespace RainMeadow
             ResetChatInput(); //ensure chat input is properly shutdown
             ChatTextBox.OnShutDownRequest -= ResetChatInput;
             ChatLogManager.MessageLogged -= OnMessageLogged;
+            ChatLogManager.MessagesCleared -= OnMessagesCleared;
 
             RainMeadow.DebugMe();
             if ((manager.upcomingProcess != ProcessManager.ProcessID.Game) &&
@@ -762,6 +764,17 @@ namespace RainMeadow
                 );
             }
             this.UpdateLogDisplay();
+        }
+
+        public void OnMessagesCleared(Predicate<(string User, string Message)> match)
+        {
+            ChatLogManager.chatLog.RemoveAll(match);
+            foreach(var log in chatSubObjects)
+            {
+                log.RemoveSprites();
+            }
+            chatSubObjects.Clear();
+            UpdateLogDisplay();
         }
 
         internal void ResetChatInput()

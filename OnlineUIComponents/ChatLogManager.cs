@@ -28,6 +28,8 @@ namespace RainMeadow
 
         public delegate void MessageLoggedEventHandler(string user, string message);
         public static event MessageLoggedEventHandler? MessageLogged;
+        public delegate void MessagesClearEventHandler(Predicate<(string User, string Message)> match);
+        public static event MessagesClearEventHandler? MessagesCleared;
 
         // HACK: put this somewhere better
         public static bool shownChatTutorial = false;
@@ -141,6 +143,11 @@ namespace RainMeadow
             string signature = TypeToSysMesSignature(systemMessageType);
             AddMessageToChatLog(signature, message);
             MessageLogged?.Invoke(signature, message);
+        }
+
+        public static void ClearMessages(Predicate<(string User, string Message)> match)
+        {
+            MessagesCleared?.Invoke(match);
         }
 
         /// <summary>
