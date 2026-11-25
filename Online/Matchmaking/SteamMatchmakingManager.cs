@@ -325,6 +325,7 @@ namespace RainMeadow
                     RainMeadow.Debug("success");
                     lobbyID = new CSteamID(param.m_ulSteamIDLobby);
                     UpdatePlayersList();
+                    Moderation.AddLobbyList(OnlineManager.players.ToArray());
                     var mode = new OnlineGameMode.OnlineGameModeType(SteamMatchmaking.GetLobbyData(lobbyID, MODE_KEY));
                     var owner = GetLobbyOwner();
                     if (owner == OnlineManager.mePlayer)
@@ -414,6 +415,7 @@ namespace RainMeadow
             OnlineManager.players.Add(player);
 
             HandleJoin(player);
+            Moderation.AddRecent(new RecentPlayer(player, null));
         }
 
         private void PlayerLeft(CSteamID p)
