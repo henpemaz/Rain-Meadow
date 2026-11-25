@@ -101,6 +101,8 @@ namespace RainMeadow
                     warpPointData.FromString(warpPointTarget);
                     storyGameMode.myLastWarp = warpPointData;
                     game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
+                    if (game.StoryCharacter == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                        ApplyRippleLevelToSaveState(game.GetStorySession, new UnityEngine.Vector2(1f, 1f));
                 }
             }
             game.Win(malnourished, fromWarpPoint);

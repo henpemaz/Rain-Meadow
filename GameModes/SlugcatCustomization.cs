@@ -117,22 +117,18 @@ namespace RainMeadow
                 slugcatCustomization.globalMute = globalMute;
 
                 bool needsGraphicRefresh = false;
-                if (cosmetic != slugcatCustomization.cosmetic)
+                var allowedCosmetic = cosmetic != null && CosmeticManager.AvailableCosmetics(onlineEntity.owner.id).Contains(cosmetic) ? cosmetic : null;
+                if (allowedCosmetic != slugcatCustomization.cosmetic)
                 {
-                    if (CosmeticManager.AvailableCosmetics(onlineEntity.owner.id).Contains(cosmetic))
-                    {
-                        slugcatCustomization.cosmetic = cosmetic;
-                        needsGraphicRefresh = true;
-                    }
+                    slugcatCustomization.cosmetic = allowedCosmetic;
+                    needsGraphicRefresh = true;
                 }
 
-                if (cosmeticSkin != slugcatCustomization.cosmeticSkin)
+                var allowedSkin = cosmeticSkin != null && CosmeticManager.AvailableCosmeticSkins(onlineEntity.owner.id).Contains(cosmeticSkin) ? cosmeticSkin : null;
+                if (allowedSkin != slugcatCustomization.cosmeticSkin)
                 {
-                    if (CosmeticManager.AvailableCosmeticSkins(onlineEntity.owner.id).Contains(cosmeticSkin))
-                    {
-                        slugcatCustomization.cosmeticSkin = cosmeticSkin;
-                        needsGraphicRefresh = true;
-                    }
+                    slugcatCustomization.cosmeticSkin = allowedSkin;
+                    needsGraphicRefresh = true;
                 }
 
                 slugcatCustomization.customCosmeticColor = customCosmeticColor;

@@ -239,6 +239,7 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
+            if (OnlineManager.lobby == null) return;
             (Vector2 pos, Vector2 dir)? drawPos = owner.GetTargetDrawPos(timeStacker);
             if (!drawPos.HasValue)
             {
@@ -314,6 +315,7 @@ namespace RainMeadow
             else
             {
                 this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : UsernameGenerator.StreamerModeName(customization.nickname);
+                
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username

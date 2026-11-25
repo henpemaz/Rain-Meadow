@@ -82,7 +82,8 @@ namespace RainMeadow
             if (CurrLang == InGameTranslator.LanguageID.Russian)
             {
                 restartCheckbox.pos.x += 50;
-                colorsCheckbox.pos.x += 50;
+                if (colorsCheckbox != null)
+                    colorsCheckbox.pos.x += 50;
             }
             ModifyExistingMenuItems();
 
@@ -107,8 +108,8 @@ namespace RainMeadow
             }
 
             RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
-            this.textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value 
-                ? ButtonScroller.TextAnchor.Bottom 
+            this.textAnchor = RainMeadow.rainMeadowOptions.ChatTextDownscroll.Value
+                ? ButtonScroller.TextAnchor.Bottom
                 : ButtonScroller.TextAnchor.Top;
 
             if (OnlineManager.lobby.isOwner)
@@ -350,6 +351,17 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("page refresh");
                 storyGameMode.needMenuSaveUpdate = false;
+
+                if (OnlineManager.lobby.isOwner && storyGameMode.shouldMineForSaveData)
+                {
+                    RainMeadow.Debug("mine for saveData");
+                    storyGameMode.shouldMineForSaveData = false;
+                    for (int i = 0; i < slugcatColorOrder.Count; i++)
+                    {
+                        saveGameData[slugcatColorOrder[i]] = MineForSaveData(manager, slugcatColorOrder[i]);
+                    }
+                }
+
                 RefreshPages();
             }
 
@@ -505,7 +517,7 @@ namespace RainMeadow
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 StoryMenuPlayerButton playerButton = new(this, playerScrollBox, player, OnlineManager.lobby.isOwner && player != OnlineManager.lobby.owner);
-                playerScrollBox.AddScrollObjects(playerButton);
+                playerScrollBox.AddButtons(playerButton);
             }
             playerScrollBox.ConstrainScroll();
 
@@ -665,7 +677,7 @@ namespace RainMeadow
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             bool friendlyFireNeedMoreSpace = CurrLang == InGameTranslator.LanguageID.Russian || CurrLang == InGameTranslator.LanguageID.Japanese;
             bool leffBoxesNeedMoreSpace = InGameTranslator.LanguageID.UsesLargeFont(CurrLang);
-            
+
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y + 30), (friendlyFireNeedMoreSpace ? 150f : 70f) + (leffBoxesNeedMoreSpace ? 30f : 0), Regex.Replace(Translate("Friendly Fire"), "<LINE>", "\r\n"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide + (leffBoxesNeedMoreSpace ? 30f : 0), restartCheckboxPos.y), leffBoxesNeedMoreSpace ? 180f : 150f, Regex.Replace(Translate("Require Campaign Slugcat"), "<LINE>", "\r\n"), "CAMPAIGNSLUGONLY", false);
             if (!OnlineManager.lobby.isOwner)
@@ -743,9 +755,9 @@ namespace RainMeadow
             if (this.isChatToggled && ChatLogManager.ShouldMakeSoundFromMessage(user, message, out bool quiet))
             {
                 manager.menuMic.PlaySound(
-                    quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick, 
-                    0, 
-                    quiet ? 0.7f : 1.5f, 
+                    quiet ? SoundID.MENU_First_Scroll_Tick : SoundID.MENU_Scroll_Tick,
+                    0,
+                    quiet ? 0.7f : 1.5f,
                     quiet ? 0.7f : 0.6f
                 );
             }
@@ -760,6 +772,10 @@ namespace RainMeadow
             {
                 this.chatTextBox = new ChatTextBox(this, pages[0], "", new Vector2(this.chatTextBoxPos.x + 24, 0), new(575, 30));
                 pages[0].subObjects.Add(this.chatTextBox);
+            }
+            if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
+            {
+                cs.isInteracting = false;
             }
         }
 
@@ -800,7 +816,7 @@ namespace RainMeadow
 
                 var visibleLog = ChatLogManager.chatLog.Skip(startIndex).Take(maxVisibleMessages);
                 float yOffSet = textAnchor == ButtonScroller.TextAnchor.Top ? 0 : (maxVisibleMessages - 1 - visibleLog.Count()) * chatMessgesOffset;
-                
+
                 foreach (var (username, message) in visibleLog)
                 {
                     ChatLogManager.SystemMessageType? systemMessageType = ChatLogManager.SysMesSignatureToType(username);

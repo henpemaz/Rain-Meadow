@@ -46,7 +46,7 @@ namespace RainMeadow
 
         public override bool Equals(object obj) => obj is BodyChunkRef other && Equals(other);
 
-        public static bool operator ==(BodyChunkRef lhs, BodyChunkRef rhs) => lhs is not null && lhs.Equals(rhs);
+        public static bool operator ==(BodyChunkRef lhs, BodyChunkRef rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
 
         public static bool operator !=(BodyChunkRef lhs, BodyChunkRef rhs) => !(lhs == rhs);
 
