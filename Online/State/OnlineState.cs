@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using BepInEx.Bootstrap;
 using UnityEngine;
 
 namespace RainMeadow
@@ -50,43 +51,26 @@ namespace RainMeadow
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
-        public static void RegisterState(Type type)
-        {
-            if (!type.IsAbstract && typeof(OnlineState).IsAssignableFrom(type))
-            {
-                StateType stateType = new StateType(type.FullName, true);
-                handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
-            }
-        }
-
-        internal static void InitializeBuiltinTypes()
+        internal static void InitializeBuiltinTypes(IEnumerable<Assembly> assemblies)
         {
             _ = StateType.Unknown; // runs static init
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
+            foreach (Type type in assemblies.SelectMany(assembly => assembly.GetTypesSafely()))
             {
-                bool isMain = assembly == Assembly.GetExecutingAssembly();
-                bool hasState = false; // wether this assembly tried to register any onlinestates
+                if (type.IsAbstract || !typeof(OnlineState).IsAssignableFrom(type))
+                    continue;
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely().ToList())
-                    {
-                        try
-                        {
-                            hasState |= typeof(OnlineState).IsAssignableFrom(type);
-                            OnlineState.RegisterState(type);
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            if (isMain || hasState) throw e;
-                            RainMeadow.Error(e);
-                        }
-                    }
+                    StateType stateType = new(type.FullName!, true);
+                    handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    if (isMain || hasState) throw e;
-                    RainMeadow.Error(e);
+                    RainMeadow.Error(
+                        type.Assembly == Assembly.GetExecutingAssembly() ?
+                            $"Error registering OnlineState for builtin type: {type.FullName}" :
+                            $"{type.Assembly.FullName}:{type.FullName}"
+                    );
+                    throw;
                 }
             }
         }

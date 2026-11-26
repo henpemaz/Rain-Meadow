@@ -1,5 +1,9 @@
 # Release 1.17.0
 
+## General
+- Improved startup time
+  - Optimized registering RPCs (up to ~2700% faster) and online states (up to ~100% faster)
+  - Total Rain Meadow load time up to ~20% faster
 ## Story
 - Fixed a bug that cause pups to break gates
 - Fixed pups sending players though the walls when players find them in shelters
