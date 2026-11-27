@@ -521,6 +521,7 @@ namespace RainMeadow
                 self.eggsLeft = 0;
                 if (self.FireBug)
                 {
+                    self.room.AddObject(new Explosion(self.room, self, self.firstChunk.pos, 5, 200f, 10f, 0.25f, 60f, 0.3f, self, 0.8f, 0f, 0.7f));
                     self.room.ScreenMovement(new Vector2?(self.firstChunk.pos), default, 0.7f);
                     self.room.PlaySound(SoundID.Fire_Spear_Explode, self.firstChunk);
                 }
