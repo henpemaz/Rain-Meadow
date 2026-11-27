@@ -514,7 +514,7 @@ namespace RainMeadow
         // HACK: doesn't play sounds, we should IL hook to disable just the eggs
         private void EggBug_DropEggs(On.EggBug.orig_DropEggs orig, EggBug self)
         {
-            if (!self.IsLocal())
+            if (!self.IsLocal() && !self.FireBug)
             {
                 self.dropEggs = false;
                 return;
