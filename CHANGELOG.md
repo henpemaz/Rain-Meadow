@@ -1,5 +1,10 @@
 # Release 1.17.0
 
+## Engine
+- Fixed Firebugs, they now switch to their aggressive state correctly
+- Fixed FireEgg visuals
+- Fixed Jellyfish sometimes stunning the thrower on other player's screens causing it to appear deactivated.
+
 ## Story
 - Fixed a bug that cause pups to break gates
 - Fixed pups sending players though the walls when players find them in shelters

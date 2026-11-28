@@ -54,7 +54,8 @@ namespace RainMeadow
             IL.PuffBall.Explode += PhysicalObject_Explode;
             IL.MoreSlugcats.FireEgg.Explode += PhysicalObject_Explode;
             IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
-            IL.JellyFish.Tossed += PhysicalObject_Trigger;
+            IL.MoreSlugcats.FireEgg.Tossed += PhysicalObject_Tossed;
+            IL.JellyFish.Tossed += PhysicalObject_Tossed;
             IL.Snail.Click += PhysicalObject_Trigger;
             IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
 
@@ -543,6 +544,51 @@ namespace RainMeadow
                         {
                             if (!opo.isMine) return false;  // wait to be RPC'd
                             opo.roomSession.owner.InvokeOnceRPC(opo.Trigger);
+                        }
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void PhysicalObject_Tossed(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1); // tossedBy
+                c.EmitDelegate((PhysicalObject self, Creature tossedBy) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        var onlineTossedBy = tossedBy.abstractCreature.GetOnlineCreature();
+                        if (onlineTossedBy is null)
+                        {
+                            Error($"Entity {tossedBy} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner && (opo.isMine || RPCEvent.currentRPCEvent is not null || self is not Player))
+                        {
+                            opo.BroadcastRPCInRoom(opo.Tossed, onlineTossedBy);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Tossed, onlineTossedBy);
                         }
                     }
                     return true;

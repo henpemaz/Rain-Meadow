@@ -1,3 +1,4 @@
+using MoreSlugcats;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -638,14 +639,26 @@ namespace RainMeadow
             {
                 case FirecrackerPlant bomb:
                     bomb.Ignite(); return;
-                case JellyFish o:
-                    o.Tossed(null); return;
                 case Snail o:
                     o.Click(); return;
                 case VultureGrub o:
                     o.InitiateSignal(); return;
                 default:
                     RainMeadow.Error($"unknown trigger {this}"); return;
+            }
+        }
+
+        [RPCMethod]
+        public void Tossed(RPCEvent rpc, OnlineCreature? thrower)
+        {
+            if (apo.realizedObject is null) return;
+            var tossedBy = thrower?.abstractCreature.realizedCreature ?? null;
+            switch(apo.realizedObject)
+            {
+                case JellyFish o:
+                    o.Tossed(tossedBy); return;
+                case FireEgg o:
+                    o.Tossed(tossedBy); return;
             }
         }
 

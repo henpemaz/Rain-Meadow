@@ -36,6 +36,7 @@ namespace RainMeadow
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
 
             On.EggBug.DropEggs += EggBug_DropEggs;
+            On.EggBug.DropSpears += EggBug_DropSpears;
             On.Vulture.DropMask += Vulture_DropMask;
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
@@ -511,12 +512,30 @@ namespace RainMeadow
             if (!self.creature.IsLocal()) self.mostInterestingItem = mostInterestingItem;
         }
 
-        // HACK: doesn't play sounds, we should IL hook to disable just the eggs
+        // HACK: doesn't play all effects unless we manually add them, ideally we should IL hook to disable just the eggs
         private void EggBug_DropEggs(On.EggBug.orig_DropEggs orig, EggBug self)
         {
             if (!self.IsLocal())
             {
                 self.dropEggs = false;
+                self.eggsLeft = 0;
+                if (self.FireBug)
+                {
+                    self.room.AddObject(new Explosion(self.room, self, self.firstChunk.pos, 5, 200f, 10f, 0.25f, 60f, 0.3f, self, 0.8f, 0f, 0.7f));
+                    self.room.ScreenMovement(new Vector2?(self.firstChunk.pos), default, 0.7f);
+                    self.room.PlaySound(SoundID.Fire_Spear_Explode, self.firstChunk);
+                }
+                self.room.PlaySound(SoundID.Egg_Bug_Drop_Eggs, self.mainBodyChunk);
+                return;
+            }
+            orig(self);
+        }
+        private void EggBug_DropSpears(On.EggBug.orig_DropSpears orig, EggBug self)
+        {
+            if (!self.IsLocal())
+            {
+                self.dropSpears = false;
+                self.room.PlaySound(SoundID.Egg_Bug_Drop_Eggs, self.mainBodyChunk);
                 return;
             }
             orig(self);
