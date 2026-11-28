@@ -110,6 +110,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RMOverlayHUD.GetOverlay()?.DestroyChatHUD();
 
         ChatLogManager.MessageLogged += arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
+        ChatLogManager.MessagesCleared += arenaMainLobbyPage.chatMenuBox.OnMessagesCleared;
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         Arena.ResetOnReturnMenu(manager);
@@ -358,6 +359,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
         ChatLogManager.MessageLogged -= arenaMainLobbyPage.chatMenuBox.OnMessageLogged;
+        ChatLogManager.MessagesCleared -= arenaMainLobbyPage.chatMenuBox.OnMessagesCleared;
 
         bool owner = OnlineManager.lobby?.isOwner == true;
         if (owner)

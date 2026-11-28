@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using Menu;
+﻿using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Systems;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components
@@ -109,6 +110,16 @@ namespace RainMeadow.UI.Components
             AddNewMessageToScroller(user, message);
         }
 
+        public void OnMessagesCleared(Predicate<(string User, string Message)> match)
+        {
+            ChatLogManager.chatLog.RemoveAll(match);
+            messageScroller.RemoveAllButtons();
+        }
+
+        public void ClearMessages(Predicate<(string User, string Message)> match)
+        {
+            ChatLogManager.chatLog.RemoveAll(match);
+        }
 
         public RoundedRect roundedRect;
         public ChatTextBox chatTypingBox;

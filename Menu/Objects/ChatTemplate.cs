@@ -17,6 +17,8 @@ namespace RainMeadow
         public FSprite _selection;
         public FSpriteWrap selectionWrap;
 
+        public float redFactor;
+
         public FSprite _cursor;
         public float _cursorWidth;
         public FSpriteWrap cursorWrap;
@@ -88,6 +90,11 @@ namespace RainMeadow
             selectionWrap.sprite.alpha = IsFoucsed() ? 1f : 0f;
                 base.GrafUpdate(timeStacker);
             this.roundedRect.fillAlpha = 1.0f;
+
+            if (redFactor > 0f)
+            {
+                roundedRect.borderColor = Color.Lerp(new Color(1f, 1f, 1f), new Color(0.8f, 0f, 0f), redFactor).ToHSL();
+            }
         }
 
         public virtual bool IsFoucsed()

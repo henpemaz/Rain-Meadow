@@ -23,6 +23,7 @@ namespace RainMeadow
             {
                 chatMenuBox.chatTypingBox.DelayedUnload(.1f);
                 ChatLogManager.MessageLogged -= chatMenuBox.OnMessageLogged;
+                ChatLogManager.MessagesCleared -= chatMenuBox.OnMessagesCleared;
             }
             pages[_currentPage].ClearMenuObject(ref this.chatMenuBox);
 
@@ -30,6 +31,7 @@ namespace RainMeadow
             {
                 this.chatMenuBox = new ChatMenuBox(this, pages[currentPage], new Vector2(this.chatTextBoxPos.x + 24, 0), new(320, 300));
                 ChatLogManager.MessageLogged += chatMenuBox.OnMessageLogged;
+                ChatLogManager.MessagesCleared += chatMenuBox.OnMessagesCleared;
                 
                 pages[currentPage].subObjects.Add(this.chatMenuBox);
             }

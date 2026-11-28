@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text.RegularExpressions;
+using RWCustom;
 
 namespace RainMeadow
 {
@@ -22,7 +23,9 @@ namespace RainMeadow
         private float backspaceRepeater = 0f;
         private float arrowHeld = 0f;
         private float arrowRepeater = 0f;
+        private float clearChat, lastClearChat, pulse = 0f;
         private bool clipboardHeld = false;
+        private bool clearChatHeld, lastClearChatHeld, hasChatCleared = false;
         private bool tabHeld = false;
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
@@ -44,6 +47,9 @@ namespace RainMeadow
 
         public static event Action? OnShutDownRequest;
         public event Action? OnTextSubmit;
+
+        public MenuMicrophone.MenuSoundLoop menuSoundLoop;
+        public DisembodiedLoopEmitter gameSoundLoop;
 
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(lastSentMessage) / Mathf.Max(lastSentMessage.Length, 1), 1));
         public int? visibleTextLimit;
@@ -73,6 +79,7 @@ namespace RainMeadow
                 forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
             }
         }
+        public bool MenuMicAvailible => menu.manager.menuMic != null;
         public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
         public bool TypingOnOtherObjects => CanBeTypedExt._handler?._focused != null;
         public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
@@ -158,6 +165,16 @@ namespace RainMeadow
                 cursorPos = 0;
                 ShouldCapture(false);
                 isUnloading = true;
+                if (menuSoundLoop != null)
+                {
+                    menuSoundLoop.Destroy();
+                    menuSoundLoop = null;
+                }
+                if (gameSoundLoop != null)
+                {
+                    gameSoundLoop.Destroy();
+                    gameSoundLoop = null;
+                }
                 typingHandler.StartCoroutine(Unload(delay));
             }
         }
@@ -327,6 +344,85 @@ namespace RainMeadow
                 menu.allowSelectMove = false;
             }
             maxVisibleLength = VisibleTextLimit;
+            lastClearChat = clearChat;
+
+            if (clearChatHeld)
+            {
+                // menu mic is straight up gone when in game so we need both, this is only needed for loops
+                if (MenuMicAvailible)
+                {
+                    if (menuSoundLoop == null)
+                    {
+                        menuSoundLoop = menu.PlayLoop(SoundID.MENU_Security_Button_LOOP, 0f, 0f, 1f, false);
+                    }
+                    menuSoundLoop.loopVolume = Mathf.Lerp(menuSoundLoop.loopVolume, 1f, 0.85f);
+                    menuSoundLoop.loopPitch = Mathf.Lerp(0.3f, 1.5f, clearChat) - 0.15f * Mathf.Sin(pulse * 3.1415927f * 2f);
+                }
+                else if (menu.manager.currentMainLoop is RainWorldGame game)
+                {
+                    if (gameSoundLoop == null)
+                    {
+                        var room = game.cameras[0].room;
+                        gameSoundLoop = room.PlayDisembodiedLoop(SoundID.MENU_Security_Button_LOOP, 0f, 0f, 1f);
+                        gameSoundLoop.requireActiveUpkeep = false;
+                    }
+                    gameSoundLoop.volume = Mathf.Lerp(gameSoundLoop.volume, 1f, 0.85f);
+                    gameSoundLoop.pitch = Mathf.Lerp(0.3f, 1.5f, clearChat) - 0.15f * Mathf.Sin(pulse * 3.1415927f * 2f);
+                }
+                pulse += Mathf.Max(1f, Time.smoothDeltaTime * 40f) * clearChat / 20f;
+
+                clearChat = Custom.LerpAndTick(clearChat, 1f, 0.007f, 0.025f);
+                if (clearChat >= 1f && !hasChatCleared)
+                {
+                    ChatLogManager.ClearMessages(x => true);
+                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    hasChatCleared = true;
+                }
+                if (!lastClearChatHeld)
+                {
+                    menu.PlaySound(SoundID.MENU_Security_Button_Init);
+                }
+            }
+            else
+            {
+                if (menuSoundLoop != null)
+                {
+                    menuSoundLoop.loopVolume = Mathf.Max(0f, menuSoundLoop.loopVolume - 0.125f);
+                    if (menuSoundLoop.loopVolume >= 0)
+                    {
+                        menuSoundLoop.Destroy();
+                        menuSoundLoop = null;
+                    }
+                }
+                if (gameSoundLoop != null)
+                {
+                    gameSoundLoop.volume = Mathf.Max(0f, gameSoundLoop.volume - 0.125f);
+                    if (gameSoundLoop.volume >= 0)
+                    {
+                        gameSoundLoop.Destroy();
+                        gameSoundLoop = null;
+                    }
+                }
+
+                if (lastClearChatHeld && !hasChatCleared)
+                {
+                    menu.PlaySound(SoundID.MENU_Security_Button_Release);
+                }
+                if (hasChatCleared)
+                {
+                    clearChat = Custom.LerpAndTick(clearChat, 0f, 0.04f, 0.025f);
+                    if (clearChat < 0.5f) hasChatCleared = false;
+                }
+                else
+                {
+                    clearChat = Custom.LerpAndTick(clearChat, 0f, 0.04f, 0.025f);
+                }
+            }
+            if (MultiView && !Focused)
+            {
+                lastClearChatHeld = false;
+                clearChatHeld = false;
+            }
         }
 
         public void UpdateLabel(string text)
@@ -347,6 +443,7 @@ namespace RainMeadow
             var len = msg.Length;
             var hasText = len > 0;
             blockInput = false;
+            redFactor = Mathf.Lerp(lastClearChat, clearChat, timeStacker);
             if (MultiView && !Focused)
             {
                 base.GrafUpdate(timeStacker);
@@ -419,6 +516,7 @@ namespace RainMeadow
             {
                 backspaceHeld = 0f;
                 backspaceRepeater = 0f;
+                lastClearChatHeld = clearChatHeld;
                 if (Input.GetKey(KeyCode.Home))
                 {
                     bool changeSprite = cursorPos == len;
@@ -442,6 +540,11 @@ namespace RainMeadow
                     }
                     cursorPos = 0;
                     selectionPos = msg.Length;
+                }
+                // Clear chat CTRL + D
+                else if (Input.GetKey(KeyCode.D) && !hasChatCleared && (AnyCtrl))
+                {
+                    clearChatHeld = true;
                 }
 
                 // CTRL + C / Command + C
@@ -583,6 +686,10 @@ namespace RainMeadow
                 if (!(Input.GetKey(KeyCode.C) || Input.GetKey(KeyCode.V) || Input.GetKey(KeyCode.X)))
                 {
                     clipboardHeld = false;
+                }
+                if (!Input.GetKey(KeyCode.D))
+                {
+                    clearChatHeld = false;
                 }
                 if (!Input.GetKey(KeyCode.Tab))
                 {
